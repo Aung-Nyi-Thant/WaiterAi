@@ -1,5 +1,6 @@
 # Module 5: Data, import, QR, insights, tests and docs
-Owner: Member 5 · Requirements: FR-6 (menu import), FR-8 (QR codes), FR-10 (insights), plus the shared base of the app
+Owners: this module is shared by two members. **Member 2** owns the backend core: `db.ts`, `auth.ts`, `http.ts`, `menu.ts`, `constants.ts`, `api/register|login|logout|ownerMe`, `api/upload*`, `api/import*`. **Member 5** owns `QrPage.tsx`, `InsightsPage.tsx`, `ImportPage.tsx`, `api/qr.ts`, `api/lan.ts`, `api/insights.ts`, and the tests and documents. `client.ts`, `Icon.tsx` and `AuthCard.tsx` are shared: tell the team before you change them.
+Requirements: FR-6 (menu import), FR-8 (QR codes), FR-10 (insights), plus the shared base of the app
 
 What it does: the database and its demo data, login and sessions, the shared helpers, photo import, QR codes, insights, and the test scripts and documents.
 
@@ -17,7 +18,7 @@ What it does: the database and its demo data, login and sessions, the shared hel
 | `api/register.ts`, `api/login.ts`, `api/logout.ts`, `api/ownerMe.ts` | Owner accounts |
 | `api/upload.ts`, `api/uploadsServe.ts` | Photo upload and serving |
 
-Also owned by this member: `app/scripts/` (test scripts), `app/README.md`, and the documents in `docs/`.
+Member 5 also owns `app/scripts/` (test scripts), `app/README.md` and the documents in `docs/`, except the SRS which Member 2 keeps in sync.
 
 ## What I did (each member fills this in)
 - 
