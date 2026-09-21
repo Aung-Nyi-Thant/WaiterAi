@@ -1,0 +1,8 @@
+node_modules
+.next
+data/*.db*
+data/secret
+public/uploads/*
+!public/uploads/.gitkeep
+.npm-cache
+.env*.local

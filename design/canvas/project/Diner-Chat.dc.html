@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Diner chat</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&amp;family=Noto+Sans+Myanmar:wght@400;600&amp;family=Noto+Sans+Thai:wght@400;600&amp;family=Poiret+One&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B1626}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:#0B1626;color:#F5ECD6;font-family:'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;box-sizing:border-box;display:flex;flex-direction:column">
+<div style="height:92px;flex-shrink:0;position:relative;display:flex;align-items:center;gap:12px;padding:0 14px;box-sizing:border-box;border-bottom:1px solid #D4AF5A;background:#12233A">
+<div style="position:absolute;top:0;right:20px"><svg width="150" height="75" viewBox="0 0 200 100" aria-hidden="true" style="display:block" stroke="#D4AF5A" stroke-width="1" opacity="0.4" fill="none"><line x1="78.0" y1="100.0" x2="4.0" y2="100.0"/><line x1="78.7" y1="94.3" x2="7.3" y2="75.2"/><line x1="80.9" y1="89.0" x2="16.9" y2="52.0"/><line x1="84.4" y1="84.4" x2="32.1" y2="32.1"/><line x1="89.0" y1="80.9" x2="52.0" y2="16.9"/><line x1="94.3" y1="78.7" x2="75.2" y2="7.3"/><line x1="100.0" y1="78.0" x2="100.0" y2="4.0"/><line x1="105.7" y1="78.7" x2="124.8" y2="7.3"/><line x1="111.0" y1="80.9" x2="148.0" y2="16.9"/><line x1="115.6" y1="84.4" x2="167.9" y2="32.1"/><line x1="119.1" y1="89.0" x2="183.1" y2="52.0"/><line x1="121.3" y1="94.3" x2="192.7" y2="75.2"/><line x1="122.0" y1="100.0" x2="196.0" y2="100.0"/><path d="M78 100 A22 22 0 0 1 122 100" fill="none"/><path d="M56 100 A44 44 0 0 1 144 100" fill="none"/><path d="M30 100 A70 70 0 0 1 170 100" fill="none"/><path d="M4 100 A96 96 0 0 1 196 100" fill="none"/></svg></div>
+<button type="button" aria-label="Back to menu" style="position:relative;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid #D4AF5A;color:#D4AF5A"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="display:block;flex-shrink:0" fill="none" stroke="#D4AF5A" stroke-width="1.6" stroke-linecap="square" stroke-linejoin="miter"><path d="M15 5l-7 7 7 7"/></svg></button>
+<div style="position:relative"><div style="font:400 26px 'Poiret One','Noto Sans Thai','Noto Sans Myanmar',serif;color:#D4AF5A;letter-spacing:.14em;line-height:1.1">THE WAITER</div><div style="font:400 12px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;color:#B9B4A3;letter-spacing:.16em">ASK ABOUT ANY DISH · ANY LANGUAGE</div></div>
+</div>
+<div style="flex-grow:1;padding:16px;display:flex;flex-direction:column;gap:12px;overflow:hidden">
+<div style="align-self:flex-end;max-width:290px;padding:10px 14px;background:#D4AF5A;color:#0B1626;font:600 15px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;line-height:1.9">သက်သတ်လွတ် စားစရာ ဘတ် ၁၀၀ အောက်မှာ ဘာရှိလဲ</div>
+<div style="align-self:flex-start;max-width:320px;padding:12px 14px;background:#F5ECD6;color:#0B1626;position:relative;box-sizing:border-box;outline:1px solid #7A5C14;outline-offset:-4px"><svg width="12" height="12" viewBox="0 0 14 14" aria-hidden="true" style="position:absolute;top:5px;left:5px" stroke="#7A5C14" stroke-width="1.5" fill="none"><path d="M1 13V1H13"/></svg><svg width="12" height="12" viewBox="0 0 14 14" aria-hidden="true" style="position:absolute;top:5px;right:5px" stroke="#7A5C14" stroke-width="1.5" fill="none"><path d="M1 1H13V13"/></svg><svg width="12" height="12" viewBox="0 0 14 14" aria-hidden="true" style="position:absolute;bottom:5px;left:5px" stroke="#7A5C14" stroke-width="1.5" fill="none"><path d="M1 1V13H13"/></svg><svg width="12" height="12" viewBox="0 0 14 14" aria-hidden="true" style="position:absolute;bottom:5px;right:5px" stroke="#7A5C14" stroke-width="1.5" fill="none"><path d="M13 1V13H1"/></svg><div style="font:400 15px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;line-height:1.9;padding:2px 2px">တိုဟူးနှင့် ဟင်းသီးဟင်းရွက်ကြော် (Vegetable Tofu Stir-fry) ၉၀ ဘတ် ရှိပါတယ်ခင်ဗျာ။ သရက်သီး ကောက်ညှင်းပေါင်း (Mango Sticky Rice) ၁၀၀ ဘတ် ရှိပါတယ်ခင်ဗျာ။</div></div>
+<div style="display:flex;flex-direction:column;gap:8px;align-self:flex-start;width:320px"><div style="display:flex;align-items:center;gap:10px;padding:8px;background:#12233A;outline:1px solid rgba(212,175,90,.55);outline-offset:-3px">
+<div style="width:52px;height:52px;flex-shrink:0;box-sizing:border-box;border:1px solid #D4AF5A;background:repeating-linear-gradient(45deg,#1B3050 0,#1B3050 6px,#12233A 6px,#12233A 12px);display:flex;align-items:flex-end;justify-content:center;font:600 11px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;letter-spacing:.14em;color:#D4AF5A;padding-bottom:4px">PHOTO</div>
+<div style="flex-grow:1;min-width:0"><div style="font:600 14px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;color:#F5ECD6;line-height:1.3">Vegetable Tofu Stir-fry</div><div style="font:600 15px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;color:#D4AF5A">฿90 <span style="display:inline-block;padding:3px 8px;border:1px solid #8FD9C8;color:#8FD9C8;font:600 11px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap">vegan</span></div></div>
+<button type="button" style="height:44px;padding:0 14px;display:flex;align-items:center;gap:6px;background:transparent;border:1px solid #D4AF5A;color:#D4AF5A;font:700 12px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;letter-spacing:.12em;text-transform:uppercase"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" style="display:block;flex-shrink:0" fill="none" stroke="#D4AF5A" stroke-width="1.6" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 12.5l5 5L20 6.5"/></svg>Added</button>
+</div><div style="display:flex;align-items:center;gap:10px;padding:8px;background:#12233A;outline:1px solid rgba(212,175,90,.55);outline-offset:-3px">
+<div style="width:52px;height:52px;flex-shrink:0;box-sizing:border-box;border:1px solid #D4AF5A;background:repeating-linear-gradient(45deg,#1B3050 0,#1B3050 6px,#12233A 6px,#12233A 12px);display:flex;align-items:flex-end;justify-content:center;font:600 11px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;letter-spacing:.14em;color:#D4AF5A;padding-bottom:4px">PHOTO</div>
+<div style="flex-grow:1;min-width:0"><div style="font:600 14px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;color:#F5ECD6;line-height:1.3">Mango Sticky Rice</div><div style="font:600 15px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;color:#D4AF5A">฿100 <span style="display:inline-block;padding:3px 8px;border:1px solid #8FD9C8;color:#8FD9C8;font:600 11px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap">vegan</span></div></div>
+<button type="button" style="height:44px;padding:0 14px;display:flex;align-items:center;gap:6px;background:#D4AF5A;border:1px solid #D4AF5A;color:#0B1626;font:700 12px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;letter-spacing:.12em;text-transform:uppercase"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" style="display:block;flex-shrink:0" fill="none" stroke="#0B1626" stroke-width="1.6" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 5v14M5 12h14"/></svg>Add</button>
+</div></div>
+<div style="align-self:flex-end;max-width:290px;padding:10px 14px;background:#D4AF5A;color:#0B1626;font:600 15px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;line-height:1.5">Does the stir-fry have any allergens?</div>
+<div style="align-self:flex-start;max-width:320px;padding:12px 14px;background:#F5ECD6;color:#0B1626;position:relative;box-sizing:border-box;outline:1px solid #7A5C14;outline-offset:-4px"><svg width="12" height="12" viewBox="0 0 14 14" aria-hidden="true" style="position:absolute;top:5px;left:5px" stroke="#7A5C14" stroke-width="1.5" fill="none"><path d="M1 13V1H13"/></svg><svg width="12" height="12" viewBox="0 0 14 14" aria-hidden="true" style="position:absolute;top:5px;right:5px" stroke="#7A5C14" stroke-width="1.5" fill="none"><path d="M1 1H13V13"/></svg><svg width="12" height="12" viewBox="0 0 14 14" aria-hidden="true" style="position:absolute;bottom:5px;left:5px" stroke="#7A5C14" stroke-width="1.5" fill="none"><path d="M1 1V13H13"/></svg><svg width="12" height="12" viewBox="0 0 14 14" aria-hidden="true" style="position:absolute;bottom:5px;right:5px" stroke="#7A5C14" stroke-width="1.5" fill="none"><path d="M13 1V13H1"/></svg>
+<div style="font:600 12px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;letter-spacing:.18em;color:#7A5C14;margin-bottom:6px">ALLERGENS · VEGETABLE TOFU STIR-FRY</div>
+<div style="display:flex;gap:6px;margin-bottom:8px"><span style="display:inline-block;padding:3px 8px;border:1px solid #7A5C14;color:#7A5C14;font:600 11px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap">Soy</span></div>
+<div style="font:400 15px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;line-height:1.5">Our kitchen may handle other allergens. Please confirm with the staff before ordering.</div></div>
+</div>
+<div style="flex-shrink:0;padding:10px 16px;background:#1B3050;border-top:1px solid #D4AF5A;display:flex;align-items:center;gap:10px;box-sizing:border-box">
+<div style="flex-grow:1"><div style="font:600 12px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;letter-spacing:.16em;color:#EBD592">MY PICKS · 1 DISH</div><div style="font:400 14px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;color:#F5ECD6">Vegetable Tofu Stir-fry · ฿90</div></div>
+<button type="button" style="height:44px;padding:0 16px;background:#D4AF5A;border:0;color:#0B1626;font:700 13px 'Josefin Sans','Noto Sans Thai','Noto Sans Myanmar',sans-serif;letter-spacing:.12em;text-transform:uppercase">Show to waiter</button>
+</div>
+<div style="flex-shrink:0;padding:12px 16px 20px;background:#0B1626;display:flex;gap:8px;box-sizing:border-box">
+<div style="flex-grow:1;height:48px;display:flex;align-items:center;padding:0 14px;border:1px solid #D4AF5A;background:#12233A"><input aria-label="Type your question" placeholder="Type in Thai, Burmese or English" style="width:100%;background:transparent;border:0;outline:0;color:#F5ECD6;font-size:15px;padding:0"></div>
+<button type="button" aria-label="Send" style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:#D4AF5A;border:0;color:#0B1626"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" style="display:block;flex-shrink:0" fill="none" stroke="#0B1626" stroke-width="1.6" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 12L20 4l-4 16-4-6z"/></svg></button>
+<button type="button" aria-label="Call staff" style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid #D4AF5A;color:#D4AF5A"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" style="display:block;flex-shrink:0" fill="none" stroke="#D4AF5A" stroke-width="1.6" stroke-linecap="square" stroke-linejoin="miter"><path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15z"/><path d="M10 21h4"/></svg></button>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+# dependencies and build output
+node_modules/
+.next/
+.npm-cache/
+# local data: database, secrets, uploaded photos
+app/data/*.db
+app/data/*.db-*
+app/data/secret
+app/data/uploads/
+app/public/uploads/*
+!app/public/uploads/.gitkeep
+# local tool settings and scratch
+.claude/
+.env
+.env.*.local
+.DS_Store
+*.log
+__pycache__/
+design/canvas.server.json
+eval/results/full_run.log

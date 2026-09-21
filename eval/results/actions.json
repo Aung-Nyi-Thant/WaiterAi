@@ -1,0 +1,188 @@
+[
+ {
+  "model": "gemma4:12b",
+  "question": "Show me the menu",
+  "raw": "Welcome to Golden Lotus Kitchen! I can show you our full menu of delicious Thai dishes. Please let me know if anything catches your eye or if you have any specific preferences.\n\nACTION: {\"type\":\"show_menu\"}",
+  "action": {
+   "type": "show_menu"
+  },
+  "problems": []
+ },
+ {
+  "model": "gemma4:12b",
+  "question": "I want to order",
+  "raw": "Please let me know which dishes you would like to order from our menu. I can help you select your favorites!\n\nACTION: {\"type\":\"show_menu\"}",
+  "action": {
+   "type": "show_menu"
+  },
+  "problems": []
+ },
+ {
+  "model": "gemma4:12b",
+  "question": "What do you recommend for vegetarians?",
+  "raw": "I recommend the Vegetable Tofu Stir-fry (90 THB), Mango Sticky Rice (100 THB), or Thai Iced Tea (50 THB) for our vegetarian options. Please let me know if you would like to see more details about these dishes!\n\nACTION: {\"type\":\"show_dishes\",\"ids\":[\"veg_stirfry\",\"mango_sticky\",\"thai_tea\"]}",
+  "action": {
+   "type": "show_dishes",
+   "ids": [
+    "veg_stirfry",
+    "mango_sticky",
+    "thai_tea"
+   ]
+  },
+  "problems": []
+ },
+ {
+  "model": "gemma4:12b",
+  "question": "How much is the Massaman?",
+  "raw": "The Beef Massaman Curry is priced at 160 THB.\n\nACTION: {\"type\":\"show_dishes\",\"ids\":[\"massaman\"]}",
+  "action": {
+   "type": "show_dishes",
+   "ids": [
+    "massaman"
+   ]
+  },
+  "problems": []
+ },
+ {
+  "model": "gemma4:12b",
+  "question": "I'll have the chicken fried rice and a Thai iced tea",
+  "raw": "I have added Chicken Fried Rice and Thai Iced Tea to your order.\n\nACTION: {\"type\":\"add_to_picks\",\"ids\":[\"chicken_rice\",\"thai_tea\"]}",
+  "action": {
+   "type": "add_to_picks",
+   "ids": [
+    "chicken_rice",
+    "thai_tea"
+   ]
+  },
+  "problems": []
+ },
+ {
+  "model": "gemma4:12b",
+  "question": "Can I get the bill?",
+  "raw": "I can help you with that. Please wait a moment while I call a staff member to assist you with your bill.\n\nACTION: {\"type\":\"call_staff\"}",
+  "action": {
+   "type": "call_staff"
+  },
+  "problems": []
+ },
+ {
+  "model": "gemma4:12b",
+  "question": "What time do you open?",
+  "raw": "We are open every day from 10:00-22:00 (last order 21:30).\n\nACTION: none",
+  "action": {
+   "type": "none"
+  },
+  "problems": []
+ },
+ {
+  "model": "gemma4:12b",
+  "question": "Do you have pizza?",
+  "raw": "I'm sorry, but the restaurant does not serve pizza. Please let me know if there is anything else I can help you with!\n\nACTION: none",
+  "action": {
+   "type": "none"
+  },
+  "problems": []
+ },
+ {
+  "model": "gemma4:12b",
+  "question": "Can I have the coconut ice cream?",
+  "raw": "I'm sorry, but the Coconut Ice Cream is sold out today. I can suggest the Thai Iced Tea or Mango Sticky Rice instead.\n\nACTION: {\"type\":\"show_dishes\",\"ids\":[\"thai_tea\",\"mango_sticky\"]}",
+  "action": {
+   "type": "show_dishes",
+   "ids": [
+    "thai_tea",
+    "mango_sticky"
+   ]
+  },
+  "problems": []
+ },
+ {
+  "model": "gemma4:12b",
+  "question": "Hello",
+  "raw": "Hello! Welcome to Golden Lotus Kitchen. How can I help you today?\n\nACTION: {\"type\":\"show_menu\"}",
+  "action": {
+   "type": "show_menu"
+  },
+  "problems": [
+   "type show_menu != none"
+  ]
+ },
+ {
+  "model": "gemma4:12b",
+  "question": "ขอดูเมนูหน่อย",
+  "raw": "ยินดีต้อนรับสู่ Golden Lotus Kitchen ครับ คุณสามารถเลือกดูรายการอาหารทั้งหมดได้จากเมนูของเราครับ\n\nACTION: {\"type\":\"show_menu\"}",
+  "action": {
+   "type": "show_menu"
+  },
+  "problems": []
+ },
+ {
+  "model": "gemma4:12b",
+  "question": "ขอสั่งข้าวผัดไก่หนึ่งจาน",
+  "raw": "รับทราบครับ คุณต้องการสั่งเมนู Chicken Fried Rice (ข้าวผัดไก่) จำนวน 1 จานครับ\n\nACTION: {\"type\":\"add_to_picks\",\"ids\":[\"chicken_rice\"]}",
+  "action": {
+   "type": "add_to_picks",
+   "ids": [
+    "chicken_rice"
+   ]
+  },
+  "problems": []
+ },
+ {
+  "model": "gemma4:12b",
+  "question": "เช็คบิลด้วย",
+  "raw": "กรุณารอสักครู่ครับ ผมจะเรียกพนักงานมาดูแลเรื่องการชำระเงินให้ครับ\n\nACTION: {\"type\":\"call_staff\"}",
+  "action": {
+   "type": "call_staff"
+  },
+  "problems": []
+ },
+ {
+  "model": "gemma4:12b",
+  "question": "จอดรถได้ไหม",
+  "raw": "มีที่จอดรถฟรีบริเวณด้านหลังอาคาร จำนวน 20 ที่ครับ\n\nACTION: none",
+  "action": {
+   "type": "none"
+  },
+  "problems": []
+ },
+ {
+  "model": "gemma4:12b",
+  "question": "မီနူး ပြပါ",
+  "raw": "ကျွန်တော်တို့ရဲ့ မီနူးကို ကြည့်ရှုနိုင်ပါတယ်ခင်ဗျာ။ အခုပဲ ရွေးချယ်လိုက်ပါ။\n\nACTION: {\"type\":\"show_menu\"}",
+  "action": {
+   "type": "show_menu"
+  },
+  "problems": []
+ },
+ {
+  "model": "gemma4:12b",
+  "question": "ကြက်သား ထမင်းကြော် တစ်ပွဲ မှာမယ်",
+  "raw": "ကျွန်တော် မှတ်သားထားလိုက်ပြီရှင်ဗျာ။ ကြက်သား ထမင်းကြော်ကို မှာယူပေးပါမယ်။\n\nACTION: {\"type\":\"add_to_picks\",\"ids\":[\"chicken_rice\"]}",
+  "action": {
+   "type": "add_to_picks",
+   "ids": [
+    "chicken_rice"
+   ]
+  },
+  "problems": []
+ },
+ {
+  "model": "gemma4:12b",
+  "question": "ငွေရှင်းမယ်",
+  "raw": "ကျေးဇူးတင်ပါတယ်ရှင်။ ဝန်ထမ်းကို မေးမြန်းပေးပါခင်ဗျာ။\n\nACTION: {\"type\":\"call_staff\"}",
+  "action": {
+   "type": "call_staff"
+  },
+  "problems": []
+ },
+ {
+  "model": "gemma4:12b",
+  "question": "Wi-Fi ရှိလား",
+  "raw": "ဟုတ်ကဲ့၊ Wi-Fi အခမဲ့ရှိပါတယ်ခင်ဗျာ။ လျှို့ဝှက်နံပါတ်အတွက် ဝန်ထမ်းကို မေးမြန်းပေးပါခင်ဗျာ။\n\nACTION: none",
+  "action": {
+   "type": "none"
+  },
+  "problems": []
+ }
+]

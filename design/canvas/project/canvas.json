@@ -1,0 +1,191 @@
+{
+ "v": 3,
+ "attachments": {},
+ "boards": {
+  "Diner-Chat.dc.html": {
+   "h": 844,
+   "page": "deco",
+   "title": "Diner · Chat",
+   "w": 390,
+   "x": 470,
+   "y": 0
+  },
+  "Diner-Menu.dc.html": {
+   "h": 844,
+   "page": "deco",
+   "title": "Diner · Menu",
+   "w": 390,
+   "x": 0,
+   "y": 0
+  },
+  "Glass-Diner-Chat.dc.html": {
+   "h": 844,
+   "page": "glass",
+   "title": "Glass · Diner chat",
+   "w": 390,
+   "x": 470,
+   "y": 0
+  },
+  "Glass-Diner-Menu.dc.html": {
+   "h": 844,
+   "page": "glass",
+   "title": "Glass · Diner menu",
+   "w": 390,
+   "x": 0,
+   "y": 0
+  },
+  "Glass-Owner-Import.dc.html": {
+   "h": 800,
+   "page": "glass",
+   "title": "Glass · Owner import review",
+   "w": 1280,
+   "x": 1360,
+   "y": 1300
+  },
+  "Glass-Owner-Insights.dc.html": {
+   "h": 800,
+   "page": "glass",
+   "title": "Glass · Owner insights",
+   "w": 1280,
+   "x": 2720,
+   "y": 1300
+  },
+  "Glass-Owner-Menu.dc.html": {
+   "h": 800,
+   "page": "glass",
+   "title": "Glass · Owner menu items",
+   "w": 1280,
+   "x": 0,
+   "y": 1300
+  },
+  "Owner-Import.dc.html": {
+   "h": 800,
+   "page": "deco",
+   "title": "Owner · Import review",
+   "w": 1280,
+   "x": 1360,
+   "y": 1300
+  },
+  "Owner-Insights.dc.html": {
+   "h": 800,
+   "page": "deco",
+   "title": "Owner · Insights",
+   "w": 1280,
+   "x": 2720,
+   "y": 1300
+  },
+  "Owner-Menu.dc.html": {
+   "h": 800,
+   "page": "deco",
+   "title": "Owner · Menu items",
+   "w": 1280,
+   "x": 0,
+   "y": 1300
+  },
+  "Waiter-Floor.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Waiter · Floor",
+   "page": "deco"
+  },
+  "Chef-Kitchen.dc.html": {
+   "x": 4080,
+   "y": 1300,
+   "w": 1280,
+   "h": 800,
+   "title": "Chef · Kitchen display",
+   "page": "deco"
+  },
+  "Glass-Waiter-Floor.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Glass · Waiter floor",
+   "page": "glass"
+  },
+  "Glass-Chef-Kitchen.dc.html": {
+   "x": 4080,
+   "y": 1300,
+   "w": 1280,
+   "h": 800,
+   "title": "Glass · Chef kitchen",
+   "page": "glass"
+  }
+ },
+ "createdOnFiles": {
+  "at": "2026-09-21T09:30:40Z",
+  "v": 1
+ },
+ "designSystems": [],
+ "launch": {
+  "view": "canvas"
+ },
+ "notes": {
+  "g1": {
+   "kind": "title1",
+   "maxW": 1330,
+   "page": "glass",
+   "text": "Glass phones: diner and waiter",
+   "w": 240,
+   "x": 0,
+   "y": -300
+  },
+  "g2": {
+   "kind": "title1",
+   "maxW": 5360,
+   "page": "glass",
+   "text": "Glass desktop: owner and kitchen",
+   "w": 240,
+   "x": 0,
+   "y": 1000
+  },
+  "n1": {
+   "kind": "title1",
+   "maxW": 1330,
+   "page": "deco",
+   "text": "Phones: diner and waiter",
+   "w": 240,
+   "x": 0,
+   "y": -300
+  },
+  "n2": {
+   "kind": "title1",
+   "maxW": 5360,
+   "page": "deco",
+   "text": "Desktop: owner and kitchen",
+   "w": 240,
+   "x": 0,
+   "y": 1000
+  }
+ },
+ "order": [
+  "Diner-Menu.dc.html",
+  "Diner-Chat.dc.html",
+  "Owner-Menu.dc.html",
+  "Owner-Import.dc.html",
+  "Owner-Insights.dc.html",
+  "Glass-Diner-Menu.dc.html",
+  "Glass-Diner-Chat.dc.html",
+  "Glass-Owner-Menu.dc.html",
+  "Glass-Owner-Import.dc.html",
+  "Glass-Owner-Insights.dc.html",
+  "Waiter-Floor.dc.html",
+  "Chef-Kitchen.dc.html",
+  "Glass-Waiter-Floor.dc.html",
+  "Glass-Chef-Kitchen.dc.html"
+ ],
+ "pages": [
+  {
+   "id": "deco",
+   "name": "Art Deco"
+  },
+  {
+   "id": "glass",
+   "name": "Glass"
+  }
+ ],
+ "title": "Shop AI UI: Art Deco and Glass"
+}

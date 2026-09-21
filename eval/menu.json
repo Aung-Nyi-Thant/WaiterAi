@@ -1,0 +1,25 @@
+{
+  "restaurant": "Golden Lotus Kitchen",
+  "currency": "THB",
+  "hours": "Open every day 10:00-22:00 (last order 21:30).",
+  "faq": [
+    {"q": "Is there Wi-Fi?", "a": "Yes, free Wi-Fi. Ask staff for the password."},
+    {"q": "Is there parking?", "a": "Free parking behind the building, 20 spaces."},
+    {"q": "Do you give tax invoices?", "a": "Yes, tell staff before paying."}
+  ],
+  "items": [
+    {"id": "pad_thai", "name": {"en": "Shrimp Pad Thai", "th": "ผัดไทยกุ้ง", "my": "ပုစွန် ပတ်ထိုင်း"}, "price": 120, "allergens": ["peanut", "shellfish", "egg", "fish"], "tags": [], "available": true, "ingredients": "rice noodles, shrimp, egg, tamarind, fish sauce, crushed peanuts"},
+    {"id": "green_curry", "name": {"en": "Chicken Green Curry", "th": "แกงเขียวหวานไก่", "my": "ကြက်သား ဂရင်းကာရီ"}, "price": 140, "allergens": ["shellfish"], "tags": ["spicy"], "available": true, "ingredients": "chicken, coconut milk, green curry paste with shrimp paste, Thai basil"},
+    {"id": "tom_yum", "name": {"en": "Tom Yum Goong", "th": "ต้มยำกุ้ง", "my": "တွမ်ယမ်ကွန်း (ပုစွန်ချဉ်စပ်ဟင်းချို)"}, "price": 180, "allergens": ["shellfish", "fish"], "tags": ["spicy"], "available": true, "ingredients": "shrimp, lemongrass, galangal, lime, chili, fish sauce"},
+    {"id": "veg_stirfry", "name": {"en": "Vegetable Tofu Stir-fry", "th": "ผัดผักรวมเต้าหู้", "my": "တိုဟူးနှင့် ဟင်းသီးဟင်းရွက်ကြော်"}, "price": 90, "allergens": ["soy"], "tags": ["vegan", "vegetarian"], "available": true, "ingredients": "tofu, mixed vegetables, soy sauce, garlic"},
+    {"id": "mango_sticky", "name": {"en": "Mango Sticky Rice", "th": "ข้าวเหนียวมะม่วง", "my": "သရက်သီး ကောက်ညှင်းပေါင်း"}, "price": 100, "allergens": [], "tags": ["vegan", "vegetarian"], "available": true, "ingredients": "mango, glutinous rice, coconut milk, sugar"},
+    {"id": "chicken_rice", "name": {"en": "Chicken Fried Rice", "th": "ข้าวผัดไก่", "my": "ကြက်သား ထမင်းကြော်"}, "price": 80, "allergens": ["egg", "soy"], "tags": [], "available": true, "ingredients": "rice, chicken, egg, soy sauce"},
+    {"id": "massaman", "name": {"en": "Beef Massaman Curry", "th": "แกงมัสมั่นเนื้อ", "my": "အမဲသား မတ်စမန်ကာရီ"}, "price": 160, "allergens": ["peanut"], "tags": [], "available": true, "ingredients": "beef, potato, peanuts, coconut milk, massaman paste"},
+    {"id": "som_tam", "name": {"en": "Papaya Salad", "th": "ส้มตำ", "my": "သင်္ဘောသီးသုပ်"}, "price": 70, "allergens": ["peanut", "shellfish"], "tags": ["spicy"], "available": true, "ingredients": "green papaya, chili, lime, peanuts, dried shrimp"},
+    {"id": "spring_rolls", "name": {"en": "Fresh Spring Rolls", "th": "ปอเปี๊ยะสด", "my": "ဟင်းသီးဟင်းရွက် ကော်ပြန့်စိမ်း"}, "price": 85, "allergens": null, "tags": [], "available": true, "ingredients": "rice paper, vegetables, herbs, dipping sauce (recipe not fully recorded)"},
+    {"id": "thai_tea", "name": {"en": "Thai Iced Tea", "th": "ชาไทยเย็น", "my": "ထိုင်းလက်ဖက်ရည်အေး"}, "price": 50, "allergens": ["milk"], "tags": ["vegetarian"], "available": true, "ingredients": "black tea, sugar, evaporated milk, ice"},
+    {"id": "coconut_ice", "name": {"en": "Coconut Ice Cream", "th": "ไอศกรีมกะทิ", "my": "အုန်းနို့ ရေခဲမုန့်"}, "price": 60, "allergens": ["milk"], "tags": ["vegetarian"], "available": false, "ingredients": "coconut milk, cream, sugar"},
+    {"id": "pork_skewers", "name": {"en": "Grilled Pork Skewers", "th": "หมูปิ้ง", "my": "ဝက်သားကင်"}, "price": 60, "allergens": ["soy"], "tags": ["contains_pork"], "available": true, "ingredients": "pork, soy sauce, garlic, coriander root"},
+    {"id": "steamed_fish", "name": {"en": "Steamed Fish with Lime", "th": "ปลานึ่งมะนาว", "my": "ငါးပေါင်း"}, "price": 260, "allergens": ["fish"], "tags": ["spicy"], "available": true, "ingredients": "sea bass, lime, garlic, chili, coriander"}
+  ]
+}

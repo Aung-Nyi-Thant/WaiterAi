@@ -1,0 +1,116 @@
+{
+ "summary": [
+  {
+   "model": "hf.co/aisingapore/Gemma-SEA-LION-v3-9B-IT-GGUF:Q4_K_M",
+   "memory": "6.9 GB",
+   "n": 6,
+   "pass_rate": 0.8333333333333334,
+   "avg_tps": 15.483333333333333,
+   "avg_total_s": 9.666666666666666,
+   "pass_en": 1.0,
+   "pass_th": 1.0,
+   "pass_my": 0.5,
+   "allergen_pass": null
+  }
+ ],
+ "results": [
+  {
+   "model": "hf.co/aisingapore/Gemma-SEA-LION-v3-9B-IT-GGUF:Q4_K_M",
+   "id": "en1",
+   "lang": "en",
+   "category": "recommend_budget",
+   "question": "What's a good vegetarian dish under 100 baht?",
+   "answer": "The Vegetable Tofu Stir-fry is 90 baht and suitable for vegetarians. It contains tofu, mixed vegetables, soy sauce, and garlic.",
+   "pass": true,
+   "lang_ok": true,
+   "problems": [],
+   "tokens_per_s": 15.3,
+   "prompt_tokens": 1601,
+   "prompt_s": 6.96,
+   "output_tokens": 30,
+   "total_s": 9.06
+  },
+  {
+   "model": "hf.co/aisingapore/Gemma-SEA-LION-v3-9B-IT-GGUF:Q4_K_M",
+   "id": "en2",
+   "lang": "en",
+   "category": "price",
+   "question": "How much is the Massaman curry?",
+   "answer": "The Beef Massaman Curry is 160 THB.",
+   "pass": true,
+   "lang_ok": true,
+   "problems": [],
+   "tokens_per_s": 15.9,
+   "prompt_tokens": 1595,
+   "prompt_s": 7.15,
+   "output_tokens": 14,
+   "total_s": 8.15
+  },
+  {
+   "model": "hf.co/aisingapore/Gemma-SEA-LION-v3-9B-IT-GGUF:Q4_K_M",
+   "id": "th1",
+   "lang": "th",
+   "category": "recommend_budget",
+   "question": "มีอาหารมังสวิรัติราคาไม่เกิน 100 บาทไหม",
+   "answer": "มีค่ะ  ข้าวเหนียวมะม่วง ราคา 100 บาท และ ผัดผักรวมเต้าหู้ ราคา 90 บาท เป็นเมนูมังสวิรัติค่ะ",
+   "pass": true,
+   "lang_ok": true,
+   "problems": [],
+   "tokens_per_s": 15.3,
+   "prompt_tokens": 1604,
+   "prompt_s": 7.08,
+   "output_tokens": 42,
+   "total_s": 9.95
+  },
+  {
+   "model": "hf.co/aisingapore/Gemma-SEA-LION-v3-9B-IT-GGUF:Q4_K_M",
+   "id": "th2",
+   "lang": "th",
+   "category": "price",
+   "question": "แกงมัสมั่นเนื้อราคาเท่าไหร่",
+   "answer": "แกงมัสมั่นเนื้อ ราคา 160 THB.",
+   "pass": true,
+   "lang_ok": true,
+   "problems": [],
+   "tokens_per_s": 15.8,
+   "prompt_tokens": 1599,
+   "prompt_s": 7.23,
+   "output_tokens": 16,
+   "total_s": 8.36
+  },
+  {
+   "model": "hf.co/aisingapore/Gemma-SEA-LION-v3-9B-IT-GGUF:Q4_K_M",
+   "id": "my1",
+   "lang": "my",
+   "category": "recommend_budget",
+   "question": "သက်သတ်လွတ် စားစရာ ဘတ် ၁၀၀ အောက်မှာ ဘာရှိလဲ",
+   "answer": "100 THB က နိမ့်မှာ တိုဟူးနှင့် ဟင်းသီးဟင်းရွက်ကြော် (90 THB) ၊  ပုစွန်ချဉ်စပ်ဟင်းချို (70 THB) ရှိပါတယ်။ \n```",
+   "pass": true,
+   "lang_ok": true,
+   "problems": [],
+   "tokens_per_s": 15.0,
+   "prompt_tokens": 1621,
+   "prompt_s": 7.58,
+   "output_tokens": 86,
+   "total_s": 13.44
+  },
+  {
+   "model": "hf.co/aisingapore/Gemma-SEA-LION-v3-9B-IT-GGUF:Q4_K_M",
+   "id": "my2",
+   "lang": "my",
+   "category": "price",
+   "question": "မတ်စမန်ကာရီ ဘယ်လောက်လဲ",
+   "answer": "Beef Massaman Curry သည် 160 THB ဖြစ်သည်။",
+   "pass": false,
+   "lang_ok": false,
+   "problems": [
+    "wrong language (target script 35%)"
+   ],
+   "tokens_per_s": 15.6,
+   "prompt_tokens": 1604,
+   "prompt_s": 7.57,
+   "output_tokens": 21,
+   "total_s": 9.04
+  }
+ ]
+}
