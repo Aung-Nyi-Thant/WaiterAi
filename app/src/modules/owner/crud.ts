@@ -1,5 +1,5 @@
-import { all, get, run } from "./db";
-import { hashPassword } from "./auth";
+import { all, get, run } from "@/modules/platform/db";
+import { hashPassword } from "@/modules/platform/auth";
 
 type Conf = { table: string; fields: string[]; order: string; publicCols?: string };
 export const RESOURCES: Record<string, Conf> = {

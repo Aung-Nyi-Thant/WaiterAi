@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/client";
+import { api } from "@/modules/platform/client";
 
 export default function AuthCard({ mode }: { mode: "login" | "register" }) {
   const router = useRouter();

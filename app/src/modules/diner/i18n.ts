@@ -1,4 +1,4 @@
-import type { Lang } from "./menu";
+import type { Lang } from "@/modules/platform/menu";
 
 // Diner-facing labels. Thai and Burmese are first drafts: have a native speaker review them.
 type Dict = Record<string, string>;

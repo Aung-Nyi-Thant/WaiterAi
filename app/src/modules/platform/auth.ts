@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
-import { get } from "./db";
+import { get } from "@/modules/platform/db";
 
 function secret(): string {
   if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;

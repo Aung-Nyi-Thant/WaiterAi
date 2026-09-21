@@ -1,6 +1,6 @@
 # Team work plan: 5 members, 5 parts
 
-Each member owns one part of Shop AI and does real tasks on it. Every task below is a GitHub Issue: copy the title into a new Issue, assign the member, and label it with the FR it relates to.
+Each member owns one folder in `app/src/modules/` and does real tasks on it. Files in `app/src/app/` are thin wrappers (Next.js needs them there) that re-export the module code, so the work happens inside the module folders. Each module has a README with its file list and a "What I did" section that the member fills in. Every task below is a GitHub Issue: copy the title into a new Issue, assign the member, and label it with the FR it relates to.
 Fill in the names in the first table.
 
 | Member | Name (fill in) | GitHub account | Part |
@@ -12,7 +12,7 @@ Fill in the names in the first table.
 | 5 |  |  | Data, import, QR, insights, tests and docs (FR-6, FR-8, FR-10) |
 
 ## Member 1: Diner web app
-Files: `app/src/app/r/[slug]/`, `app/src/lib/i18n.ts`, `app/src/app/api/public/[slug]/menu`, `.../orders`, `.../calls`
+Folder: `app/src/modules/diner/` (read its README.md first)
 1. Check every Thai and Burmese label in `i18n.ts` with a native speaker and fix the wrong ones.
 2. Test the diner page on 3 different phones and fix layout problems; list them in the Pull Request.
 3. Measure the time the menu takes to load on Wi-Fi with 13 dishes (NFR-2) and write the numbers in `docs/`.
@@ -21,7 +21,7 @@ Files: `app/src/app/r/[slug]/`, `app/src/lib/i18n.ts`, `app/src/app/api/public/[
 6. Add a simple test to `app/scripts/e2e.py` for the picks flow with quantities.
 
 ## Member 2: AI waiter
-Files: `app/src/lib/ai.ts`, `app/src/lib/ollama.ts`, `app/src/app/api/public/[slug]/chat`, `eval/`
+Folder: `app/src/modules/ai/` and `eval/` (read the README.md first)
 1. Add 15 new questions (5 per language) to `eval/questions.json`, including halal and spicy questions, and report the pass rate.
 2. Add a rule for "spicy" questions that lists dishes tagged spicy (Thai, Burmese, English sentences).
 3. Improve the Thai sentences in `ai.ts` with a Thai speaker and add tests for them.
@@ -30,7 +30,7 @@ Files: `app/src/lib/ai.ts`, `app/src/lib/ollama.ts`, `app/src/app/api/public/[sl
 6. Add a "halal" tag question handler (dishes tagged halal) using the same pattern as pork.
 
 ## Member 3: Owner back office
-Files: `app/src/app/owner/menu`, `.../hours`, `.../faq`, `.../ai`, `app/src/app/api/owner/items`, `app/src/lib/crud.ts`
+Folder: `app/src/modules/owner/` (read its README.md first)
 1. Add a "duplicate dish" button on the menu items page.
 2. Add a search box and a "missing allergen data" filter to the menu items table.
 3. Add a bulk action: mark all dishes in a category sold out / on sale.
@@ -39,7 +39,7 @@ Files: `app/src/app/owner/menu`, `.../hours`, `.../faq`, `.../ai`, `app/src/app/
 6. Add tests to `app/scripts/e2e.py` for categories and specials with dates.
 
 ## Member 4: Staff and orders
-Files: `app/src/app/staff/`, `app/src/app/api/staff/`, `app/src/lib/orders.ts`
+Folder: `app/src/modules/staff/` (read its README.md first)
 1. Add a short sound alert on the waiter and chef screens when a new call or ticket arrives.
 2. Add a "recall" button so the chef can move a Ready ticket back to Cooking (server rules and a test).
 3. Show "waiting time" colours on the waiter Picks tab (yellow after 5 minutes, red after 10).
@@ -48,7 +48,7 @@ Files: `app/src/app/staff/`, `app/src/app/api/staff/`, `app/src/lib/orders.ts`
 6. Add tests for the new order rules to `app/scripts/e2e.py`.
 
 ## Member 5: Data, import, QR, insights, tests and docs
-Files: `app/src/lib/db.ts`, `app/src/lib/auth.ts`, `app/src/app/api/owner/import`, `.../qr`, `.../insights`, `app/scripts/`, `docs/`
+Folder: `app/src/modules/platform/`, plus `app/scripts/` and `docs/` (read its README.md first)
 1. Write a step-by-step install guide (Mac and Windows) and test it on a clean computer.
 2. Add a database backup script (`npm run db:backup`) that copies `shop.db` with a date in the file name.
 3. Test photo import with 5 different real menu photos and record accuracy in `docs/` (target 90%).

@@ -29,3 +29,13 @@ With the dev server running: `python3 scripts/e2e.py` (API, roles, orders, impor
 ## How the AI stays safe
 Allergen answers, vegetarian lists, prices, opening hours, sold-out dishes, orders and the bill are built from the database with fixed sentences.
 The language model only answers open questions, and its reply is rejected if it says a dish is "safe", contains a wrong price, or the dish/allergen data is missing.
+
+## Code layout
+```
+src/modules/diner/     Member 1: diner page, labels, public menu/order/call APIs
+src/modules/ai/        Member 2: AI waiter logic and chat API
+src/modules/owner/     Member 3: owner pages, dish and settings APIs
+src/modules/staff/     Member 4: waiter and chef screens, order rules, staff APIs
+src/modules/platform/   Member 5: database, login, import, QR, insights, shared helpers
+src/app/               thin Next.js route and page files that re-export the modules
+```

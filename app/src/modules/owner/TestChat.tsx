@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import Icon from "./Icon";
-import { api } from "@/lib/client";
+import Icon from "@/modules/platform/Icon";
+import { api } from "@/modules/platform/client";
 
 type M = { role: "user" | "ai"; text: string; note?: string };
 export default function TestChat({ slug }: { slug: string }) {

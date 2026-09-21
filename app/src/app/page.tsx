@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { all } from "@/lib/db";
+import { all } from "@/modules/platform/db";
 
 export const dynamic = "force-dynamic";
 

@@ -1,6 +1,6 @@
-import { all, get } from "./db";
+import { all, get } from "@/modules/platform/db";
 
-export { ALLERGENS, TAGS } from "./constants";
+export { ALLERGENS, TAGS } from "@/modules/platform/constants";
 
 export type Lang = "en" | "th" | "my";
 export type Item = {

@@ -2,10 +2,10 @@
 import Link from "next/link";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import Icon from "./Icon";
-import TestChat from "./TestChat";
-import { api } from "@/lib/client";
-import type { Restaurant } from "@/lib/menu";
+import Icon from "@/modules/platform/Icon";
+import TestChat from "@/modules/owner/TestChat";
+import { api } from "@/modules/platform/client";
+import type { Restaurant } from "@/modules/platform/menu";
 
 type Ctx = { restaurant: Restaurant; chatsUsed: number; refresh: () => void; toast: (m: string) => void };
 const OwnerCtx = createContext<Ctx>(null as any);

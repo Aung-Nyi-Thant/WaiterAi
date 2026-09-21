@@ -1,3 +1,1 @@
-import { clearCookies } from "@/lib/auth";
-import { json } from "@/lib/http";
-export async function POST() { await clearCookies(); return json({ ok: true }); }
+export { POST } from "@/modules/platform/api/logout";

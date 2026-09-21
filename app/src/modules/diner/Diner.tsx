@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
-import Icon from "@/components/Icon";
-import { api } from "@/lib/client";
-import { tr, priceLabel } from "@/lib/i18n";
-import type { Item, Category, Lang } from "@/lib/menu";
+import Icon from "@/modules/platform/Icon";
+import { api } from "@/modules/platform/client";
+import { tr, priceLabel } from "@/modules/diner/i18n";
+import type { Item, Category, Lang } from "@/modules/platform/menu";
 
 type Menu = { restaurant: { name: string; city: string; currency: string; hours: any; persona: { name: string; gender: string; greeting: string } }; categories: Category[]; items: Item[]; specials: { id: number; title: string; text: string }[] };
 type Msg = { id: string; role: "user" | "assistant"; text: string; dishes?: Item[]; topic?: string; messageId?: number; rated?: number };

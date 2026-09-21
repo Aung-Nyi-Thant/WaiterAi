@@ -1,1 +1,1 @@
-import AuthCard from "@/components/AuthCard"; export default function Page() { return <AuthCard mode="register" />; }
+import AuthCard from "@/modules/platform/AuthCard"; export default function Page() { return <AuthCard mode="register" />; }

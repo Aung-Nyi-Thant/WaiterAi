@@ -1,8 +1,8 @@
 // The AI waiter. Safety-critical answers (allergens, vegetarian lists, prices, hours, sold-out dishes,
 // order/bill requests) are built from the database with fixed sentences. The language model only handles
 // open questions (recommendations, FAQs, greetings), and its output is checked before it is shown.
-import type { Item, Lang, Restaurant } from "./menu";
-import { ALLERGEN_LABEL } from "./constants";
+import type { Item, Lang, Restaurant } from "@/modules/platform/menu";
+import { ALLERGEN_LABEL } from "@/modules/platform/constants";
 
 export type Action = { type: "none" | "show_menu" | "show_dishes" | "add_to_picks" | "call_staff"; ids?: number[]; kind?: string; qty?: Record<number, number> };
 export type ChatResult = { reply: string; action: Action; topic: string; allergens: string[]; answered: boolean; usedModel: boolean };
