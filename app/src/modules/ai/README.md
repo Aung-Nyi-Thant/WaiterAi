@@ -1,5 +1,5 @@
 # Module 2: AI waiter
-Owner: Member 2 · Requirements: FR-2 (safe AI waiter chat)
+Owner: Member 2 (Aung-Nyi-Thant, who also owns the backend core in `platform/`) · Requirements: FR-2 (safe AI waiter chat)
 
 What it does: answers diners' questions in Thai, Burmese and English. Safety-critical answers (allergens, vegetarian lists, prices, hours, sold-out dishes, orders, the bill, rule-change attempts) are built from the database with fixed sentences. Only open questions go to the language model, and its reply is checked before it is shown.
 

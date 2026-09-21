@@ -6,12 +6,12 @@ Fill in the names in the first table.
 | Member | Name | GitHub account | Part |
 |---|---|---|---|
 | 1 | (fill in) | Tharathon47 | Diner web app (FR-1, FR-3 diner side) |
-| 2 | (fill in) | chawakron50-lab | AI waiter (FR-2) |
-| 3 | (fill in) | noeysasi | Owner back office (FR-5, FR-7) |
+| 2 | Aung Nyi Thant | Aung-Nyi-Thant | AI waiter and backend core (FR-2, backend of FR-5, FR-6, FR-9) |
+| 3 | (fill in) | chawakron50-lab | Owner back office (FR-5, FR-7) |
 | 4 | Natthanon Wongsai | wujieiei | Staff and orders (FR-4, FR-9) |
-| 5 | Aung Nyi Thant | Aung-Nyi-Thant | Data, import, QR, insights, tests and docs (FR-6, FR-8, FR-10) |
+| 5 | (fill in) | noeysasi | QR codes, insights, import screen, tests and docs (FR-6, FR-8, FR-10) |
 
-The assignment above was a first proposal. Swap parts if the team agrees, and update this table and the Issue assignees.
+The parts were reassigned on request: Member 2 now takes the AI waiter and the backend core; Member 5 takes QR, insights, the import screen, tests and docs. Swap parts if the team agrees, and update this table and the Issue assignees.
 
 ## Member 1: Diner web app
 Folder: `app/src/modules/diner/` (read its README.md first)
@@ -22,14 +22,18 @@ Folder: `app/src/modules/diner/` (read its README.md first)
 5. Add an order confirmation message that shows the table number and the dishes sent.
 6. Add a simple test to `app/scripts/e2e.py` for the picks flow with quantities.
 
-## Member 2: AI waiter
-Folder: `app/src/modules/ai/` and `eval/` (read the README.md first)
+## Member 2: AI waiter and backend core
+Folders: `app/src/modules/ai/`, `eval/`, and the backend core in `app/src/modules/platform/` (`db.ts`, `auth.ts`, `http.ts`, `menu.ts`, `constants.ts`, `api/register`, `login`, `logout`, `ownerMe`, `upload`, `uploadsServe`, `import*`). Read both READMEs first.
 1. Add 15 new questions (5 per language) to `eval/questions.json`, including halal and spicy questions, and report the pass rate.
 2. Add a rule for "spicy" questions that lists dishes tagged spicy (Thai, Burmese, English sentences).
 3. Improve the Thai sentences in `ai.ts` with a Thai speaker and add tests for them.
 4. Measure the AI answer time for 100 open questions and write the result for NFR-1.
 5. Add a test that the model reply is replaced when it contains a wrong price or the word "safe".
 6. Add a "halal" tag question handler (dishes tagged halal) using the same pattern as pork.
+7. Add a database backup script (`npm run db:backup`) that copies `shop.db` with a date in the file name.
+8. Add rate limiting: at most 10 failed logins per minute per address, and at most 20 chat messages per minute per session.
+9. Add security tests to `app/scripts/e2e.py`: a staff cookie cannot call owner APIs, an owner cookie cannot call staff APIs, and a diner cannot read orders.
+10. Keep `docs/SRS_Shop_AI.md` and the traceability matrix in sync with the code, and prepare the final integration check before the demo.
 
 ## Member 3: Owner back office
 Folder: `app/src/modules/owner/` (read its README.md first)
@@ -49,14 +53,14 @@ Folder: `app/src/modules/staff/` (read its README.md first)
 5. Make the Tables tab show the number of open calls and dishes per table.
 6. Add tests for the new order rules to `app/scripts/e2e.py`.
 
-## Member 5: Data, import, QR, insights, tests and docs
-Folder: `app/src/modules/platform/`, plus `app/scripts/` and `docs/` (read its README.md first)
+## Member 5: QR codes, insights, import screen, tests and docs
+Folders: `app/src/modules/platform/` files `QrPage.tsx`, `InsightsPage.tsx`, `ImportPage.tsx`, `api/qr.ts`, `api/lan.ts`, `api/insights.ts`; plus `app/scripts/` and `docs/`. Read the platform README first.
 1. Write a step-by-step install guide (Mac and Windows) and test it on a clean computer.
-2. Add a database backup script (`npm run db:backup`) that copies `shop.db` with a date in the file name.
-3. Test photo import with 5 different real menu photos and record accuracy in `docs/` (target 90%).
-4. Add an "export insights to CSV" button.
-5. Add a QR page option to print a table-tent layout (QR + restaurant name).
-6. Keep `docs/SRS_Shop_AI.md` and the traceability matrix in sync with the code and add screenshots.
+2. Test photo import with 5 different real menu photos and record accuracy in `docs/` (target 90%).
+3. Add an "export insights to CSV" button.
+4. Add a QR page option to print a table-tent layout (QR + restaurant name).
+5. Add tests to `app/scripts/e2e.py` for the QR endpoint and the insights periods (1, 7, 30 days).
+6. Take screenshots of every page (phone and desktop) and add them to `docs/screenshots/` for the SRS.
 
 ## Everyone
 - Review at least 2 Pull Requests from other members.
