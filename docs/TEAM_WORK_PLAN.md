@@ -3,13 +3,15 @@
 Each member owns one folder in `app/src/modules/` and does real tasks on it. Files in `app/src/app/` are thin wrappers (Next.js needs them there) that re-export the module code, so the work happens inside the module folders. Each module has a README with its file list and a "What I did" section that the member fills in. Every task below is a GitHub Issue: copy the title into a new Issue, assign the member, and label it with the FR it relates to.
 Fill in the names in the first table.
 
-| Member | Name (fill in) | GitHub account | Part |
+| Member | Name | GitHub account | Part |
 |---|---|---|---|
-| 1 |  |  | Diner web app (FR-1, FR-3 diner side) |
-| 2 |  |  | AI waiter (FR-2) |
-| 3 |  |  | Owner back office (FR-5, FR-7) |
-| 4 |  |  | Staff and orders (FR-4, FR-9) |
-| 5 |  |  | Data, import, QR, insights, tests and docs (FR-6, FR-8, FR-10) |
+| 1 | (fill in) | Tharathon47 | Diner web app (FR-1, FR-3 diner side) |
+| 2 | (fill in) | chawakron50-lab | AI waiter (FR-2) |
+| 3 | (fill in) | noeysasi | Owner back office (FR-5, FR-7) |
+| 4 | Natthanon Wongsai | wujieiei | Staff and orders (FR-4, FR-9) |
+| 5 | Aung Nyi Thant | Aung-Nyi-Thant | Data, import, QR, insights, tests and docs (FR-6, FR-8, FR-10) |
+
+The assignment above was a first proposal. Swap parts if the team agrees, and update this table and the Issue assignees.
 
 ## Member 1: Diner web app
 Folder: `app/src/modules/diner/` (read its README.md first)
