@@ -2,11 +2,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Icon from "@/modules/platform/Icon";
 import { api } from "@/modules/platform/client";
-import { tr, priceLabel } from "@/modules/diner/i18n";
+import { tr, priceLabel, chatLineHeight } from "@/modules/diner/i18n";
 import type { Item, Category, Lang } from "@/modules/platform/menu";
 
 type Menu = { restaurant: { name: string; city: string; currency: string; hours: any; persona: { name: string; gender: string; greeting: string } }; categories: Category[]; items: Item[]; specials: { id: number; title: string; text: string }[] };
-type Msg = { id: string; role: "user" | "assistant"; text: string; dishes?: Item[]; topic?: string; messageId?: number; rated?: number };
+type Msg = { id: string; role: "user" | "assistant"; text: string; dishes?: Item[]; topic?: string; messageId?: number; rated?: number; answered?: boolean };
 type Pick = { id: number; qty: number };
 
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -20,6 +20,8 @@ export default function Diner({ slug }: { slug: string }) {
   const [cat, setCat] = useState<number | 0>(0);
   const [q, setQ] = useState("");
   const [f, setF] = useState({ veg: false, noPeanut: false, u100: false, spicy: false });
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const activeFilterCount = Object.values(f).filter(Boolean).length;
   const [picks, setPicks] = useState<Pick[]>([]);
   const [detail, setDetail] = useState<Item | null>(null);
   const [picksOpen, setPicksOpen] = useState(false);
@@ -45,6 +47,8 @@ export default function Diner({ slug }: { slug: string }) {
       });
   }, [slug]);
   useEffect(() => { localStorage.setItem(`picks:${slug}`, JSON.stringify(picks)); }, [picks, slug]);
+  // WCAG 3.1.1: the page's language attribute must match what is actually on screen, not just React state.
+  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
 
   // keep sold-out state fresh
   useEffect(() => {
@@ -105,14 +109,23 @@ export default function Diner({ slug }: { slug: string }) {
           <Icon name="search" />
           <input aria-label={t("search")} value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("search")} style={{ flex: 1, background: "transparent", border: 0, outline: 0, color: "#fff", padding: 0 }} />
         </div>
-        <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 0 4px" }}>
-          <button className={`pill ${!cat ? "on" : ""}`} onClick={() => setCat(0)}>{t("all")}</button>
-          {menu.categories.map((c) => <button key={c.id} className={`pill ${cat === c.id ? "on" : ""}`} onClick={() => setCat(c.id)}>{c.name[lang]}</button>)}
-        </div>
-        <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "4px 0 12px" }}>
-          {([["veg", "vegetarian"], ["noPeanut", "noPeanuts"], ["u100", "under100"], ["spicy", "spicy"]] as const).map(([k, label]) => (
-            <button key={k} className={`pill ${f[k] ? "on" : ""}`} aria-pressed={f[k]} onClick={() => setF({ ...f, [k]: !f[k] })}>{t(label)}</button>
-          ))}
+        {/* Category access stays reachable while scrolling a long menu; the less-used dietary filters
+            collapse behind a toggle so they don't permanently take up space on a 390px phone. */}
+        <div style={{ position: "sticky", top: 0, zIndex: 5, margin: "0 -16px", padding: "10px 16px 4px", background: "linear-gradient(to bottom, rgba(14,16,48,.96) 75%, rgba(14,16,48,.75))", backdropFilter: "blur(6px)" }}>
+          <div style={{ display: "flex", gap: 8, overflowX: "auto" }}>
+            <button className={`pill ${!cat ? "on" : ""}`} onClick={() => setCat(0)}>{t("all")}</button>
+            {menu.categories.map((c) => <button key={c.id} className={`pill ${cat === c.id ? "on" : ""}`} onClick={() => setCat(c.id)}>{c.name[lang]}</button>)}
+            <button className={`pill ${filtersOpen ? "on" : ""}`} aria-expanded={filtersOpen} aria-controls="diner-filters" onClick={() => setFiltersOpen((v) => !v)}>
+              <Icon name="filter" size={14} />{t("filters")}{activeFilterCount > 0 ? ` · ${activeFilterCount}` : ""}
+            </button>
+          </div>
+          {filtersOpen && (
+            <div id="diner-filters" style={{ display: "flex", gap: 8, overflowX: "auto", padding: "8px 0 2px" }}>
+              {([["veg", "vegetarian"], ["noPeanut", "noPeanuts"], ["u100", "under100"], ["spicy", "spicy"]] as const).map(([k, label]) => (
+                <button key={k} className={`pill ${f[k] ? "on" : ""}`} aria-pressed={f[k]} onClick={() => setF({ ...f, [k]: !f[k] })}>{t(label)}</button>
+              ))}
+            </div>
+          )}
         </div>
 
         {menu.specials.length > 0 && <div className="gd r-l" style={{ padding: "12px 16px", marginBottom: 12 }}><div className="eyebrow chip-y" style={{ color: "var(--gold)" }}>{t("specials")}</div><div style={{ fontWeight: 700 }}>{menu.specials[0].title}</div>{menu.specials[0].text && <div className="soft-d">{menu.specials[0].text}</div>}</div>}
@@ -218,23 +231,52 @@ function Detail({ item, lang, t, onClose, onAdd, onAsk }: { item: Item; lang: La
   );
 }
 
+// After this many consecutive replies the AI could not answer from the restaurant's own data, the
+// chat proactively offers to call staff instead of waiting for the diner to notice the bell icon.
+const ESCALATE_AFTER_MISSES = 2;
+const REASON_KEYS = { wrong: "reasonWrong", confused: "reasonConfused", allergen: "reasonAllergen" } as const;
+
 function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, say, picksCount, sendPicks, callStaff }: any) {
   const persona = menu.restaurant.persona;
   const [msgs, setMsgs] = useState<Msg[]>([{ id: "hello", role: "assistant", text: persona.greeting || t("hello") }]);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
+  const [missCount, setMissCount] = useState(0);
+  const [escalate, setEscalate] = useState(false);
+  const [reasonFor, setReasonFor] = useState<string | null>(null);
   const end = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previouslyFocused = useRef<HTMLElement | null>(null);
   useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, busy]);
+
+  // W3C WAI-ARIA dialog pattern: move focus into the dialog on open, and back to whatever the diner
+  // was on (the "Ask the waiter" button, a dish's "Ask about this dish" button, etc.) on close.
+  useEffect(() => {
+    previouslyFocused.current = document.activeElement as HTMLElement;
+    dialogRef.current?.focus();
+    return () => previouslyFocused.current?.focus?.();
+  }, []);
+  function onDialogKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "Escape") { onClose(); return; }
+    if (e.key !== "Tab" || !dialogRef.current) return;
+    const nodes = Array.from(dialogRef.current.querySelectorAll<HTMLElement>('button:not(:disabled), [href], input, textarea, [tabindex]:not([tabindex="-1"])'));
+    if (!nodes.length) return;
+    const first = nodes[0], last = nodes[nodes.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
 
   async function send(message: string) {
     message = message.trim();
     if (!message || busy) return;
-    setText("");
+    setText(""); setReasonFor(null);
     setMsgs((m) => [...m, { id: uid(), role: "user", text: message }]);
     setBusy(true);
     try {
       const r = await api<any>(`/api/public/${slug}/chat`, { body: { message, sessionId, table, lang } });
-      setMsgs((m) => [...m, { id: uid(), role: "assistant", text: r.reply, dishes: r.dishes, topic: r.action?.type === "show_dishes" ? "dishes" : undefined, messageId: r.messageId }]);
+      const answered = r.answered !== false;
+      setMsgs((m) => [...m, { id: uid(), role: "assistant", text: r.reply, dishes: r.dishes, topic: r.action?.type === "show_dishes" ? "dishes" : undefined, messageId: r.messageId, answered }]);
+      setMissCount((n) => { const next = answered ? 0 : n + 1; setEscalate(next >= ESCALATE_AFTER_MISSES); return next; });
       const a = r.action || {};
       if (a.type === "add_to_picks") (a.ids || []).forEach((id: number) => addPick(id, a.qty?.[id] || 1));
       if (a.type === "show_menu") setTimeout(onClose, 900);
@@ -247,15 +289,23 @@ function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, say, pi
     window.addEventListener("ask", h);
     return () => window.removeEventListener("ask", h);
   });
-  async function rate(m: Msg, v: number) {
-    setMsgs((x) => x.map((y) => (y.id === m.id ? { ...y, rated: v } : y)));
-    if (m.messageId) api(`/api/public/${slug}/feedback`, { body: { messageId: m.messageId, value: v } }).then(() => say(t("thanks"))).catch(() => {});
+  async function rateUp(m: Msg) {
+    setMsgs((x) => x.map((y) => (y.id === m.id ? { ...y, rated: 1 } : y)));
+    if (m.messageId) api(`/api/public/${slug}/feedback`, { body: { messageId: m.messageId, value: 1 } }).then(() => say(t("thanks"))).catch(() => {});
+  }
+  async function submitReason(m: Msg, reason: keyof typeof REASON_KEYS) {
+    setReasonFor(null);
+    setMsgs((x) => x.map((y) => (y.id === m.id ? { ...y, rated: -1 } : y)));
+    if (m.messageId) api(`/api/public/${slug}/feedback`, { body: { messageId: m.messageId, value: -1, reason } }).then(() => say(t("thanks"))).catch(() => {});
   }
   const byId = new Map<number, Item>(menu.items.map((i: Item) => [i.id, i]));
+  const last = msgs[msgs.length - 1];
+  const lastQuestion = [...msgs].reverse().find((m) => m.role === "user")?.text.toLowerCase();
+  const followUps = !busy && last?.role === "assistant" ? [t("chips1"), t("chips2"), t("chips3")].filter((c) => c.toLowerCase() !== lastQuestion) : [];
 
   return (
-    <div className="chat-sheet aurora-d">
-      <div className="chat-inner">
+    <div className="chat-sheet aurora-d" onKeyDown={onDialogKeyDown}>
+      <div className="chat-inner" ref={dialogRef} role="dialog" aria-modal="true" aria-label={persona.name || t("theWaiter")} tabIndex={-1}>
         <div style={{ padding: "14px 14px 0" }}>
           <div className="gd row" style={{ height: 68, borderRadius: 34, padding: "0 12px", gap: 12 }}>
             <button className="btn btn-o btn-icon" style={{ borderRadius: "50%" }} onClick={onClose} aria-label={t("back")}><Icon name="back" /></button>
@@ -263,10 +313,10 @@ function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, say, pi
             <button className="btn btn-o btn-icon" style={{ borderRadius: "50%" }} onClick={callStaff} aria-label={t("callStaff")}><Icon name="bell" /></button>
           </div>
         </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ flex: 1, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 12 }} role="log" aria-live="polite" aria-atomic="false">
           {msgs.map((m) => (
             <div key={m.id} style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: m.role === "user" ? "flex-end" : "flex-start" }}>
-              <div className={m.role === "user" ? "bubble-u" : "bubble-a gd"} style={{ lineHeight: lang === "my" ? 1.9 : 1.5 }}>{m.text}</div>
+              <div className={m.role === "user" ? "bubble-u" : "bubble-a gd"} style={{ lineHeight: chatLineHeight(lang) }}>{m.text}</div>
               {m.dishes && m.dishes.length > 0 && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%", maxWidth: 330 }}>
                   {m.dishes.map((d) => { const cur = byId.get(d.id) || d; return (
@@ -278,17 +328,38 @@ function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, say, pi
                 </div>
               )}
               {m.role === "assistant" && m.messageId && (
-                <div className="row" style={{ gap: 6 }}>
-                  <button className="btn btn-o btn-icon btn-sm" style={{ width: 36, opacity: m.rated === 1 ? 1 : 0.6 }} aria-label={t("helpful")} onClick={() => rate(m, 1)}><Icon name="thumbUp" size={16} /></button>
-                  <button className="btn btn-o btn-icon btn-sm" style={{ width: 36, opacity: m.rated === -1 ? 1 : 0.6 }} aria-label={t("notHelpful")} onClick={() => rate(m, -1)}><Icon name="thumbDown" size={16} /></button>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-start" }}>
+                  <div className="row" style={{ gap: 6 }}>
+                    <button className="btn btn-o btn-icon btn-sm" style={{ width: 36, opacity: m.rated === 1 ? 1 : 0.6 }} aria-label={t("helpful")} aria-pressed={m.rated === 1} onClick={() => rateUp(m)}><Icon name="thumbUp" size={16} /></button>
+                    <button className="btn btn-o btn-icon btn-sm" style={{ width: 36, opacity: m.rated === -1 ? 1 : 0.6 }} aria-label={t("notHelpful")} aria-pressed={m.rated === -1} onClick={() => setReasonFor(reasonFor === m.id ? null : m.id)}><Icon name="thumbDown" size={16} /></button>
+                  </div>
+                  {reasonFor === m.id && (
+                    <div role="group" aria-label={t("reasonPrompt")} style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      {(Object.keys(REASON_KEYS) as (keyof typeof REASON_KEYS)[]).map((r) => (
+                        <button key={r} className="pill" style={{ minHeight: 32, fontSize: 12 }} onClick={() => submitReason(m, r)}>{t(REASON_KEYS[r])}</button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           ))}
-          {busy && <div className="bubble-a gd dots"><span /><span /><span /></div>}
-          {msgs.length === 1 && (
+          {busy && (
+            <div className="bubble-a gd" role="status" aria-live="polite" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span className="dots" aria-hidden="true"><span /><span /><span /></span>
+              <span>{t("thinking")}</span>
+            </div>
+          )}
+          {escalate && (
+            <div className="gd r-l" role="status" aria-live="polite" style={{ padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+              <Icon name="alert" />
+              <div style={{ flex: 1, fontSize: 14 }}>{t("escalate")}</div>
+              <button className="btn btn-w btn-sm" onClick={() => { callStaff(); setEscalate(false); }}>{t("escalateCall")}</button>
+            </div>
+          )}
+          {followUps.length > 0 && (
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {[t("chips1"), t("chips2"), t("chips3")].map((c) => <button key={c} className="pill" onClick={() => send(c)}>{c}</button>)}
+              {followUps.map((c) => <button key={c} className="pill" onClick={() => send(c)}>{c}</button>)}
             </div>
           )}
           <div ref={end} />

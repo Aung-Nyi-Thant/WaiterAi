@@ -88,6 +88,7 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   answered INTEGER NOT NULL DEFAULT 1,
   flagged INTEGER NOT NULL DEFAULT 0,
   feedback INTEGER NOT NULL DEFAULT 0,
+  feedback_reason TEXT NOT NULL DEFAULT '',
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE TABLE IF NOT EXISTS orders (
@@ -141,6 +142,8 @@ function open(): DB {
   const database = new DatabaseSync(path.join(dir, "shop.db"));
   database.exec("PRAGMA busy_timeout = 10000");   // several server processes may start at once
   database.exec(SCHEMA);
+  // migration for databases created before feedback_reason existed; SQLite has no "ADD COLUMN IF NOT EXISTS"
+  try { database.exec("ALTER TABLE chat_messages ADD COLUMN feedback_reason TEXT NOT NULL DEFAULT ''"); } catch {}
   try { seedIfEmpty(database); } catch (e: any) { if (!/UNIQUE|locked|busy/i.test(String(e?.message))) throw e; }
   return database;
 }

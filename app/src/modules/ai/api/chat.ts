@@ -40,5 +40,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
     if (result.action.type === "call_staff") run("INSERT INTO calls (restaurant_id, table_no, kind) VALUES (?,?,?)", r.id, table, result.action.kind || "help");
   }
   const ids = result.action.ids || [];
-  return json({ sessionId, messageId, reply: result.reply, action: result.action, dishes: items.filter((i) => ids.includes(i.id)), lang });
+  // "answered" lets the diner UI notice two unhelpful replies in a row and offer to call staff
+  // proactively, instead of only reacting if the diner happens to spot the bell icon themselves.
+  return json({ sessionId, messageId, reply: result.reply, action: result.action, dishes: items.filter((i) => ids.includes(i.id)), lang, answered: result.answered });
 }

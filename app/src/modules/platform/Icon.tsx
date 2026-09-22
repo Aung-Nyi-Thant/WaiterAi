@@ -14,6 +14,7 @@ const P: Record<string, React.ReactNode> = {
   thumbUp: <path d="M7 11v9H4v-9h3zM7 11l4-7c1.5 0 2.5 1 2.2 2.6L12.8 9H19a2 2 0 0 1 2 2.4l-1.3 6.4A2 2 0 0 1 17.8 19H7" />,
   thumbDown: <path d="M7 13V4H4v9h3zM7 13l4 7c1.5 0 2.5-1 2.2-2.6L12.8 15H19a2 2 0 0 0 2-2.4L19.7 6.2A2 2 0 0 0 17.8 5H7" />,
   logout: <path d="M10 5H5v14h5M14 8l4 4-4 4M18 12H9" />, eye: <><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></>,
+  filter: <><path d="M4 6h16" /><path d="M7 12h10" /><path d="M10 18h4" /></>,
 };
 export default function Icon({ name, size = 20, color = "currentColor" }: { name: string; size?: number; color?: string }) {
   return (
