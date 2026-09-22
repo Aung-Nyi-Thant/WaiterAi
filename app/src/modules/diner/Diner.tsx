@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Icon from "@/modules/platform/Icon";
-import WaiterMascot from "@/modules/diner/WaiterMascot";
 import { api } from "@/modules/platform/client";
 import { tr, priceLabel, chatLineHeight } from "@/modules/diner/i18n";
 import type { Item, Category, Lang } from "@/modules/platform/menu";
@@ -80,6 +79,12 @@ export default function Diner({ slug }: { slug: string }) {
   async function callStaff() {
     try { await api(`/api/public/${slug}/calls`, { body: { table, kind: "help" } }); say(t("staffCalled")); } catch (e: any) { say(e.message); }
   }
+  // Opens the chat and immediately asks it a question, reusing the same "ask" event
+  // the dish Detail modal already dispatches for its "Ask about this dish" button.
+  const askQuick = (question: string) => {
+    setChatOpen(true);
+    setTimeout(() => window.dispatchEvent(new CustomEvent("ask", { detail: question })), 50);
+  };
   async function sendPicks() {
     try {
       await api(`/api/public/${slug}/orders`, { body: { table, lang, sessionId, items: valid } });
@@ -105,6 +110,20 @@ export default function Diner({ slug }: { slug: string }) {
           </div>
         </header>
         {offline && <div className="gd r-m soft-d" style={{ marginTop: 12, padding: "8px 14px", fontSize: 13 }}>{t("offline")}</div>}
+
+        <div className="gd r-xl hero-glow" style={{ marginTop: 16, padding: 16, border: "1px solid rgba(234,181,79,.5)", background: "linear-gradient(135deg, rgba(234,181,79,.16), rgba(110,86,255,.16))" }}>
+          <div className="eyebrow" style={{ color: "var(--gold)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>✨ {t("heroEyebrow")}</div>
+          <button onClick={() => setChatOpen(true)} aria-label={t("askWaiter")} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.22)", borderRadius: 16, padding: "11px 13px", textAlign: "left", color: "#fff" }}>
+            <Icon name="bot" size={20} />
+            <span style={{ flex: 1, fontSize: 13.5, color: "#e3e0f7" }}>{t("heroPlaceholder")}</span>
+            <span style={{ color: "var(--gold)", fontSize: 17 }} aria-hidden="true">→</span>
+          </button>
+          <div style={{ display: "flex", gap: 8, marginTop: 10, overflowX: "auto" }}>
+            <button className="pill" onClick={() => askQuick(t("heroChip1"))}>🌶 {t("heroChip1")}</button>
+            <button className="pill" onClick={() => askQuick(t("heroChip2"))}>🌱 {t("heroChip2")}</button>
+            <button className="pill" onClick={() => askQuick(t("heroChip3"))}>🎲 {t("heroChip3")}</button>
+          </div>
+        </div>
 
         <div className="gd row" style={{ marginTop: 16, height: 52, padding: "0 18px", borderRadius: 26, gap: 10 }}>
           <Icon name="search" />
@@ -148,9 +167,10 @@ export default function Diner({ slug }: { slug: string }) {
               <button className="btn btn-w" onClick={sendPicks}>{t("showToWaiter")}</button>
             </div>
           )}
-          <div className="gd" style={{ borderRadius: 36, height: 72, display: "flex", alignItems: "center", gap: 10, padding: "0 10px" }}>
-            <WaiterMascot onOpen={() => setChatOpen(true)} label={t("askWaiter")} />
-            <button className="btn btn-o btn-icon" style={{ width: 52, height: 52, minHeight: 52 }} aria-label={t("callStaff")} onClick={callStaff}><Icon name="bell" size={22} /></button>
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <button className="btn btn-w" style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 18px", height: 52, borderRadius: 26 }} onClick={callStaff}>
+              <Icon name="serviceBell" size={20} />{t("callStaff")}
+            </button>
           </div>
         </div>
       </div>
@@ -251,7 +271,7 @@ function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, say, pi
   useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, busy]);
 
   // W3C WAI-ARIA dialog pattern: move focus into the dialog on open, and back to whatever the diner
-  // was on (the "Ask the waiter" button, a dish's "Ask about this dish" button, etc.) on close.
+  // was on (the hero "Ask AI" card, a dish's "Ask about this dish" button, etc.) on close.
   useEffect(() => {
     previouslyFocused.current = document.activeElement as HTMLElement;
     dialogRef.current?.focus();
