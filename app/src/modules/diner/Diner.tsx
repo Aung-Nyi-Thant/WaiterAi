@@ -27,7 +27,11 @@ export default function Diner({ slug }: { slug: string }) {
   const [picksOpen, setPicksOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [toast, setToast] = useState("");
-  const [sessionId] = useState(() => uid());
+  const [sessionId, setSessionId] = useState(() => uid());
+  // Chat history lives here, one level up from the Chat component, so closing the chat sheet
+  // (chatOpen -> false) unmounts Chat but does not lose the conversation: reopening it remounts
+  // Chat with these same messages passed back in as a prop.
+  const [msgs, setMsgs] = useState<Msg[]>([]);
   const t = (k: string) => tr(lang, k);
   const say = (m: string) => { setToast(m); setTimeout(() => setToast(""), 2600); };
 
@@ -39,6 +43,12 @@ export default function Diner({ slug }: { slug: string }) {
     const nav = navigator.language.toLowerCase();
     setLang(saved && ["en", "th", "my"].includes(saved) ? saved : nav.startsWith("th") ? "th" : nav.startsWith("my") ? "my" : "en");
     try { setPicks(JSON.parse(localStorage.getItem(`picks:${slug}`) || "[]")); } catch {}
+    // Reuse the same session (and its history) across visits to this restaurant on this phone,
+    // the same way picks and the chosen language already are, instead of starting a fresh session
+    // (and an empty chat) on every page load.
+    const savedSession = localStorage.getItem(`chat-session:${slug}`);
+    if (savedSession) setSessionId(savedSession); else localStorage.setItem(`chat-session:${slug}`, sessionId);
+    try { setMsgs(JSON.parse(localStorage.getItem(`chat:${slug}`) || "[]")); } catch {}
     api<Menu>(`/api/public/${slug}/menu?open=1`)
       .then((m) => { setMenu(m); localStorage.setItem(`menu:${slug}`, JSON.stringify(m)); })
       .catch((e) => {
@@ -47,6 +57,9 @@ export default function Diner({ slug }: { slug: string }) {
       });
   }, [slug]);
   useEffect(() => { localStorage.setItem(`picks:${slug}`, JSON.stringify(picks)); }, [picks, slug]);
+  // Skip writing an empty array: on first mount msgs starts empty for one tick before the load
+  // effect above restores any cached history, and writing here first would erase that history.
+  useEffect(() => { if (msgs.length) localStorage.setItem(`chat:${slug}`, JSON.stringify(msgs)); }, [msgs, slug]);
   // WCAG 3.1.1: the page's language attribute must match what is actually on screen, not just React state.
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
 
@@ -155,7 +168,7 @@ export default function Diner({ slug }: { slug: string }) {
       </div>
 
       {detail && <Detail item={detail} lang={lang} t={t} onClose={() => setDetail(null)} onAdd={() => { addPick(detail.id); say(`${t("added")}: ${nm(detail)}`); setDetail(null); }} onAsk={() => { setDetail(null); setChatOpen(true); setTimeout(() => window.dispatchEvent(new CustomEvent("ask", { detail: `${nm(detail)}?` })), 50); }} />}
-      {chatOpen && <Chat slug={slug} table={table} lang={lang} sessionId={sessionId} menu={menu} t={t} onClose={() => setChatOpen(false)} addPick={addPick} say={say} picksCount={total} sendPicks={sendPicks} callStaff={() => callStaff()} />}
+      {chatOpen && <Chat slug={slug} table={table} lang={lang} sessionId={sessionId} menu={menu} t={t} onClose={() => setChatOpen(false)} addPick={addPick} say={say} picksCount={total} sendPicks={sendPicks} callStaff={() => callStaff()} msgs={msgs} setMsgs={setMsgs} />}
       {picksOpen && (
         <div className="modal-back" style={{ alignItems: "flex-end" }} onClick={() => setPicksOpen(false)}>
           <div className="gd r-xl" role="dialog" aria-label={t("myPicks")} onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, padding: 20, background: "rgba(30,26,90,.88)", display: "flex", flexDirection: "column", gap: 12 }}>
@@ -235,19 +248,34 @@ function Detail({ item, lang, t, onClose, onAdd, onAsk }: { item: Item; lang: La
 // chat proactively offers to call staff instead of waiting for the diner to notice the bell icon.
 const ESCALATE_AFTER_MISSES = 2;
 const REASON_KEYS = { wrong: "reasonWrong", confused: "reasonConfused", allergen: "reasonAllergen" } as const;
+// How many consecutive unanswered assistant replies sit at the end of the history right now - used
+// to restore the escalation banner correctly when reopening a chat that already had misses in it,
+// instead of always starting fresh and looking like the AI's earlier trouble was forgotten.
+function trailingMisses(list: Msg[]): number {
+  let n = 0;
+  for (let i = list.length - 1; i >= 0; i--) {
+    if (list[i].role !== "assistant") continue;
+    if (list[i].answered === false) n++; else break;
+  }
+  return n;
+}
 
-function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, say, picksCount, sendPicks, callStaff }: any) {
+function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, say, picksCount, sendPicks, callStaff, msgs, setMsgs }: any) {
   const persona = menu.restaurant.persona;
-  const [msgs, setMsgs] = useState<Msg[]>([{ id: "hello", role: "assistant", text: persona.greeting || t("hello") }]);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
-  const [missCount, setMissCount] = useState(0);
-  const [escalate, setEscalate] = useState(false);
+  const [missCount, setMissCount] = useState(() => trailingMisses(msgs));
+  const [escalate, setEscalate] = useState(() => trailingMisses(msgs) >= ESCALATE_AFTER_MISSES);
   const [reasonFor, setReasonFor] = useState<string | null>(null);
   const end = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
   useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, busy]);
+  // Seed the greeting only the very first time this diner ever opens the chat; a reopen (or a
+  // restored session from localStorage) already has messages and should not get a second greeting.
+  useEffect(() => {
+    if (msgs.length === 0) setMsgs([{ id: "hello", role: "assistant", text: persona.greeting || t("hello") }]);
+  }, []);
 
   // W3C WAI-ARIA dialog pattern: move focus into the dialog on open, and back to whatever the diner
   // was on (the "Ask the waiter" button, a dish's "Ask about this dish" button, etc.) on close.
