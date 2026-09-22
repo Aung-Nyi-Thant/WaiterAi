@@ -11,9 +11,10 @@ export default function Waiter() {
   const router = useRouter();
   const [d, setD] = useState<Floor | null>(null);
   const [tab, setTab] = useState<"calls" | "picks" | "ready" | "tables">("calls");
-  const [dishOpen, setDishOpen] = useState(false);
+  const [dishesOpen, setDishesOpen] = useState(false);
   const [err, setErr] = useState("");
-  const load = () => api<Floor>("/api/staff/floor").then((x) => { setD(x); setErr(""); }).catch((e) => { if (e.status === 401) router.push("/staff"); else setErr(e.message); });
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const load = () => api<Floor>("/api/staff/floor").then((x) => { setD(x); setErr(""); setLastUpdated(new Date()); }).catch((e) => { if (e.status === 401) router.push("/staff"); else setErr(e.message); });
   usePoll(load, 3000);
   const act = async (path: string, body?: any) => { try { await api(path, { body: body ?? {} }); } catch (e: any) { setErr(e.message); } load(); };
   const logout = async () => { await api("/api/auth/logout", { body: {} }); router.push("/staff"); };
@@ -30,7 +31,13 @@ export default function Waiter() {
         <div className="row" style={{ justifyContent: "space-between" }}>
           <div><h1 style={{ fontSize: 30, fontWeight: 600 }}>Floor</h1><div className="eyebrow soft-d" style={{ marginTop: 4 }}>Waiter · {d.me.name}</div></div>
           <div className="row" style={{ gap: 8 }}>
-            <div className="gd row" style={{ borderRadius: 999, padding: "8px 14px", gap: 8, font: "700 12px var(--font-b)" }}><span style={{ width: 9, height: 9, borderRadius: "50%", background: err ? "#c62828" : "#3ddc97" }} />{err ? "OFFLINE" : "LIVE"}</div>
+            {/* Freshness disclosure: the interval (3s) is fine, but staff need to know if what
+                they're looking at is live, stale, or the connection dropped - not just a bare dot. */}
+            <div className="gd row" role="status" style={{ borderRadius: 999, padding: "8px 14px", gap: 8, font: "700 12px var(--font-b)" }}>
+              <span aria-hidden="true" style={{ width: 9, height: 9, borderRadius: "50%", background: err ? "#c62828" : "#3ddc97" }} />
+              {err ? (lastUpdated ? "RECONNECTING…" : "OFFLINE") : "LIVE"}
+              {lastUpdated && <span className="soft-d" style={{ fontWeight: 500 }}>· as of {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>}
+            </div>
             <button className="btn btn-o btn-icon" onClick={logout} aria-label="Sign out"><Icon name="logout" /></button>
           </div>
         </div>
@@ -70,20 +77,32 @@ export default function Waiter() {
           </div>)}
       </div>
 
-      <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, display: "flex", justifyContent: "center", zIndex: 20 }}>
+      {/* Commercial POS/KDS products (Toast, Square, Checkmate) put the 86 switch directly on the
+          item row with no intermediate screen. This expands inline from the summary bar instead of
+          opening a separate modal, so marking a dish sold out is one tap plus the toggle, not a
+          navigation step - important since touch accuracy drops for staff moving around the floor. */}
+      <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, display: "flex", flexDirection: "column", alignItems: "center", zIndex: 20 }}>
+        {dishesOpen && (
+          <div className="gd r-xl" style={{ width: "calc(100% - 28px)", maxWidth: 452, marginBottom: 8, maxHeight: "42dvh", overflowY: "auto", padding: "14px 16px" }}>
+            <div className="row" style={{ justifyContent: "space-between", marginBottom: 6 }}>
+              <span className="eyebrow soft-d">Mark dishes sold out</span>
+              <button className="btn btn-o btn-icon btn-sm" style={{ width: 32 }} onClick={() => setDishesOpen(false)} aria-label="Close">
+                <Icon name="close" size={14} />
+              </button>
+            </div>
+            {d.dishes.map((x) => (
+              <div key={x.id} className="row" style={{ justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,.14)" }}>
+                <span style={{ fontSize: 14 }}>{x.name}</span>
+                <button className={`switch dark ${x.available ? "on" : ""}`} role="switch" aria-checked={!!x.available} aria-label={x.name} onClick={() => act(`/api/staff/items/${x.id}`, { available: !x.available })} />
+              </div>
+            ))}
+          </div>
+        )}
         <div className="gd" style={{ width: "calc(100% - 28px)", maxWidth: 452, marginBottom: 14, height: 68, borderRadius: 34, display: "flex", alignItems: "center", gap: 12, padding: "0 10px 0 22px" }}>
           <div style={{ flex: 1, minWidth: 0 }}><div className="eyebrow soft-d">Sold out now · {d.soldOut.length}</div><div style={{ fontWeight: 500, fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.soldOut.map((s) => s.name).join(", ") || "Nothing"}</div></div>
-          <button className="btn btn-w" style={{ minHeight: 48 }} onClick={() => setDishOpen(true)}>Mark a dish</button>
+          <button className="btn btn-w" style={{ minHeight: 48 }} aria-expanded={dishesOpen} onClick={() => setDishesOpen((v) => !v)}>{dishesOpen ? "Close" : "Manage"}</button>
         </div>
       </div>
-      {dishOpen && (
-        <div className="modal-back" style={{ alignItems: "flex-end" }} onClick={() => setDishOpen(false)}>
-          <div className="gd r-xl" onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, padding: 20, background: "rgba(30,26,90,.9)", maxHeight: "80dvh", overflow: "auto" }}>
-            <div className="row" style={{ justifyContent: "space-between", marginBottom: 8 }}><h2 style={{ fontSize: 22 }}>Sold out today</h2><button className="btn btn-o btn-icon" onClick={() => setDishOpen(false)} aria-label="Close"><Icon name="close" /></button></div>
-            {d.dishes.map((x) => <div key={x.id} className="row" style={{ justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,.18)" }}><span>{x.name}</span>
-              <button className={`switch dark ${x.available ? "on" : ""}`} role="switch" aria-checked={!!x.available} aria-label={x.name} onClick={() => act(`/api/staff/items/${x.id}`, { available: !x.available })} /></div>)}
-          </div>
-        </div>)}
     </div>
   );
 }
