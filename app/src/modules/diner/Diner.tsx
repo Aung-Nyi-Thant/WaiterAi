@@ -50,10 +50,14 @@ export default function Diner({ slug }: { slug: string }) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
       await wait(380);
       const r = el.getBoundingClientRect();
-      setCursor({ x: r.left + r.width / 2, y: r.top + r.height / 2, visible: true, clicking: false });
+      // The cursor's own hotspot (the SVG's pointed tip) sits a few px in from the
+      // element's top-left, not centered - offset the landing point to match.
+      setCursor({ x: r.left + r.width * 0.35, y: r.top + r.height * 0.3, visible: true, clicking: false });
       await wait(560);
       setCursor((c) => ({ ...c, clicking: true }));
+      el.classList.add("ai-target-flash");
       addPick(id, qtyMap?.[id] || 1);
+      setTimeout(() => el.classList.remove("ai-target-flash"), 500);
       await wait(380);
       setCursor((c) => ({ ...c, clicking: false }));
     }
@@ -243,9 +247,14 @@ export default function Diner({ slug }: { slug: string }) {
       )}
       {toast && <div className="toast" role="status">{toast}</div>}
       {cursor.visible && (
-        <div className={`aiCursor${cursor.clicking ? " clicking" : ""}`} style={{ transform: `translate(${cursor.x}px, ${cursor.y}px)` }} aria-hidden="true">
-          <span className="aiCursorDot" />
-        </div>
+        <>
+          <div className="aiCursorTrail" style={{ transform: `translate(${cursor.x}px, ${cursor.y}px)` }} aria-hidden="true" />
+          <div className={`aiCursor${cursor.clicking ? " clicking" : ""}`} style={{ transform: `translate(${cursor.x}px, ${cursor.y}px)` }} aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" className="aiCursorArrow">
+              <path d="M3 2 L3 17 L7 13.5 L10 20.5 L12.5 19.3 L9.3 12.7 L15 12.7 Z" fill="var(--gold)" stroke="#171a34" strokeWidth="1.1" strokeLinejoin="round" />
+            </svg>
+          </div>
+        </>
       )}
     </div>
   );

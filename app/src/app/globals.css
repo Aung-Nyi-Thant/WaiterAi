@@ -166,14 +166,21 @@ label.lbl { display: block; font: 700 11px var(--font-b); letter-spacing: .1em; 
   .hero-cursor { opacity: .6; }
 }
 
-/* The "AI cursor" — a small on-screen pointer that visibly finds and "clicks" a dish's
-   real Add button when the assistant adds it to picks on its own, so that action reads
-   as the AI doing something for you, not items silently appearing. Diner.tsx skips this
-   entirely under prefers-reduced-motion and adds picks directly instead. */
-.aiCursor { position: fixed; top: 0; left: 0; z-index: 70; width: 28px; height: 28px; margin: -14px 0 0 -14px; pointer-events: none; display: flex; align-items: center; justify-content: center; transition: transform .55s cubic-bezier(.4,0,.2,1); }
-.aiCursorDot { width: 14px; height: 14px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 4px rgba(234,181,79,.25), 0 2px 10px rgba(0,0,0,.35); }
-.aiCursor.clicking .aiCursorDot { animation: aiCursorClick .35s ease-out; }
-@keyframes aiCursorClick { 0% { transform: scale(1); } 40% { transform: scale(.65); } 100% { transform: scale(1); } }
-.aiCursor::after { content: ""; position: absolute; inset: -10px; border-radius: 50%; border: 2px solid var(--gold); opacity: 0; }
-.aiCursor.clicking::after { animation: aiCursorRing .5s ease-out; }
-@keyframes aiCursorRing { 0% { opacity: .8; transform: scale(.4); } 100% { opacity: 0; transform: scale(1.6); } }
+/* The "AI cursor" — an actual pointer (not a touch-ripple) that visibly drives to and
+   "clicks" a dish's real Add button when the assistant adds it to picks on its own, so
+   the action reads as the AI operating the page, not items silently appearing.
+   Diner.tsx skips this entirely under prefers-reduced-motion and adds picks directly. */
+.aiCursor { position: fixed; top: 0; left: 0; z-index: 71; pointer-events: none; transition: transform .55s cubic-bezier(.4,0,.2,1); filter: drop-shadow(0 0 6px rgba(234,181,79,.65)) drop-shadow(0 2px 4px rgba(0,0,0,.4)); }
+.aiCursorArrow { display: block; transform-origin: 3px 2px; }
+.aiCursor.clicking .aiCursorArrow { animation: aiCursorPress .3s ease-out; }
+@keyframes aiCursorPress { 0% { transform: scale(1); } 45% { transform: scale(.8); } 100% { transform: scale(1); } }
+/* A soft glow that trails a beat behind the cursor (a slower transition on the same
+   coordinates) to read as continuous motion across the screen, not a teleport. */
+.aiCursorTrail { position: fixed; top: 0; left: 0; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: radial-gradient(circle, rgba(234,181,79,.4), transparent 70%); z-index: 69; pointer-events: none; filter: blur(3px); transition: transform .95s cubic-bezier(.22,.61,.36,1); }
+/* Click feedback moves to the actual button being pressed, not a ring around the cursor. */
+.ai-target-flash { animation: aiTargetFlash .5s ease-out; }
+@keyframes aiTargetFlash { 0% { box-shadow: 0 0 0 0 rgba(234,181,79,.85); } 100% { box-shadow: 0 0 0 12px rgba(234,181,79,0); } }
+@media (prefers-reduced-motion: reduce) {
+  .aiCursor, .aiCursorTrail { transition: none; }
+  .aiCursor.clicking .aiCursorArrow, .ai-target-flash { animation: none; }
+}
