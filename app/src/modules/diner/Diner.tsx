@@ -36,6 +36,31 @@ export default function Diner({ slug }: { slug: string }) {
   // (the hero card itself, a quick-ask chip, or a dish's "Ask about this dish" button).
   useEffect(() => { if (chatOpen) heroRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }, [chatOpen]);
 
+  // The "AI cursor": when the assistant adds dishes to picks on its own, a small on-screen
+  // cursor visibly scrolls to and "clicks" each dish's real Add button instead of the items
+  // just silently appearing - makes the AI's actions legible, like watching a waiter work.
+  const [cursor, setCursor] = useState<{ x: number; y: number; visible: boolean; clicking: boolean }>({ x: 0, y: 0, visible: false, clicking: false });
+  async function aiAdd(ids: number[], qtyMap?: Record<number, number>) {
+    const reduceMotion = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    if (reduceMotion || !ids.length) { ids.forEach((id) => addPick(id, qtyMap?.[id] || 1)); return; }
+    for (const id of ids) {
+      const el = document.querySelector<HTMLElement>(`[data-add-btn="${id}"]`);
+      if (!el) { addPick(id, qtyMap?.[id] || 1); continue; }
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      await wait(380);
+      const r = el.getBoundingClientRect();
+      setCursor({ x: r.left + r.width / 2, y: r.top + r.height / 2, visible: true, clicking: false });
+      await wait(560);
+      setCursor((c) => ({ ...c, clicking: true }));
+      addPick(id, qtyMap?.[id] || 1);
+      await wait(380);
+      setCursor((c) => ({ ...c, clicking: false }));
+    }
+    await wait(300);
+    setCursor((c) => ({ ...c, visible: false }));
+  }
+
   // first load: language, table, cached menu, picks
   useEffect(() => {
     const sp = new URLSearchParams(location.search);
@@ -143,7 +168,7 @@ export default function Diner({ slug }: { slug: string }) {
           )}
           <div className={`hero-expand${chatOpen ? " open" : ""}`}>
             <div className="hero-expand-inner">
-              {chatOpen && <Chat slug={slug} table={table} lang={lang} sessionId={sessionId} menu={menu} t={t} onClose={() => setChatOpen(false)} addPick={addPick} say={say} picksCount={total} sendPicks={sendPicks} callStaff={() => callStaff()} />}
+              {chatOpen && <Chat slug={slug} table={table} lang={lang} sessionId={sessionId} menu={menu} t={t} onClose={() => setChatOpen(false)} addPick={addPick} aiAdd={aiAdd} say={say} picksCount={total} sendPicks={sendPicks} callStaff={() => callStaff()} />}
             </div>
           </div>
         </div>
@@ -217,6 +242,11 @@ export default function Diner({ slug }: { slug: string }) {
         </div>
       )}
       {toast && <div className="toast" role="status">{toast}</div>}
+      {cursor.visible && (
+        <div className={`aiCursor${cursor.clicking ? " clicking" : ""}`} style={{ transform: `translate(${cursor.x}px, ${cursor.y}px)` }} aria-hidden="true">
+          <span className="aiCursorDot" />
+        </div>
+      )}
     </div>
   );
 }
@@ -246,7 +276,7 @@ function DishCard({ item, lang, onOpen, onAdd, t }: { item: Item; lang: Lang; on
           </div>
         </div>
       </button>
-      {item.available && <button className="btn btn-o btn-icon" style={{ alignSelf: "flex-end" }} onClick={onAdd} aria-label={`${t("add")} ${nm}`}><Icon name="plus" /></button>}
+      {item.available && <button className="btn btn-o btn-icon" style={{ alignSelf: "flex-end" }} onClick={onAdd} aria-label={`${t("add")} ${nm}`} data-add-btn={item.id}><Icon name="plus" /></button>}
     </div>
   );
 }
@@ -279,7 +309,7 @@ function Detail({ item, lang, t, onClose, onAdd, onAsk }: { item: Item; lang: La
 const ESCALATE_AFTER_MISSES = 2;
 const REASON_KEYS = { wrong: "reasonWrong", confused: "reasonConfused", allergen: "reasonAllergen" } as const;
 
-function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, say, picksCount, sendPicks, callStaff }: any) {
+function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, aiAdd, say, picksCount, sendPicks, callStaff }: any) {
   const persona = menu.restaurant.persona;
   const [msgs, setMsgs] = useState<Msg[]>([{ id: "hello", role: "assistant", text: persona.greeting || t("hello") }]);
   const [text, setText] = useState("");
@@ -316,7 +346,7 @@ function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, say, pi
       setMsgs((m) => [...m, { id: uid(), role: "assistant", text: r.reply, dishes: r.dishes, topic: r.action?.type === "show_dishes" ? "dishes" : undefined, messageId: r.messageId, answered }]);
       setMissCount((n) => { const next = answered ? 0 : n + 1; setEscalate(next >= ESCALATE_AFTER_MISSES); return next; });
       const a = r.action || {};
-      if (a.type === "add_to_picks") (a.ids || []).forEach((id: number) => addPick(id, a.qty?.[id] || 1));
+      if (a.type === "add_to_picks") aiAdd(a.ids || [], a.qty);
       if (a.type === "show_menu") setTimeout(onClose, 900);
       if (a.type === "call_staff") say(t("staffCalled"));
     } catch { setMsgs((m) => [...m, { id: uid(), role: "assistant", text: t("errorSend") }]); }
