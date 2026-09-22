@@ -115,7 +115,10 @@ export default function Diner({ slug }: { slug: string }) {
           <div className="eyebrow" style={{ color: "var(--gold)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>✨ {t("heroEyebrow")}</div>
           <button onClick={() => setChatOpen(true)} aria-label={t("askWaiter")} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.22)", borderRadius: 16, padding: "11px 13px", textAlign: "left", color: "#fff" }}>
             <Icon name="bot" size={20} />
-            <span style={{ flex: 1, fontSize: 13.5, color: "#e3e0f7" }}>{t("heroPlaceholder")}</span>
+            <span style={{ flex: 1, fontSize: 13.5, color: "#e3e0f7" }}>
+              {t("heroPlaceholder")}
+              <span className="hero-cursor" aria-hidden="true" />
+            </span>
             <span style={{ color: "var(--gold)", fontSize: 17 }} aria-hidden="true">→</span>
           </button>
           <div style={{ display: "flex", gap: 8, marginTop: 10, overflowX: "auto" }}>

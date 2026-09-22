@@ -149,6 +149,11 @@ label.lbl { display: block; font: 700 11px var(--font-b); letter-spacing: .1em; 
    AI-powered entry point, distinct from the flat glass cards used elsewhere. */
 .hero-glow { animation: heroGlow 3.2s ease-in-out infinite; }
 @keyframes heroGlow { 0%, 100% { box-shadow: 0 8px 28px rgba(90,60,200,.25); } 50% { box-shadow: 0 10px 32px rgba(234,181,79,.4); } }
+/* A blinking caret right after the hero placeholder text, so the card reads as a live,
+   waiting chat input ("I'm ready and listening") rather than static label text. */
+.hero-cursor { display: inline-block; width: 2px; height: 13px; margin-left: 2px; background: var(--gold); vertical-align: -2px; animation: heroCursorBlink 1s step-end infinite; }
+@keyframes heroCursorBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
-  .hero-glow { animation: none; }
+  .hero-glow, .hero-cursor { animation: none; }
+  .hero-cursor { opacity: .6; }
 }
