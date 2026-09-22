@@ -30,6 +30,11 @@ export default function Diner({ slug }: { slug: string }) {
   const [sessionId] = useState(() => uid());
   const t = (k: string) => tr(lang, k);
   const say = (m: string) => { setToast(m); setTimeout(() => setToast(""), 2600); };
+  const heroRef = useRef<HTMLDivElement>(null);
+  // The chat now expands in place inside the hero card instead of covering the screen;
+  // scroll it into view so it's visible no matter where the diner opened it from
+  // (the hero card itself, a quick-ask chip, or a dish's "Ask about this dish" button).
+  useEffect(() => { if (chatOpen) heroRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }, [chatOpen]);
 
   // first load: language, table, cached menu, picks
   useEffect(() => {
@@ -111,20 +116,35 @@ export default function Diner({ slug }: { slug: string }) {
         </header>
         {offline && <div className="gd r-m soft-d" style={{ marginTop: 12, padding: "8px 14px", fontSize: 13 }}>{t("offline")}</div>}
 
-        <div className="gd r-xl hero-glow" style={{ marginTop: 16, padding: 16, border: "1px solid rgba(234,181,79,.5)", background: "linear-gradient(135deg, rgba(234,181,79,.16), rgba(110,86,255,.16))" }}>
-          <div className="eyebrow" style={{ color: "var(--gold)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>✨ {t("heroEyebrow")}</div>
-          <button onClick={() => setChatOpen(true)} aria-label={t("askWaiter")} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.22)", borderRadius: 16, padding: "11px 13px", textAlign: "left", color: "#fff" }}>
-            <Icon name="bot" size={20} />
-            <span style={{ flex: 1, fontSize: 13.5, color: "#e3e0f7" }}>
-              {t("heroPlaceholder")}
-              <span className="hero-cursor" aria-hidden="true" />
-            </span>
-            <span style={{ color: "var(--gold)", fontSize: 17 }} aria-hidden="true">→</span>
-          </button>
-          <div style={{ display: "flex", gap: 8, marginTop: 10, overflowX: "auto" }}>
-            <button className="pill" onClick={() => askQuick(t("heroChip1"))}>🌶 {t("heroChip1")}</button>
-            <button className="pill" onClick={() => askQuick(t("heroChip2"))}>🌱 {t("heroChip2")}</button>
-            <button className="pill" onClick={() => askQuick(t("heroChip3"))}>🎲 {t("heroChip3")}</button>
+        <div className="gd r-xl hero-glow" ref={heroRef} style={{ marginTop: 16, padding: 16, border: "1px solid rgba(234,181,79,.5)", background: "linear-gradient(135deg, rgba(234,181,79,.16), rgba(110,86,255,.16))" }}>
+          {chatOpen ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+              <Icon name="bot" size={20} />
+              <div style={{ flex: 1, fontWeight: 700, fontSize: 14 }}>{menu.restaurant.persona.name || t("theWaiter")}</div>
+              <button className="btn btn-o btn-icon btn-sm" style={{ width: 32, height: 32, minHeight: 32, borderRadius: "50%" }} aria-label={t("close")} onClick={() => setChatOpen(false)}><Icon name="close" size={16} /></button>
+            </div>
+          ) : (
+            <>
+              <div className="eyebrow" style={{ color: "var(--gold)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>✨ {t("heroEyebrow")}</div>
+              <button onClick={() => setChatOpen(true)} aria-label={t("askWaiter")} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.22)", borderRadius: 16, padding: "11px 13px", textAlign: "left", color: "#fff" }}>
+                <Icon name="bot" size={20} />
+                <span style={{ flex: 1, fontSize: 13.5, color: "#e3e0f7" }}>
+                  {t("heroPlaceholder")}
+                  <span className="hero-cursor" aria-hidden="true" />
+                </span>
+                <span style={{ color: "var(--gold)", fontSize: 17 }} aria-hidden="true">→</span>
+              </button>
+              <div style={{ display: "flex", gap: 8, marginTop: 10, overflowX: "auto" }}>
+                <button className="pill" onClick={() => askQuick(t("heroChip1"))}>🌶 {t("heroChip1")}</button>
+                <button className="pill" onClick={() => askQuick(t("heroChip2"))}>🌱 {t("heroChip2")}</button>
+                <button className="pill" onClick={() => askQuick(t("heroChip3"))}>🎲 {t("heroChip3")}</button>
+              </div>
+            </>
+          )}
+          <div className={`hero-expand${chatOpen ? " open" : ""}`}>
+            <div className="hero-expand-inner">
+              {chatOpen && <Chat slug={slug} table={table} lang={lang} sessionId={sessionId} menu={menu} t={t} onClose={() => setChatOpen(false)} addPick={addPick} say={say} picksCount={total} sendPicks={sendPicks} callStaff={() => callStaff()} />}
+            </div>
           </div>
         </div>
 
@@ -179,7 +199,6 @@ export default function Diner({ slug }: { slug: string }) {
       </div>
 
       {detail && <Detail item={detail} lang={lang} t={t} onClose={() => setDetail(null)} onAdd={() => { addPick(detail.id); say(`${t("added")}: ${nm(detail)}`); setDetail(null); }} onAsk={() => { setDetail(null); setChatOpen(true); setTimeout(() => window.dispatchEvent(new CustomEvent("ask", { detail: `${nm(detail)}?` })), 50); }} />}
-      {chatOpen && <Chat slug={slug} table={table} lang={lang} sessionId={sessionId} menu={menu} t={t} onClose={() => setChatOpen(false)} addPick={addPick} say={say} picksCount={total} sendPicks={sendPicks} callStaff={() => callStaff()} />}
       {picksOpen && (
         <div className="modal-back" style={{ alignItems: "flex-end" }} onClick={() => setPicksOpen(false)}>
           <div className="gd r-xl" role="dialog" aria-label={t("myPicks")} onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, padding: 20, background: "rgba(30,26,90,.88)", display: "flex", flexDirection: "column", gap: 12 }}>
@@ -273,21 +292,16 @@ function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, say, pi
   const previouslyFocused = useRef<HTMLElement | null>(null);
   useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, busy]);
 
-  // W3C WAI-ARIA dialog pattern: move focus into the dialog on open, and back to whatever the diner
-  // was on (the hero "Ask AI" card, a dish's "Ask about this dish" button, etc.) on close.
+  // The chat now expands in place (not a modal dialog covering the page), so there's no
+  // tab-trap: the diner can still reach the rest of the menu. Just move focus in on open,
+  // back to whatever they tapped on close, and let Escape collapse the panel.
   useEffect(() => {
     previouslyFocused.current = document.activeElement as HTMLElement;
     dialogRef.current?.focus();
     return () => previouslyFocused.current?.focus?.();
   }, []);
-  function onDialogKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Escape") { onClose(); return; }
-    if (e.key !== "Tab" || !dialogRef.current) return;
-    const nodes = Array.from(dialogRef.current.querySelectorAll<HTMLElement>('button:not(:disabled), [href], input, textarea, [tabindex]:not([tabindex="-1"])'));
-    if (!nodes.length) return;
-    const first = nodes[0], last = nodes[nodes.length - 1];
-    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  function onPanelKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "Escape") onClose();
   }
 
   async function send(message: string) {
@@ -328,16 +342,9 @@ function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, say, pi
   const followUps = !busy && last?.role === "assistant" ? [t("chips1"), t("chips2"), t("chips3")].filter((c) => c.toLowerCase() !== lastQuestion) : [];
 
   return (
-    <div className="chat-sheet aurora-d" onKeyDown={onDialogKeyDown}>
-      <div className="chat-inner" ref={dialogRef} role="dialog" aria-modal="true" aria-label={persona.name || t("theWaiter")} tabIndex={-1}>
-        <div style={{ padding: "14px 14px 0" }}>
-          <div className="gd row" style={{ height: 68, borderRadius: 34, padding: "0 12px", gap: 12 }}>
-            <button className="btn btn-o btn-icon" style={{ borderRadius: "50%" }} onClick={onClose} aria-label={t("back")}><Icon name="back" /></button>
-            <div style={{ flex: 1 }}><div style={{ font: "600 19px var(--font-h)", lineHeight: 1.15 }}>{persona.name || t("theWaiter")}</div><div className="soft-d" style={{ fontSize: 12 }}>{t("askAny")}</div></div>
-            <button className="btn btn-o btn-icon" style={{ borderRadius: "50%" }} onClick={callStaff} aria-label={t("callStaff")}><Icon name="bell" /></button>
-          </div>
-        </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 12 }} role="log" aria-live="polite" aria-atomic="false">
+    <div className="chat-inline" ref={dialogRef} tabIndex={-1} onKeyDown={onPanelKeyDown}>
+      <div className="soft-d" style={{ fontSize: 12, padding: "0 2px 8px" }}>{t("askAny")}</div>
+      <div style={{ flex: 1, overflowY: "auto", padding: "0 2px", display: "flex", flexDirection: "column", gap: 12 }} role="log" aria-live="polite" aria-atomic="false">
           {msgs.map((m) => (
             <div key={m.id} style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: m.role === "user" ? "flex-end" : "flex-start" }}>
               <div className={m.role === "user" ? "bubble-u" : "bubble-a gd"} style={{ lineHeight: chatLineHeight(lang) }}>{m.text}</div>
@@ -390,12 +397,11 @@ function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, say, pi
         </div>
         <div style={{ padding: "0 14px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
           {picksCount > 0 && <button className="btn btn-w" onClick={() => { sendPicks(); }}>{t("myPicks")} · {picksCount} → {t("showToWaiter")}</button>}
-          <form className="row" style={{ gap: 8 }} onSubmit={(e) => { e.preventDefault(); send(text); }}>
+          <form style={{ display: "flex", gap: 8 }} onSubmit={(e) => { e.preventDefault(); send(text); }}>
             <input className="in gd" style={{ borderRadius: 26, height: 52 }} value={text} onChange={(e) => setText(e.target.value)} placeholder={t("typeQ")} aria-label={t("typeQ")} maxLength={500} />
             <button className="btn btn-v btn-icon" style={{ width: 52, height: 52, borderRadius: "50%" }} type="submit" aria-label="Send" disabled={busy || !text.trim()}><Icon name="send" size={22} /></button>
           </form>
         </div>
       </div>
-    </div>
   );
 }
