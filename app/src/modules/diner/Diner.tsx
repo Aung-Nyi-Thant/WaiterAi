@@ -326,10 +326,13 @@ function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, aiAdd, 
   const [missCount, setMissCount] = useState(0);
   const [escalate, setEscalate] = useState(false);
   const [reasonFor, setReasonFor] = useState<string | null>(null);
-  const end = useRef<HTMLDivElement>(null);
+  const logRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
-  useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, busy]);
+  // Scroll only the message list itself, never scrollIntoView() on an inner marker - that
+  // drags every scrollable ancestor (including the whole page) into view too, which used
+  // to yank the page past the chat and down into the dish list on every new message.
+  useEffect(() => { logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" }); }, [msgs, busy]);
 
   // The chat now expands in place (not a modal dialog covering the page), so there's no
   // tab-trap: the diner can still reach the rest of the menu. Just move focus in on open,
@@ -383,7 +386,7 @@ function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, aiAdd, 
   return (
     <div className="chat-inline" ref={dialogRef} tabIndex={-1} onKeyDown={onPanelKeyDown}>
       <div className="soft-d" style={{ fontSize: 12, padding: "0 2px 8px" }}>{t("askAny")}</div>
-      <div style={{ flex: 1, overflowY: "auto", padding: "0 2px", display: "flex", flexDirection: "column", gap: 12 }} role="log" aria-live="polite" aria-atomic="false">
+      <div ref={logRef} style={{ flex: 1, overflowY: "auto", padding: "0 2px", display: "flex", flexDirection: "column", gap: 12 }} role="log" aria-live="polite" aria-atomic="false">
           {msgs.map((m) => (
             <div key={m.id} style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: m.role === "user" ? "flex-end" : "flex-start" }}>
               <div className={m.role === "user" ? "bubble-u" : "bubble-a gd"} style={{ lineHeight: chatLineHeight(lang) }}>{m.text}</div>
@@ -432,7 +435,6 @@ function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, aiAdd, 
               {followUps.map((c) => <button key={c} className="pill" onClick={() => send(c)}>{c}</button>)}
             </div>
           )}
-          <div ref={end} />
         </div>
         <div style={{ padding: "0 14px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
           {picksCount > 0 && <button className="btn btn-w" onClick={() => { sendPicks(); }}>{t("myPicks")} · {picksCount} → {t("showToWaiter")}</button>}
