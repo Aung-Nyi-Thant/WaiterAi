@@ -5,8 +5,8 @@ type Dict = Record<string, string>;
 const en: Dict = {
   kitchen: "Kitchen", search: "Search dishes", all: "All", vegetarian: "Vegetarian", noPeanuts: "No peanuts", under100: "Under ฿100", spicy: "Spicy",
   soldOut: "Sold out today", askWaiter: "Ask AI", callStaff: "Call staff", staffCalled: "The staff have been called.", myPicks: "My picks", dish: "dish", dishes: "dishes",
-  showToWaiter: "Show to waiter", sent: "Sent to the waiter. They will come to your table.", add: "Add", added: "Added", back: "Back to menu", typeQ: "Type in Thai, Burmese or English",
-  theWaiter: "AI Waiter", askAny: "Ask about any dish, in any language", allergens: "Allergens", none: "No dishes match.", ingredients: "Ingredients", askAbout: "Ask the waiter about this dish",
+  showToWaiter: "Send to staff", sent: "Sent to the staff. They will come to your table.", add: "Add", added: "Added", back: "Back to menu", typeQ: "Type in Thai, Burmese or English",
+  theWaiter: "AI Waiter", askAny: "Ask about any dish, in any language", allergens: "Allergens", none: "No dishes match.", ingredients: "Ingredients", askAbout: "Ask AI about this dish",
   offline: "Offline copy. Prices may differ.", chips1: "Vegetarian options", chips2: "Opening hours", chips3: "What do you recommend?", hello: "Hello! Ask me about the menu, allergens or prices.",
   specials: "Today's special", errorSend: "Could not send. Please try again.", allergenNone: "No allergens listed", allergenUnknown: "Allergen info not provided", helpful: "Helpful", notHelpful: "Not right", thanks: "Thanks for the feedback.",
   close: "Close", table: "Table", picksEmpty: "Nothing picked yet.", remove: "Remove",
