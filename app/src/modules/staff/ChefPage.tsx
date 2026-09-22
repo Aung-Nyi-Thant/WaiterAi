@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Icon from "@/modules/platform/Icon";
 import { api, usePoll, minutesAgo } from "@/modules/platform/client";
 
-type Kitchen = { me: { name: string }; tickets: { new: any[]; cooking: any[]; ready: any[] }; dishes: { id: number; name: string; available: number }[] };
+type Kitchen = { me: { name: string; role: string }; tickets: { new: any[]; cooking: any[]; ready: any[] }; dishes: { id: number; name: string; available: number }[] };
 const COL: [keyof Kitchen["tickets"], string, string, string][] = [["new", "New", "cooking", "Start cooking"], ["cooking", "Cooking", "ready", "Mark ready"], ["ready", "Ready", "served", "Served"]];
 // Traffic-light ticket urgency (on time / caution / late), the standard commercial-KDS pattern, so
 // staff read status from color at a glance rather than doing timestamp math on every ticket.
@@ -17,7 +17,12 @@ export default function Chef() {
   const [now, setNow] = useState("");
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   useEffect(() => { const t = () => setNow(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })); t(); const i = setInterval(t, 15000); return () => clearInterval(i); }, []);
-  const load = () => api<Kitchen>("/api/staff/kitchen").then((x) => { setD(x); setErr(""); setLastUpdated(new Date()); }).catch((e) => { if (e.status === 401) router.push("/staff"); else setErr(e.message); });
+  // Same issue as the waiter page in reverse: a waiter's role landing on this chef-only
+  // screen would see cooking/ready buttons that always 403 (role-gated server-side).
+  const load = () => api<Kitchen>("/api/staff/kitchen").then((x) => {
+    if (x.me.role !== "chef") { router.push("/staff/waiter"); return; }
+    setD(x); setErr(""); setLastUpdated(new Date());
+  }).catch((e) => { if (e.status === 401) router.push("/staff"); else setErr(e.message); });
   usePoll(load, 3000);
   const act = async (id: number, action: string) => { try { await api(`/api/staff/orders/${id}`, { body: { action } }); } catch (e: any) { setErr(e.message); } load(); };
   const toggle = async (id: number, available: boolean) => { await api(`/api/staff/items/${id}`, { body: { available } }); load(); };

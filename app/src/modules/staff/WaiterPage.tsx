@@ -14,7 +14,14 @@ export default function Waiter() {
   const [dishesOpen, setDishesOpen] = useState(false);
   const [err, setErr] = useState("");
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const load = () => api<Floor>("/api/staff/floor").then((x) => { setD(x); setErr(""); setLastUpdated(new Date()); }).catch((e) => { if (e.status === 401) router.push("/staff"); else setErr(e.message); });
+  // A chef's login lands them on /staff/chef, but nothing stops a stale tab or a typed
+  // URL from opening this waiter-only page while their session is actually "chef" - the
+  // action buttons below would then always 403 (they're role-gated server-side). Catch
+  // that here and send them to the page that matches who they actually are.
+  const load = () => api<Floor>("/api/staff/floor").then((x) => {
+    if (x.me.role !== "waiter") { router.push("/staff/chef"); return; }
+    setD(x); setErr(""); setLastUpdated(new Date());
+  }).catch((e) => { if (e.status === 401) router.push("/staff"); else setErr(e.message); });
   usePoll(load, 3000);
   const act = async (path: string, body?: any) => { try { await api(path, { body: body ?? {} }); } catch (e: any) { setErr(e.message); } load(); };
   const logout = async () => { await api("/api/auth/logout", { body: {} }); router.push("/staff"); };
