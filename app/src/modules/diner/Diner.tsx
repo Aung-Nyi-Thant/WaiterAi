@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Icon from "@/modules/platform/Icon";
+import WaiterMascot from "@/modules/diner/WaiterMascot";
 import { api } from "@/modules/platform/client";
 import { tr, priceLabel, chatLineHeight } from "@/modules/diner/i18n";
 import type { Item, Category, Lang } from "@/modules/platform/menu";
@@ -148,7 +149,7 @@ export default function Diner({ slug }: { slug: string }) {
             </div>
           )}
           <div className="gd" style={{ borderRadius: 36, height: 72, display: "flex", alignItems: "center", gap: 10, padding: "0 10px" }}>
-            <button className="btn btn-w" style={{ flex: 1, height: 52, borderRadius: 26, fontSize: 15 }} onClick={() => setChatOpen(true)}><Icon name="chat" />{t("askWaiter")}</button>
+            <WaiterMascot onOpen={() => setChatOpen(true)} label={t("askWaiter")} />
             <button className="btn btn-o btn-icon" style={{ width: 52, height: 52, minHeight: 52 }} aria-label={t("callStaff")} onClick={callStaff}><Icon name="bell" size={22} /></button>
           </div>
         </div>
