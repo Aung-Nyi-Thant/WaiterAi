@@ -14,7 +14,10 @@ export default function Waiter() {
   const [dishesOpen, setDishesOpen] = useState(false);
   const [err, setErr] = useState("");
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const load = () => api<Floor>("/api/staff/floor").then((x) => { setD(x); setErr(""); setLastUpdated(new Date()); }).catch((e) => { if (e.status === 401) router.push("/staff"); else setErr(e.message); });
+  // Nothing stops a signed-in chef from opening this page's URL directly - only the take/dismiss
+  // actions were role-checked, so the page looked fully usable and then failed with a confusing 403.
+  // Redirect to the screen that matches the session's actual role instead.
+  const load = () => api<Floor>("/api/staff/floor").then((x) => { if (x.me.role !== "waiter") { router.push("/staff/chef"); return; } setD(x); setErr(""); setLastUpdated(new Date()); }).catch((e) => { if (e.status === 401) router.push("/staff"); else setErr(e.message); });
   usePoll(load, 3000);
   const act = async (path: string, body?: any) => { try { await api(path, { body: body ?? {} }); } catch (e: any) { setErr(e.message); } load(); };
   const logout = async () => { await api("/api/auth/logout", { body: {} }); router.push("/staff"); };
