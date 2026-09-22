@@ -311,7 +311,10 @@ function systemPrompt(ctx: Ctx, lang: Lang): string {
     restaurant: r.name, currency: r.currency,
     hours: `Open every day ${r.hours.open}-${r.hours.close} (last order ${r.hours.lastOrder}).`,
     faq: faqs, specials: specials.map((s: any) => ({ title: s.title, text: s.text })),
-    items: items.map((i) => ({ id: i.id, name: i.name, price: i.price, allergens: i.allergens, tags: i.tags, available: i.available, ingredients: i.ingredients })),
+    // ingredients are left out here on purpose: ingredient questions are answered by the rule-based
+    // step above (see "0. ingredients of a named dish"), so the model does not need this text, and it
+    // is often the longest field per dish - dropping it cuts prompt size and speeds up every reply.
+    items: items.map((i) => ({ id: i.id, name: i.name, price: i.price, allergens: i.allergens, tags: i.tags, available: i.available })),
   };
   return `You are "${pr.name || "the waiter"}", the virtual waiter of the restaurant "${r.name}". Tone: ${pr.tone || "friendly"}. Use ONLY the restaurant data below.
 ${pr.greeting ? `Greeting to use when the customer says hello: ${pr.greeting}\n` : ""}
@@ -336,10 +339,15 @@ ${JSON.stringify(data)}`;
 }
 
 async function askModel(message: string, lang: Lang, ctx: Ctx): Promise<string> {
-  const messages = [{ role: "system", content: systemPrompt(ctx, lang) }, ...ctx.history.slice(-6).map((m) => ({ role: m.role, content: m.text })), { role: "user", content: message }];
+  // Only the last couple of turns are kept: these questions are answered from a fresh read of the
+  // menu each time, not from a long conversation, and every extra message is more tokens to read
+  // before the model can start answering.
+  const messages = [{ role: "system", content: systemPrompt(ctx, lang) }, ...ctx.history.slice(-2).map((m) => ({ role: m.role, content: m.text })), { role: "user", content: message }];
   const res = await fetch(`${OLLAMA_URL}/api/chat`, {
     method: "POST", headers: { "content-type": "application/json" },
-    body: JSON.stringify({ model: MODEL, stream: false, think: false, keep_alive: "30m", options: { temperature: 0.2, num_ctx: 8192, num_predict: 400 }, messages }),
+    // num_predict caps a reply at ~220 tokens (well over the "max 4 sentences" rule) so one unusually
+    // long answer cannot make a diner wait far longer than the rest.
+    body: JSON.stringify({ model: MODEL, stream: false, think: false, keep_alive: "30m", options: { temperature: 0.2, num_ctx: 8192, num_predict: 220 }, messages }),
     signal: AbortSignal.timeout(90_000),
   });
   if (!res.ok) throw new Error(`Ollama ${res.status}`);
