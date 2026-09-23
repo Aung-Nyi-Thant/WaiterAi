@@ -104,8 +104,16 @@ label.lbl { display: block; font: 700 11px var(--font-b); letter-spacing: .1em; 
 .toast { position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%); padding: 12px 20px; border-radius: 999px; font-weight: 700; z-index: 80; background: #fff; color: #0e1030; box-shadow: 0 10px 30px rgba(0,0,0,.3); max-width: calc(100vw - 32px); text-align: center; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .diner { max-width: 480px; margin: 0 auto; padding: 18px 16px 130px; }
-.chat-sheet { position: fixed; inset: 0; z-index: 40; display: flex; justify-content: center; }
-.chat-inner { width: 100%; max-width: 480px; height: 100dvh; display: flex; flex-direction: column; }
+/* Hero AI card expand-in-place: the card grows open into the chat right where it is,
+   instead of a full-screen "sheet" that reads as leaving the page. The 0fr/1fr grid-rows
+   trick animates to the content's natural height without knowing it in advance. */
+.hero-expand { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .38s cubic-bezier(.4,0,.2,1); }
+.hero-expand.open { grid-template-rows: 1fr; }
+.hero-expand-inner { overflow: hidden; min-height: 0; }
+.chat-inline { display: flex; flex-direction: column; max-height: 62vh; padding-top: 4px; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-expand { transition: none; }
+}
 .bubble-u { align-self: flex-end; max-width: 300px; padding: 11px 16px; border-radius: 20px 20px 6px 20px; background: var(--violet); color: #fff; font-weight: 600; box-shadow: 0 8px 20px rgba(60,40,200,.4); white-space: pre-wrap; }
 .bubble-a { align-self: flex-start; max-width: 330px; padding: 12px 16px; border-radius: 20px 20px 20px 6px; white-space: pre-wrap; }
 .dots span { display: inline-block; width: 7px; height: 7px; margin: 0 2px; border-radius: 50%; background: #fff; opacity: .5; animation: bl 1s infinite; } .dots span:nth-child(2) { animation-delay: .2s; } .dots span:nth-child(3) { animation-delay: .4s; }
@@ -143,4 +151,36 @@ label.lbl { display: block; font: 700 11px var(--font-b); letter-spacing: .1em; 
   .sidebar, .topbar, .no-print { display: none !important; }
   .aurora-l { background: #fff !important; } .shell { padding: 0; }
   .qr-card { break-inside: avoid; box-shadow: none !important; }
+}
+
+/* Hero "Ask AI" card (top of the diner menu) — a soft pulsing glow marks it as the
+   AI-powered entry point, distinct from the flat glass cards used elsewhere. */
+.hero-glow { animation: heroGlow 3.2s ease-in-out infinite; }
+@keyframes heroGlow { 0%, 100% { box-shadow: 0 8px 28px rgba(90,60,200,.25); } 50% { box-shadow: 0 10px 32px rgba(234,181,79,.4); } }
+/* A blinking caret right after the hero placeholder text, so the card reads as a live,
+   waiting chat input ("I'm ready and listening") rather than static label text. */
+.hero-cursor { display: inline-block; width: 2px; height: 13px; margin-left: 2px; background: var(--gold); vertical-align: -2px; animation: heroCursorBlink 1s step-end infinite; }
+@keyframes heroCursorBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .hero-glow, .hero-cursor { animation: none; }
+  .hero-cursor { opacity: .6; }
+}
+
+/* The "AI cursor" — an actual pointer (not a touch-ripple) that visibly drives to and
+   "clicks" a dish's real Add button when the assistant adds it to picks on its own, so
+   the action reads as the AI operating the page, not items silently appearing.
+   Diner.tsx skips this entirely under prefers-reduced-motion and adds picks directly. */
+.aiCursor { position: fixed; top: 0; left: 0; z-index: 71; pointer-events: none; transition: transform .55s cubic-bezier(.4,0,.2,1); filter: drop-shadow(0 0 6px rgba(234,181,79,.65)) drop-shadow(0 2px 4px rgba(0,0,0,.4)); }
+.aiCursorArrow { display: block; transform-origin: 3px 2px; }
+.aiCursor.clicking .aiCursorArrow { animation: aiCursorPress .3s ease-out; }
+@keyframes aiCursorPress { 0% { transform: scale(1); } 45% { transform: scale(.8); } 100% { transform: scale(1); } }
+/* A soft glow that trails a beat behind the cursor (a slower transition on the same
+   coordinates) to read as continuous motion across the screen, not a teleport. */
+.aiCursorTrail { position: fixed; top: 0; left: 0; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: radial-gradient(circle, rgba(234,181,79,.4), transparent 70%); z-index: 69; pointer-events: none; filter: blur(3px); transition: transform .95s cubic-bezier(.22,.61,.36,1); }
+/* Click feedback moves to the actual button being pressed, not a ring around the cursor. */
+.ai-target-flash { animation: aiTargetFlash .5s ease-out; }
+@keyframes aiTargetFlash { 0% { box-shadow: 0 0 0 0 rgba(234,181,79,.85); } 100% { box-shadow: 0 0 0 12px rgba(234,181,79,0); } }
+@media (prefers-reduced-motion: reduce) {
+  .aiCursor, .aiCursorTrail { transition: none; }
+  .aiCursor.clicking .aiCursorArrow, .ai-target-flash { animation: none; }
 }
