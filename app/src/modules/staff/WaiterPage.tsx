@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Icon from "@/modules/platform/Icon";
+import SwipeCard from "@/modules/staff/SwipeCard";
 import { api, usePoll, minutesAgo } from "@/modules/platform/client";
 
 const KIND: Record<string, string> = { bill: "Bill, please", help: "Needs help at the table", other: "Needs the staff" };
@@ -10,7 +11,7 @@ type Floor = { me: { name: string; role: string }; calls: any[]; picks: any[]; a
 export default function Waiter() {
   const router = useRouter();
   const [d, setD] = useState<Floor | null>(null);
-  const [tab, setTab] = useState<"calls" | "picks" | "ready" | "tables">("calls");
+  const [tab, setTab] = useState<"feed" | "tables">("feed");
   const [dishesOpen, setDishesOpen] = useState(false);
   const [err, setErr] = useState("");
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -28,7 +29,17 @@ export default function Waiter() {
   if (!d) return <div className="aurora-d" style={{ padding: 40 }}>{err || "Loading…"}</div>;
 
   const ready = d.active.filter((o) => o.status === "ready");
-  const tabs = [["calls", `Calls · ${d.calls.length}`], ["picks", `Picks · ${d.picks.length}`], ["ready", `Ready · ${ready.length}`], ["tables", "Tables"]] as const;
+  // One priority-sorted feed instead of separate Calls/Picks/Ready tabs: a call could sit
+  // unnoticed while the waiter is looking at Picks. Calls come first (someone is waiting
+  // right now), then new picks, then food that's ready to serve - nothing to navigate to,
+  // it's just "everything that needs me," in the order it needs me.
+  type FeedItem = { kind: "call"; data: any } | { kind: "pick"; data: any } | { kind: "ready"; data: any };
+  const feed: FeedItem[] = [
+    ...d.calls.map((data) => ({ kind: "call" as const, data })),
+    ...d.picks.map((data) => ({ kind: "pick" as const, data })),
+    ...ready.map((data) => ({ kind: "ready" as const, data })),
+  ];
+  const tabs = [["feed", `Feed · ${feed.length}`], ["tables", "Tables"]] as const;
   const tableState = (n: string) => d.calls.some((c) => c.table === n) ? "call" : d.picks.some((o) => o.table === n) ? "picks" : d.active.some((o) => o.table === n) ? "active" : "free";
   const COLOR: any = { call: "#c62828", picks: "#b45309", active: "#1fa68a", free: "rgba(255,255,255,.14)" };
 
@@ -51,29 +62,38 @@ export default function Waiter() {
         {err && <div className="err-d" role="alert">{err}</div>}
         <div style={{ display: "flex", gap: 8, overflowX: "auto" }}>{tabs.map(([k, l]) => <button key={k} className={`pill ${tab === k ? "on" : ""}`} onClick={() => setTab(k)}>{l}</button>)}</div>
 
-        {tab === "calls" && (d.calls.length === 0 ? <Empty text="No one is calling." /> : d.calls.map((c) => (
-          <div key={c.id} className="gd r-l row" style={{ padding: 12, gap: 12 }}>
-            <div className="gd r-m" style={{ width: 52, height: 52, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><span style={{ font: "600 10px var(--font-b)", letterSpacing: ".1em" }}>TABLE</span><span style={{ font: "600 22px var(--font-h)", lineHeight: 1 }}>{c.table || "?"}</span></div>
-            <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: 16 }}>{KIND[c.kind] || KIND.other}</div><div className="soft-d" style={{ fontSize: 13 }}>{minutesAgo(c.createdAt)}</div></div>
-            <button className="btn btn-w" onClick={() => act(`/api/staff/calls/${c.id}`)}>Done</button>
-          </div>)))}
-
-        {tab === "picks" && (d.picks.length === 0 ? <Empty text="No picks waiting." /> : d.picks.map((o) => (
-          <div key={o.id} className="gd r-l" style={{ padding: "12px 16px" }}>
-            <div className="row" style={{ justifyContent: "space-between", marginBottom: 6 }}><div style={{ font: "600 22px var(--font-h)" }}>Table {o.table || "?"}</div><span className="chip">{{ en: "English", th: "Thai", my: "Burmese" }[o.lang as string]} · {minutesAgo(o.createdAt)}</span></div>
-            {o.items.map((i: any, k: number) => <div key={k} className="row" style={{ justifyContent: "space-between", padding: "3px 0", fontWeight: 500 }}><span>{i.qty}× {i.name}</span><b>฿{i.price * i.qty}</b></div>)}
-            {o.allergy && <div className="alert-banner" style={{ margin: "8px 0" }}><Icon name="alert" /><div>Diner asked about {o.allergy.toUpperCase()}.<br /><span style={{ fontWeight: 500 }}>Confirm with the kitchen before ordering.</span></div></div>}
-            <div className="row" style={{ gap: 8, marginTop: 8 }}>
-              <button className="btn btn-w" style={{ flex: 1 }} onClick={() => act(`/api/staff/orders/${o.id}`, { action: "take" })}>Take order</button>
-              <button className="btn btn-o" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "later" })}>Dismiss</button>
-            </div>
-          </div>)))}
-
-        {tab === "ready" && (ready.length === 0 ? <Empty text="Nothing is ready to serve." /> : ready.map((o) => (
-          <div key={o.id} className="gd r-l row" style={{ padding: 12, gap: 12 }}>
-            <div style={{ flex: 1 }}><div style={{ font: "600 20px var(--font-h)" }}>Table {o.table || "?"}</div><div className="soft-d" style={{ fontSize: 13 }}>{o.items.map((i: any) => `${i.qty}× ${i.name}`).join(", ")}</div></div>
-            <button className="btn btn-w" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "served" })}>Served</button>
-          </div>)))}
+        {tab === "feed" && (feed.length === 0 ? <Empty text="Nothing needs you right now." /> : feed.map((f) => {
+          if (f.kind === "call") { const c = f.data; return (
+            <SwipeCard key={`call-${c.id}`} onSwipeRight={() => act(`/api/staff/calls/${c.id}`)} rightLabel="Done">
+              <div className="gd r-l row" style={{ padding: 12, gap: 12, background: "rgba(198,40,40,.14)" }}>
+                <div className="gd r-m" style={{ width: 52, height: 52, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><span style={{ font: "600 10px var(--font-b)", letterSpacing: ".1em" }}>TABLE</span><span style={{ font: "600 22px var(--font-h)", lineHeight: 1 }}>{c.table || "?"}</span></div>
+                <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: 16 }}>{KIND[c.kind] || KIND.other}</div><div className="soft-d" style={{ fontSize: 13 }}>{minutesAgo(c.createdAt)}</div></div>
+                <button className="btn btn-w" onClick={() => act(`/api/staff/calls/${c.id}`)}>Done</button>
+              </div>
+            </SwipeCard>
+          ); }
+          if (f.kind === "pick") { const o = f.data; return (
+            <SwipeCard key={`pick-${o.id}`} onSwipeRight={() => act(`/api/staff/orders/${o.id}`, { action: "take" })} onSwipeLeft={() => act(`/api/staff/orders/${o.id}`, { action: "later" })} rightLabel="Take order" leftLabel="Dismiss">
+              <div className="gd r-l" style={{ padding: "12px 16px" }}>
+                <div className="row" style={{ justifyContent: "space-between", marginBottom: 6 }}><div style={{ font: "600 22px var(--font-h)" }}>Table {o.table || "?"}</div><span className="chip">{{ en: "English", th: "Thai", my: "Burmese" }[o.lang as string]} · {minutesAgo(o.createdAt)}</span></div>
+                {o.items.map((i: any, k: number) => <div key={k} className="row" style={{ justifyContent: "space-between", padding: "3px 0", fontWeight: 500 }}><span>{i.qty}× {i.name}</span><b>฿{i.price * i.qty}</b></div>)}
+                {o.allergy && <div className="alert-banner" style={{ margin: "8px 0" }}><Icon name="alert" /><div>Diner asked about {o.allergy.toUpperCase()}.<br /><span style={{ fontWeight: 500 }}>Confirm with the kitchen before ordering.</span></div></div>}
+                <div className="row" style={{ gap: 8, marginTop: 8 }}>
+                  <button className="btn btn-w" style={{ flex: 1 }} onClick={() => act(`/api/staff/orders/${o.id}`, { action: "take" })}>Take order</button>
+                  <button className="btn btn-o" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "later" })}>Dismiss</button>
+                </div>
+              </div>
+            </SwipeCard>
+          ); }
+          const o = f.data; return (
+            <SwipeCard key={`ready-${o.id}`} onSwipeRight={() => act(`/api/staff/orders/${o.id}`, { action: "served" })} rightLabel="Served">
+              <div className="gd r-l row" style={{ padding: 12, gap: 12, background: "rgba(31,166,138,.14)" }}>
+                <div style={{ flex: 1 }}><div style={{ font: "600 20px var(--font-h)" }}>Table {o.table || "?"}</div><div className="soft-d" style={{ fontSize: 13 }}>{o.items.map((i: any) => `${i.qty}× ${i.name}`).join(", ")}</div></div>
+                <button className="btn btn-w" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "served" })}>Served</button>
+              </div>
+            </SwipeCard>
+          );
+        }))}
 
         {tab === "tables" && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
