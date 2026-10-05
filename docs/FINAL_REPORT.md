@@ -105,7 +105,7 @@ Automated tests run on every push (GitHub Actions: lint, type-check, unit and in
 
 | Check | Result (5 October 2026) | Where |
 |---|---|---|
-| Unit and integration tests | 518 pass (`cd app && npm test`) | `app/tests/` |
+| Unit and integration tests | 537 pass (`cd app && npm test`) | `app/tests/` |
 | End-to-end tests (real server: diner → waiter → chef → bill) | 14 pass (`npm run test:e2e`) | `app/tests/e2e/` |
 | Requirements traceability | 108 IDs, each listed once, files exist, tests mention the ID | `app/tests/traceability.test.ts`, `docs/TRACEABILITY.md` |
 | AI safety and answers, 30 questions with the real model | 30/30 (`npm run eval:live`); once 29/30, thresholds met every time | `eval/`, `docs/NFR_RESULTS.md` |
