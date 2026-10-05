@@ -28,6 +28,7 @@ export async function GET(req: Request) {
     days, questions, sessions, tables, unanswered, opens,
     answeredPct: questions ? Math.round(((questions - unanswered) / questions) * 100) : null,
     topics, langs, cannot, flagged,
-    unmet: vegAsked ? { asked: vegAsked, listed: veg } : null,
+    // SRS FR-10: the "unmet demand" card appears only when diners asked more vegetarian questions than the menu has vegetarian dishes
+    unmet: vegAsked > veg ? { asked: vegAsked, listed: veg } : null,
   });
 }

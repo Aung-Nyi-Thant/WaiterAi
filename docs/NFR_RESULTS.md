@@ -17,15 +17,24 @@ computer (no phone, no Wi-Fi). Scripts: `app/scripts/nfr_check.py`, `app/scripts
 | Old API checks | `e2e.py`: 38 checks, all passed (including photo import with the real vision model) | `e2e.py` |
 | Automated tests | `npm test`: 205 passed; `npm run test:e2e`: 11 passed; `tsc --noEmit` clean; `next build` OK | |
 
-## NOT a valid result: NFR-1 (open questions within 15 s)
+## NFR-1 (open questions within 15 s): PASS on a quiet machine
 
-`nfr_check.py nfr1 … 100`: average 11.0 s, median 10.7 s, 90th percentile 15.0 s, 29 of 100 answers replaced by the
-fallback message because they hit the 15 s limit. **Do not quote this as the system's speed.** During the run another
-program was using the same Ollama (a second `next-server` on another port sent a chat request about every 25 s), and
-Ollama's log showed prompt reading at 47–113 tokens/s and answers at 7 tokens/s, far below this computer's normal speed.
-Earlier the same day, open questions took 3.5–4.8 s on a quiet machine (`eval:live`).
+`nfr_check.py nfr1 http://127.0.0.1:3100 100` (13-dish demo menu, model already loaded, nothing else using Ollama,
+mix of English, Thai and Burmese open questions): **average 8.5 s, median 8.3 s, 90th percentile 12.4 s** (limit: 90% within
+15 s), slowest 15.0 s. **2 of the 100 answers hit the 15 s cutoff** and were replaced by the fallback message (counted from
+Ollama's log: two requests ended after 15.0 s). The SRS figure "average about 5.6 s" does not hold for this mix of
+questions on this run: quote 8.5 s average / 12.4 s 90th percentile instead.
+The first question after the model had been idle (30 min `keep_alive`) took 15 s and fell back: the model had to be
+loaded again. Fixed: `keep_alive` is now 12 hours (`OLLAMA_KEEP_ALIVE` overrides it).
 
-What the run does show, and is worth knowing:
+### Earlier run that was NOT valid (kept as a warning)
+
+The same test run while another program was using the same Ollama gave average 11.0 s, median 10.7 s, 90th percentile 15.0 s,
+29 of 100 answers replaced by the fallback message. During that run a second `next-server` on another port sent a chat
+request about every 25 s, and Ollama's log showed prompt reading at 47–113 tokens/s and answers at 7 tokens/s. Do not quote it
+as the system's speed, but it shows the next point.
+
+What the runs show, and is worth knowing:
 
 1. **Sharing Ollama hurts a lot.** Gemma re-reads the whole prompt for every request (Ollama log:
    "forcing full prompt re-processing due to lack of cache data (likely due to SWA…)"), and a second user evicts the first
@@ -35,9 +44,24 @@ What the run does show, and is worth knowing:
 3. **Re-run on a quiet computer** before quoting a number:
    `python3 app/scripts/nfr_check.py nfr1 http://localhost:3000 100` (close other programs that use Ollama first).
 
+## NFR-7 (3 diners + 2 staff screens, 10 minutes)
+
+**First run (before the queue): passed the wording but not the intent.** 108 AI answers, 0 errors, every answer within
+30 s (slowest 15.1 s), 400 staff-screen refreshes all under 3 s. But **104 of the 108 answers were the fallback message**:
+the three diners (each asking again 2 s after every answer, which is a stress test) shared the one model at once, every
+request ran slower, and nearly all hit the 15 s limit. Cause: the SRS says "one AI answer at a time" but nothing
+enforced it, and the 15 s limit I added counted the time spent sharing.
+
+**Fix (`ai/provider.ts`):** requests now wait in one first-come-first-served line (kept on `globalThis` so all Next.js route
+bundles share it). Once a request starts it may take 15 s (NFR-1); it may wait at most 15 s for its turn, so a diner has
+an answer or the fallback within 30 s (NFR-7). Covered by 4 tests in `tests/provider.test.ts`.
+`nfr_check.py nfr7` now takes a think-time (seconds between a diner's questions, default 10; 2 = stress test).
+
+**After the fix:** see the last section of this file for the re-run (it needs a quiet computer; on 5 Oct 2026 the machine
+became slow again during the re-run, with Ollama decoding at 2.7-8 tokens/s while a Chrome helper process used >100% CPU).
+
 ## Not done
 
-- NFR-7 (3 diners + 2 staff screens for 10 minutes): not run, because the machine was shared (see above) and the run would
-  have disturbed the other program. Run `python3 app/scripts/nfr_check.py nfr7 http://localhost:3000 10` on a quiet computer.
+- NFR-7 re-run after the queue fix, if the last section does not show a result.
 - NFR-3 (owner publishes a first menu within 30 minutes): needs people.
 - Phone tests, interviews, native Burmese review: need people.

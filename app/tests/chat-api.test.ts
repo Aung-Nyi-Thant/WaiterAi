@@ -139,6 +139,24 @@ describe("AI-14 feedback on an answer", () => {
   });
 });
 
+describe("FR-10 unmet demand: only when there are fewer vegetarian dishes than vegetarian questions", () => {
+  it("shows the card with the numbers once the questions outnumber the dishes, and not before", async () => {
+    noModel();
+    run("DELETE FROM chat_messages"); run("DELETE FROM chat_sessions");
+    await ownerLogin();
+    const unmet = async () => (await call(insights, { url: "http://t/api/owner/insights?days=7" })).data.unmet;
+    const listed = all("SELECT tags_json FROM menu_items WHERE restaurant_id = 1").filter((i: any) => /vegetarian|vegan/.test(i.tags_json)).length;
+    expect(listed).toBe(4);
+    for (let i = 0; i < listed; i++) await say("vegetarian dishes please", { sessionId: "u" + i });
+    expect(await unmet()).toBeNull();                            // 4 questions, 4 vegetarian dishes
+    await say("vegan please", { sessionId: "u5" });
+    expect(await unmet()).toEqual({ asked: 5, listed: 4 });      // 5 questions, 4 vegetarian dishes
+    await say("what vegetarian food do you have", { sessionId: "u6" });
+    expect((await unmet()).asked).toBe(6);
+    signOut();
+  });
+});
+
 describe("IN-1 / IN-2 / IN-3 insights", () => {
   it("counts questions, the share answered, topics, languages and what could not be answered", async () => {
     noModel();
@@ -153,7 +171,7 @@ describe("IN-1 / IN-2 / IN-3 insights", () => {
     expect(r.topics.map((t: any) => t.topic).sort()).toEqual(["allergens", "hours", "prices", "vegetarian"]);
     expect(r.langs.map((l: any) => l.lang).sort()).toEqual(["en", "th"]);
     expect(r.cannot.map((c: any) => c.text)).toEqual(["Does the fresh spring roll contain any allergens?"]);
-    expect(r.unmet).toEqual({ asked: 1, listed: 4 });
+    expect(r.unmet).toBeNull();                                  // 1 question, 4 vegetarian dishes: demand is met
     expect((await call(insights, { url: "http://t/api/owner/insights?days=1" })).data.days).toBe(1);
     expect((await call(insights, { url: "http://t/api/owner/insights?days=9999" })).data.days).toBe(90);
     expect((await call(insights, { url: "http://t/api/owner/insights?days=abc" })).data.days).toBe(7);

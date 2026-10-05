@@ -18,3 +18,4 @@ app/public/uploads/*
 __pycache__/
 design/canvas.server.json
 eval/results/full_run.log
+*.tsbuildinfo

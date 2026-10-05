@@ -1,4 +1,6 @@
 // Regression tests for the gaps found when the code was checked against the SRS (Team 18, M2).
+import fs from "node:fs";
+import path from "node:path";
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { aiCtx, call, mockModel, noModel, ownerLogin, signOut, staffLogin } from "./helpers";
 import { answer, isInjection, withVoiceEnding, CHAT_TIMEOUT_MS } from "@/modules/ai/ai";
@@ -12,6 +14,22 @@ import { POST as staffLoginRoute } from "@/modules/staff/api/login";
 import { all, get } from "@/modules/platform/db";
 
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+
+describe("NFR-5: no customer data goes to a cloud AI service (checked in the source)", () => {
+  const walk = (dir: string): string[] => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]));
+  const files = walk(path.join(process.cwd(), "src")).filter((f) => /\.(ts|tsx)$/.test(f));
+  it("the only server-side network call is the one to Ollama, whose address defaults to this computer", () => {
+    const callers = files.filter((f) => /\bfetch\(/.test(fs.readFileSync(f, "utf8")) && !/"use client"/.test(fs.readFileSync(f, "utf8")));
+    expect(callers.map((f) => path.relative(process.cwd(), f))).toEqual(["src/modules/ai/provider.ts"]);
+    expect(fs.readFileSync(callers[0], "utf8")).toContain('process.env.OLLAMA_URL || "http://localhost:11434"');
+  });
+  it("the only external web address in the whole app is the font stylesheet loaded by the browser", () => {
+    const hosts = new Set<string>();
+    for (const f of files) for (const m of fs.readFileSync(f, "utf8").matchAll(/https?:\/\/([a-z0-9.-]+)/gi)) hosts.add(m[1]);
+    for (const ok of ["localhost", "127.0.0.1", "test.local", "www.w3.org"]) hosts.delete(ok);
+    expect([...hosts].filter((h) => !/^\$|^\d/.test(h))).toEqual(["fonts.googleapis.com"]);
+  });
+});
 
 describe("FR-2: a message that tries to change the rules gets a fixed refusal and changes nothing", () => {
   const attacks = [

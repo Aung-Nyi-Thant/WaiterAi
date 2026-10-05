@@ -7,7 +7,9 @@ import { all, get } from "@/modules/platform/db";
 
 afterEach(() => { vi.unstubAllGlobals(); });
 beforeEach(async () => { await ownerLogin(); });
-const photo = (type = "image/png") => { const f = new FormData(); f.append("file", new File([new Uint8Array([1, 2, 3])], "menu.png", { type })); return f; };
+// the first bytes of a real PNG (the import checks what the file really is, not the type the browser claims)
+const PNG_HEAD = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
+const photo = (type = "image/png", bytes: Uint8Array<ArrayBuffer> = PNG_HEAD) => { const f = new FormData(); f.append("file", new File([bytes], "menu.png", { type })); return f; };
 const menuJson = JSON.stringify({ items: [
   { name: "Som Tam", price: "฿ 65", category: "Salads", description: "Papaya salad" },
   { name: "Mystery", price: "n/a" },
@@ -35,6 +37,7 @@ describe("MI-1 / MI-3 reading a menu photo does not touch the live menu", () => 
   it("accepts only JPG/PNG/WebP and needs an owner login", async () => {
     mockModel(menuJson);
     expect((await call(importPhoto, { method: "POST", form: photo("application/pdf") })).status).toBe(400);
+    expect((await call(importPhoto, { method: "POST", form: photo("image/png", new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])) })).status).toBe(400);   // not really a PNG
     expect((await call(importPhoto, { method: "POST", form: new FormData() })).status).toBe(400);
     signOut();
     expect((await call(importPhoto, { method: "POST", form: photo() })).status).toBe(401);

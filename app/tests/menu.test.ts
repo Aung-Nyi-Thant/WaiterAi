@@ -182,7 +182,18 @@ describe("QR-1 QR codes", () => {
 });
 
 describe("MM-6 photo upload", () => {
-  const form = (type: string, size = 10, name = "a.png") => { const f = new FormData(); f.append("file", new File([new Uint8Array(size)], name, { type })); return f; };
+  // the first bytes of a real PNG; the rest of the file does not matter for the type check
+  const PNG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  const form = (type: string, size = 10, name = "a.png", head: number[] = PNG) => { const b = new Uint8Array(Math.max(size, 12)); b.set(head); const f = new FormData(); f.append("file", new File([b], name, { type })); return f; };
+  it("checks what the file really is, not the type the browser claims", async () => {
+    const JPG = [0xff, 0xd8, 0xff, 0xe0], WEBP = [0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50];
+    expect((await call(upload, { method: "POST", form: form("image/jpeg", 20, "a.jpg", JPG) })).data.url).toMatch(/\.jpg$/);
+    expect((await call(upload, { method: "POST", form: form("image/webp", 20, "a.webp", WEBP) })).data.url).toMatch(/\.webp$/);
+    const text = Array.from(new TextEncoder().encode("<script>alert(1)</script>"));
+    expect((await call(upload, { method: "POST", form: form("image/png", 30, "evil.png", text) })).status).toBe(400);      // a script renamed to .png
+    expect((await call(upload, { method: "POST", form: form("image/png", 30, "a.png", JPG) })).status).toBe(400);         // a JPEG claiming to be a PNG
+    expect((await call(upload, { method: "POST", form: form("image/jpeg", 30, "a.jpg", [0, 0, 0, 0]) })).status).toBe(400);
+  });
   it("accepts JPG/PNG/WebP, serves them by generated name, and rejects other types and files over 8 MB", async () => {
     const ok = await call(upload, { method: "POST", form: form("image/png") });
     expect(ok.status).toBe(200);

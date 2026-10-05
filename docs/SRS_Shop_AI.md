@@ -159,7 +159,7 @@ Priority: **M** = must, **S** = should.
 | MM-3 | The owner shall create, rename and delete categories with three-language names; deleting a category keeps its dishes. | M |
 | MM-4 | The owner shall switch a dish on/off sale with one action; the change shall apply to the diner menu and AI at once. | M |
 | MM-5 | The system shall show how many dishes have complete allergen data. | S |
-| MM-6 | Photo upload shall accept JPG, PNG, WebP up to 8 MB. | M |
+| MM-6 | Photo upload shall accept JPG, PNG, WebP up to 8 MB. The file is judged by its real content (first bytes), not by the type the browser reports: a text or script file renamed to .png is rejected. The same rule applies to the menu photo import. | M |
 | MM-7 | The system shall reject a dish with no name or an invalid price. | M |
 
 #### 3.1.6 Menu import (MI)
@@ -200,7 +200,7 @@ Priority: **M** = must, **S** = should.
 | ID | Requirement | Pri |
 |---|---|---|
 | IN-1 | The owner shall see, for 1, 7 or 30 days: number of chats, tables, questions, share answered from data, unanswered count, menu opens. | S |
-| IN-2 | The system shall show most-asked topics, languages used, and unmet demand (vegetarian questions vs number of vegetarian dishes). | S |
+| IN-2 | The system shall show most-asked topics, languages used, and an "unmet demand" card, shown only when the number of vegetarian/vegan questions is greater than the number of vegetarian/vegan dishes on the menu. | S |
 | IN-3 | The system shall list unanswered questions with a shortcut to add an FAQ, and answers diners rated wrong. | S |
 
 ### 3.2 External interface requirements
@@ -221,7 +221,7 @@ Priority: **M** = must, **S** = should.
 - NFR-P1: AI reply for open questions within 15 s on the reference computer (measured average about 5–6 s with `gemma4:12b`).
 - NFR-P2: Rule-based answers (allergens, prices, hours, orders) within 1 s (observed in tests: milliseconds).
 - NFR-P3: Menu page usable within 3 s on a local network.
-- NFR-P4: Support at least 3 simultaneous diners on the reference computer; AI requests are processed one at a time.
+- NFR-P4: Support at least 3 simultaneous diners on the reference computer; AI requests are processed one at a time, first come first served. A request is processed for at most 15 s (NFR-P1) and waits in line for at most 15 s, so a diner has an answer or the fallback message within 30 s. Rule-based answers (allergens, prices, hours, orders) never wait for the AI.
 **Safety**
 - NFR-S1: Allergen answers must be generated from stored data only.
 - NFR-S2: Missing allergen data must never be presented as "no allergens".

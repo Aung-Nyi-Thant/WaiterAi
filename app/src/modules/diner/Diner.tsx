@@ -100,7 +100,7 @@ export default function Diner({ slug }: { slug: string }) {
 
   // keep sold-out state fresh
   useEffect(() => {
-    const i = setInterval(() => { if (!document.hidden) api<Menu>(`/api/public/${slug}/menu`).then((m) => { setMenu(m); setOffline(false); }).catch(() => {}); }, 20000);
+    const i = setInterval(() => { if (!document.hidden) api<Menu>(`/api/public/${slug}/menu`).then((m) => { setMenu(m); setOffline(false); }).catch(() => {}); }, 10000);   // SRS FR-1/FR-4: a sold-out change shows within 20 s, so poll twice as often
     return () => clearInterval(i);
   }, [slug]);
 

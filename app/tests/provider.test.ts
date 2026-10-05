@@ -1,7 +1,7 @@
 // The AI provider layer: always local Ollama (SRS 2.2 / NFR-5: no customer data to a cloud AI service).
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mockModel } from "./helpers";
-import { complete, completeJson, IMPORT_TIMEOUT_MS } from "@/modules/ai/provider";
+import { complete, completeJson, IMPORT_TIMEOUT_MS, AiBusyError } from "@/modules/ai/provider";
 
 const O = { temperature: 0.2, maxTokens: 100, timeoutMs: 5000 };
 const MSG = [{ role: "system" as const, content: "sys" }, { role: "user" as const, content: "hi" }];
@@ -16,8 +16,15 @@ describe("ollama", () => {
     const calls = mockModel("hello");
     expect(await complete(MSG, O)).toBe("hello");
     expect(calls[0].url).toBe("http://localhost:11434/api/chat");
-    expect(calls[0].body).toMatchObject({ model: "my-model", stream: false, think: false, keep_alive: "30m", options: { temperature: 0.2, num_ctx: 8192, num_predict: 100 } });
+    expect(calls[0].body).toMatchObject({ model: "my-model", stream: false, think: false, keep_alive: "12h", options: { temperature: 0.2, num_ctx: 8192, num_predict: 100 } });
     expect(calls[0].body.format).toBeUndefined();
+  });
+  it("keeps the model loaded for 12 hours by default so the first diner after a quiet period is not sent to the fallback; OLLAMA_KEEP_ALIVE overrides it", async () => {
+    process.env.OLLAMA_KEEP_ALIVE = "5m";
+    const calls = mockModel("x");
+    await complete(MSG, O);
+    expect(calls[0].body.keep_alive).toBe("5m");
+    delete process.env.OLLAMA_KEEP_ALIVE;
   });
   it("uses gemma4:12b when no model is configured", async () => {
     delete process.env.OLLAMA_MODEL;
@@ -60,6 +67,54 @@ describe("no cloud AI (SRS 2.2 constraint, NFR-5)", () => {
     vi.stubGlobal("fetch", async (url: string) => { urls.push(String(url)); throw new Error("ECONNREFUSED"); });
     await expect(complete(MSG, O)).rejects.toThrow("ECONNREFUSED");
     expect(urls).toEqual(["http://localhost:11434/api/chat"]);
+  });
+});
+
+describe("SRS 2.2 / NFR-7: one AI answer at a time, first come first served, bounded waiting", () => {
+  // a model that needs `ms` per answer; records how many requests were running at once and in which order they started
+  const slowModel = (ms: number, fail = (_n: number) => false) => {
+    const seen = { running: 0, peak: 0, order: [] as string[], calls: 0 };
+    vi.stubGlobal("fetch", async (_u: string, init: any) => {
+      const n = ++seen.calls;
+      seen.order.push(JSON.parse(init.body).messages.at(-1).content);
+      seen.running++; seen.peak = Math.max(seen.peak, seen.running);
+      await new Promise((r) => setTimeout(r, ms));
+      seen.running--;
+      return fail(n) ? new Response("x", { status: 503 }) : new Response(JSON.stringify({ message: { content: "ok" } }));
+    });
+    return seen;
+  };
+  const ask = (q: string, extra = {}) => complete([{ role: "user", content: q }], { ...O, ...extra });
+
+  it("never runs two requests at once, and serves them in the order they arrived", async () => {
+    const seen = slowModel(30);
+    await Promise.all(["a", "b", "c", "d"].map((q) => ask(q)));
+    expect(seen.peak).toBe(1);
+    expect(seen.order).toEqual(["a", "b", "c", "d"]);
+  });
+  it("a request that would wait longer than maxWaitMs gets AiBusyError and never reaches the model", async () => {
+    const seen = slowModel(80);
+    const results = await Promise.allSettled([ask("first", { maxWaitMs: 120 }), ask("second", { maxWaitMs: 120 }), ask("third", { maxWaitMs: 120 })]);
+    expect(results[0].status).toBe("fulfilled");
+    expect(results[1].status).toBe("fulfilled");                       // waited ~80 ms
+    expect((results[2] as PromiseRejectedResult).reason).toBeInstanceOf(AiBusyError);   // would have waited ~160 ms
+    expect(seen.order).toEqual(["first", "second"]);                   // the third was never sent to the model
+  });
+  it("the line keeps moving after a failed request and after a request that gave up waiting", async () => {
+    const seen = slowModel(40, (n) => n === 1);
+    const r = await Promise.allSettled([ask("fails"), ask("gives-up", { maxWaitMs: 10 }), ask("after")]);
+    expect((r[0] as PromiseRejectedResult).reason.message).toBe("Ollama 503");
+    expect((r[1] as PromiseRejectedResult).reason).toBeInstanceOf(AiBusyError);
+    expect(r[2].status).toBe("fulfilled");
+    expect(seen.order).toEqual(["fails", "after"]);
+    expect((await ask("later")).length).toBeGreaterThan(0);            // and it is not stuck afterwards
+  });
+  it("the time limit counts from when a request starts, not from when it joined the line", async () => {
+    slowModel(50);
+    const spy = vi.spyOn(AbortSignal, "timeout");
+    await Promise.all([ask("one", { timeoutMs: 777 }), ask("two", { timeoutMs: 777 })]);
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenCalledWith(777);
   });
 });
 

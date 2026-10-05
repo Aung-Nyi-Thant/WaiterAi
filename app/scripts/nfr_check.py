@@ -3,7 +3,9 @@
   python3 scripts/nfr_check.py nfr1 [BASE] [N]        AI reply time for open questions (NFR-1: 90% within 15 s)
   python3 scripts/nfr_check.py nfr2 [BASE]            menu page data and staff screen refresh time (NFR-2: 3 s)
   python3 scripts/nfr_check.py nfr4 [BASE]            diner flow while the AI is unavailable (NFR-4: fallback within 5 s)
-  python3 scripts/nfr_check.py nfr7 [BASE] [MINUTES]  3 diners chatting + 2 staff screens (NFR-7: no errors, AI answer within 30 s)
+  python3 scripts/nfr_check.py nfr7 [BASE] [MINUTES] [THINK_SECONDS]
+                                                      3 diners chatting + 2 staff screens (NFR-7: no errors, answer within 30 s).
+                                                      THINK_SECONDS = pause of a diner between questions (default 10; 2 = stress test)
 
 BASE defaults to http://localhost:3000 (the demo restaurant golden-lotus, waiter PIN 1111).
 For nfr4 start the server with the AI switched off, e.g.  OLLAMA_URL=http://127.0.0.1:9 npm start
@@ -66,7 +68,7 @@ def nfr1(n):
             check(f"question {i + 1} answered", False, f"HTTP {code}")
             continue
         times.append(dt)
-        fallback += "unavailable" in r["reply"].lower() or "ask the staff" in r["reply"].lower()
+        fallback += not r.get("answered", True)   # the server marks fallback and "please ask the staff" replies as not answered (works in every language)
     p90 = pct(times, 90)
     print(f"{len(times)} open questions: average {statistics.mean(times):.1f} s, median {statistics.median(times):.1f} s, "
           f"90th percentile {p90:.1f} s, slowest {max(times):.1f} s, {fallback} fallback/refusal replies")
@@ -106,8 +108,8 @@ def nfr4():
     check("allergy answers still work without the AI", c == 200 and "confirm with the staff" in r["reply"].lower(), f"{dt * 1000:.0f} ms")
 
 
-def nfr7(minutes):
-    stop, errors, ai_times, polls = time.time() + minutes * 60, [], [], [0]
+def nfr7(minutes, think=10.0):
+    stop, errors, ai_times, polls, fallbacks = time.time() + minutes * 60, [], [], [0], [0]
     lock = threading.Lock()
 
     def diner(k):
@@ -120,7 +122,8 @@ def nfr7(minutes):
                     errors.append(f"diner {k}: HTTP {code}")
                 else:
                     ai_times.append(dt)
-            time.sleep(2)
+                    fallbacks[0] += not r.get("answered", True)
+            time.sleep(think)   # a person reads the answer and types the next question; 2 = stress test
 
     def staff(k):
         call = client()
@@ -138,7 +141,7 @@ def nfr7(minutes):
     ts = [threading.Thread(target=diner, args=(k,)) for k in range(3)] + [threading.Thread(target=staff, args=(k,)) for k in range(2)]
     [t.start() for t in ts]
     [t.join() for t in ts]
-    print(f"{minutes} min: {len(ai_times)} AI answers, {polls[0]} staff screen refreshes, {len(errors)} errors"
+    print(f"{minutes} min: {len(ai_times)} AI answers ({fallbacks[0]} of them the fallback/'ask the staff' message), {polls[0]} staff screen refreshes, {len(errors)} errors"
           + (f"; AI answers avg {statistics.mean(ai_times):.1f} s, 90th pct {pct(ai_times, 90):.1f} s, slowest {max(ai_times):.1f} s" if ai_times else ""))
     check("NFR-7 no errors with 3 diners and 2 staff screens", not errors, "; ".join(errors[:3]))
     check("NFR-7 every AI answer within 30 s", bool(ai_times) and max(ai_times) <= 30, f"slowest {max(ai_times):.1f} s" if ai_times else "no answers")
@@ -150,7 +153,7 @@ if __name__ == "__main__":
     if what == "nfr1": nfr1(int(nums[0]) if nums else 30)
     elif what == "nfr2": nfr2()
     elif what == "nfr4": nfr4()
-    elif what == "nfr7": nfr7(float(nums[0]) if nums else 10)
+    elif what == "nfr7": nfr7(float(nums[0]) if nums else 10, float(nums[1]) if len(nums) > 1 else 10.0)
     else: sys.exit(__doc__)
     print("\nALL PASSED" if not fails else f"\n{len(fails)} FAILED: " + ", ".join(fails))
     sys.exit(1 if fails else 0)
