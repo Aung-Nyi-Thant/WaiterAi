@@ -32,6 +32,9 @@ export async function complete(messages: Msg[], o: Opts): Promise<string> {
   try { return await viaOllama(messages, o); } finally { release(); }
 }
 
+// Context size of every request (Ollama reloads the model when it changes, so it must be the same everywhere).
+const NUM_CTX = 8192;
+
 async function viaOllama(messages: Msg[], o: Opts): Promise<string> {
   const res = await fetch(`${process.env.OLLAMA_URL || "http://localhost:11434"}/api/chat`, {
     method: "POST", headers: { "content-type": "application/json" },
@@ -40,7 +43,7 @@ async function viaOllama(messages: Msg[], o: Opts): Promise<string> {
       // Keep the model in memory while the restaurant is open: after an idle gap Ollama needs ~15 s to load it again,
       // and the first diner would get the "AI unavailable" message because of the 15 s limit (SRS NFR-1).
       keep_alive: process.env.OLLAMA_KEEP_ALIVE || "12h",
-      options: { temperature: o.temperature, num_ctx: 8192, num_predict: o.maxTokens },
+      options: { temperature: o.temperature, num_ctx: NUM_CTX, num_predict: o.maxTokens },
       messages: messages.map((m) => ({ role: m.role, content: m.content, ...(m.images?.length ? { images: m.images } : {}) })),
     }),
     signal: AbortSignal.timeout(o.timeoutMs),

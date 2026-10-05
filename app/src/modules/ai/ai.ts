@@ -404,6 +404,13 @@ async function askModel(message: string, ctx: Ctx): Promise<string> {
   // 14 seconds for a turn (15 s of work + 14 s of waiting + request overhead stays under the 30 s of NFR-7).
   return complete(messages as Msg[], { temperature: 0.2, maxTokens: 220, timeoutMs: CHAT_TIMEOUT_MS, maxWaitMs: CHAT_QUEUE_WAIT_MS });
 }
+// Warm-up (see ai/warmup.ts). The first time Ollama reads a long system prompt it needs 30-60 s, far more than the 15 s limit,
+// but it keeps the evaluated prompt and reuses it for every later question with the same system prompt. So the server sends each
+// restaurant's real system prompt once, with a one-token question, when it starts; the first diner then finds it already read.
+// (Measured: the first real question after an unload took 42-67 s without this and about 6 s with it.)
+export async function warmUpPrompt(ctx: Ctx): Promise<void> {
+  await complete([{ role: "system", content: systemPrompt(ctx) }, { role: "user", content: "Hi" }] as Msg[], { temperature: 0.2, maxTokens: 1, timeoutMs: 180_000 });
+}
 export const CHAT_TIMEOUT_MS = 15_000;
 export const CHAT_QUEUE_WAIT_MS = 14_000;
 

@@ -28,6 +28,7 @@ For a real deployment run `npm run db:seed` with `NODE_ENV=production`: it loads
 | Variable | Meaning | Default |
 |---|---|---|
 | `OLLAMA_URL`, `OLLAMA_MODEL` | the local model (there is no cloud option) | `http://localhost:11434`, `gemma4:12b` |
+| `AI_WARMUP` | `0` = do not read the restaurants' prompts into the model when the server starts (default: on; it takes up to a minute in the background) | on |
 | `OLLAMA_KEEP_ALIVE` | how long the model stays loaded after the last question | `12h` |
 | `DATA_DIR` | database, session secret and uploaded photos | `./data` |
 | `SESSION_SECRET` | signs session cookies | generated once into `DATA_DIR/secret` |
