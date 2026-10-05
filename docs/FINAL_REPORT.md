@@ -86,11 +86,11 @@ Every push runs lint, type-check, unit and integration tests, the offline AI eva
 
 ## 7. AI-first reflection
 
-Full log: `docs/AI_USAGE_LOG.md`; statement: `docs/AI_USE_STATEMENT.md`. The product's model `gemma4:12b` is part of the system; Claude Code (Sonnet 5 and 5.5) was the development tool. **[team to complete: other tools, and which member used which]**
+Full log: `docs/AI_USAGE_LOG.md`; statement: `docs/AI_USE_STATEMENT.md`. The product's model `gemma4:12b` is part of the system; Claude Code (Sonnet 5 and 5.5) was the development tool, used by Aung Nyi Nyi Thant; the other members did not use an AI tool, so the log has no rows for them. **[team to confirm]**
 
 **What worked.** Tests written first found real bugs (a "bill" keyword matching inside "papaya"; a wrong quantity in "x4 … x2"; the Thai word for "staff" read as "sesame"). Measuring beat guessing: the slow first answer after idle was the long prompt being read (40–65 s), not the model loading; a start-up warm-up now covers it.
 
-**What people decided.** The "AI" versus "staff" wording (corrected twice by a member), the Burmese replies (four native-speaker reviews), no cloud AI, and how to merge two lines of AI-assisted work. **[team to complete: what each member changed or rejected in the AI's output]**
+**What people decided.** The "AI" versus "staff" wording (corrected twice by a member), the Burmese replies (four native-speaker reviews), no cloud AI, and how to merge two lines of AI-assisted work. **[team to complete: what Aung Nyi Nyi Thant changed or rejected in the AI's output]**
 
 **Lessons.** A language model must never be the source of a safety fact. A claim is worth its test: we reverted fixes to see the tests fail, and one test passed even with the bug. Numbers need an idle machine: a first load test "passed" while 104 of 108 answers were the fallback message, and was re-run.
 
