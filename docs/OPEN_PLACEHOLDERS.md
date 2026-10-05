@@ -34,9 +34,7 @@ The PDF corrections themselves (the table above these rows) are for the team to 
 
 | Line | Member | GitHub account | Missing |
 |---|---|---|---|
-| 8 | 1 (diner web app) | Tharathon47 | name: `(fill in)` |
-| 10 | 3 (owner back office) | chawakron50-lab | name: `(fill in)` |
-| 12 | 5 (QR, insights, import screen, tests, docs) | noeysasi | name: `(fill in)` |
+| 12 | 5 (QR, insights, import screen, tests, docs) | noeysasi | name: `(fill in)` (members 1 and 3 are filled in: Tharathon Plengsri, Chawakron Singkaew) |
 
 ## `docs/SRS_Shop_AI.md`
 

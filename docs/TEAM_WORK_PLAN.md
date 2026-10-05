@@ -5,9 +5,9 @@ Fill in the names in the first table.
 
 | Member | Name | GitHub account | Part |
 |---|---|---|---|
-| 1 | (fill in) | Tharathon47 | Diner web app (FR-1, FR-3 diner side) |
+| 1 | Tharathon Plengsri | Tharathon47 | Diner web app (FR-1, FR-3 diner side) |
 | 2 | Aung Nyi Thant | Aung-Nyi-Thant | AI waiter and backend core (FR-2, backend of FR-5, FR-6, FR-9) |
-| 3 | (fill in) | chawakron50-lab | Owner back office (FR-5, FR-7) |
+| 3 | Chawakron Singkaew | chawakron50-lab | Owner back office (FR-5, FR-7) |
 | 4 | Natthanon Wongsai | wujieiei | Staff and orders (FR-4, FR-9) |
 | 5 | (fill in) | noeysasi | QR codes, insights, import screen, tests and docs (FR-6, FR-8, FR-10) |
 
