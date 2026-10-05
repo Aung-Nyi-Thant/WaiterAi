@@ -30,12 +30,6 @@ Line 7 of the same file only explains the marker; it is not a cell to fill in.
 
 The PDF corrections themselves (the table above these rows) are for the team to apply to the PDFs; the repo only records what to change.
 
-## `docs/TEAM_WORK_PLAN.md`
-
-| Line | Member | GitHub account | Missing |
-|---|---|---|---|
-| 12 | 5 (QR, insights, import screen, tests, docs) | noeysasi | name: `(fill in)` (members 1 and 3 are filled in: Tharathon Plengsri, Chawakron Singkaew) |
-
 ## `docs/SRS_Shop_AI.md`
 
 | Line | What is missing |
