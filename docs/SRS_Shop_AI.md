@@ -1,7 +1,7 @@
 # Software Requirements Specification (SRS)
 ## Shop AI: The Digital Waiter
 Version 1.1 · October 2026 · Format follows IEEE 830 / ISO 29148
-Authors (team MFU 888): Aung Nyi Nyi Thant (6931503001), Chawakron Singkaew (6931503031), Tharathon Plengsri (6931503042), Sasiwimon Chatkaew (6931503073), Natthanon Wongsai (6931503103) · Course: Introduction to Software Engineering (15031001), MFU · Supervisor: [name]
+Authors (team MFU 888): Aung Nyi Nyi Thant (6931503001), Chawakron Singkaew (6931503031), Tharathon Plengsri (6931503042), Sasiwimon Chatkaew (6931503073), Natthanon Wongsai (6931503103) · Course: Introduction to Software Engineering (15031001), MFU · Instructor: Aj. Prasara Jakkaew
 
 ---
 
