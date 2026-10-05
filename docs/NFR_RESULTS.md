@@ -1,5 +1,7 @@
 # Measured results (5 Oct 2026)
 
+> **Earlier measurements.** Written before the AI request queue, the prompt warm-up and the final idle-machine runs. The latest figures for NFR-P1 to NFR-P4 are in `docs/PERFORMANCE.md` and are the ones quoted in the SRS (section 5) and the final report; where the two differ (for example the NFR-1 median), use `PERFORMANCE.md`. This file keeps the history, including the runs that were not valid and why.
+
 Machine: MacBook Air M4, 32 GB, Ollama with `gemma4:12b` (100% GPU), built app (`next build` + `next start`),
 temporary database with the 13-dish demo restaurant. Server-side measurements with HTTP requests from the same
 computer (no phone, no Wi-Fi). Scripts: `app/scripts/nfr_check.py`, `app/scripts/chat_smoke.py`,
