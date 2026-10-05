@@ -6,12 +6,13 @@ import SwipeCard from "@/modules/staff/SwipeCard";
 import { api, usePoll, minutesAgo } from "@/modules/platform/client";
 
 const KIND: Record<string, string> = { bill: "Bill, please", help: "Needs help at the table", other: "Needs the staff" };
-type Floor = { me: { name: string; role: string }; calls: any[]; picks: any[]; active: any[]; soldOut: any[]; dishes: any[] };
+type Bill = { table: string; lines: { name: string; qty: number; price: number }[]; total: number; pending: { name: string; qty: number; price: number }[]; inKitchen: number; asked: boolean };
+type Floor = { me: { name: string; role: string }; calls: any[]; picks: any[]; active: any[]; bills: Bill[]; soldOut: any[]; dishes: any[] };
 
 export default function Waiter() {
   const router = useRouter();
   const [d, setD] = useState<Floor | null>(null);
-  const [tab, setTab] = useState<"feed" | "tables">("feed");
+  const [tab, setTab] = useState<"feed" | "bills" | "tables">("feed");
   const [dishesOpen, setDishesOpen] = useState(false);
   const [err, setErr] = useState("");
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -26,81 +27,106 @@ export default function Waiter() {
   usePoll(load, 3000);
   const act = async (path: string, body?: any) => { try { await api(path, { body: body ?? {} }); } catch (e: any) { setErr(e.message); } load(); };
   const logout = async () => { await api("/api/auth/logout", { body: {} }); router.push("/staff"); };
-  if (!d) return <div className="aurora-d" style={{ padding: 40 }}>{err || "Loading…"}</div>;
+  if (!d) return <div className="sa-app" data-theme="night" style={{ padding: 40 }}>{err || "Loading…"}</div>;
 
   const ready = d.active.filter((o) => o.status === "ready");
   // One priority-sorted feed instead of separate Calls/Picks/Ready tabs: a call could sit
-  // unnoticed while the waiter is looking at Picks. Calls come first (someone is waiting
+  // unnoticed while the staff member is looking at Picks. Calls come first (someone is waiting
   // right now), then new picks, then food that's ready to serve - nothing to navigate to,
   // it's just "everything that needs me," in the order it needs me.
-  type FeedItem = { kind: "call"; data: any } | { kind: "pick"; data: any } | { kind: "ready"; data: any };
-  const feed: FeedItem[] = [
-    ...d.calls.map((data) => ({ kind: "call" as const, data })),
-    ...d.picks.map((data) => ({ kind: "pick" as const, data })),
-    ...ready.map((data) => ({ kind: "ready" as const, data })),
-  ];
-  const tabs = [["feed", `Feed · ${feed.length}`], ["tables", "Tables"]] as const;
-  const tableState = (n: string) => d.calls.some((c) => c.table === n) ? "call" : d.picks.some((o) => o.table === n) ? "picks" : d.active.some((o) => o.table === n) ? "active" : "free";
-  const COLOR: any = { call: "#c62828", picks: "#b45309", active: "#1fa68a", free: "rgba(255,255,255,.14)" };
+  const feedCount = d.calls.length + d.picks.length + ready.length;
+  const tabs = [["feed", `Feed · ${feedCount}`], ["bills", `Bills · ${d.bills.length}`], ["tables", "Tables"]] as const;
+  const billOf = (n: string) => d.bills.find((b) => b.table === n);
+  const tableState = (n: string) => d.calls.some((c) => c.table === n) ? "calling" : d.picks.some((o) => o.table === n) ? "picks" : d.active.some((o) => o.table === n) ? "kitchen" : "free";
+  const STATE_WORD: Record<string, string> = { calling: "Calling", picks: "Picks", kitchen: "Kitchen", free: "Free" };
+  // Call slips hang in longest-wait-first order, and turn urgent (cherry band + flag) after 5 minutes.
+  const waited = (at: string) => Math.round((Date.now() - new Date(at).getTime()) / 60000);
+  const calls = [...d.calls].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
   return (
-    <div className="aurora-d">
-      <div style={{ maxWidth: 480, margin: "0 auto", padding: "18px 16px 110px", display: "flex", flexDirection: "column", gap: 12 }}>
-        <div className="row" style={{ justifyContent: "space-between" }}>
-          <div><h1 style={{ fontSize: 30, fontWeight: 600 }}>Floor</h1><div className="eyebrow soft-d" style={{ marginTop: 4 }}>Waiter · {d.me.name}</div></div>
+    <div className="sa-app" data-theme="night">
+      <div className="staff-wrap">
+        <div className="staff-head">
+          <div><h1>Floor</h1><div className="staff-head__meta">Floor staff · {d.me.name}</div></div>
           <div className="row" style={{ gap: 8 }}>
             {/* Freshness disclosure: the interval (3s) is fine, but staff need to know if what
                 they're looking at is live, stale, or the connection dropped - not just a bare dot. */}
-            <div className="gd row" role="status" style={{ borderRadius: 999, padding: "8px 14px", gap: 8, font: "700 12px var(--font-b)" }}>
-              <span aria-hidden="true" style={{ width: 9, height: 9, borderRadius: "50%", background: err ? "#c62828" : "#3ddc97" }} />
-              {err ? (lastUpdated ? "RECONNECTING…" : "OFFLINE") : "LIVE"}
-              {lastUpdated && <span className="soft-d" style={{ fontWeight: 500 }}>· as of {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>}
+            <div className="staff-live" role="status">
+              <span className={`sa-status ${err ? "sa-status--offline" : "sa-status--live"}`}>{err ? (lastUpdated ? "Reconnecting" : "Offline") : "Live"}</span>
+              {lastUpdated && <span>{lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>}
             </div>
-            <button className="btn btn-o btn-icon" onClick={logout} aria-label="Sign out"><Icon name="logout" /></button>
+            <button type="button" className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" onClick={logout} aria-label="Sign out"><Icon name="logout" /></button>
           </div>
         </div>
-        {err && <div className="err-d" role="alert">{err}</div>}
-        <div style={{ display: "flex", gap: 8, overflowX: "auto" }}>{tabs.map(([k, l]) => <button key={k} className={`pill ${tab === k ? "on" : ""}`} onClick={() => setTab(k)}>{l}</button>)}</div>
+        {err && <div className="err" role="alert">{err}</div>}
+        <div className="sa-tabs staff-tabs">{tabs.map(([k, l]) => <button type="button" key={k} className="sa-tab" aria-pressed={tab === k} onClick={() => setTab(k)}>{l}</button>)}</div>
 
-        {tab === "feed" && (feed.length === 0 ? <Empty text="Nothing needs you right now." /> : feed.map((f) => {
-          if (f.kind === "call") { const c = f.data; return (
-            <SwipeCard key={`call-${c.id}`} onSwipeRight={() => act(`/api/staff/calls/${c.id}`)} rightLabel="Done">
-              <div className="gd r-l row" style={{ padding: 12, gap: 12, background: "rgba(198,40,40,.14)" }}>
-                <div className="gd r-m" style={{ width: 52, height: 52, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><span style={{ font: "600 10px var(--font-b)", letterSpacing: ".1em" }}>TABLE</span><span style={{ font: "600 22px var(--font-h)", lineHeight: 1 }}>{c.table || "?"}</span></div>
-                <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: 16 }}>{KIND[c.kind] || KIND.other}</div><div className="soft-d" style={{ fontSize: 13 }}>{minutesAgo(c.createdAt)}</div></div>
-                <button className="btn btn-w" onClick={() => act(`/api/staff/calls/${c.id}`)}>Done</button>
-              </div>
-            </SwipeCard>
-          ); }
-          if (f.kind === "pick") { const o = f.data; return (
-            <SwipeCard key={`pick-${o.id}`} onSwipeRight={() => act(`/api/staff/orders/${o.id}`, { action: "take" })} onSwipeLeft={() => act(`/api/staff/orders/${o.id}`, { action: "later" })} rightLabel="Take order" leftLabel="Dismiss">
-              <div className="gd r-l" style={{ padding: "12px 16px" }}>
-                <div className="row" style={{ justifyContent: "space-between", marginBottom: 6 }}><div style={{ font: "600 22px var(--font-h)" }}>Table {o.table || "?"}</div><span className="chip">{{ en: "English", th: "Thai", my: "Burmese" }[o.lang as string]} · {minutesAgo(o.createdAt)}</span></div>
-                {o.items.map((i: any, k: number) => <div key={k} className="row" style={{ justifyContent: "space-between", padding: "3px 0", fontWeight: 500 }}><span>{i.qty}× {i.name}</span><b>฿{i.price * i.qty}</b></div>)}
-                {o.allergy && <div className="alert-banner" style={{ margin: "8px 0" }}><Icon name="alert" /><div>Diner asked about {o.allergy.toUpperCase()}.<br /><span style={{ fontWeight: 500 }}>Confirm with the kitchen before ordering.</span></div></div>}
-                <div className="row" style={{ gap: 8, marginTop: 8 }}>
-                  <button className="btn btn-w" style={{ flex: 1 }} onClick={() => act(`/api/staff/orders/${o.id}`, { action: "take" })}>Take order</button>
-                  <button className="btn btn-o" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "later" })}>Dismiss</button>
+        {tab === "feed" && feedCount === 0 && <Empty text="Nothing needs you right now." />}
+        {tab === "feed" && calls.length > 0 && (
+          <div className="sa-rail">
+            {calls.map((c) => {
+              const mins = waited(c.createdAt); const long = mins >= 5;
+              // A "bill, please" call IS that table's bill: settling it marks the bill paid and
+              // closes the call together, so one table never ends up with two separate bills.
+              const b = c.kind === "bill" ? billOf(c.table) : undefined;
+              const resolve = () => (b ? act(`/api/staff/bills/${encodeURIComponent(c.table)}`) : act(`/api/staff/calls/${c.id}`));
+              return (
+              <SwipeCard key={`call-${c.id}`} onSwipeRight={resolve} rightLabel={b ? "Mark paid" : "Done"}>
+                <div className={`sa-call${long ? " sa-call--urgent" : ""}`}>
+                  <div className="sa-call__table"><small>Table</small><b>{c.table || "?"}</b></div>
+                  <div><p className="sa-call__why">{(KIND[c.kind] || KIND.other).toUpperCase()}{b && <> · ฿{b.total}</>}</p><p className={`sa-call__wait${long ? " sa-call__wait--long" : ""}`}>{mins < 1 ? "Just called" : `Waiting ${mins} min`}</p></div>
+                  <button type="button" className="sa-btn sa-btn--ok sa-btn--sm" onClick={resolve}><Icon name="check" />{b ? "Mark paid" : "Done"}</button>
                 </div>
+              </SwipeCard>); })}
+          </div>
+        )}
+        {tab === "feed" && d.picks.map((o) => (
+          <SwipeCard key={`pick-${o.id}`} onSwipeRight={() => act(`/api/staff/orders/${o.id}`, { action: "take" })} onSwipeLeft={() => act(`/api/staff/orders/${o.id}`, { action: "later" })} rightLabel="Take order" leftLabel="Dismiss">
+            <article className="sa-ticket">
+              <div className="sa-ticket__head"><div className="sa-ticket__table">T{o.table || "?"}</div><div className="sa-ticket__meta">{{ en: "English", th: "Thai", my: "Burmese" }[o.lang as string]} · {minutesAgo(o.createdAt)}<br /><span className="sa-status sa-status--new">Picks</span></div></div>
+              <ul className="sa-ticket__lines">{o.items.map((i: any, k: number) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: read-only list of order lines (the same dish can appear twice), never reordered
+                <li key={k}><b>{i.qty}×</b><span>{i.name}</span><span className="sa-ticket__price">฿{i.price * i.qty}</span></li>
+              ))}</ul>
+              {o.allergy && <AllergyBanner allergen={o.allergy} note="Confirm with the kitchen before ordering." />}
+              <div className="sa-ticket__actions">
+                <button type="button" className="sa-btn sa-btn--staff" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "take" })}>Take order</button>
+                <button type="button" className="sa-btn sa-btn--quiet" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "later" })}>Dismiss</button>
               </div>
-            </SwipeCard>
-          ); }
-          const o = f.data; return (
-            <SwipeCard key={`ready-${o.id}`} onSwipeRight={() => act(`/api/staff/orders/${o.id}`, { action: "served" })} rightLabel="Served">
-              <div className="gd r-l row" style={{ padding: 12, gap: 12, background: "rgba(31,166,138,.14)" }}>
-                <div style={{ flex: 1 }}><div style={{ font: "600 20px var(--font-h)" }}>Table {o.table || "?"}</div><div className="soft-d" style={{ fontSize: 13 }}>{o.items.map((i: any) => `${i.qty}× ${i.name}`).join(", ")}</div></div>
-                <button className="btn btn-w" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "served" })}>Served</button>
-              </div>
-            </SwipeCard>
-          );
-        }))}
+            </article>
+          </SwipeCard>
+        ))}
+        {tab === "feed" && ready.map((o) => (
+          <SwipeCard key={`ready-${o.id}`} onSwipeRight={() => act(`/api/staff/orders/${o.id}`, { action: "served" })} rightLabel="Served">
+            <article className="sa-ticket sa-ticket--ready">
+              <div className="sa-ticket__head"><div className="sa-ticket__table">T{o.table || "?"}</div><div className="sa-ticket__meta">#{o.id}<br /><span className="sa-status sa-status--ready">Ready</span></div></div>
+              <ul className="sa-ticket__lines">{o.items.map((i: any, k: number) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: read-only list of order lines (the same dish can appear twice), never reordered
+                <li key={k}><b>{i.qty}×</b><span>{i.name}</span></li>
+              ))}</ul>
+              <button type="button" className="sa-btn sa-btn--ok sa-btn--block" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "served" })}><Icon name="check" />Served</button>
+            </article>
+          </SwipeCard>
+        ))}
+
+        {tab === "bills" && d.bills.length === 0 && <Empty text="No open bills." />}
+        {tab === "bills" && d.bills.map((b) => (
+          <article key={b.table} className={`sa-ticket${b.asked ? " sa-ticket--cooking" : ""}`}>
+            <div className="sa-ticket__head">
+              <div className="sa-ticket__table">T{b.table || "?"}</div>
+              <div className="sa-ticket__meta">{b.asked && <><span className="sa-status sa-status--cooking">Bill asked</span><br /></>}To pay<br /><span className="sa-price">฿ {b.total}</span></div>
+            </div>
+            <ul className="sa-ticket__lines">{b.lines.map((l) => <li key={`${l.name}|${l.price}`}><b>{l.qty}×</b><span>{l.name}</span><span className="sa-ticket__price">฿{l.qty * l.price}</span></li>)}</ul>
+            {b.inKitchen > 0 && <p className="staff-head__meta" style={{ margin: "0 0 12px" }}>{b.inKitchen} {b.inKitchen === 1 ? "dish is" : "dishes are"} not served yet.</p>}
+            {b.pending.length > 0 && <p className="staff-head__meta" style={{ margin: "0 0 12px" }}>Not in the total: picks waiting in the feed ({b.pending.reduce((s, l) => s + l.qty, 0)} dishes).</p>}
+            <button type="button" className="sa-btn sa-btn--ok sa-btn--block" onClick={() => act(`/api/staff/bills/${encodeURIComponent(b.table)}`)}><Icon name="check" />Mark paid · ฿ {b.total}</button>
+          </article>
+        ))}
 
         {tab === "tables" && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
+          <div className="sa-floor">
             {Array.from({ length: 12 }, (_, i) => String(i + 1)).map((n) => { const s = tableState(n); return (
-              <div key={n} className="gd r-l" style={{ height: 76, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: COLOR[s] }}>
-                <b style={{ font: "600 22px var(--font-h)" }}>{n}</b><span style={{ fontSize: 11, opacity: .9 }}>{{ call: "calling", picks: "picks", active: "in kitchen", free: "free" }[s]}</span>
-              </div>); })}
+              <div key={n} className={`sa-table sa-table--${s} sa-table-static`} role="img" aria-label={`Table ${n}, ${STATE_WORD[s]}${billOf(n) ? `, owes ฿${billOf(n)!.total}` : ""}`}>{n}<small>{STATE_WORD[s]}</small>{billOf(n) && <small>฿{billOf(n)!.total}</small>}</div>); })}
           </div>)}
       </div>
 
@@ -108,29 +134,47 @@ export default function Waiter() {
           item row with no intermediate screen. This expands inline from the summary bar instead of
           opening a separate modal, so marking a dish sold out is one tap plus the toggle, not a
           navigation step - important since touch accuracy drops for staff moving around the floor. */}
-      <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, display: "flex", flexDirection: "column", alignItems: "center", zIndex: 20 }}>
+      <div className="sold-dock">
         {dishesOpen && (
-          <div className="gd r-xl" style={{ width: "calc(100% - 28px)", maxWidth: 452, marginBottom: 8, maxHeight: "42dvh", overflowY: "auto", padding: "14px 16px" }}>
+          <div className="sold-dock__panel">
             <div className="row" style={{ justifyContent: "space-between", marginBottom: 6 }}>
-              <span className="eyebrow soft-d">Mark dishes sold out</span>
-              <button className="btn btn-o btn-icon btn-sm" style={{ width: 32 }} onClick={() => setDishesOpen(false)} aria-label="Close">
-                <Icon name="close" size={14} />
-              </button>
+              <span className="sa-label">Sold out today</span>
+              <button type="button" className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" onClick={() => setDishesOpen(false)} aria-label="Close"><Icon name="close" size={16} /></button>
             </div>
-            {d.dishes.map((x) => (
-              <div key={x.id} className="row" style={{ justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,.14)" }}>
-                <span style={{ fontSize: 14 }}>{x.name}</span>
-                <button className={`switch dark ${x.available ? "on" : ""}`} role="switch" aria-checked={!!x.available} aria-label={x.name} onClick={() => act(`/api/staff/items/${x.id}`, { available: !x.available })} />
-              </div>
-            ))}
+            <SoldOutList dishes={d.dishes} onToggle={(x) => act(`/api/staff/items/${x.id}`, { available: !x.available })} />
           </div>
         )}
-        <div className="gd" style={{ width: "calc(100% - 28px)", maxWidth: 452, marginBottom: 14, height: 68, borderRadius: 34, display: "flex", alignItems: "center", gap: 12, padding: "0 10px 0 22px" }}>
-          <div style={{ flex: 1, minWidth: 0 }}><div className="eyebrow soft-d">Sold out now · {d.soldOut.length}</div><div style={{ fontWeight: 500, fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.soldOut.map((s) => s.name).join(", ") || "Nothing"}</div></div>
-          <button className="btn btn-w" style={{ minHeight: 48 }} aria-expanded={dishesOpen} onClick={() => setDishesOpen((v) => !v)}>{dishesOpen ? "Close" : "Manage"}</button>
+        <div className="sold-dock__bar">
+          <div style={{ flex: 1, minWidth: 0 }}><div className="sa-label">Sold out now · {d.soldOut.length}</div><div className="sa-ticket-font" style={{ fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.soldOut.map((s) => s.name).join(", ") || "Nothing"}</div></div>
+          <button type="button" className="sa-btn sa-btn--sm" aria-expanded={dishesOpen} onClick={() => setDishesOpen((v) => !v)}>{dishesOpen ? "Close" : "Manage"}</button>
         </div>
       </div>
     </div>
   );
 }
-const Empty = ({ text }: { text: string }) => <div className="gd r-l soft-d" style={{ padding: 24, textAlign: "center" }}>{text}</div>;
+const Empty = ({ text }: { text: string }) => <div className="sa-plate sa-empty">{text}</div>;
+
+// The design system's allergy banner: caution-sign yellow, the allergen in big type. Never dismissible.
+export function AllergyBanner({ allergen, note }: { allergen: string; note: string }) {
+  return (
+    <div className="sa-allergy" role="alert">
+      <span className="sa-allergy__sign" aria-hidden="true"><span>!</span></span>
+      <div className="sa-allergy__txt"><span className="sa-allergy__kicker">Allergy</span><strong>{allergen.charAt(0).toUpperCase() + allergen.slice(1)}</strong><span>{note}</span></div>
+    </div>
+  );
+}
+
+// Sold-out switches: on (cherry) means the dish is sold out today, as the label says.
+export function SoldOutList({ dishes, onToggle }: { dishes: { id: number; name: string; available: number | boolean }[]; onToggle: (d: { id: number; available: number | boolean }) => void }) {
+  return (
+    <div className="sold-list">
+      {dishes.map((x) => (
+        <label key={x.id} className="sa-switch">
+          <input type="checkbox" checked={!x.available} onChange={() => onToggle(x)} aria-label={`${x.name}: sold out today`} />
+          <span className="sa-switch__track" />
+          <span style={{ flex: 1 }}>{x.name}</span>
+        </label>
+      ))}
+    </div>
+  );
+}

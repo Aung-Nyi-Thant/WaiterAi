@@ -99,7 +99,8 @@ CREATE TABLE IF NOT EXISTS orders (
   lang TEXT NOT NULL DEFAULT 'en',
   allergy_note TEXT NOT NULL DEFAULT '',
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  paid_at TEXT
 );
 CREATE TABLE IF NOT EXISTS order_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -144,6 +145,8 @@ function open(): DB {
   database.exec(SCHEMA);
   // migration for databases created before feedback_reason existed; SQLite has no "ADD COLUMN IF NOT EXISTS"
   try { database.exec("ALTER TABLE chat_messages ADD COLUMN feedback_reason TEXT NOT NULL DEFAULT ''"); } catch {}
+  // ...and before table bills existed: an order counts toward its table's bill until staff mark it paid
+  try { database.exec("ALTER TABLE orders ADD COLUMN paid_at TEXT"); } catch {}
   try { seedIfEmpty(database); } catch (e: any) { if (!/UNIQUE|locked|busy/i.test(String(e?.message))) throw e; }
   return database;
 }
