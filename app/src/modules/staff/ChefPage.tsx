@@ -40,7 +40,7 @@ export default function Chef() {
             {lastUpdated && <span>as of {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>}
           </div>
           <div className="kitchen-clock">{now}</div>
-          <button className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" onClick={logout} aria-label="Sign out"><Icon name="logout" /></button>
+          <button type="button" className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" onClick={logout} aria-label="Sign out"><Icon name="logout" /></button>
         </div>
       </div>
       {err && <div className="err" role="alert">{err}</div>}
@@ -59,9 +59,12 @@ export default function Chef() {
                     <div className="sa-ticket__table">T{o.table || "?"}</div>
                     <div className="sa-ticket__meta">#{o.id}<br /><span className={`sa-timer${late ? " sa-timer--late" : ""}`}>{minutesAgo(o.updatedAt)}</span></div>
                   </div>
-                  <ul className="sa-ticket__lines">{o.items.map((i: any, k: number) => <li key={k}><b>{i.qty}×</b><span>{i.name}</span></li>)}</ul>
+                  <ul className="sa-ticket__lines">{o.items.map((i: any, k: number) => (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: read-only list of order lines (the same dish can appear twice), never reordered
+                    <li key={k}><b>{i.qty}×</b><span>{i.name}</span></li>
+                  ))}</ul>
                   {o.allergy && <AllergyBanner allergen={o.allergy} note="Staff confirmed with the diner. Check before cooking." />}
-                  <button className={`sa-btn sa-btn--lg sa-btn--block ${key === "new" ? "sa-btn--staff" : "sa-btn--ok"}`} onClick={() => act(o.id, next)}>{key !== "new" && <Icon name="check" />}{btn}</button>
+                  <button type="button" className={`sa-btn sa-btn--lg sa-btn--block ${key === "new" ? "sa-btn--staff" : "sa-btn--ok"}`} onClick={() => act(o.id, next)}>{key !== "new" && <Icon name="check" />}{btn}</button>
                 </article>
               </SwipeCard>); })}
           </div>

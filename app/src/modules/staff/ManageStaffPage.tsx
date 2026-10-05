@@ -10,6 +10,7 @@ export default function StaffPage() {
   const [f, setF] = useState({ name: "", role: "waiter", pin: "" });
   const [err, setErr] = useState("");
   const load = () => api<any[]>("/api/owner/staff").then(setStaff);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: loads once on mount
   useEffect(() => { load(); }, []);
   async function add(e: React.FormEvent) {
     e.preventDefault(); setErr("");
@@ -39,8 +40,8 @@ export default function StaffPage() {
           {staff.map((s) => (
             <div key={s.id} className="row" style={{ gap: 12, padding: "10px 0", borderTop: "1px solid var(--line)" }}>
               <div style={{ flex: 1 }}><div style={{ fontWeight: 700 }}>{s.name}</div><span className="chip chip-l">{s.role}</span></div>
-              <button className="btn btn-ol btn-sm" onClick={() => reset(s)}>Change PIN</button>
-              <button className="btn btn-ol btn-icon btn-sm" style={{ width: 36 }} aria-label={`Remove ${s.name}`} onClick={async () => { if (confirm(`Remove ${s.name}?`)) { await api(`/api/owner/staff/${s.id}`, { method: "DELETE" }); load(); } }}><Icon name="trash" size={16} /></button>
+              <button type="button" className="btn btn-ol btn-sm" onClick={() => reset(s)}>Change PIN</button>
+              <button type="button" className="btn btn-ol btn-icon btn-sm" style={{ width: 36 }} aria-label={`Remove ${s.name}`} onClick={async () => { if (confirm(`Remove ${s.name}?`)) { await api(`/api/owner/staff/${s.id}`, { method: "DELETE" }); load(); } }}><Icon name="trash" size={16} /></button>
             </div>))}
         </div>
       </div>

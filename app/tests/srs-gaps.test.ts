@@ -10,7 +10,6 @@ import { DELETE as deleteItem } from "@/modules/owner/api/itemsById";
 import { POST as createResource } from "@/modules/owner/api/resource";
 import { PUT as updateResource, DELETE as deleteResource } from "@/modules/owner/api/resourceItem";
 import { GET as floor } from "@/modules/staff/api/floor";
-import { POST as staffLoginRoute } from "@/modules/staff/api/login";
 import { all, get } from "@/modules/platform/db";
 
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
@@ -111,7 +110,7 @@ describe("FR-7: the owner's voice decides how a Thai or Burmese reply ends, what
   });
 });
 
-describe("FR-9: staff PINs", () => {
+describe("FR-9 / SF-1 / SF-2: staff PINs", () => {
   const staff = (b: object) => call(createResource, { method: "POST", params: { resource: "staff" }, body: b });
   it("two staff members in one restaurant cannot share a PIN (sign-in uses the PIN alone)", async () => {
     await ownerLogin();

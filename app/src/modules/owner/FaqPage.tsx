@@ -13,6 +13,7 @@ function Inner() {
   const [rules, setRules] = useState(restaurant.persona.rules);
   const [err, setErr] = useState("");
   const load = () => api<any[]>("/api/owner/faqs").then(setFaqs);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: loads once on mount
   useEffect(() => { load(); }, []);
   async function add(e: React.FormEvent) {
     e.preventDefault(); setErr("");
@@ -36,14 +37,14 @@ function Inner() {
           {faqs.map((f) => (
             <div key={f.id} className="row" style={{ gap: 12, padding: "10px 0", borderTop: "1px solid var(--line)", alignItems: "flex-start" }}>
               <div style={{ flex: 1 }}><div style={{ fontWeight: 700 }}>{f.q}</div><div className="soft-l">{f.a}</div></div>
-              <button className="btn btn-ol btn-icon btn-sm" style={{ width: 36 }} aria-label={`Delete ${f.q}`} onClick={async () => { await api(`/api/owner/faqs/${f.id}`, { method: "DELETE" }); load(); }}><Icon name="trash" size={16} /></button>
+              <button type="button" className="btn btn-ol btn-icon btn-sm" style={{ width: 36 }} aria-label={`Delete ${f.q}`} onClick={async () => { await api(`/api/owner/faqs/${f.id}`, { method: "DELETE" }); load(); }}><Icon name="trash" size={16} /></button>
             </div>))}
         </div>
         <div className="sa-plate r-xl" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 12 }}>
           <h2 style={{ fontSize: 22 }}>Shop rules for the AI</h2>
           <p className="soft-l" style={{ margin: 0 }}>Short instructions, one per line. Example: “Don't discuss discounts.” “No alcohol after 10pm.”</p>
           <textarea className="in-l" aria-label="Shop rules" style={{ minHeight: 160 }} value={rules} onChange={(e) => setRules(e.target.value)} maxLength={600} />
-          <button className="btn btn-p" style={{ alignSelf: "flex-start" }} onClick={saveRules}>Save rules</button>
+          <button type="button" className="btn btn-p" style={{ alignSelf: "flex-start" }} onClick={saveRules}>Save rules</button>
           <p className="soft-l" style={{ fontSize: 13, margin: 0 }}>Safety rules (allergens, prices, sold-out dishes) are built in and cannot be switched off.</p>
         </div>
       </div>

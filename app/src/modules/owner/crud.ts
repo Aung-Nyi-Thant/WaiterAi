@@ -17,7 +17,7 @@ const PIN_TAKEN = "This PIN is already used by another staff member. Choose a di
 export function list(rid: number, c: Conf) {
   return all(`SELECT ${c.publicCols || "*"} FROM ${c.table} WHERE restaurant_id = ? ORDER BY ${c.order}`, rid);
 }
-export function create(rid: number, c: Conf, b: any): { error?: string; id?: number } {
+export function create(rid: number, c: Conf, b: any): { error?: string; id?: number; conflict?: boolean } {
   if (c.table === "staff") {
     if (!["waiter", "chef"].includes(b.role)) return { error: "Role must be waiter or chef." };
     if (!/^\d{4,8}$/.test(String(b.pin || ""))) return { error: "PIN must be 4 to 8 digits." };
@@ -32,7 +32,7 @@ export function create(rid: number, c: Conf, b: any): { error?: string; id?: num
   const sql = `INSERT INTO ${c.table} (restaurant_id${cols.map((x) => ", " + x).join("")}) VALUES (?${cols.map(() => ",?").join("")})`;
   return { id: run(sql, rid, ...cols.map((f) => b[f])).id };
 }
-export function update(rid: number, c: Conf, id: number, b: any): { error?: string; notFound?: boolean } {
+export function update(rid: number, c: Conf, id: number, b: any): { error?: string; notFound?: boolean; conflict?: boolean } {
   if (!get(`SELECT 1 FROM ${c.table} WHERE id = ? AND restaurant_id = ?`, id, rid)) return { error: "Not found.", notFound: true };
   if (c.table === "staff" && b.role !== undefined && !["waiter", "chef"].includes(b.role)) return { error: "Role must be waiter or chef." };
   if (c.table === "staff" && b.pin !== undefined) {

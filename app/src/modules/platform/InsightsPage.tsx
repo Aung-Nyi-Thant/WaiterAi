@@ -16,7 +16,7 @@ export default function InsightsPage() {
     <>
       <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
         <div><h1 style={{ fontSize: 40 }}>What diners asked</h1><p className="soft-l" style={{ margin: "6px 0 0" }}>What people wanted, and what you could not answer.</p></div>
-        <div className="row" style={{ gap: 6 }}>{[1, 7, 30].map((n) => <button key={n} className={`pill pill-l ${days === n ? "on" : ""}`} onClick={() => setDays(n)}>{n === 1 ? "Today" : `${n} days`}</button>)}</div>
+        <div className="row" style={{ gap: 6 }}>{[1, 7, 30].map((n) => <button type="button" key={n} className={`pill pill-l ${days === n ? "on" : ""}`} onClick={() => setDays(n)}>{n === 1 ? "Today" : `${n} days`}</button>)}</div>
       </div>
       <div className="grid4">
         <Tile label="CHATS" value={d.sessions} sub={`${d.tables} tables · ${d.questions} questions`} />
@@ -45,7 +45,7 @@ export default function InsightsPage() {
           <div className="sa-plate r-xl" style={{ padding: "18px 24px" }}>
             <div className="eyebrow soft-l" style={{ marginBottom: 4 }}>Could not answer</div>
             {d.cannot.length === 0 && <div className="soft-l" style={{ padding: "8px 0" }}>Nothing unanswered. Nice.</div>}
-            {d.cannot.map((c: any, i: number) => <div key={i} className="row" style={{ justifyContent: "space-between", gap: 10, padding: "8px 0", borderBottom: "1px solid var(--line)" }}><div style={{ fontWeight: 500 }}>{c.text}{c.n > 1 && <span className="soft-l"> ×{c.n}</span>}</div><Link className="btn btn-ol btn-sm" href={`/owner/faq?q=${encodeURIComponent(c.text)}`}>Add FAQ</Link></div>)}
+            {d.cannot.map((c: any) => <div key={c.text} className="row" style={{ justifyContent: "space-between", gap: 10, padding: "8px 0", borderBottom: "1px solid var(--line)" }}><div style={{ fontWeight: 500 }}>{c.text}{c.n > 1 && <span className="soft-l"> ×{c.n}</span>}</div><Link className="btn btn-ol btn-sm" href={`/owner/faq?q=${encodeURIComponent(c.text)}`}>Add FAQ</Link></div>)}
           </div>
           {d.flagged.length > 0 && <div className="sa-plate r-xl" style={{ padding: "18px 24px" }}><div className="eyebrow soft-l" style={{ marginBottom: 4 }}>Answers diners marked “not right”</div>{d.flagged.map((f: any) => <div key={f.id} style={{ padding: "8px 0", borderBottom: "1px solid var(--line)", fontSize: 14 }}>{f.answer}</div>)}</div>}
         </div>

@@ -20,6 +20,15 @@ export async function call(handler: Handler, o: CallOpts = {}) {
 
 export const signOut = () => jar.clear();
 
+// The first bytes of real image files (what the server checks), padded to a small body.
+const pad = (head: number[], n = 64) => new Uint8Array([...head, ...new Array(Math.max(0, n - head.length)).fill(7)]);
+export const IMAGE_BYTES = {
+  png: pad([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+  jpg: pad([0xff, 0xd8, 0xff, 0xe0]),
+  webp: pad([...Buffer.from("RIFF"), 1, 0, 0, 0, ...Buffer.from("WEBP")]),
+};
+export const imageFile = (kind: keyof typeof IMAGE_BYTES = "png", declared = `image/${kind === "jpg" ? "jpeg" : kind}`, name = `a.${kind}`) => new File([IMAGE_BYTES[kind]], name, { type: declared });
+
 export async function ownerLogin(email = "demo@shop.ai", password = "demo1234") {
   const { POST } = await import("@/modules/platform/api/login");
   signOut();

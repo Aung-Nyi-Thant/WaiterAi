@@ -22,7 +22,7 @@ export default function StaffLogin() {
         <label className="sa-field"><span>Restaurant</span><input className="sa-input" value={slug} onChange={(e) => setSlug(e.target.value)} autoCapitalize="none" /></label>
         <div className="pin-display" aria-live="polite">{"•".repeat(pin.length) || <span className="muted" style={{ fontSize: 14, letterSpacing: 0 }}>PIN</span>}</div>
         <div className="keypad">
-          {["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "⌫"].map((d, i) => d ? <button key={i} type="button" className="sa-btn" onClick={() => press(d)} aria-label={d === "⌫" ? "Delete" : d}>{d}</button> : <span key={i} />)}
+          {["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "⌫"].map((d) => d ? <button key={d} type="button" className="sa-btn" onClick={() => press(d)} aria-label={d === "⌫" ? "Delete" : d}>{d}</button> : <span key="gap" />)}
         </div>
         {err && <div className="err" role="alert">{err}</div>}
         <button className="sa-btn sa-btn--special sa-btn--block" type="submit" disabled={pin.length < 4}>Sign in</button>

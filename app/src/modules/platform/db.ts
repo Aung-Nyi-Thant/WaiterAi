@@ -137,19 +137,34 @@ CREATE INDEX IF NOT EXISTS idx_orders_rest ON orders(restaurant_id, status);
 CREATE INDEX IF NOT EXISTS idx_calls_rest ON calls(restaurant_id, status);
 `;
 
+// SQLite can answer "database is locked" while a brand-new file is being set up by several processes at once (the
+// worker processes of `next build`, or two servers starting together), even with busy_timeout set: switching to WAL mode does
+// not always wait. Setting up is safe to repeat, so try again a few times before giving up.
+export function retryWhileLocked<T>(fn: () => T, tries = 60, sleep: (ms: number) => void = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)): T {
+  for (let attempt = 1; ; attempt++) {
+    try { return fn(); } catch (e: any) {
+      if (attempt >= tries || !/database is locked|SQLITE_BUSY/i.test(String(e?.message))) throw e;
+      sleep(Math.min(250, 20 + attempt * 10) + Math.floor(Math.random() * 20));   // a little random, so competing processes do not retry in step
+    }
+  }
+}
+const addColumn = (database: DB, sql: string) => {
+  try { retryWhileLocked(() => database.exec(sql)); } catch (e: any) { if (!/duplicate column/i.test(String(e?.message))) throw e; }
+};
+
 function open(): DB {
   const { DatabaseSync } = (process as any).getBuiltinModule("node:sqlite");
   const dir = process.env.DATA_DIR || path.join(process.cwd(), "data");   // same rule as paths.ts (no import: scripts/seed.mts loads this file directly)
   fs.mkdirSync(dir, { recursive: true });
   const database = new DatabaseSync(path.join(dir, "shop.db"));
   database.exec("PRAGMA busy_timeout = 10000");   // several server processes may start at once
-  database.exec(SCHEMA);
+  retryWhileLocked(() => database.exec(SCHEMA));
   // migration for databases created before feedback_reason existed; SQLite has no "ADD COLUMN IF NOT EXISTS"
-  try { database.exec("ALTER TABLE chat_messages ADD COLUMN feedback_reason TEXT NOT NULL DEFAULT ''"); } catch {}
+  addColumn(database, "ALTER TABLE chat_messages ADD COLUMN feedback_reason TEXT NOT NULL DEFAULT ''");
   // ...and before table bills existed: an order counts toward its table's bill until staff mark it paid
-  try { database.exec("ALTER TABLE orders ADD COLUMN paid_at TEXT"); } catch {}
+  addColumn(database, "ALTER TABLE orders ADD COLUMN paid_at TEXT");
   // ...and before a diner's phone had to prove it ordered at a table before reading that table's bill
-  try { database.exec("ALTER TABLE orders ADD COLUMN receipt TEXT NOT NULL DEFAULT ''"); } catch {}
+  addColumn(database, "ALTER TABLE orders ADD COLUMN receipt TEXT NOT NULL DEFAULT ''");
   // The demo accounts (demo@shop.ai / demo1234, PINs 1111 and 2222) are for local development only.
   // In production nothing is created: register an owner, or run `npm run db:seed` with your own credentials.
   if (process.env.NODE_ENV !== "production") {
@@ -205,11 +220,13 @@ function seedDemo(d: DB) {
     d.prepare(`INSERT INTO menu_items (restaurant_id, category_id, name_en, name_th, name_my, desc_en, price, ingredients, allergens_json, tags_json, spice, available, photo_url, sort)
                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(rid, cats[cat], en, th, my, desc, price, ing, al === null ? null : JSON.stringify(al), JSON.stringify(tags), spice, avail ? 1 : 0, photo, i);
   });
-  [["Is there Wi-Fi?", "Yes, free Wi-Fi. Ask staff for the password."], ["Is there parking?", "Free parking behind the building, 20 spaces."], ["Do you give tax invoices?", "Yes, tell staff before paying."]].forEach(([q, a], i) =>
-    d.prepare("INSERT INTO faqs (restaurant_id, q, a, sort) VALUES (?,?,?,?)").run(rid, q, a, i));
+  [["Is there Wi-Fi?", "Yes, free Wi-Fi. Ask staff for the password."], ["Is there parking?", "Free parking behind the building, 20 spaces."], ["Do you give tax invoices?", "Yes, tell staff before paying."]].forEach(([q, a], i) => {
+    d.prepare("INSERT INTO faqs (restaurant_id, q, a, sort) VALUES (?,?,?,?)").run(rid, q, a, i);
+  });
   d.prepare("INSERT INTO staff (restaurant_id, name, role, pin_hash) VALUES (?,?,?,?)").run(rid, "Waiter 1", "waiter", bcrypt.hashSync("1111", 8));
   d.prepare("INSERT INTO staff (restaurant_id, name, role, pin_hash) VALUES (?,?,?,?)").run(rid, "Chef 1", "chef", bcrypt.hashSync("2222", 8));
 }
 
 // created last so that the demo data above is defined when seeding runs
-export const db: DB = g.__shopdb ?? (g.__shopdb = open());
+if (!g.__shopdb) g.__shopdb = open();
+export const db: DB = g.__shopdb;

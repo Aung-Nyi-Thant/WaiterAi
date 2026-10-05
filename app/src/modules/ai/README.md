@@ -6,11 +6,11 @@ What it does: answers diners' questions in Thai, Burmese and English. Safety-cri
 | File | Purpose |
 |---|---|
 | `ai.ts` | The pipeline: language detection, rules, sentence templates, model prompt, reply checks |
-| `ollama.ts` | Helper to call Ollama and get JSON back (used by photo import too) |
+| `provider.ts` | The one place that calls the language model: local Ollama only (no cloud option), one answer at a time with a bounded wait, also used by the photo import |
 | `api/chat.ts` | `POST /api/public/<code>/chat` – runs the pipeline, logs the question, creates staff calls, enforces the monthly chat limit |
 
 Evidence and test data live in `eval/` (30 questions, sample menu, model comparison).
-Tests: `python3 scripts/chat_smoke.py` (30 questions through the real API) and the chat parts of `e2e.py`.
+Tests: `npm test` (`tests/ai-rules`, `ai-guard`, `chat-api`, `eval`, `provider`) and `npm run eval:live`. The rules and where each is tested: `docs/AI_SAFETY.md`.
 
 ## What I did (each member fills this in)
 - 

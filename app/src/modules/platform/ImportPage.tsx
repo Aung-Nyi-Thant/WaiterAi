@@ -74,27 +74,28 @@ export default function ImportPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <div className="row" style={{ justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
               <div className="eyebrow soft-l">Found {rows.length} dishes · {bad} need a check</div>
-              <button className="btn btn-ol btn-sm" onClick={translate} disabled={!!busy || !rows.length}>Suggest Thai &amp; Burmese names</button>
+              <button type="button" className="btn btn-ol btn-sm" onClick={translate} disabled={!!busy || !rows.length}>Suggest Thai &amp; Burmese names</button>
             </div>
             {rows.map((r, i) => {
               const fl = flag(r);
               return (
+                // biome-ignore lint/suspicious/noArrayIndexKey: rows are controlled inputs rendered from state; removing a row re-renders every row from that state
                 <div key={i} className="sa-plate r-l" style={{ padding: "12px 14px", background: fl ? "var(--surface-sunk)" : undefined, outline: fl ? "2px dashed var(--mustard-deep)" : undefined, outlineOffset: -3, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
                   <div style={{ flex: "2 1 200px" }}><label className="lbl" htmlFor={`n${i}`}>Dish name</label><input id={`n${i}`} className="in-l" value={r.name} onChange={(e) => upd(i, "name", e.target.value)} /></div>
                   <div style={{ width: 90 }}><label className="lbl" htmlFor={`p${i}`}>Price ฿</label><input id={`p${i}`} className="in-l" inputMode="decimal" value={r.price} onChange={(e) => upd(i, "price", Number(e.target.value.replace(/[^\d.]/g, "")) || 0)} /></div>
                   <div style={{ flex: "1 1 120px" }}><label className="lbl" htmlFor={`c${i}`}>Category</label><input id={`c${i}`} className="in-l" value={r.category} onChange={(e) => upd(i, "category", e.target.value)} /></div>
                   {(r.name_th || r.name_my) && <div style={{ flex: "1 1 100%", display: "flex", gap: 10 }}>
-                    <div style={{ flex: 1 }}><label className="lbl">Thai (AI suggestion)</label><input className="in-l" value={r.name_th || ""} onChange={(e) => upd(i, "name_th", e.target.value)} /></div>
-                    <div style={{ flex: 1 }}><label className="lbl">Burmese (AI suggestion)</label><input className="in-l" value={r.name_my || ""} onChange={(e) => upd(i, "name_my", e.target.value)} /></div></div>}
+                    <div style={{ flex: 1 }}><label className="lbl" htmlFor={`th${i}`}>Thai (AI suggestion)</label><input id={`th${i}`} className="in-l" value={r.name_th || ""} onChange={(e) => upd(i, "name_th", e.target.value)} /></div>
+                    <div style={{ flex: 1 }}><label className="lbl" htmlFor={`my${i}`}>Burmese (AI suggestion)</label><input id={`my${i}`} className="in-l" value={r.name_my || ""} onChange={(e) => upd(i, "name_my", e.target.value)} /></div></div>}
                   <div className="row" style={{ gap: 8 }}>{fl ? <span className="chip chip-l chip-r">{fl === "price" ? "Check price" : "Check name"}</span> : <span className="chip chip-l chip-g">Looks right</span>}
-                    <button className="btn btn-ol btn-icon btn-sm" style={{ width: 36 }} aria-label="Remove dish" onClick={() => setRows((x) => x.filter((_, j) => j !== i))}><Icon name="trash" size={16} /></button></div>
+                    <button type="button" className="btn btn-ol btn-icon btn-sm" style={{ width: 36 }} aria-label="Remove dish" onClick={() => setRows((x) => x.filter((_, j) => j !== i))}><Icon name="trash" size={16} /></button></div>
                 </div>);
             })}
             <div className="sa-plate row" style={{ borderRadius: 34, padding: "10px 12px 10px 22px", gap: 12, flexWrap: "wrap", justifyContent: "space-between", position: "sticky", bottom: 12 }}>
               <div className="row" style={{ gap: 10, fontWeight: 600, fontSize: 14 }}><Icon name="alert" color="var(--mustard-deep)" />Nothing goes live until you confirm.</div>
               <div className="row" style={{ gap: 10 }}>
-                <button className="btn btn-ol" onClick={() => setRows((x) => [...x, { name: "", price: 0, category: "Mains", description: "" }])}>Add a missing dish</button>
-                <button className="btn btn-p" onClick={confirmAll} disabled={!!busy || !rows.length}>Confirm &amp; publish</button>
+                <button type="button" className="btn btn-ol" onClick={() => setRows((x) => [...x, { name: "", price: 0, category: "Mains", description: "" }])}>Add a missing dish</button>
+                <button type="button" className="btn btn-p" onClick={confirmAll} disabled={!!busy || !rows.length}>Confirm &amp; publish</button>
               </div>
             </div>
             <p className="soft-l" style={{ fontSize: 13, margin: 0 }}>Allergens are not read from photos. After publishing, open each dish and tick its allergens; until then diners see “Allergen info not provided”.</p>

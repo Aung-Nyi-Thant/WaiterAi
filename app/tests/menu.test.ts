@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { call, jar, ownerLogin, staffLogin, signOut } from "./helpers";
+import { call, ownerLogin, staffLogin, signOut } from "./helpers";
 import { GET as ownerItems, POST as createItem } from "@/modules/owner/api/items";
 import { PUT as updateItem, DELETE as deleteItem } from "@/modules/owner/api/itemsById";
 import { GET as listResource, POST as createResource } from "@/modules/owner/api/resource";
@@ -10,7 +10,7 @@ import { POST as staffSoldOut } from "@/modules/staff/api/items";
 import { GET as qr } from "@/modules/platform/api/qr";
 import { POST as upload } from "@/modules/platform/api/upload";
 import { GET as serveUpload } from "@/modules/platform/api/uploadsServe";
-import { all, get } from "@/modules/platform/db";
+import { get } from "@/modules/platform/db";
 import { specialsOf } from "@/modules/platform/menu";
 
 const create = (b: object) => call(createItem, { method: "POST", body: b });
@@ -18,7 +18,7 @@ const dish = (id: number) => get("SELECT * FROM menu_items WHERE id = ?", id)!;
 const menu = async () => (await call(publicMenu, { params: { slug: "golden-lotus" } })).data;
 beforeEach(async () => { await ownerLogin(); });
 
-describe("MM-1 / MM-7 dish create, edit, delete and validation", () => {
+describe("MM-1 / MM-7 / UC-5 dish create, edit, delete and validation", () => {
   it("creates a dish with names in three languages", async () => {
     const r = await create({ name: { en: "Test Noodles", th: "ก๋วยเตี๋ยว", my: "ခေါက်ဆွဲ" }, desc: { en: "d", th: "", my: "" }, price: 75, ingredients: "noodles", spice: 2, tags: ["vegetarian"], allergens: ["egg"] });
     expect(r.status).toBe(200);
@@ -87,7 +87,7 @@ describe("MM-3 categories", () => {
   });
 });
 
-describe("MM-4 / UC-10 sold-out switch applies at once, from owner and from staff", () => {
+describe("MM-4 / UC-10 / DM-6 sold-out switch applies at once, from owner and from staff", () => {
   it("the owner can switch a dish off and on", async () => {
     const id = (await create({ name: { en: "Toggle" }, price: 10 })).data.id;
     await call(updateItem, { method: "PUT", params: { id: String(id) }, body: { available: false } });
@@ -131,7 +131,7 @@ describe("ST-1 / ST-4 hours and assistant settings", () => {
   });
 });
 
-describe("ST-2 / ST-3 specials and FAQs", () => {
+describe("ST-2 / ST-3 / DM-8 specials and FAQs", () => {
   it("only specials that are active and within their dates are live", async () => {
     const rid = get("SELECT id FROM restaurants WHERE slug = 'golden-lotus'")!.id;
     const add = (b: object) => call(createResource, { method: "POST", params: { resource: "specials" }, body: b });
@@ -172,7 +172,7 @@ describe("DM-1 / DM-10 public menu", () => {
   });
 });
 
-describe("QR-1 QR codes", () => {
+describe("QR-1 / QR-2 / UC-7 QR codes", () => {
   it("returns an SVG that points at the menu address, per table", async () => {
     const r = await call(qr, { url: "http://t/api/owner/qr?table=4&base=http://192.168.1.5:3000/" });
     expect(r.status).toBe(200);
@@ -204,6 +204,14 @@ describe("MM-6 photo upload", () => {
     expect((await call(upload, { method: "POST", form: form("text/html", 10, "x.html") })).status).toBe(400);
     expect((await call(upload, { method: "POST", form: form("image/png", 8 * 1024 * 1024 + 1) })).status).toBe(400);
     expect((await call(upload, { method: "POST", form: new FormData() })).status).toBe(400);
+  });
+  it("NFR-SEC3 checks the real content: HTML, a script or zero bytes labelled image/png are rejected", async () => {
+    for (const body of ["<html><script>alert(1)</script></html>", "GIF89a....", "#!/bin/sh\nrm -rf /", "\0\0\0\0\0\0\0\0\0\0\0\0", ""]) {
+      const f = new FormData(); f.append("file", new File([body], "evil.png", { type: "image/png" }));
+      const r = await call(upload, { method: "POST", form: f });
+      expect(r.status, JSON.stringify(body.slice(0, 12))).toBe(400);
+      expect(r.data.error).toMatch(/not a real/);
+    }
   });
   it("needs an owner login, and the serving route refuses anything but generated names", async () => {
     signOut();

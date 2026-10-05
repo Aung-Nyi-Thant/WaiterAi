@@ -20,9 +20,9 @@ export default function QrPage() {
           <div><label className="lbl" htmlFor="qb">Address diners will open</label><input id="qb" className="in-l" value={base} onChange={(e) => setBase(e.target.value)} /></div>
           <div><label className="lbl" htmlFor="qt">Number of tables</label><input id="qt" type="number" min={1} max={60} className="in-l" value={tables} onChange={(e) => setTables(Math.max(1, Math.min(60, Number(e.target.value) || 1)))} /></div>
         </div>
-        {lan.length > 0 && <div className="row" style={{ gap: 8, flexWrap: "wrap" }}><span className="soft-l" style={{ fontSize: 13 }}>This computer on your Wi-Fi:</span>{lan.map((u) => <button key={u} className="pill pill-l" style={{ minHeight: 34 }} onClick={() => setBase(u)}>{u}</button>)}</div>}
+        {lan.length > 0 && <div className="row" style={{ gap: 8, flexWrap: "wrap" }}><span className="soft-l" style={{ fontSize: 13 }}>This computer on your Wi-Fi:</span>{lan.map((u) => <button type="button" key={u} className="pill pill-l" style={{ minHeight: 34 }} onClick={() => setBase(u)}>{u}</button>)}</div>}
         {isLocal && <div className="soft-l" style={{ fontSize: 13 }}>“localhost” only works on this computer. To scan with a phone on the same Wi-Fi, pick your Wi-Fi address above before printing.</div>}
-        <div className="row" style={{ gap: 10 }}><button className="btn btn-p" onClick={() => window.print()}><Icon name="qr" size={18} />Print all codes</button><a className="btn btn-ol" href={q()} download={`${restaurant.slug}-menu.svg`}>Download restaurant code (SVG)</a></div>
+        <div className="row" style={{ gap: 10 }}><button type="button" className="btn btn-p" onClick={() => window.print()}><Icon name="qr" size={18} />Print all codes</button><a className="btn btn-ol" href={q()} download={`${restaurant.slug}-menu.svg`}>Download restaurant code (SVG)</a></div>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 16 }}>
         {Array.from({ length: tables }, (_, i) => i + 1).map((t) => (

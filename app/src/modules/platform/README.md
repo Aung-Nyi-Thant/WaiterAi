@@ -6,7 +6,7 @@ What it does: the database and its demo data, login and sessions, the shared hel
 
 | File | Purpose |
 |---|---|
-| `db.ts` | SQLite database: 12 tables, demo restaurant, query helpers |
+| `db.ts` | SQLite database: 14 tables, demo restaurant, query helpers |
 | `auth.ts` | Password and PIN hashing, signed cookies, owner and staff sessions |
 | `http.ts` | JSON response helpers |
 | `menu.ts`, `constants.ts` | Shared types, allergen and tag lists, restaurant and menu queries |

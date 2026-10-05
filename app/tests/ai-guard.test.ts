@@ -13,7 +13,7 @@ const ask = async (reply: string | Error, msg = OPEN, ctxOver: Record<string, un
 };
 const REFUSAL = "I don't have that information. Please ask the staff.";
 
-describe("AI-9 open questions go to the model, with the restaurant's data as the only source", () => {
+describe("AI-9 / ST-3 open questions go to the model, with the restaurant's data (menu, hours, FAQs, owner rules) as the only source", () => {
   it("passes a good reply through and marks it answered", async () => {
     const { r, calls } = await ask("A Thai Iced Tea is refreshing.\nACTION: none");
     expect(calls.length).toBe(1);
@@ -51,7 +51,7 @@ describe("AI-9 open questions go to the model, with the restaurant's data as the
   });
 });
 
-describe("AI-10 a wrong or unsafe model reply is replaced", () => {
+describe("AI-3 / AI-10 / NFR-S3 a wrong or unsafe model reply is replaced", () => {
   it.each([
     ["claims a dish is safe", "Yes, the Pad Thai is safe to eat."],
     ["says allergy-free", "Our Mango Sticky Rice is allergy-free!"],
@@ -79,6 +79,47 @@ describe("AI-10 a wrong or unsafe model reply is replaced", () => {
     const { r } = await ask(reply);
     expect(r.reply).toBe(REFUSAL);
     expect(r.answered).toBe(false);
+  });
+  it.each([
+    ["a price that comes before the dish name", "For ฿99 you can get the Shrimp Pad Thai."],
+    ["an amount with no dish name", "Most mains are around 95 baht."],
+    ["a made-up amount in Thai", "ราคาเริ่มต้น 99 บาท"],
+    ["a made-up amount in Burmese digits", "၉၉ ဘတ် ပဲ ကျပါတယ်"],
+    ["THB written after the number", "That is 99 THB."],
+  ])("AI-10 replaces %s", async (_n, reply) => {
+    const { r } = await ask(reply);
+    expect(r.reply).toBe(REFUSAL);
+    expect(r.answered).toBe(false);
+  });
+  it("keeps amounts that are real menu prices (any language), and numbers the diner wrote themselves", async () => {
+    expect((await ask("Try the Thai Iced Tea for 50 THB or the tofu for ฿90.")).r.reply).toBe("Try the Thai Iced Tea for 50 THB or the tofu for ฿90.");
+    expect((await ask("ราคา 120 บาท ครับ")).r.reply).toBe("ราคา 120 บาท ครับ");
+    expect((await ask("Here is what fits under 150 baht: the Thai Iced Tea.", "I only have 150 baht, what can I eat?")).r.reply).toContain("under 150 baht");
+    expect((await ask("Here is what fits under 150 baht: the Thai Iced Tea.", "what can I eat?")).r.reply).toBe(REFUSAL);   // 150 is neither a menu price nor the diner's number
+  });
+  it.each([
+    ["a price before the dish that belongs to a different dish", "For ฿50 you can get the Shrimp Pad Thai."],
+    ["a price after 'is' that belongs to a different dish", "฿70 is what the Beef Massaman Curry costs."],
+    ["a price in front of a dish in Thai", "ราคา 70 บาท สำหรับผัดไทยกุ้ง"],
+    ["two dishes with the price of a third", "The Shrimp Pad Thai and the Tom Yum Goong are both 50 THB."],
+  ])("AI-10 / R2 replaces %s", async (_n, reply) => {
+    const { r } = await ask(reply);
+    expect(r.reply).toBe(REFUSAL);
+  });
+  it.each([
+    "Tom Yum Goong (฿180), Beef Massaman Curry (฿160) and Thai Iced Tea (฿50) are popular.",
+    "I recommend the Thai Iced Tea for 50 THB or the Mango Sticky Rice for 100 THB.",
+    "For ฿70 you can get the Papaya Salad.",
+    "The Papaya Salad is ฿70 and the Thai Iced Tea is ฿50.",
+    "ผัดไทยกุ้ง ราคา 120 บาท และ ชาไทยเย็น ราคา 50 บาท",
+  ])("keeps a price that sits next to its own dish: %s", async (reply) => {
+    const { r } = await ask(reply);
+    expect(r.reply).toBe(reply);
+  });
+  it("lets the diner's own budget be repeated next to a dish, but never as the dish's price", async () => {
+    const ok = await ask("With 150 baht you can have the Chicken Fried Rice (80 THB).", "I only have 150 baht, what can I eat?");
+    expect(ok.r.reply).toContain("With 150 baht");
+    expect((await ask("The Chicken Fried Rice is 150 baht.", "I only have 150 baht, what can I eat?")).r.reply).toBe(REFUSAL);          // the diner's budget is never the dish's price
   });
   it("accepts a correct price", async () => {
     const { r } = await ask("The Shrimp Pad Thai is ฿120 and very popular.");
@@ -115,6 +156,59 @@ describe("AI-10 dish cards suggested by the model must be real dishes that are o
   it("never shows the ACTION line to the diner", async () => {
     const { r } = await ask('A nice choice.\nACTION: {"type":"show_dishes","ids":[1]}');
     expect(r.reply).toBe("A nice choice.");
+  });
+});
+
+describe("AI-10 / R1 a dish that is not on the menu is not recommended", () => {
+  it.each([
+    ["a made-up dish in the middle of a sentence", "We have a lovely Lobster Thermidor tonight."],
+    ["a made-up dish at the start of a sentence", "Lobster Thermidor is our chef's special today."],
+    ["a made-up dish after 'try'", "Try our Moussaka, it is great."],
+    ["a made-up dish next to real ones", "I recommend the Wagyu Burger or the Thai Iced Tea."],
+    ["a made-up dish in a list", "Here are some ideas:\n- Margherita Pizza\n- Thai Iced Tea"],
+    ["a made-up dish in a Thai reply", "แนะนำ Pad Thai และ Sushi Platter ครับ"],
+    ["a made-up dish offered after a refusal", "We don't have Pizza, but try the Wagyu Burger."],
+    ["a made-up dish inside Markdown bold", "How about the **Green Papaya Pizza**?"],
+    ["a single made-up dish after 'have a lovely'", "We have a lovely Moussaka tonight."],
+    ["a single made-up dish after 'try our famous'", "Try our famous Moussaka, it is great."],
+    ["a made-up dish after 'today's special is'", "Today's special is Bouillabaisse."],
+  ])("AI-10 replaces %s", async (_n, reply) => {
+    const { r } = await ask(reply);
+    expect(r.reply).toBe(REFUSAL);
+    expect(r.answered).toBe(false);
+    expect(r.action.type).toBe("none");
+  });
+  it.each([
+    "A Thai Iced Tea is refreshing.",
+    "I recommend the Shrimp Pad Thai or the Mango Sticky Rice.",
+    "Great choice! The Tom Yum Goong is spicy.",
+    "Great Choice! The Tom Yum Goong is spicy.",
+    "Try the Papaya Salad, it is a favourite.",
+    "We are open from Monday to Sunday.",
+    "Golden Lotus Kitchen is in Bangkok.",
+    "Yes, free Wi-Fi. Ask staff for the password.",
+    "ผัดไทย (Shrimp Pad Thai) ราคา 120 บาท ครับ",
+    "Pad Thai and Green Curry are both popular, and the Beef Massaman Curry is milder.",
+    "Our Chicken Fried Rice and Coconut Ice Cream (sold out today) are favourites.",
+    "Welcome! Sure, I can help. What would you like?",
+  ])("keeps a reply that only names dishes on the menu: %s", async (reply) => {
+    const { r } = await ask(reply);
+    expect(r.reply).toBe(reply);
+  });
+  it("allows a refusal that names the dish the diner asked about, even one that is not on the menu", async () => {
+    expect((await ask("Sorry, we do not serve Margherita Pizza.", "Do you have Margherita Pizza?")).r.reply).toBe("Sorry, we do not serve Margherita Pizza.");
+    expect((await ask("I'm sorry, but the restaurant does not serve Pizza.", "do you have pizza")).r.reply).toBe("I'm sorry, but the restaurant does not serve Pizza.");
+  });
+  it("allows a negated mention even if the diner did not name it, but not a recommendation of it", async () => {
+    expect((await ask("Unfortunately we don't have Lobster Thermidor. The Papaya Salad is good.")).r.reply).toMatch(/^Unfortunately we don't have Lobster Thermidor/);
+    expect((await ask("We don't have Pizza, but try the Papaya Salad.")).r.reply).toBe("We don't have Pizza, but try the Papaya Salad.");
+  });
+  it("uses the restaurant's own words: FAQs, specials, the assistant's name and the owner's rules count as known", async () => {
+    const c = await aiCtx();
+    const over = { faqs: [...c.faqs, { q: "Do you have a kids menu?", a: "Yes, ask for the Little Lotus Plate." }], specials: [{ title: "Chef Special", text: "Steamed Sea Bass Friday" }] };
+    expect((await ask("Today's Chef Special is the Steamed Sea Bass Friday.", OPEN, over)).r.reply).toBe("Today's Chef Special is the Steamed Sea Bass Friday.");
+    expect((await ask("The Little Lotus Plate suits children.", OPEN, over)).r.reply).toBe("The Little Lotus Plate suits children.");
+    expect((await ask("The Little Lotus Plate suits children.")).r.reply).toBe(REFUSAL);          // without that FAQ it would be an invented dish
   });
 });
 

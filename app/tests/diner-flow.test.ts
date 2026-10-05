@@ -12,7 +12,7 @@ import { GET as kitchen } from "@/modules/staff/api/kitchen";
 afterEach(() => { vi.unstubAllGlobals(); });
 const slug = "golden-lotus";
 
-describe("a diner opens the menu, chats, sends picks; the staff cook and serve them", () => {
+describe("UC-1 / UC-2 / UC-3 / UC-8 / UC-9 / PC-2 / SF-3 / SF-4 / SF-5 a diner opens the menu, chats, sends picks; the staff cook and serve them", () => {
   it("runs the whole story", async () => {
     noModel();
     signOut();

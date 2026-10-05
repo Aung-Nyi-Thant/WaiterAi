@@ -356,7 +356,7 @@ The AI ends every reply with a hidden line `ACTION: <json>`. The app removes tha
 | AI recommends or lists dishes (vegetarian, budget, "what's popular", allergen list) | `show_dishes` + up to 4 ids | Dish cards under the reply, tap for detail |
 | Customer asks about one dish (price, ingredients, allergens) | `show_dishes` + that id | That dish's card with its allergen icons |
 | Customer asks for a dish that is sold out | `show_dishes` + alternatives | Cards for alternatives (never the sold-out dish) |
-| Customer says they want specific dishes ("I'll have the fried rice") | `add_to_picks` + ids | Adds to "My picks" list, shows it, with a "Show to waiter" / "Call staff" button (no payment in the first release) |
+| Customer says they want specific dishes ("I'll have the fried rice") | `add_to_picks` + ids | Adds to "My picks" list, shows it, with a "Send to staff" / "Call staff" button (no payment in the first release) |
 | Customer asks for the bill, to pay, to complain, or for a person | `call_staff` | Sends a call-staff notice for the table and confirms it |
 | Greeting, hours, Wi-Fi, parking, dish not on the menu, refusal, small talk | `none` | Text only |
 
@@ -367,4 +367,4 @@ Rules the app enforces (never trust the model blindly):
 4. A permanent "Menu" button stays on the chat screen, so the customer can always open the menu without asking.
 5. The last action is logged with the question, so the owner insights (section 2.9) can show what people asked before ordering.
 
-Open question for later: when payments arrive (Phase 3), `add_to_picks` will lead to "Confirm order" instead of "Show to waiter".
+Open question for later: when payments arrive (Phase 3), `add_to_picks` will lead to "Confirm order" instead of "Send to staff".

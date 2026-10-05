@@ -15,6 +15,7 @@ export default function HoursPage() {
   const [specials, setSpecials] = useState<any[]>([]);
   const [sp, setSp] = useState({ title: "", text: "", starts_on: "", ends_on: "" });
   const load = () => api<any[]>("/api/owner/specials").then(setSpecials);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: loads once on mount
   useEffect(() => { load(); }, []);
   async function saveHours() {
     setErr("");
@@ -38,7 +39,7 @@ export default function HoursPage() {
           <div><label className="lbl" htmlFor="o3">{t("lastOrder")}</label><input id="o3" type="time" className="in-l" value={h.lastOrder} onChange={(e) => setH({ ...h, lastOrder: e.target.value })} /></div>
           <div><span className="lbl">{t("closedOn")}</span><div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>{DAYS.map((d) => <label key={d} className="check"><input type="checkbox" checked={h.closedDays.includes(d)} onChange={() => toggleDay(d)} />{d.slice(0, 3)}</label>)}</div></div>
           {err && <div className="err" role="alert">{err}</div>}
-          <button className="btn btn-p" style={{ alignSelf: "flex-start" }} onClick={saveHours}>{t("saveHours")}</button>
+          <button type="button" className="btn btn-p" style={{ alignSelf: "flex-start" }} onClick={saveHours}>{t("saveHours")}</button>
         </div>
         <div className="sa-plate r-xl" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 12 }}>
           <h2 style={{ fontSize: 22 }}>{t("specialsTitle")}</h2>
@@ -51,8 +52,8 @@ export default function HoursPage() {
           {specials.map((s) => (
             <div key={s.id} className="row" style={{ gap: 12, padding: "10px 0", borderTop: "1px solid var(--line)" }}>
               <div style={{ flex: 1 }}><div style={{ fontWeight: 700 }}>{s.title}</div><div className="soft-l" style={{ fontSize: 13 }}>{s.text}{(s.starts_on || s.ends_on) && ` · ${s.starts_on || "…"} to ${s.ends_on || "…"}`}</div></div>
-              <button className={`switch ${s.active ? "on" : ""}`} role="switch" aria-checked={!!s.active} aria-label={`${s.title} active`} onClick={async () => { await api(`/api/owner/specials/${s.id}`, { method: "PUT", body: { active: s.active ? 0 : 1 } }); load(); }} />
-              <button className="btn btn-ol btn-icon btn-sm" style={{ width: 36 }} aria-label={`Delete ${s.title}`} onClick={async () => { await api(`/api/owner/specials/${s.id}`, { method: "DELETE" }); load(); }}><Icon name="trash" size={16} /></button>
+              <button type="button" className={`switch ${s.active ? "on" : ""}`} role="switch" aria-checked={!!s.active} aria-label={`${s.title} active`} onClick={async () => { await api(`/api/owner/specials/${s.id}`, { method: "PUT", body: { active: s.active ? 0 : 1 } }); load(); }} />
+              <button type="button" className="btn btn-ol btn-icon btn-sm" style={{ width: 36 }} aria-label={`Delete ${s.title}`} onClick={async () => { await api(`/api/owner/specials/${s.id}`, { method: "DELETE" }); load(); }}><Icon name="trash" size={16} /></button>
             </div>))}
         </div>
       </div>

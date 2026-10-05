@@ -10,6 +10,10 @@ process.env.SESSION_SECRET = "test-secret-not-for-production";
 process.env.AI_PROVIDER = "ollama";
 process.env.OLLAMA_URL = "http://ollama.invalid";
 delete process.env.AI_API_KEY;
+// the other test files make many logins and chats from one "address": keep rate limits out of their way
+// (tests/ratelimit.test.ts sets its own values)
+Object.assign(process.env, { RATE_LIMIT_LOGIN_MAX: "100000", RATE_LIMIT_CHAT_MAX: "100000", RATE_LIMIT_CHAT_RESTAURANT_MAX: "100000", RATE_LIMIT_CHAT_IP_MAX: "100000", RATE_LIMIT_REGISTER_MAX: "100000", RATE_LIMIT_REGISTER_IP_MAX: "100000" });
+delete process.env.RATE_LIMIT_TRUST_PROXY;
 
 // next/headers cookies() only works inside a real request, so tests use a plain map instead
 const jar = new Map<string, string>();

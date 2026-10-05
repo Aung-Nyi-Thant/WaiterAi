@@ -11,16 +11,17 @@
     "test:watch": "vitest",
     "test:e2e": "vitest run --config vitest.e2e.config.mts",
     "typecheck": "tsc --noEmit",
-    "eval:live": "node --experimental-strip-types --no-warnings scripts/eval-live.mts"
+    "eval:live": "node --experimental-strip-types --no-warnings scripts/eval-live.mts",
+    "lint": "biome lint .",
+    "load-test": "node --experimental-strip-types --no-warnings scripts/load-test.mts"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.15",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^26.6.2",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "eslint": "^10.12.0",
-    "eslint-config-next": "^16.3.8",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"
   },

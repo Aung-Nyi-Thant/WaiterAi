@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Icon from "@/modules/platform/Icon";
-import { api } from "@/modules/platform/client";
+import { api, useEscape } from "@/modules/platform/client";
 import { tr, priceLabel, chatLineHeight } from "@/modules/diner/i18n";
+import { filterMenu } from "@/modules/diner/filters";
 import type { Item, Category, Lang } from "@/modules/platform/menu";
 
 type Menu = { restaurant: { name: string; city: string; currency: string; hours: any; persona: { name: string; gender: string; greeting: string } }; categories: Category[]; items: Item[]; specials: { id: number; title: string; text: string }[] };
@@ -19,7 +20,7 @@ const receiptCode = () => {
     let r = localStorage.getItem("receipt") || "";
     if (r.length < 24) { r = crypto.randomUUID().replace(/-/g, ""); localStorage.setItem("receipt", r); }
     return r;
-  } catch { return receiptMemo || (receiptMemo = crypto.randomUUID().replace(/-/g, "")); }
+  } catch { receiptMemo ||= crypto.randomUUID().replace(/-/g, ""); return receiptMemo; }
 };
 
 export default function Diner({ slug }: { slug: string }) {
@@ -41,6 +42,8 @@ export default function Diner({ slug }: { slug: string }) {
   const [ringing, setRinging] = useState(false);
   const [bill, setBill] = useState<Bill | null>(null);
   const [billOpen, setBillOpen] = useState(false);
+  useEscape(() => setPicksOpen(false), picksOpen);
+  useEscape(() => setBillOpen(false), billOpen);
   const [sessionId] = useState(() => uid());
   const t = (k: string) => tr(lang, k);
   const say = (m: string) => { setToast(m); setTimeout(() => setToast(""), 2600); };
@@ -57,7 +60,7 @@ export default function Diner({ slug }: { slug: string }) {
   async function aiAdd(ids: number[], qtyMap?: Record<number, number>) {
     const reduceMotion = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
-    if (reduceMotion || !ids.length) { ids.forEach((id) => addPick(id, qtyMap?.[id] || 1)); return; }
+    if (reduceMotion || !ids.length) { ids.forEach((id) => { addPick(id, qtyMap?.[id] || 1); }); return; }
     for (const id of ids) {
       const el = document.querySelector<HTMLElement>(`[data-add-btn="${id}"]`);
       if (!el) { addPick(id, qtyMap?.[id] || 1); continue; }
@@ -108,6 +111,7 @@ export default function Diner({ slug }: { slug: string }) {
   // Only a phone that has sent picks from this table gets the bill: the server checks the receipt code
   // that was saved with those picks, so other tables' bills cannot be read by trying table numbers.
   const loadBill = () => { if (table) api<Bill>(`/api/public/${slug}/bill?t=${encodeURIComponent(table)}&r=${encodeURIComponent(receiptCode())}`).then(setBill).catch(() => {}); };
+  // biome-ignore lint/correctness/useExhaustiveDependencies: polling is set up once per table; loadBill is recreated on every render
   useEffect(() => {
     loadBill();
     const i = setInterval(() => { if (!document.hidden) loadBill(); }, 20000);
@@ -121,13 +125,7 @@ export default function Diner({ slug }: { slug: string }) {
 
   const shown = useMemo(() => {
     if (!menu) return [];
-    const needle = q.trim().toLowerCase();
-    return menu.items.filter((i) =>
-      (!cat || i.category_id === cat) &&
-      (!needle || Object.values(i.name).some((n) => n.toLowerCase().includes(needle))) &&
-      (!f.veg || i.tags.includes("vegetarian") || i.tags.includes("vegan")) &&
-      (!f.noPeanut || (i.allergens !== null && !i.allergens.includes("peanut"))) &&
-      (!f.u100 || i.price < 100) && (!f.spicy || i.tags.includes("spicy")));
+    return filterMenu(menu.items, { cat, q, f });
   }, [menu, cat, q, f]);
 
   const addPick = (id: number, qty = 1) => setPicks((p) => (p.some((x) => x.id === id) ? p.map((x) => (x.id === id ? { ...x, qty: Math.min(20, x.qty + qty) } : x)) : [...p, { id, qty }]));
@@ -172,8 +170,9 @@ export default function Diner({ slug }: { slug: string }) {
               <h1 className="sa-sign__name">{menu.restaurant.name}</h1>
               <p className="sa-sign__meta">{[menu.restaurant.city, table ? `${t("table")} ${table}` : ""].filter(Boolean).join(" · ")}</p>
             </div>
+            {/* biome-ignore lint/a11y/useSemanticElements: a <fieldset> would bring its default browser styling into the design */}
             <div className="sa-lang" role="group" aria-label="Language">
-              {(["th", "my", "en"] as Lang[]).map((l) => <button key={l} onClick={() => chooseLang(l)} aria-pressed={lang === l}>{l.toUpperCase()}</button>)}
+              {(["th", "my", "en"] as Lang[]).map((l) => <button type="button" key={l} onClick={() => chooseLang(l)} aria-pressed={lang === l}>{l.toUpperCase()}</button>)}
             </div>
           </div>
         </header>
@@ -185,17 +184,17 @@ export default function Diner({ slug }: { slug: string }) {
             {chatOpen ? (
               <div className="hero-ai__head">
                 <div className="sa-msg__who"><Icon name="sparkles" size={16} />{menu.restaurant.persona.name || t("theWaiter")}</div>
-                <button className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" aria-label={t("close")} onClick={() => setChatOpen(false)}><Icon name="close" size={18} /></button>
+                <button type="button" className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" aria-label={t("close")} onClick={() => setChatOpen(false)}><Icon name="close" size={18} /></button>
               </div>
             ) : (
               <>
                 <div className="hero-ai__kicker"><Icon name="sparkles" size={16} />{t("heroEyebrow")}</div>
-                <button className="hero-ai__ask" onClick={() => setChatOpen(true)} aria-label={t("askWaiter")}>
+                <button type="button" className="hero-ai__ask" onClick={() => setChatOpen(true)} aria-label={t("askWaiter")}>
                   <Icon name="sparkles" size={20} />
                   <span style={{ flex: 1 }}>{t("heroPlaceholder")}<span className="hero-cursor" aria-hidden="true" /></span>
                 </button>
                 <div className="hero-ai__chips">
-                  {(["heroChip1", "heroChip2", "heroChip3"] as const).map((k) => <button key={k} className="sa-chip" onClick={() => askQuick(t(k))}>{t(k)}</button>)}
+                  {(["heroChip1", "heroChip2", "heroChip3"] as const).map((k) => <button type="button" key={k} className="sa-chip" onClick={() => askQuick(t(k))}>{t(k)}</button>)}
                 </div>
               </>
             )}
@@ -216,16 +215,16 @@ export default function Diner({ slug }: { slug: string }) {
             collapse behind a toggle so they don't permanently take up space on a 390px phone. */}
         <div className="diner-sticky">
           <nav className="sa-tabs" aria-label={t("all")}>
-            <button className="sa-tab" aria-pressed={!cat} onClick={() => setCat(0)}>{t("all")}</button>
-            {menu.categories.map((c) => <button key={c.id} className="sa-tab" aria-pressed={cat === c.id} onClick={() => setCat(c.id)}>{c.name[lang]}</button>)}
-            <button className="sa-chip" aria-expanded={filtersOpen} aria-controls="diner-filters" aria-pressed={filtersOpen || hasFilters} onClick={() => setFiltersOpen((v) => !v)}>
+            <button type="button" className="sa-tab" aria-pressed={!cat} onClick={() => setCat(0)}>{t("all")}</button>
+            {menu.categories.map((c) => <button type="button" key={c.id} className="sa-tab" aria-pressed={cat === c.id} onClick={() => setCat(c.id)}>{c.name[lang]}</button>)}
+            <button type="button" className="sa-chip" aria-expanded={filtersOpen} aria-controls="diner-filters" aria-pressed={filtersOpen || hasFilters} onClick={() => setFiltersOpen((v) => !v)}>
               <Icon name="filter" size={16} />{t("filters")}{hasFilters ? ` · ${activeFilterCount}` : ""}
             </button>
           </nav>
           {filtersOpen && (
             <div id="diner-filters" className="diner-filters">
               {([["veg", "vegetarian"], ["noPeanut", "noPeanuts"], ["u100", "under100"], ["spicy", "spicy"]] as const).map(([k, label]) => (
-                <button key={k} className="sa-chip" aria-pressed={f[k]} onClick={() => setF({ ...f, [k]: !f[k] })}>{f[k] && <Icon name="check" size={16} />}{t(label)}</button>
+                <button type="button" key={k} className="sa-chip" aria-pressed={f[k]} onClick={() => setF({ ...f, [k]: !f[k] })}>{f[k] && <Icon name="check" size={16} />}{t(label)}</button>
               ))}
             </div>
           )}
@@ -248,23 +247,23 @@ export default function Diner({ slug }: { slug: string }) {
         <div className="diner-dock__inner">
           <div className="diner-dock__row">
             {bill && (bill.lines.length > 0 || bill.pending.length > 0) && (
-              <button className="sa-btn diner-bill-btn" onClick={() => { loadBill(); setBillOpen(true); }} aria-haspopup="dialog">
+              <button type="button" className="sa-btn diner-bill-btn" onClick={() => { loadBill(); setBillOpen(true); }} aria-haspopup="dialog">
                 <span className="sa-label" style={{ color: "inherit" }}>{t("tableBill")}</span>
                 <span className="sa-display" style={{ fontSize: 20 }}>{priceLabel(lang, bill.total)}</span>
               </button>
             )}
-            <button className={`sa-bell${ringing ? " is-ringing" : ""}`} onClick={callStaff}>
+            <button type="button" className={`sa-bell${ringing ? " is-ringing" : ""}`} onClick={callStaff}>
               <span className="sa-bell__knob"><BellSvg /></span>
               <span className="sa-bell__label">{t("callStaff")}</span>
             </button>
           </div>
           {total > 0 && (
             <div className="picks-bar">
-              <button className="sa-plain picks-bar__open" onClick={() => setPicksOpen(true)} aria-haspopup="dialog">
+              <button type="button" className="sa-plain picks-bar__open" onClick={() => setPicksOpen(true)} aria-haspopup="dialog">
                 <div className="sa-label">{t("myPicks")} · {total} {total === 1 ? t("dish") : t("dishes")}</div>
                 <div className="picks-bar__line">{valid.map((p) => `${p.qty > 1 ? p.qty + "× " : ""}${nm(byId.get(p.id)!)}`).join(", ")}</div>
               </button>
-              <button className="sa-btn sa-btn--staff sa-btn--sm" onClick={sendPicks}><Icon name="send" />{t("showToWaiter")}</button>
+              <button type="button" className="sa-btn sa-btn--staff sa-btn--sm" onClick={sendPicks}><Icon name="send" />{t("showToWaiter")}</button>
             </div>
           )}
         </div>
@@ -272,13 +271,14 @@ export default function Diner({ slug }: { slug: string }) {
 
       {detail && <Detail item={detail} lang={lang} t={t} onClose={() => setDetail(null)} onAdd={() => { addPick(detail.id); say(`${t("added")}: ${nm(detail)}`); setDetail(null); }} onAsk={() => { setDetail(null); setChatOpen(true); setTimeout(() => window.dispatchEvent(new CustomEvent("ask", { detail: `${nm(detail)}?` })), 50); }} />}
       {picksOpen && (
-        <div className="sheet-back" onClick={() => setPicksOpen(false)}>
-          <section className="sa-picks" role="dialog" aria-label={t("myPicks")} onClick={(e) => e.stopPropagation()}>
+        // biome-ignore lint/a11y/noStaticElementInteractions: clicking outside is a mouse shortcut; keyboard users close this with Escape (useEscape)
+        <div className="sheet-back" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) setPicksOpen(false); }}>
+          <section className="sa-picks" role="dialog" aria-label={t("myPicks")}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 12 }}>
               <h3 className="sa-display" style={{ margin: 0, fontSize: 24 }}>{t("myPicks")}</h3>
               <div className="row" style={{ gap: 12 }}>
                 {table && <span className="sa-ticket-font muted" style={{ fontSize: 13 }}>{t("table")} {table}</span>}
-                <button className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" onClick={() => setPicksOpen(false)} aria-label={t("close")}><Icon name="close" size={18} /></button>
+                <button type="button" className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" onClick={() => setPicksOpen(false)} aria-label={t("close")}><Icon name="close" size={18} /></button>
               </div>
             </div>
             {valid.length === 0 ? <div className="muted" style={{ marginBottom: 12 }}>{t("picksEmpty")}</div> : (
@@ -288,31 +288,32 @@ export default function Diner({ slug }: { slug: string }) {
                     <span>{nm(it)}<br /><span style={{ fontWeight: 400, fontSize: 14 }}>{priceLabel(lang, it.price * p.qty)}</span></span>
                     <span className="sa-qty">
                       {p.qty > 1
-                        ? <button aria-label="-" onClick={() => setPicks((x) => x.map((y) => (y.id === p.id ? { ...y, qty: y.qty - 1 } : y)))}>−</button>
-                        : <button className="sa-qty__del" aria-label={t("remove")} onClick={() => removePick(p.id)}><Icon name="trash" size={16} /></button>}
+                        ? <button type="button" aria-label="-" onClick={() => setPicks((x) => x.map((y) => (y.id === p.id ? { ...y, qty: y.qty - 1 } : y)))}>−</button>
+                        : <button type="button" className="sa-qty__del" aria-label={t("remove")} onClick={() => removePick(p.id)}><Icon name="trash" size={16} /></button>}
                       {p.qty}
-                      <button aria-label="+" onClick={() => addPick(p.id)}>+</button>
+                      <button type="button" aria-label="+" onClick={() => addPick(p.id)}>+</button>
                     </span>
                   </div>); })}
               </div>
             )}
-            {valid.length > 0 && <button className="sa-btn sa-btn--staff sa-btn--block" onClick={() => { setPicksOpen(false); sendPicks(); }}><Icon name="send" />{t("showToWaiter")} · {priceLabel(lang, valid.reduce((s, p) => s + p.qty * (byId.get(p.id)?.price || 0), 0))}</button>}
+            {valid.length > 0 && <button type="button" className="sa-btn sa-btn--staff sa-btn--block" onClick={() => { setPicksOpen(false); sendPicks(); }}><Icon name="send" />{t("showToWaiter")} · {priceLabel(lang, valid.reduce((s, p) => s + p.qty * (byId.get(p.id)?.price || 0), 0))}</button>}
           </section>
         </div>
       )}
       {billOpen && bill && (
-        <div className="sheet-back" onClick={() => setBillOpen(false)}>
-          <section className="sa-picks" role="dialog" aria-label={t("tableBill")} onClick={(e) => e.stopPropagation()}>
+        // biome-ignore lint/a11y/noStaticElementInteractions: clicking outside is a mouse shortcut; keyboard users close this with Escape (useEscape)
+        <div className="sheet-back" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) setBillOpen(false); }}>
+          <section className="sa-picks" role="dialog" aria-label={t("tableBill")}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 12 }}>
               <h3 className="sa-display" style={{ margin: 0, fontSize: 24 }}>{t("tableBill")}</h3>
               <div className="row" style={{ gap: 12 }}>
                 <span className="sa-ticket-font muted" style={{ fontSize: 13 }}>{t("table")} {table}</span>
-                <button className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" onClick={() => setBillOpen(false)} aria-label={t("close")}><Icon name="close" size={18} /></button>
+                <button type="button" className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" onClick={() => setBillOpen(false)} aria-label={t("close")}><Icon name="close" size={18} /></button>
               </div>
             </div>
             {bill.lines.length === 0 ? <div className="muted" style={{ marginBottom: 12 }}>{t("billEmpty")}</div> : (
               <div className="sa-picks__slip">
-                {bill.lines.map((l, k) => <div key={k} className="sa-picks__row"><span>{l.qty}× {l.name}</span><span>{priceLabel(lang, l.qty * l.price)}</span></div>)}
+                {bill.lines.map((l) => <div key={`${l.name}|${l.price}`} className="sa-picks__row"><span>{l.qty}× {l.name}</span><span>{priceLabel(lang, l.qty * l.price)}</span></div>)}
                 <div className="sa-picks__row bill-total"><span>{t("billTotal")}</span><span>{priceLabel(lang, bill.total)}</span></div>
               </div>
             )}
@@ -323,8 +324,8 @@ export default function Diner({ slug }: { slug: string }) {
               </div>
             )}
             {bill.lines.length > 0 && (bill.asked
-              ? <button className="sa-btn sa-btn--block" disabled><Icon name="check" />{t("billRequested")}</button>
-              : <button className="sa-btn sa-btn--staff sa-btn--block" onClick={() => { setBillOpen(false); askForBill(); }}><BellSvg />{t("askBill")}</button>)}
+              ? <button type="button" className="sa-btn sa-btn--block" disabled><Icon name="check" />{t("billRequested")}</button>
+              : <button type="button" className="sa-btn sa-btn--staff sa-btn--block" onClick={() => { setBillOpen(false); askForBill(); }}><BellSvg />{t("askBill")}</button>)}
           </section>
         </div>
       )}
@@ -333,7 +334,7 @@ export default function Diner({ slug }: { slug: string }) {
         <>
           <div className="aiCursorTrail" style={{ transform: `translate(${cursor.x}px, ${cursor.y}px)` }} aria-hidden="true" />
           <div className={`aiCursor${cursor.clicking ? " clicking" : ""}`} style={{ transform: `translate(${cursor.x}px, ${cursor.y}px)` }} aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="26" height="26" className="aiCursorArrow">
+            <svg viewBox="0 0 24 24" width="26" height="26" className="aiCursorArrow" aria-hidden="true">
               <path d="M3 2 L3 17 L7 13.5 L10 20.5 L12.5 19.3 L9.3 12.7 L15 12.7 Z" fill="var(--teal)" stroke="var(--surface-card)" strokeWidth="1.4" strokeLinejoin="round" />
             </svg>
           </div>
@@ -371,7 +372,7 @@ function DishCard({ item, lang, onOpen, onAdd, t }: { item: Item; lang: Lang; on
       {!item.available && <span className="sa-stamp">{t("soldOut")}</span>}
       <div className="sa-dish__body">
         {/* The name's button stretches over the whole card, so tapping anywhere opens the dish. */}
-        <h3 className="sa-dish__name"><button onClick={onOpen}>{nm}</button></h3>
+        <h3 className="sa-dish__name"><button type="button" onClick={onOpen}>{nm}</button></h3>
         {other.length > 0 && <p className="sa-dish__alt">{other.join(" · ")}</p>}
         <div className="sa-dish__tags">
           {item.tags.filter((x) => DIET[x]).slice(0, 2).map((x) => <span key={x} className={`sa-tag ${DIET[x]}`}>{x}</span>)}
@@ -380,8 +381,8 @@ function DishCard({ item, lang, onOpen, onAdd, t }: { item: Item; lang: Lang; on
         <div className="sa-dish__foot">
           <span className="sa-price">{priceLabel(lang, item.price)}</span>
           {item.available
-            ? <button className="sa-btn sa-btn--special sa-btn--sm" onClick={onAdd} aria-label={`${t("add")} ${nm}`} data-add-btn={item.id}><Icon name="plus" />{t("add")}</button>
-            : <button className="sa-btn sa-btn--sm" disabled>{t("soldOut")}</button>}
+            ? <button type="button" className="sa-btn sa-btn--special sa-btn--sm" onClick={onAdd} aria-label={`${t("add")} ${nm}`} data-add-btn={item.id}><Icon name="plus" />{t("add")}</button>
+            : <button type="button" className="sa-btn sa-btn--sm" disabled>{t("soldOut")}</button>}
         </div>
       </div>
     </article>
@@ -389,13 +390,15 @@ function DishCard({ item, lang, onOpen, onAdd, t }: { item: Item; lang: Lang; on
 }
 
 function Detail({ item, lang, t, onClose, onAdd, onAsk }: { item: Item; lang: Lang; t: (k: string) => string; onClose: () => void; onAdd: () => void; onAsk: () => void }) {
+  useEscape(onClose);
   const nm = item.name[lang] || item.name.en;
   const other = (["th", "my", "en"] as Lang[]).filter((l) => l !== lang).map((l) => item.name[l]).filter((n) => n && n !== nm);
   return (
-    <div className="sheet-back" onClick={onClose}>
-      <section className="sa-sheet has-hero" role="dialog" aria-label={nm} onClick={(e) => e.stopPropagation()}>
+    // biome-ignore lint/a11y/noStaticElementInteractions: clicking outside is a mouse shortcut; keyboard users close this with Escape (useEscape)
+    <div className="sheet-back" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <section className="sa-sheet has-hero" role="dialog" aria-label={nm}>
         <div className="sa-sheet__grab" />
-        <button className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm sheet-close" onClick={onClose} aria-label={t("close")}><Icon name="close" size={18} /></button>
+        <button type="button" className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm sheet-close" onClick={onClose} aria-label={t("close")}><Icon name="close" size={18} /></button>
         <div className="sa-sheet__hero"><Plate item={item} /></div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}><h3>{nm}</h3><span className="sa-price">{priceLabel(lang, item.price)}</span></div>
         {other.length > 0 && <p className="sa-dish__alt">{other.join(" · ")}</p>}
@@ -404,8 +407,8 @@ function Detail({ item, lang, t, onClose, onAdd, onAsk }: { item: Item; lang: La
         <div className="sa-dish__tags">{item.allergens && item.allergens.length === 0 ? <span className="sa-tag">{t("allergenNone")}</span> : <AllergenTags item={item} t={t} max={20} />}</div>
         {item.ingredients && <><p className="sa-sheet__label">{t("ingredients")}</p><p className="muted" style={{ margin: 0 }}>{item.ingredients}</p></>}
         <div className="sa-sheet__actions">
-          <button className="sa-btn sa-btn--ai" onClick={onAsk}><Icon name="sparkles" />{t("askWaiter")}</button>
-          {item.available ? <button className="sa-btn sa-btn--special" onClick={onAdd}><Icon name="plus" />{t("add")}</button> : <button className="sa-btn" disabled>{t("soldOut")}</button>}
+          <button type="button" className="sa-btn sa-btn--ai" onClick={onAsk}><Icon name="sparkles" />{t("askWaiter")}</button>
+          {item.available ? <button type="button" className="sa-btn sa-btn--special" onClick={onAdd}><Icon name="plus" />{t("add")}</button> : <button type="button" className="sa-btn" disabled>{t("soldOut")}</button>}
         </div>
       </section>
     </div>
@@ -421,7 +424,7 @@ function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, aiAdd, 
   const [msgs, setMsgs] = useState<Msg[]>([{ id: "hello", role: "assistant", text: persona.greeting || t("hello") }]);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
-  const [missCount, setMissCount] = useState(0);
+  const [, setMissCount] = useState(0);
   const [escalate, setEscalate] = useState(false);
   const [reasonFor, setReasonFor] = useState<string | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
@@ -430,6 +433,7 @@ function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, aiAdd, 
   // Scroll only the message list itself, never scrollIntoView() on an inner marker - that
   // drags every scrollable ancestor (including the whole page) into view too, which used
   // to yank the page past the chat and down into the dish list on every new message.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: msgs and busy are the triggers (scroll to the newest message), not values read inside
   useEffect(() => { logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" }); }, [msgs, busy]);
 
   // The chat now expands in place (not a modal dialog covering the page), so there's no
@@ -482,6 +486,7 @@ function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, aiAdd, 
   const followUps = !busy && last?.role === "assistant" ? [t("chips1"), t("chips2"), t("chips3")].filter((c) => c.toLowerCase() !== lastQuestion) : [];
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: this container only receives the Escape key and focus (see onPanelKeyDown); it is not a control
     <div className="chat-inline" ref={dialogRef} tabIndex={-1} onKeyDown={onPanelKeyDown}>
       <div ref={logRef} className="sa-chat" role="log" aria-live="polite" aria-atomic="false">
         <div className="muted" style={{ fontSize: 13, textAlign: "center" }}>{t("askAny")}</div>
@@ -495,17 +500,18 @@ function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, aiAdd, 
               <div key={d.id} className="sa-mini">
                 <div className={`sa-dish__plate${cur.photo_url ? "" : " sa-dish__plate--empty"}`} aria-hidden="true">{cur.photo_url && <img src={cur.photo_url} alt="" />}</div>
                 <div className="sa-mini__txt">{name}<br /><span className="sa-dish__alt">{priceLabel(lang, cur.price)}</span></div>
-                <button className="sa-btn sa-btn--special sa-btn--sm sa-btn--icon" aria-label={`${t("add")} ${name}`} onClick={() => { addPick(cur.id); say(`${t("added")}: ${name}`); }}><Icon name="plus" /></button>
+                <button type="button" className="sa-btn sa-btn--special sa-btn--sm sa-btn--icon" aria-label={`${t("add")} ${name}`} onClick={() => { addPick(cur.id); say(`${t("added")}: ${name}`); }}><Icon name="plus" /></button>
               </div>); })}
             {m.messageId && (
               <>
                 <div className="sa-msg__rate">
-                  <button aria-label={t("helpful")} aria-pressed={m.rated === 1} onClick={() => rateUp(m)}><Icon name="thumbUp" size={16} /></button>
-                  <button aria-label={t("notHelpful")} aria-pressed={m.rated === -1} onClick={() => setReasonFor(reasonFor === m.id ? null : m.id)}><Icon name="thumbDown" size={16} /></button>
+                  <button type="button" aria-label={t("helpful")} aria-pressed={m.rated === 1} onClick={() => rateUp(m)}><Icon name="thumbUp" size={16} /></button>
+                  <button type="button" aria-label={t("notHelpful")} aria-pressed={m.rated === -1} onClick={() => setReasonFor(reasonFor === m.id ? null : m.id)}><Icon name="thumbDown" size={16} /></button>
                 </div>
                 {reasonFor === m.id && (
+                  // biome-ignore lint/a11y/useSemanticElements: a <fieldset> would bring its default browser styling into the design
                   <div className="chat-reasons" role="group" aria-label={t("reasonPrompt")}>
-                    {(Object.keys(REASON_KEYS) as (keyof typeof REASON_KEYS)[]).map((r) => <button key={r} className="sa-chip" onClick={() => submitReason(m, r)}>{t(REASON_KEYS[r])}</button>)}
+                    {(Object.keys(REASON_KEYS) as (keyof typeof REASON_KEYS)[]).map((r) => <button type="button" key={r} className="sa-chip" onClick={() => submitReason(m, r)}>{t(REASON_KEYS[r])}</button>)}
                   </div>
                 )}
               </>
@@ -522,16 +528,16 @@ function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, aiAdd, 
           <div className="chat-escalate" role="status" aria-live="polite">
             <Icon name="alert" />
             <div style={{ flex: 1 }}>{t("escalate")}</div>
-            <button className="sa-btn sa-btn--staff sa-btn--sm" onClick={() => { callStaff(); setEscalate(false); }}>{t("escalateCall")}</button>
+            <button type="button" className="sa-btn sa-btn--staff sa-btn--sm" onClick={() => { callStaff(); setEscalate(false); }}>{t("escalateCall")}</button>
           </div>
         )}
         {followUps.length > 0 && (
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {followUps.map((c) => <button key={c} className="sa-chip" onClick={() => send(c)}>{c}</button>)}
+            {followUps.map((c) => <button type="button" key={c} className="sa-chip" onClick={() => send(c)}>{c}</button>)}
           </div>
         )}
       </div>
-      {picksCount > 0 && <div style={{ padding: "0 12px 12px", background: "var(--surface-page)" }}><button className="sa-btn sa-btn--staff sa-btn--block sa-btn--sm" onClick={() => { sendPicks(); }}><Icon name="send" />{t("showToWaiter")} · {picksCount}</button></div>}
+      {picksCount > 0 && <div style={{ padding: "0 12px 12px", background: "var(--surface-page)" }}><button type="button" className="sa-btn sa-btn--staff sa-btn--block sa-btn--sm" onClick={() => { sendPicks(); }}><Icon name="send" />{t("showToWaiter")} · {picksCount}</button></div>}
       <form className="sa-composer" onSubmit={(e) => { e.preventDefault(); send(text); }}>
         <input className="sa-input" value={text} onChange={(e) => setText(e.target.value)} placeholder={t("typeQ")} aria-label={t("typeQ")} maxLength={500} />
         <button className="sa-btn sa-btn--ai sa-btn--icon" type="submit" aria-label="Send" disabled={busy || !text.trim()}><Icon name="send" /></button>

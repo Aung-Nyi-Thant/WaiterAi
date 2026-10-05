@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { usePathname, useRouter } from "next/navigation";
 import Icon from "@/modules/platform/Icon";
 import TestChat from "@/modules/owner/TestChat";
-import { api } from "@/modules/platform/client";
+import { api, useEscape } from "@/modules/platform/client";
 import { tr } from "@/modules/owner/i18n";
 import type { Restaurant, Lang } from "@/modules/platform/menu";
 
@@ -26,6 +26,7 @@ export default function OwnerShell({ children }: { children: React.ReactNode }) 
   const router = useRouter();
   const [me, setMe] = useState<{ restaurant: Restaurant; chatsUsed: number } | null>(null);
   const [test, setTest] = useState(false);
+  useEscape(() => setTest(false), test);
   const [msg, setMsg] = useState("");
   const refresh = useCallback(() => { api("/api/owner/me").then(setMe).catch(() => router.push("/login")); }, [router]);
   useEffect(refresh, [refresh]);
@@ -48,20 +49,22 @@ export default function OwnerShell({ children }: { children: React.ReactNode }) 
             <div className="sa-side__foot">
               <div style={{ fontWeight: 700 }}>{r.name}</div>
               <div className="sa-side__muted">{r.city || "—"} · {t("freePlan")}</div>
+              {/* biome-ignore lint/a11y/useSemanticElements: <meter> has default browser styling that would change the design */}
               <div className="sa-meter__bar" role="meter" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={t("chatsThisMonth")} style={{ marginTop: 10 }}><div className="sa-meter__fill" style={{ width: `${pct}%` }} /></div>
               <div className="sa-side__muted" style={{ marginTop: 6 }}>{me.chatsUsed} {t("of")} {r.chat_cap} {t("chatsThisMonth")}</div>
-              <button className="sa-btn sa-btn--quiet sa-btn--sm sa-btn--block" style={{ marginTop: 10 }} onClick={logout}><Icon name="logout" size={16} />{t("signOut")}</button>
+              <button type="button" className="sa-btn sa-btn--quiet sa-btn--sm sa-btn--block" style={{ marginTop: 10 }} onClick={logout}><Icon name="logout" size={16} />{t("signOut")}</button>
             </div>
           </nav>
           <div className="main">
             <div className="topbar">
               <div className="sa-label">{crumb}</div>
-              <button className="sa-btn sa-btn--ai sa-btn--sm no-print" onClick={() => setTest(true)}><Icon name="sparkles" size={18} />{t("testAssistant")}</button>
+              <button type="button" className="sa-btn sa-btn--ai sa-btn--sm no-print" onClick={() => setTest(true)}><Icon name="sparkles" size={18} />{t("testAssistant")}</button>
             </div>
             {children}
           </div>
         </div>
-        {test && <div className="modal-back" onClick={() => setTest(false)}><div className="modal" role="dialog" aria-label={t("testAssistant")} onClick={(e) => e.stopPropagation()}><div className="row" style={{ justifyContent: "space-between", marginBottom: 12 }}><h2 style={{ fontSize: 26 }}>{t("testAssistant")}</h2><button className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" onClick={() => setTest(false)} aria-label={t("close")}><Icon name="close" /></button></div><TestChat slug={r.slug} /></div></div>}
+        {/* biome-ignore lint/a11y/noStaticElementInteractions: clicking outside is a mouse shortcut; keyboard users close this with Escape (useEscape) */}
+        {test && <div className="modal-back" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) setTest(false); }}><div className="modal" role="dialog" aria-label={t("testAssistant")}><div className="row" style={{ justifyContent: "space-between", marginBottom: 12 }}><h2 style={{ fontSize: 26 }}>{t("testAssistant")}</h2><button type="button" className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" onClick={() => setTest(false)} aria-label={t("close")}><Icon name="close" /></button></div><TestChat slug={r.slug} /></div></div>}
         {msg && <div className="toast" role="status" style={{ bottom: 32 }}>{msg}</div>}
       </div>
     </OwnerCtx.Provider>

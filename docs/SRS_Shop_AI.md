@@ -109,7 +109,7 @@ Priority: **M** = must, **S** = should.
 | DM-4 | The system shall offer filters: vegetarian, no peanuts, under ฿100, spicy. The "no peanuts" filter shall exclude dishes with missing allergen data. | M |
 | DM-5 | The system shall let the diner switch between Thai, Burmese and English; labels and dish names change accordingly. | M |
 | DM-6 | The system shall show dishes that are not available as "sold out today" and refresh availability at least every 20 seconds. | M |
-| DM-7 | The system shall show a detail view with description, all allergens (or "allergen info not provided"), ingredients, an Add button and an "Ask the waiter" button. | M |
+| DM-7 | The system shall show a detail view with description, all allergens (or "allergen info not provided"), ingredients, an Add button and an "Ask AI about this dish" button. | M |
 | DM-8 | The system shall show active specials. | S |
 | DM-9 | The system shall show a saved copy of the menu with a notice if the server cannot be reached. | S |
 | DM-10 | The system shall record each menu open for insights. | S |
@@ -138,7 +138,7 @@ Priority: **M** = must, **S** = should.
 | ID | Requirement | Pri |
 |---|---|---|
 | PC-1 | The diner shall add, change quantity, remove dishes in "My picks" (kept in the browser). | M |
-| PC-2 | "Show to waiter" shall create an order in status *picked*, with table, language, items and the allergens the diner mentioned in the chat. Sold-out dishes shall be ignored; an order with no available dish shall be rejected. | M |
+| PC-2 | "Send to staff" shall create an order in status *picked*, with table, language, items and the allergens the diner mentioned in the chat. Sold-out dishes shall be ignored; an order with no available dish shall be rejected. | M |
 | PC-3 | The call-staff button and a bill or help request typed in the chat shall create a call for the table; a second open call of the same type for the same table shall reuse the first, whichever way it was raised. | M |
 | PC-4 | The waiter shall see, per table, the running bill: dishes of orders the staff have taken (picked orders are listed as pending and are not in the total). The waiter shall mark a table paid; this clears its bill and its open "bill" call. Only the waiter role may do this (HTTP 403 otherwise). | M |
 | PC-5 | The diner shall see the running bill of their own table. A phone is shown a table's bill only if it sent picks from that table: the phone keeps a random receipt code, saves it with its picks, and sends it when asking for the bill. Without a matching code nothing is shown, so other tables' orders cannot be read by trying table numbers. | M |
@@ -261,7 +261,7 @@ Priority: **M** = must, **S** = should.
 |---|---|---|---|
 | UC-1 | Browse the menu | Diner | Scan QR → menu opens → pick language → search/filter → open a dish |
 | UC-2 | Ask about allergens | Diner | Open chat → type "I'm allergic to peanuts" → system lists dishes from data and asks to confirm with staff |
-| UC-3 | Place picks | Diner | Add dishes → "Show to waiter" → order *picked* created |
+| UC-3 | Place picks | Diner | Add dishes → "Send to staff" → order *picked* created |
 | UC-4 | Call staff | Diner | Press bell (or ask for the bill) → call created |
 | UC-5 | Manage menu | Owner | Sign in → Menu items → add/edit dish, set allergens, sold-out switch |
 | UC-6 | Import a menu | Owner | Upload photo → AI reads → owner reviews and edits → confirm and publish |
@@ -325,6 +325,8 @@ A native Burmese speaker reviewed four rounds of Burmese answers; their correcti
 | DM, UI, NFR-U | Manual test on phone, tablet and desktop | **to do** |
 | NFR-P4, NFR-U3 | Load test with several phones (`scripts/nfr_check.py nfr7`); trial with real owners | **to do** |
 | AI-12 Burmese/Thai wording | Native-speaker review | Burmese assistant answers reviewed; interface labels to review |
+
+Requirement-by-requirement evidence (code, automated tests, what is only checked by hand): `docs/TRACEABILITY.md`. How the AI's safety rules are enforced and tested: `docs/AI_SAFETY.md`. Automated tests run on every push (`.github/workflows/ci.yml`).
 
 ### Requirements not yet implemented / future
 Online payment, LINE/WhatsApp, billing plans, AI-generated dish photos, email summaries, order status for diners, owner dashboard in Thai/Burmese, POS integration.

@@ -1,0 +1,54 @@
+name: CI
+
+# Every push and every pull request: install, lint, type-check, unit + eval tests, build, end-to-end tests,
+# and a check that the Docker image still builds. The AI model is never needed: tests mock it, and the
+# rule-based answers (all safety-critical ones) are scored offline against eval/questions.json.
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]          # the app needs Node 22.13+ (built-in SQLite)
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Type-check
+        run: npm run typecheck
+      - name: Unit, integration and offline AI eval tests
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: End-to-end tests (real server)
+        run: npm run test:e2e
+
+  docker:
+    name: Docker image builds
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t shop-ai .

@@ -31,7 +31,7 @@ export default function AiPage() {
           <div><label className="lbl" htmlFor="gr">Greeting (optional)</label><input id="gr" className="in-l" value={p.greeting} onChange={(e) => setP({ ...p, greeting: e.target.value })} placeholder="Welcome to Golden Lotus! Ask me anything." /></div>
           <label className="check" style={{ alignSelf: "flex-start" }}><input type="checkbox" checked={p.upsell} onChange={(e) => setP({ ...p, upsell: e.target.checked })} />Suggest drinks and desserts</label>
           {err && <div className="err" role="alert">{err}</div>}
-          <button className="btn btn-p" style={{ alignSelf: "flex-start" }} onClick={save}>Save changes</button>
+          <button type="button" className="btn btn-p" style={{ alignSelf: "flex-start" }} onClick={save}>Save changes</button>
         </div>
         <div className="sa-plate r-xl" style={{ padding: 24 }}><h2 style={{ fontSize: 22, marginBottom: 12 }}>Try it</h2><TestChat slug={restaurant.slug} /></div>
       </div>

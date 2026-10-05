@@ -28,6 +28,18 @@ export function usePoll(fn: () => void, ms: number) {
   }, [ms]);
 }
 
+// Closes a dialog or sheet when Escape is pressed (clicking outside already closed them, but a keyboard user had no way out).
+export function useEscape(onClose: () => void, active = true) {
+  const ref = useRef(onClose);
+  ref.current = onClose;
+  useEffect(() => {
+    if (!active) return;
+    const h = (e: KeyboardEvent) => { if (e.key === "Escape") ref.current(); };
+    document.addEventListener("keydown", h);
+    return () => document.removeEventListener("keydown", h);
+  }, [active]);
+}
+
 export const minutesAgo = (iso: string) => {
   const m = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
   return m < 1 ? "just now" : `${m} min`;

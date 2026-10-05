@@ -26,7 +26,7 @@ async function runOffline() {
   return rows;
 }
 
-describe("offline eval of the rule-based answers", () => {
+describe("AI-1 / AI-2 / AI-3 / AI-4 / AI-5 / AI-8 / NFR-S1 offline eval of the rule-based answers (the 30 questions)", () => {
   it("has the expected question set: 10 questions in each of Thai, Burmese and English", () => {
     expect(questions).toHaveLength(30);
     for (const l of ["en", "th", "my"]) expect(questions.filter((q) => q.lang === l)).toHaveLength(10);

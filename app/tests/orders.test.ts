@@ -30,7 +30,7 @@ describe("PC-2 the diner sends picks to the staff", () => {
     expect(all("SELECT name, qty, price FROM order_items WHERE order_id = ? ORDER BY id", o.id)).toEqual([
       { name: "Vegetable Tofu Stir-fry", qty: 1, price: 90 }, { name: "Thai Iced Tea", qty: 2, price: 50 }]);
   });
-  it("ignores sold-out and unknown dishes, and rejects an order with nothing available", async () => {
+  it("BR-2 ignores sold-out and unknown dishes, and rejects an order with nothing available", async () => {
     const soldOut = id("Coconut Ice Cream");
     const r = await order({ table: "9", items: [{ id: soldOut, qty: 1 }, { id: 99999, qty: 1 }, { id: id("Papaya Salad"), qty: 1 }] });
     expect(r.status).toBe(200);
@@ -64,7 +64,7 @@ describe("PC-2 the diner sends picks to the staff", () => {
   });
 });
 
-describe("PC-3 calling the staff", () => {
+describe("PC-3 / UC-4 calling the staff", () => {
   const ask = (table: string, kind?: string) => call(callStaff, { method: "POST", params: { slug }, body: { table, kind } });
   it("creates one call per kind per table and reuses it when pressed again", async () => {
     const a = await ask("3", "bill"), b = await ask("3", "bill");
@@ -77,7 +77,7 @@ describe("PC-3 calling the staff", () => {
     expect(get("SELECT kind FROM calls WHERE id = ?", r.data.id)!.kind).toBe("help");
     expect((await call(callStaff, { method: "POST", params: { slug: "nope" }, body: { table: "1" } })).status).toBe(404);
   });
-  it("staff see open calls and can mark them done; then a new call is possible", async () => {
+  it("SF-3 staff see open calls and can mark them done; then a new call is possible", async () => {
     const a = await ask("6", "help");
     await asWaiter();
     expect((await call(floor)).data.calls.map((c: any) => c.id)).toContain(a.data.id);
@@ -86,7 +86,7 @@ describe("PC-3 calling the staff", () => {
     signOut();
     expect((await ask("6", "help")).data.id).not.toBe(a.data.id);
   });
-  it("one restaurant's staff cannot close another restaurant's call", async () => {
+  it("NFR-SEC2 one restaurant's staff cannot close another restaurant's call", async () => {
     const other = await call(register, { method: "POST", body: { email: "rival@example.com", password: "rival-pass-1", restaurantName: "Rival" } });
     const rivalId = get("SELECT id FROM restaurants WHERE slug = ?", other.data.slug)!.id;
     const c = run("INSERT INTO calls (restaurant_id, table_no, kind) VALUES (?, '1', 'help')", rivalId).id;
@@ -120,7 +120,7 @@ describe("SF-5 / BR-4 the order life cycle: picked -> new -> cooking -> ready ->
     expect((await act(99999, "cooking")).status).toBe(404);
     expect(status(oid)).toBe("picked");
   });
-  it("runs the whole flow with the right role at each step", async () => {
+  it("SF-4 runs the whole flow with the right role at each step (the chef's New / Cooking / Ready columns)", async () => {
     await asWaiter();
     expect((await act(oid, "take")).status).toBe(200);
     expect(status(oid)).toBe("new");
@@ -154,7 +154,7 @@ describe("SF-5 / BR-4 the order life cycle: picked -> new -> cooking -> ready ->
     await asChef(); await act(o, "cooking"); await act(o, "ready");
     expect((await act(o, "served")).status).toBe(200);
   });
-  it("staff cannot touch another restaurant's order (404)", async () => {
+  it("NFR-SEC2 staff cannot touch another restaurant's order (404)", async () => {
     await ownerLogin("rival@example.com", "rival-pass-1");
     const item = await call(createItem, { method: "POST", body: { name: { en: "Rival dish" }, price: 10 } });
     signOut();
@@ -166,7 +166,7 @@ describe("SF-5 / BR-4 the order life cycle: picked -> new -> cooking -> ready ->
   });
 });
 
-describe("table bills", () => {
+describe("table bills (UC-9 / PC-4 / PC-5 / PC-6)", () => {
   // the phone's random receipt code, sent with its picks and again when it asks for the bill
   const RC = "phone-one-0123456789abcdef";
   const bill = async (t: string, r = RC) => (await call(dinerBill, { params: { slug }, url: `http://t/api/bill?t=${t}&r=${r}` })).data;

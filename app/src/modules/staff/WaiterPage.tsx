@@ -55,11 +55,11 @@ export default function Waiter() {
               <span className={`sa-status ${err ? "sa-status--offline" : "sa-status--live"}`}>{err ? (lastUpdated ? "Reconnecting" : "Offline") : "Live"}</span>
               {lastUpdated && <span>{lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>}
             </div>
-            <button className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" onClick={logout} aria-label="Sign out"><Icon name="logout" /></button>
+            <button type="button" className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" onClick={logout} aria-label="Sign out"><Icon name="logout" /></button>
           </div>
         </div>
         {err && <div className="err" role="alert">{err}</div>}
-        <div className="sa-tabs staff-tabs">{tabs.map(([k, l]) => <button key={k} className="sa-tab" aria-pressed={tab === k} onClick={() => setTab(k)}>{l}</button>)}</div>
+        <div className="sa-tabs staff-tabs">{tabs.map(([k, l]) => <button type="button" key={k} className="sa-tab" aria-pressed={tab === k} onClick={() => setTab(k)}>{l}</button>)}</div>
 
         {tab === "feed" && feedCount === 0 && <Empty text="Nothing needs you right now." />}
         {tab === "feed" && calls.length > 0 && (
@@ -75,7 +75,7 @@ export default function Waiter() {
                 <div className={`sa-call${long ? " sa-call--urgent" : ""}`}>
                   <div className="sa-call__table"><small>Table</small><b>{c.table || "?"}</b></div>
                   <div><p className="sa-call__why">{(KIND[c.kind] || KIND.other).toUpperCase()}{b && <> · ฿{b.total}</>}</p><p className={`sa-call__wait${long ? " sa-call__wait--long" : ""}`}>{mins < 1 ? "Just called" : `Waiting ${mins} min`}</p></div>
-                  <button className="sa-btn sa-btn--ok sa-btn--sm" onClick={resolve}><Icon name="check" />{b ? "Mark paid" : "Done"}</button>
+                  <button type="button" className="sa-btn sa-btn--ok sa-btn--sm" onClick={resolve}><Icon name="check" />{b ? "Mark paid" : "Done"}</button>
                 </div>
               </SwipeCard>); })}
           </div>
@@ -84,11 +84,14 @@ export default function Waiter() {
           <SwipeCard key={`pick-${o.id}`} onSwipeRight={() => act(`/api/staff/orders/${o.id}`, { action: "take" })} onSwipeLeft={() => act(`/api/staff/orders/${o.id}`, { action: "later" })} rightLabel="Take order" leftLabel="Dismiss">
             <article className="sa-ticket">
               <div className="sa-ticket__head"><div className="sa-ticket__table">T{o.table || "?"}</div><div className="sa-ticket__meta">{{ en: "English", th: "Thai", my: "Burmese" }[o.lang as string]} · {minutesAgo(o.createdAt)}<br /><span className="sa-status sa-status--new">Picks</span></div></div>
-              <ul className="sa-ticket__lines">{o.items.map((i: any, k: number) => <li key={k}><b>{i.qty}×</b><span>{i.name}</span><span className="sa-ticket__price">฿{i.price * i.qty}</span></li>)}</ul>
+              <ul className="sa-ticket__lines">{o.items.map((i: any, k: number) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: read-only list of order lines (the same dish can appear twice), never reordered
+                <li key={k}><b>{i.qty}×</b><span>{i.name}</span><span className="sa-ticket__price">฿{i.price * i.qty}</span></li>
+              ))}</ul>
               {o.allergy && <AllergyBanner allergen={o.allergy} note="Confirm with the kitchen before ordering." />}
               <div className="sa-ticket__actions">
-                <button className="sa-btn sa-btn--staff" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "take" })}>Take order</button>
-                <button className="sa-btn sa-btn--quiet" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "later" })}>Dismiss</button>
+                <button type="button" className="sa-btn sa-btn--staff" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "take" })}>Take order</button>
+                <button type="button" className="sa-btn sa-btn--quiet" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "later" })}>Dismiss</button>
               </div>
             </article>
           </SwipeCard>
@@ -97,8 +100,11 @@ export default function Waiter() {
           <SwipeCard key={`ready-${o.id}`} onSwipeRight={() => act(`/api/staff/orders/${o.id}`, { action: "served" })} rightLabel="Served">
             <article className="sa-ticket sa-ticket--ready">
               <div className="sa-ticket__head"><div className="sa-ticket__table">T{o.table || "?"}</div><div className="sa-ticket__meta">#{o.id}<br /><span className="sa-status sa-status--ready">Ready</span></div></div>
-              <ul className="sa-ticket__lines">{o.items.map((i: any, k: number) => <li key={k}><b>{i.qty}×</b><span>{i.name}</span></li>)}</ul>
-              <button className="sa-btn sa-btn--ok sa-btn--block" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "served" })}><Icon name="check" />Served</button>
+              <ul className="sa-ticket__lines">{o.items.map((i: any, k: number) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: read-only list of order lines (the same dish can appear twice), never reordered
+                <li key={k}><b>{i.qty}×</b><span>{i.name}</span></li>
+              ))}</ul>
+              <button type="button" className="sa-btn sa-btn--ok sa-btn--block" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "served" })}><Icon name="check" />Served</button>
             </article>
           </SwipeCard>
         ))}
@@ -110,10 +116,10 @@ export default function Waiter() {
               <div className="sa-ticket__table">T{b.table || "?"}</div>
               <div className="sa-ticket__meta">{b.asked && <><span className="sa-status sa-status--cooking">Bill asked</span><br /></>}To pay<br /><span className="sa-price">฿ {b.total}</span></div>
             </div>
-            <ul className="sa-ticket__lines">{b.lines.map((l, k) => <li key={k}><b>{l.qty}×</b><span>{l.name}</span><span className="sa-ticket__price">฿{l.qty * l.price}</span></li>)}</ul>
+            <ul className="sa-ticket__lines">{b.lines.map((l) => <li key={`${l.name}|${l.price}`}><b>{l.qty}×</b><span>{l.name}</span><span className="sa-ticket__price">฿{l.qty * l.price}</span></li>)}</ul>
             {b.inKitchen > 0 && <p className="staff-head__meta" style={{ margin: "0 0 12px" }}>{b.inKitchen} {b.inKitchen === 1 ? "dish is" : "dishes are"} not served yet.</p>}
             {b.pending.length > 0 && <p className="staff-head__meta" style={{ margin: "0 0 12px" }}>Not in the total: picks waiting in the feed ({b.pending.reduce((s, l) => s + l.qty, 0)} dishes).</p>}
-            <button className="sa-btn sa-btn--ok sa-btn--block" onClick={() => act(`/api/staff/bills/${encodeURIComponent(b.table)}`)}><Icon name="check" />Mark paid · ฿ {b.total}</button>
+            <button type="button" className="sa-btn sa-btn--ok sa-btn--block" onClick={() => act(`/api/staff/bills/${encodeURIComponent(b.table)}`)}><Icon name="check" />Mark paid · ฿ {b.total}</button>
           </article>
         ))}
 
@@ -133,14 +139,14 @@ export default function Waiter() {
           <div className="sold-dock__panel">
             <div className="row" style={{ justifyContent: "space-between", marginBottom: 6 }}>
               <span className="sa-label">Sold out today</span>
-              <button className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" onClick={() => setDishesOpen(false)} aria-label="Close"><Icon name="close" size={16} /></button>
+              <button type="button" className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" onClick={() => setDishesOpen(false)} aria-label="Close"><Icon name="close" size={16} /></button>
             </div>
             <SoldOutList dishes={d.dishes} onToggle={(x) => act(`/api/staff/items/${x.id}`, { available: !x.available })} />
           </div>
         )}
         <div className="sold-dock__bar">
           <div style={{ flex: 1, minWidth: 0 }}><div className="sa-label">Sold out now · {d.soldOut.length}</div><div className="sa-ticket-font" style={{ fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.soldOut.map((s) => s.name).join(", ") || "Nothing"}</div></div>
-          <button className="sa-btn sa-btn--sm" aria-expanded={dishesOpen} onClick={() => setDishesOpen((v) => !v)}>{dishesOpen ? "Close" : "Manage"}</button>
+          <button type="button" className="sa-btn sa-btn--sm" aria-expanded={dishesOpen} onClick={() => setDishesOpen((v) => !v)}>{dishesOpen ? "Close" : "Manage"}</button>
         </div>
       </div>
     </div>

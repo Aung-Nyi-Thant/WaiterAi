@@ -63,7 +63,7 @@ try {
       rid, cat[CATEGORY[it.id] || "Mains"], it.name.en, it.name.th || "", it.name.my || "", it.price, it.ingredients || "",
       it.allergens === null ? null : JSON.stringify(it.allergens), JSON.stringify(it.tags || []), (it.tags || []).includes("spicy") ? 2 : 0, it.available ? 1 : 0, i);
   });
-  menu.faq.forEach((f: any, i: number) => db.prepare("INSERT INTO faqs (restaurant_id, q, a, sort) VALUES (?,?,?,?)").run(rid, f.q, f.a, i));
+  for (const [i, f] of (menu.faq as any[]).entries()) db.prepare("INSERT INTO faqs (restaurant_id, q, a, sort) VALUES (?,?,?,?)").run(rid, f.q, f.a, i);
   db.prepare("INSERT INTO staff (restaurant_id, name, role, pin_hash) VALUES (?,?,?,?)").run(rid, "Waiter 1", "waiter", bcrypt.hashSync(creds.waiterPin, 8));
   db.prepare("INSERT INTO staff (restaurant_id, name, role, pin_hash) VALUES (?,?,?,?)").run(rid, "Chef 1", "chef", bcrypt.hashSync(creds.chefPin, 8));
   db.exec("COMMIT");

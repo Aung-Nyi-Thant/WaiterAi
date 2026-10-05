@@ -20,7 +20,7 @@ export default async function setup() {
   if (!fs.existsSync(path.join(root, ".next", "BUILD_ID"))) throw new Error("No production build found. Run `npm run build` first.");
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "shopai-e2e-"));
   const creds = { SEED_OWNER_EMAIL: "e2e-owner@test.local", SEED_OWNER_PASSWORD: "e2e-password-123", SEED_WAITER_PIN: "4821", SEED_CHEF_PIN: "7305" };
-  const env = { ...process.env, NODE_ENV: "production" as const, DATA_DIR: dir, SESSION_SECRET: "e2e-secret", AI_PROVIDER: "ollama", OLLAMA_URL: "http://127.0.0.1:9", ...creds };
+  const env = { ...process.env, NODE_ENV: "production" as const, DATA_DIR: dir, SESSION_SECRET: "e2e-secret", AI_PROVIDER: "ollama", OLLAMA_URL: "http://127.0.0.1:9", RATE_LIMIT_LOGIN_MAX: "5", RATE_LIMIT_CHAT_MAX: "10", ...creds };
   const seeded = spawnSync(process.execPath, ["--experimental-strip-types", "--no-warnings", "scripts/seed.mts"], { cwd: root, env, encoding: "utf8" });
   if (seeded.status !== 0) throw new Error("seed failed: " + seeded.stdout + seeded.stderr);
 

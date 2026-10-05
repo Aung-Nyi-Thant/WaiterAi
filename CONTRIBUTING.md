@@ -24,4 +24,4 @@ cd app && npm install && npm run dev
 - Commit only work you did and understand. You must be able to explain your part in the oral exam.
 - Working together on one laptop? Add `Co-authored-by: Name <email>` to the commit message, only if you really worked together.
 - Never backdate commits or commit for someone else.
-- Code written with an AI tool goes into the AI usage log in the SRS (Section 8), and you must read and test it before committing.
+- Code written with an AI tool goes into the AI usage log (Section 8 of the team SRS and `docs/AI_USAGE_LOG.md`), and you must read and test it before committing. Run `cd app && npm test` before every Pull Request: CI runs the same checks.

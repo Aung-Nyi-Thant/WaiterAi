@@ -205,3 +205,40 @@ describe("SF-1 / SF-2 staff accounts and PIN sign-in", () => {
     expect((await staffLogin("8765")).status).toBe(401);
   });
 });
+
+describe("NFR-SEC1 a staff session ends when the account is removed or changed", () => {
+  const createStaff = async (name: string, role: string, pin: string) => {
+    await ownerLogin();
+    return call(createResource, { method: "POST", params: { resource: "staff" }, body: { name, role, pin } });
+  };
+  it("a removed staff member's cookie stops working at once, not after 12 hours", async () => {
+    const st = await createStaff("Leaver", "waiter", "3141");
+    expect((await staffLogin("3141")).status).toBe(200);
+    const cookie = jar.get("staff")!;
+    expect((await call(floor)).status).toBe(200);
+    await ownerLogin();
+    await call(deleteResource, { method: "DELETE", params: { resource: "staff", id: String(st.data.id) } });
+    signOut(); jar.set("staff", cookie);                                   // the old cookie, still correctly signed and unexpired
+    expect((await call(floor)).status).toBe(401);
+  });
+});
+
+describe("SF-1 PINs are unique within a restaurant", () => {
+  const add = (name: string, pin: string, role = "waiter") => call(createResource, { method: "POST", params: { resource: "staff" }, body: { name, role, pin } });
+  it("refuses a PIN another staff member already uses (400), on create and on change", async () => {
+    await ownerLogin();
+    expect((await add("Dup", "1111")).status).toBe(400);                    // the demo waiter's PIN
+    expect((await add("Dup", "2222", "chef")).data.error).toMatch(/already used/);
+    const ok = await add("Unique One", "6061");
+    expect(ok.status).toBe(200);
+    const upd = (id: string, pin: string) => call(updateResource, { method: "PUT", params: { resource: "staff", id }, body: { pin } });
+    expect((await upd(String(ok.data.id), "1111")).status).toBe(400);
+    expect((await upd(String(ok.data.id), "6061")).status).toBe(200);        // keeping your own PIN is fine
+    expect((await upd(String(ok.data.id), "6062")).status).toBe(200);
+  });
+  it("the same PIN may be used in a different restaurant", async () => {
+    signOut();
+    await call(login, { method: "POST", body: { email: "owner1@example.com", password: "password-one" } });
+    expect((await add("Other Place", "1111")).status).toBe(200);
+  });
+});

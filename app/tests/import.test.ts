@@ -18,7 +18,7 @@ const menuJson = JSON.stringify({ items: [
 ] });
 const dishes = () => get("SELECT COUNT(*) AS n FROM menu_items")!.n as number;
 
-describe("MI-1 / MI-3 reading a menu photo does not touch the live menu", () => {
+describe("MI-1 / MI-3 / UC-6 reading a menu photo does not touch the live menu", () => {
   it("returns the dishes for review and stores only an 'imports' row", async () => {
     const calls = mockModel(menuJson);
     const before = dishes();
@@ -41,6 +41,14 @@ describe("MI-1 / MI-3 reading a menu photo does not touch the live menu", () => 
     expect((await call(importPhoto, { method: "POST", form: new FormData() })).status).toBe(400);
     signOut();
     expect((await call(importPhoto, { method: "POST", form: photo() })).status).toBe(401);
+  });
+  it("NFR-SEC3 rejects a file that is not really an image, before it is stored or sent to the model", async () => {
+    const calls = mockModel(menuJson);
+    const f = new FormData(); f.append("file", new File(["<html>not a menu photo</html>"], "menu.png", { type: "image/png" }));
+    const r = await call(importPhoto, { method: "POST", form: f });
+    expect(r.status).toBe(400);
+    expect(r.data.error).toMatch(/not a real/);
+    expect(calls.length).toBe(0);
   });
   it("reports a clear error when the AI cannot be reached or returns no JSON", async () => {
     mockModel(new Error("ECONNREFUSED"));

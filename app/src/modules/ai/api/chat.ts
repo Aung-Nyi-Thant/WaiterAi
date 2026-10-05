@@ -1,7 +1,8 @@
 import { restaurantBySlug, itemsOf, faqsOf, specialsOf } from "@/modules/platform/menu";
 import { all, get, run } from "@/modules/platform/db";
-import { json, bad, body } from "@/modules/platform/http";
-import { answer, detectLang, limitReply } from "@/modules/ai/ai";
+import { json, bad, body, tooMany } from "@/modules/platform/http";
+import { hit, setting, clientIp } from "@/modules/platform/rateLimit";
+import { answer, detectLang, limitReply, type ChatResult } from "@/modules/ai/ai";
 import type { Lang } from "@/modules/platform/menu";
 import crypto from "node:crypto";
 
@@ -19,11 +20,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   const lang = detectLang(message, uiLang);
   const p = r.persona.gender === "female" ? "female" : "male";
 
+  // rate limits: every model answer costs seconds of the shop's one computer, so a runaway client must not be able to queue them up
+  const win = setting("RATE_LIMIT_CHAT_WINDOW_SEC", 60), ip = clientIp(req);
+  // checked in order; a request refused by one limit is not counted against the next (a spamming session must not use up the restaurant's quota)
+  const checks: [string | null, number][] = [[b.sessionId ? `chat:session:${sessionId}` : null, setting("RATE_LIMIT_CHAT_MAX", 20)], [`chat:restaurant:${r.id}`, setting("RATE_LIMIT_CHAT_RESTAURANT_MAX", 120)], [ip ? `chat:ip:${ip}` : null, setting("RATE_LIMIT_CHAT_IP_MAX", 60)]];
+  for (const [key, max] of checks) {
+    const v = key ? hit(key, max, win) : null;
+    if (v && !v.allowed) return tooMany(v.retryAfter);
+  }
+
   if (!preview) run("INSERT OR IGNORE INTO chat_sessions (id, restaurant_id, table_no, lang) VALUES (?,?,?,?)", sessionId, r.id, table, lang);
   const used = get("SELECT COUNT(*) AS n FROM chat_messages m JOIN chat_sessions s ON s.id = m.session_id WHERE m.restaurant_id = ? AND m.role = 'user' AND m.created_at >= date('now','start of month')", r.id)!.n;
 
   const items = itemsOf(r.id);
-  let result;
+  let result: ChatResult;
   if (used >= r.chat_cap && !preview) {
     result = { reply: limitReply(lang, p === "female" ? "ค่ะ" : ""), action: { type: "show_menu" as const }, topic: "other", allergens: [], answered: false, usedModel: false };
   } else {

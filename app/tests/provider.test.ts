@@ -8,9 +8,9 @@ const MSG = [{ role: "system" as const, content: "sys" }, { role: "user" as cons
 const KEYS = ["AI_PROVIDER", "AI_API_KEY", "AI_MODEL", "AI_BASE_URL", "OLLAMA_MODEL", "OLLAMA_URL"];
 let saved: Record<string, string | undefined>;
 beforeEach(() => { saved = Object.fromEntries(KEYS.map((k) => [k, process.env[k]])); });
-afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); for (const k of KEYS) saved[k] === undefined ? delete process.env[k] : (process.env[k] = saved[k]); });
+afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); for (const k of KEYS) { if (saved[k] === undefined) delete process.env[k]; else process.env[k] = saved[k]; } });
 
-describe("ollama", () => {
+describe("NFR-M2 ollama: the model and address are settings (OLLAMA_URL, OLLAMA_MODEL)", () => {
   it("calls the local /api/chat with the configured model and options", async () => {
     process.env.OLLAMA_URL = "http://localhost:11434"; process.env.OLLAMA_MODEL = "my-model";
     const calls = mockModel("hello");
@@ -70,7 +70,7 @@ describe("no cloud AI (SRS 2.2 constraint, NFR-5)", () => {
   });
 });
 
-describe("SRS 2.2 / NFR-7: one AI answer at a time, first come first served, bounded waiting", () => {
+describe("SRS 2.2 / NFR-P4 / NFR-7: one AI answer at a time, first come first served, bounded waiting", () => {
   // a model that needs `ms` per answer; records how many requests were running at once and in which order they started
   const slowModel = (ms: number, fail = (_n: number) => false) => {
     const seen = { running: 0, peak: 0, order: [] as string[], calls: 0 };

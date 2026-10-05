@@ -16,18 +16,18 @@ describe("chat endpoint basics", () => {
     expect((await call(chat, { method: "POST", params: { slug: "nope" }, body: { message: "hi" } })).status).toBe(404);
     expect((await say("   ")).status).toBe(400);
   });
-  it("answers in the language of the question, whatever the interface language is", async () => {
+  it("AI-1 answers in the language of the question, whatever the interface language is", async () => {
     noModel();
     const r = await say("ร้านปิดกี่โมง", { lang: "en" });
     expect(r.data.lang).toBe("th");
     expect(r.data.reply).toContain("10:00-22:00");
   });
-  it("cuts a message to 500 characters", async () => {
+  it("NFR-SEC4 cuts a message to 500 characters", async () => {
     noModel();
     await say("price " + "x".repeat(1000), { sessionId: "long" });
     expect(get("SELECT text FROM chat_messages WHERE session_id = 'long' AND role = 'user'")!.text.length).toBe(500);
   });
-  it("returns the dish cards the AI refers to (real dishes only)", async () => {
+  it("AI-13 returns the dish cards the AI refers to (real dishes only)", async () => {
     noModel();
     const r = await say("How much is the Massaman curry?");
     expect(r.data.dishes.map((d: any) => d.name.en)).toEqual(["Beef Massaman Curry"]);
@@ -35,7 +35,7 @@ describe("chat endpoint basics", () => {
   });
 });
 
-describe("AI-16 every question is stored with its language, topic and whether it was answered", () => {
+describe("AI-16 / NFR-PR1 every question is stored with its language, topic and whether it was answered, without personal data", () => {
   it("logs the question and the reply, without any personal data", async () => {
     noModel();
     const r = await say("I'm allergic to peanuts", { sessionId: "log-1", table: "11" });
@@ -47,7 +47,7 @@ describe("AI-16 every question is stored with its language, topic and whether it
     expect(r.data.messageId).toBeGreaterThan(0);
     expect(Object.keys(get("SELECT * FROM chat_sessions WHERE id = 'log-1'")!).sort()).toEqual(["id", "lang", "restaurant_id", "started_at", "table_no"]);
   });
-  it("test chats from the owner dashboard (preview) are not stored", async () => {
+  it("ST-5 test chats from the owner dashboard (preview) are not stored", async () => {
     noModel();
     const before = [count("chat_messages"), count("chat_sessions")];
     const r = await say("How much is the Massaman curry?", { preview: true });
@@ -57,6 +57,13 @@ describe("AI-16 every question is stored with its language, topic and whether it
 });
 
 describe("AI-7 asking for the bill or staff creates a call for that table", () => {
+  it("asking twice reuses the open call, like the call button (PC-3)", async () => {
+    noModel();
+    await say("Can I get the bill?", { table: "17" });
+    await say("bill please", { table: "17" });
+    await say("I need help, call the staff", { table: "17" });
+    expect(all("SELECT kind FROM calls WHERE table_no = '17' AND status = 'open' ORDER BY id").map((c: any) => c.kind)).toEqual(["bill", "help"]);
+  });
   it("creates the call and not an order", async () => {
     noModel();
     const orders = count("orders");
@@ -84,7 +91,7 @@ describe("AI-7 asking for the bill or staff creates a call for that table", () =
   });
 });
 
-describe("AI safety: the chat can never place an order by itself", () => {
+describe("AI-6 / AI-10 AI safety: the chat can never place an order by itself", () => {
   it("'I'll have 2 ...' only returns an add_to_picks action; no order row is created", async () => {
     noModel();
     const orders = count("orders"), items = count("order_items");
@@ -102,7 +109,11 @@ describe("AI safety: the chat can never place an order by itself", () => {
   });
 });
 
-describe("AI-15 monthly chat limit", () => {
+describe("AI-15 / BR-3 monthly chat limit", () => {
+  it("is 300 chats per month by default", () => {
+    expect(get("SELECT chat_cap FROM restaurants WHERE slug = 'golden-lotus'")!.chat_cap).toBe(300);
+    expect(get("SELECT chat_cap FROM restaurants ORDER BY id DESC LIMIT 1")!.chat_cap).toBe(300);
+  });
   it("shows a fixed message and the menu once the limit is reached, and does not call the model", async () => {
     const calls = mockModel("model answer");
     run("UPDATE restaurants SET chat_cap = 2 WHERE slug = ?", slug);
@@ -157,20 +168,20 @@ describe("FR-10 unmet demand: only when there are fewer vegetarian dishes than v
   });
 });
 
-describe("IN-1 / IN-2 / IN-3 insights", () => {
+describe("IN-1 / IN-2 / IN-3 / UC-11 insights", () => {
   it("counts questions, the share answered, topics, languages and what could not be answered", async () => {
     noModel();
     run("DELETE FROM chat_messages"); run("DELETE FROM chat_sessions");
     await say("How much is the Massaman curry?", { sessionId: "i1" });
     await say("vegetarian under 100 baht", { sessionId: "i1" });
     await say("ร้านปิดกี่โมง", { sessionId: "i2" });
-    await say("Does the fresh spring roll contain any allergens?", { sessionId: "i2" });      // cannot be answered from the data
+    await say("Does that dish contain any allergens?", { sessionId: "i2" });      // cannot be answered from the data
     await ownerLogin();
     const r = (await call(insights, { url: "http://t/api/owner/insights?days=7" })).data;
     expect(r).toMatchObject({ days: 7, questions: 4, sessions: 2, unanswered: 1, answeredPct: 75 });
     expect(r.topics.map((t: any) => t.topic).sort()).toEqual(["allergens", "hours", "prices", "vegetarian"]);
     expect(r.langs.map((l: any) => l.lang).sort()).toEqual(["en", "th"]);
-    expect(r.cannot.map((c: any) => c.text)).toEqual(["Does the fresh spring roll contain any allergens?"]);
+    expect(r.cannot.map((c: any) => c.text)).toEqual(["Does that dish contain any allergens?"]);
     expect(r.unmet).toBeNull();                                  // 1 question, 4 vegetarian dishes: demand is met
     expect((await call(insights, { url: "http://t/api/owner/insights?days=1" })).data.days).toBe(1);
     expect((await call(insights, { url: "http://t/api/owner/insights?days=9999" })).data.days).toBe(90);

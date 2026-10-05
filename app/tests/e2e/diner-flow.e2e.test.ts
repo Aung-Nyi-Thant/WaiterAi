@@ -16,17 +16,17 @@ const person = () => {
     for (const c of res.headers.getSetCookie()) { const [kv] = c.split(";"); const i = kv.indexOf("="); jar.set(kv.slice(0, i), kv.slice(i + 1)); }
     const text = await res.text();
     let data: any = text; try { data = JSON.parse(text); } catch {}
-    return { status: res.status, data, type: res.headers.get("content-type") || "" };
+    return { status: res.status, data, type: res.headers.get("content-type") || "", retryAfter: res.headers.get("retry-after") };
   };
 };
 
-describe("diner flow against the running server", () => {
+describe("UC-1 / UC-2 / UC-3 / UC-8 / UC-9 / PC-2 / SF-2 / SF-3 / SF-5 diner flow against the running server", () => {
   const diner = person();
   let dishes: any[];
   const dish = (n: string) => dishes.find((d) => d.name.en === n);
   let orderId: number;
 
-  it("serves the diner page and the menu without any login", async () => {
+  it("DM-1 serves the diner page and the menu without any login", async () => {
     const page = await fetch(`${BASE}/r/${slug}?t=5`);
     expect(page.status).toBe(200);
     expect(page.headers.get("content-type")).toContain("text/html");
@@ -59,8 +59,10 @@ describe("diner flow against the running server", () => {
     expect(th.data.reply).toContain("10:00-22:00");
   });
 
-  it("falls back safely when the language model is unreachable", async () => {
+  it("AI-11 / NFR-R1 falls back safely when the language model is unreachable", async () => {
+    const t0 = Date.now();
     const r = await diner(`/api/public/${slug}/chat`, { message: "What would you recommend on a hot day?", sessionId: "e2e-1", table: "5" });
+    expect(Date.now() - t0, "the fallback message must appear within 5 seconds").toBeLessThan(5000);
     expect(r.status).toBe(200);
     expect(r.data.reply).toMatch(/unavailable/);
     expect(r.data.action.type).toBe("show_menu");
@@ -93,7 +95,7 @@ describe("diner flow against the running server", () => {
   });
 });
 
-describe("security of the running server", () => {
+describe("NFR-SEC1 / NFR-SEC2 / NFR-SEC3 / NFR-R1 security of the running server (demo logins are development-only)", () => {
   it("owner and staff APIs refuse anonymous callers", async () => {
     const anon = person();
     for (const p of ["/api/owner/items", "/api/owner/me", "/api/owner/insights", "/api/staff/floor", "/api/staff/kitchen"]) expect((await anon(p)).status, p).toBe(401);
@@ -112,5 +114,35 @@ describe("security of the running server", () => {
   it("only generated upload names are served", async () => {
     const r = await fetch(`${BASE}/api/uploads/..%2F..%2Fsecret`);
     expect(r.status).toBe(404);
+  });
+});
+
+// Kept last: it locks accounts for a minute. The server was started with RATE_LIMIT_LOGIN_MAX=5 and RATE_LIMIT_CHAT_MAX=10.
+describe("rate limits on the running server", () => {
+  it("chat: the 11th message of a session is refused with 429 and Retry-After; another session still works", async () => {
+    const diner = person();
+    for (let i = 0; i < 10; i++) expect((await diner(`/api/public/${slug}/chat`, { message: "hours?", sessionId: "e2e-rate", table: "5" })).status).toBe(200);
+    const blocked = await diner(`/api/public/${slug}/chat`, { message: "hours?", sessionId: "e2e-rate", table: "5" });
+    expect(blocked.status).toBe(429);
+    expect(Number(blocked.retryAfter)).toBeGreaterThan(0);
+    expect(blocked.data.error).toMatch(/Too many attempts/);
+    expect((await diner(`/api/public/${slug}/chat`, { message: "hours?", sessionId: "e2e-rate-2", table: "5" })).status).toBe(200);
+  });
+  it("owner login: after 5 wrong passwords the account is locked for a minute (429), other accounts are not", async () => {
+    const attacker = person();
+    for (let i = 0; i < 5; i++) expect((await attacker("/api/auth/login", { email: "lockout@test.local", password: "wrong" })).status).toBe(401);
+    const blocked = await attacker("/api/auth/login", { email: "lockout@test.local", password: "wrong" });
+    expect(blocked.status).toBe(429);
+    expect(Number(blocked.retryAfter)).toBeGreaterThan(0);
+    const owner = person();
+    expect((await owner("/api/auth/login", { email: process.env.E2E_OWNER_EMAIL, password: process.env.E2E_OWNER_PASSWORD })).status).toBe(200);
+  });
+  it("staff login: repeated wrong PINs lock PIN sign-in for the restaurant, even for the right PIN", async () => {
+    const attacker = person();
+    let blocked = 0;
+    for (let i = 0; i < 8 && !blocked; i++) { const r = await attacker("/api/staff/login", { slug, pin: String(6000 + i) }); if (r.status === 429) blocked = i + 1; else expect(r.status).toBe(401); }
+    expect(blocked, "no 429 after 8 wrong PINs").toBeGreaterThan(0);
+    expect(blocked).toBeLessThanOrEqual(6);
+    expect((await person()("/api/staff/login", { slug, pin: process.env.E2E_WAITER_PIN })).status).toBe(429);
   });
 });
