@@ -37,9 +37,14 @@ The PDF corrections themselves (the table above these rows) are for the team to 
 | 10 | 3 (owner back office) | chawakron50-lab | name: `(fill in)` |
 | 12 | 5 (QR, insights, import screen, tests, docs) | noeysasi | name: `(fill in)` |
 
+## `docs/SRS_Shop_AI.md`
+
+| Line | What is missing |
+|---|---|
+| 4 | `Author: [your name] · Course: [course] · Supervisor: [name]`: the author names, the course and the supervisor's name (the M1 charter lists the five members and their IDs) |
+
 ## Other open items (no marker in a file, listed so they are not forgotten)
 
 - Native-speaker review of the new Thai and Burmese allergen words: `eval/native_review_allergens.html`.
 - A short README note on why the topic changed from the original brief to Shop AI (the charter and SRS PDFs define Shop AI).
 - Applying `docs/PDF_CORRECTIONS.md` to the M1 and M2 PDFs.
-- The stakeholder interview for the problem statement.
