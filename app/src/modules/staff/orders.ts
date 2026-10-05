@@ -5,7 +5,7 @@ export function ordersWith(rid: number, statuses: string[]) {
   const rows = all(`SELECT * FROM orders WHERE restaurant_id = ? AND status IN (${statuses.map(() => "?").join(",")}) ORDER BY id`, rid, ...statuses);
   return rows.map((o: any) => ({
     id: o.id, table: o.table_no, status: o.status, lang: o.lang, allergy: o.allergy_note, createdAt: iso(o.created_at), updatedAt: iso(o.updated_at),
-    items: all("SELECT name, qty, price FROM order_items WHERE order_id = ?", o.id),
+    items: all("SELECT name, qty, price, flag FROM order_items WHERE order_id = ?", o.id),
   }));
 }
 export const openCalls = (rid: number) =>

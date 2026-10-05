@@ -4,6 +4,14 @@ Menu-aware AI waiter for restaurants (Thai, Burmese, English). Diners scan a QR 
 
 The AI never decides anything safety-critical: allergens, prices, opening hours, sold-out dishes, orders and the bill are answered from the database with fixed sentences. The language model only handles open questions, and its reply is checked before it is shown (details and tests: [`docs/AI_SAFETY.md`](docs/AI_SAFETY.md)).
 
+| Folder | What it holds |
+|---|---|
+| `app/` | The web app (Next.js + SQLite + Ollama). Start here: `app/README.md` |
+| `app/src/modules/` | The code, split into 5 modules: `diner`, `ai`, `owner`, `staff`, `platform`. Each has its own README |
+| `eval/` | Test questions, sample menu and the model comparison scripts |
+| `docs/` | SRS, feature plan, project explanation, team work plan, measured results (`NFR_RESULTS.md`), and the product worksheet answers (`PRODUCT_IDEA_WORKSHEET.md`) |
+| `design/` | UI design generators (Art Deco and Glass mock-ups) |
+
 ## Run it in 2 minutes
 
 **With Docker** (nothing else to install except Docker):

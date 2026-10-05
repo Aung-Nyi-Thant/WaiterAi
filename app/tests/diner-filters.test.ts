@@ -1,4 +1,4 @@
-// DM-3 / DM-4: the diner's search box and filters (the logic behind the menu page).
+// DM-3 / DM-4 / DM-11: the diner's search box and filters (the logic behind the menu page).
 import { describe, it, expect } from "vitest";
 import { filterMenu, type DinerFilters } from "@/modules/diner/filters";
 import { itemsOf } from "@/modules/platform/menu";
@@ -64,5 +64,20 @@ describe("DM-3 search and category", () => {
   it("search, category and filters work together", () => {
     expect(names({ noPeanut: true }, { q: "tom" })).toEqual(["Tom Yum Goong"]);
     expect(names({ noPeanut: true }, { q: "pad" })).toEqual([]);              // Pad Thai has peanuts
+  });
+});
+
+describe("DM-11 'fits my allergies' hides every dish that lists a chosen allergen, and every dish with no allergen data", () => {
+  it("shows only dishes with allergen data that list none of the profile's allergens", () => {
+    const shown = filterMenu(menu(), { cat: null, q: "", f: { ...none, mine: true }, profile: ["peanut", "shellfish"] });
+    expect(shown.length).toBeGreaterThan(0);
+    for (const i of shown) {
+      expect(i.allergens, `${i.name.en} has no allergen data`).not.toBeNull();
+      expect(i.allergens).not.toContain("peanut");
+      expect(i.allergens).not.toContain("shellfish");
+    }
+  });
+  it("does nothing when the diner has no profile", () => {
+    expect(filterMenu(menu(), { cat: null, q: "", f: { ...none, mine: true }, profile: [] }).length).toBe(menu().length);
   });
 });

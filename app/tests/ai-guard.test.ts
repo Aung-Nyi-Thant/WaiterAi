@@ -138,6 +138,49 @@ describe("AI-3 / AI-10 / NFR-S3 a wrong or unsafe model reply is replaced", () =
   });
 });
 
+describe("AI-3 / AI-17 / NFR-S1 / NFR-S4 the model may not state allergen facts, in either direction; they come from the database", () => {
+  const LUNCH = "What is a light dish for lunch?";
+  it.each([
+    ["Papaya Salad", "Try the Papaya Salad, it has no peanuts in it.", "peanut"],                       // the data says peanut
+    ["Papaya Salad", "The Papaya Salad is gluten-free and dairy-free, a good light lunch.", "peanut"],
+    ["Mango Sticky Rice", "Mango Sticky Rice is vegan, nut-free and suitable for everyone.", "no allergens listed"],
+    ["Beef Massaman Curry", "The Beef Massaman Curry contains cashew nuts but is mild.", "peanut"],
+    ["Fresh Spring Rolls", "Fresh Spring Rolls are light and contain no peanuts or shellfish.", "not provided"],   // no allergen data at all
+  ])("replaces a reply about %s that claims allergens: %s", async (dish, reply, expected) => {
+    const { r } = await ask(reply, LUNCH);
+    expect(r.reply).not.toBe(reply);
+    expect(r.reply.toLowerCase()).toContain(expected);
+    expect(r.reply).toContain("confirm with the staff");
+    expect(r.reply).not.toMatch(/gluten-free|nut-free|dairy-free|no peanuts/i);
+    expect(r.topic).toBe("allergens");
+    const ctx = await aiCtx();
+    expect(r.action).toEqual({ type: "show_dishes", ids: [ctx.items.find((i) => i.name.en === dish)!.id] });
+  });
+  it("a claim that names no dish is answered by asking for the dish or the allergen, and counts as not answered", async () => {
+    const { r } = await ask("Most of our dishes are free from peanuts.", LUNCH);
+    expect(r.reply).toContain("I can't confirm allergens");
+    expect(r.reply).toContain("confirm with the staff");
+    expect(r.answered).toBe(false);
+  });
+  it("works in Thai and Burmese too, in the diner's voice", async () => {
+    mockModel("ส้มตำไม่มีถั่วลิสงเลย");
+    const th = await answer("แนะนำเมนูเบาๆ หน่อย", "th", await aiCtx());
+    expect(th.reply).toContain("ถั่วลิสง");
+    expect(th.reply).toContain("กรุณายืนยันกับพนักงาน");
+    expect(th.reply).not.toContain("ไม่มีถั่วลิสงเลย");
+    expect(th.reply.endsWith("ครับ")).toBe(true);
+    mockModel("ส้มตำไม่มีถั่วลิสงเลย");
+    const my = await answer("ဟင်းမပြင်းတာ ရွေးပေးပါ", "my", await aiCtx());
+    expect(my.reply).toContain("ဝန်ထမ်းကို မေးမြန်းပေးပါ");
+  });
+  it("does not touch a normal recommendation, even when a dish name contains an allergen word", async () => {
+    const ok = "Shrimp Pad Thai is a favourite, 120 baht. The Thai Iced Tea is refreshing.";
+    const { r } = await ask(ok, LUNCH);
+    expect(r.reply).toBe(ok);
+    expect(r.usedModel).toBe(true);
+  });
+});
+
 describe("AI-10 dish cards suggested by the model must be real dishes that are on sale", () => {
   it("drops unknown ids and sold-out dishes, and shows at most 4", async () => {
     const c = await aiCtx();
@@ -200,7 +243,7 @@ describe("AI-10 / R1 a dish that is not on the menu is not recommended", () => {
     expect((await ask("I'm sorry, but the restaurant does not serve Pizza.", "do you have pizza")).r.reply).toBe("I'm sorry, but the restaurant does not serve Pizza.");
   });
   it("allows a negated mention even if the diner did not name it, but not a recommendation of it", async () => {
-    expect((await ask("Unfortunately we don't have Lobster Thermidor. The Papaya Salad is good.")).r.reply).toMatch(/^Unfortunately we don't have Lobster Thermidor/);
+    expect((await ask("Unfortunately we don't have Beef Wellington. The Papaya Salad is good.")).r.reply).toMatch(/^Unfortunately we don't have Beef Wellington/);
     expect((await ask("We don't have Pizza, but try the Papaya Salad.")).r.reply).toBe("We don't have Pizza, but try the Papaya Salad.");
   });
   it("uses the restaurant's own words: FAQs, specials, the assistant's name and the owner's rules count as known", async () => {

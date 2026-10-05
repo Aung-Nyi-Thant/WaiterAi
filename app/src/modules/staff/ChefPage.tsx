@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Icon from "@/modules/platform/Icon";
 import SwipeCard from "@/modules/staff/SwipeCard";
-import { AllergyBanner, SoldOutList } from "@/modules/staff/WaiterPage";
+import { AllergyBanner, LineFlag, SoldOutList } from "@/modules/staff/WaiterPage";
 import { api, usePoll, minutesAgo } from "@/modules/platform/client";
 
 type Kitchen = { me: { name: string; role: string }; tickets: { new: any[]; cooking: any[]; ready: any[] }; dishes: { id: number; name: string; available: number }[] };
@@ -61,7 +61,7 @@ export default function Chef() {
                   </div>
                   <ul className="sa-ticket__lines">{o.items.map((i: any, k: number) => (
                     // biome-ignore lint/suspicious/noArrayIndexKey: read-only list of order lines (the same dish can appear twice), never reordered
-                    <li key={k}><b>{i.qty}×</b><span>{i.name}</span></li>
+                    <li key={k}><b>{i.qty}×</b><span>{i.name} <LineFlag flag={i.flag} /></span></li>
                   ))}</ul>
                   {o.allergy && <AllergyBanner allergen={o.allergy} note="Staff confirmed with the diner. Check before cooking." />}
                   <button type="button" className={`sa-btn sa-btn--lg sa-btn--block ${key === "new" ? "sa-btn--staff" : "sa-btn--ok"}`} onClick={() => act(o.id, next)}>{key !== "new" && <Icon name="check" />}{btn}</button>

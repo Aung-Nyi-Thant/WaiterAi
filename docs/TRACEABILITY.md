@@ -6,7 +6,7 @@ Every requirement ID of `docs/SRS_Shop_AI.md` is listed here with the code that 
 
 Run the tests with `cd app && npm test` (unit + integration + offline AI eval) and `npm run test:e2e` (real server, after `npm run build`). `npm run eval:live` scores the AI against a real model.
 
-**Summary:** 99 IDs · 68 Tested · 20 Partly · 10 Manual · 1 Not measured.
+**Summary:** 108 IDs · 76 Tested · 21 Partly · 10 Manual · 1 Not measured.
 
 Test files: `ai-rules` (rule-based answers), `ai-guard` (model output checks), `chat-api`, `auth`, `menu`, `orders`, `import`, `provider`, `eval` (the 30 questions of `eval/questions.json`), `diner-flow`, `seed`, `platform`, `e2e/diner-flow.e2e`.
 
@@ -41,6 +41,7 @@ The M2 SRS (`Team18_M2_SRS.pdf.pdf`) uses the ten functional requirements of the
 | DM-8 | show active specials. | `app/src/modules/diner/api/menu.ts`<br>`app/src/modules/platform/menu.ts` | `app/tests/menu.test.ts` | **Partly** · live/expired/future specials tested; display manual |
 | DM-9 | show a saved copy of the menu with a notice if the server cannot be reached. | `app/src/modules/diner/Diner.tsx` | none | **Manual** · offline copy |
 | DM-10 | record each menu open for insights. | `app/src/modules/diner/api/menu.ts` | `app/tests/menu.test.ts` | **Tested** |
+| DM-11 | choose their allergies once (the 14 allergens), kept only on the phone; dishes that list one are marked, and a "fits my allergies" filter hides them and dishes with no data. | `app/src/modules/diner/Diner.tsx`<br>`app/src/modules/diner/filters.ts`<br>`app/src/modules/platform/constants.ts` | `app/tests/allergy-profile.test.ts`<br>`app/tests/diner-filters.test.ts` | **Partly** · profile rules and filter tested; the dialog and red marks are manual |
 
 ## AI chat (AI)
 
@@ -62,6 +63,10 @@ The M2 SRS (`Team18_M2_SRS.pdf.pdf`) uses the ten functional requirements of the
 | AI-14 | Diner: be able to rate each reply; a negative rating flags it for the owner. | `app/src/modules/diner/api/feedback.ts` | `app/tests/chat-api.test.ts` | **Tested** |
 | AI-15 | Each restaurant shall have a monthly chat limit (default 300); when reached, a fixed message and the plai… | `app/src/modules/ai/api/chat.ts` | `app/tests/chat-api.test.ts`<br>`app/tests/ratelimit.test.ts` | **Tested** · also a per-minute chat rate limit |
 | AI-16 | store for each question: text, language, topic, allergens mentioned and whether it was answered, without … | `app/src/modules/ai/api/chat.ts`<br>`app/src/modules/platform/db.ts` | `app/tests/chat-api.test.ts` | **Tested** |
+| AI-17 | A model reply shall not state any allergen fact, in either direction; it is replaced by the stored data. | `app/src/modules/ai/ai.ts` | `app/tests/ai-guard.test.ts` | **Tested** |
+| AI-18 | With an allergy profile the assistant applies it to every answer; "what can I eat?" lists only dishes with data that avoid the allergens. | `app/src/modules/ai/ai.ts` | `app/tests/allergy-profile.test.ts` | **Tested** |
+| AI-19 | Detailed questions (spice, budget, dish type, diet, popular) are answered from the menu data without the model. | `app/src/modules/ai/ai.ts` | `app/tests/recommendations.test.ts` | **Tested** |
+| AI-20 | Short Thai allergen words are not matched inside other Thai words. | `app/src/modules/ai/ai.ts` | `app/tests/thai-keywords.test.ts` | **Tested** |
 
 ## Picks and staff calls (PC)
 
@@ -73,6 +78,7 @@ The M2 SRS (`Team18_M2_SRS.pdf.pdf`) uses the ten functional requirements of the
 | PC-4 | Waiter: running bill per table (taken orders; picks listed as pending); mark a table paid, which clears its bill and its open "bill" call; waiter role only (403) | `app/src/modules/staff/orders.ts`<br>`app/src/modules/staff/api/bills.ts`<br>`app/src/modules/staff/WaiterPage.tsx` | `app/tests/orders.test.ts` | **Tested** · the Bills tab UI is manual |
 | PC-5 | Diner: running bill of their own table, shown only to a phone that sent picks from that table (random receipt code) | `app/src/modules/diner/api/bill.ts`<br>`app/src/modules/diner/Diner.tsx` | `app/tests/orders.test.ts` | **Tested** · the bill sheet UI is manual |
 | PC-6 | Diner is not shown kitchen progress; the bill is a view and a manual "paid" mark only (no online payment) | `app/src/modules/diner/api/bill.ts` | `app/tests/orders.test.ts` | **Tested** |
+| PC-7 | An order carries the profile allergies and the chat allergies as its allergy note, and flags each line that clashes. | `app/src/modules/diner/api/orders.ts` | `app/tests/allergy-profile.test.ts` | **Tested** |
 
 ## Owner accounts (OA)
 
@@ -139,6 +145,7 @@ The M2 SRS (`Team18_M2_SRS.pdf.pdf`) uses the ten functional requirements of the
 | IN-1 | Owner: see, for 1, 7 or 30 days: number of chats, tables, questions, share answered from data, unanswered… | `app/src/modules/platform/api/insights.ts` | `app/tests/chat-api.test.ts` | **Tested** |
 | IN-2 | show most-asked topics, languages used, and unmet demand (vegetarian questions vs number of vegetarian di… | `app/src/modules/platform/api/insights.ts` | `app/tests/chat-api.test.ts` | **Tested** |
 | IN-3 | list unanswered questions with a shortcut to add an FAQ, and answers diners rated wrong. | `app/src/modules/platform/api/insights.ts` | `app/tests/chat-api.test.ts` | **Tested** · 'Add FAQ' button is UI |
+| IN-4 | The owner sees the allergies diners chose (counts only) with how many dishes serve each, dishes missing allergen data, most-ordered dishes and repeated questions. | `app/src/modules/platform/api/insights.ts` | `app/tests/owner-insights.test.ts` | **Tested** · the page is UI |
 
 ## Use cases (UC)
 
@@ -167,6 +174,8 @@ The M2 SRS (`Team18_M2_SRS.pdf.pdf`) uses the ten functional requirements of the
 | NFR-S1 | Allergen answers must be generated from stored data only. | `app/src/modules/ai/ai.ts` | `app/tests/ai-rules.test.ts`<br>`app/tests/eval.test.ts` | **Tested** |
 | NFR-S2 | Missing allergen data must never be presented as "no allergens". | `app/src/modules/ai/ai.ts` | `app/tests/ai-rules.test.ts` | **Tested** |
 | NFR-S3 | The system must not claim any dish is safe for an allergy. | `app/src/modules/ai/ai.ts` | `app/tests/ai-rules.test.ts`<br>`app/tests/ai-guard.test.ts` | **Tested** |
+| NFR-S4 | The language model makes no allergen statement; every allergen sentence comes from stored data (AI-17). | `app/src/modules/ai/ai.ts` | `app/tests/ai-guard.test.ts` | **Tested** |
+| NFR-S5 | A dish with no allergen data is never suggested to a diner with a profile, and "not listed" is never worded as "safe". | `app/src/modules/ai/ai.ts` | `app/tests/allergy-profile.test.ts` | **Tested** |
 | NFR-SEC1 | Passwords and PINs stored with bcrypt; session cookies signed and expiring (owner 7 days, staff 12 hours). | `app/src/modules/platform/auth.ts` | `app/tests/auth.test.ts`<br>`app/tests/e2e/diner-flow.e2e.test.ts`<br>`app/tests/ratelimit.test.ts` | **Tested** · login rate limits |
 | NFR-SEC2 | Every owner or staff query is restricted to the signed-in restaurant. | `app/src/modules/platform/auth.ts`<br>`app/src/modules/owner/*`<br>`app/src/modules/staff/api/*` | `app/tests/auth.test.ts`<br>`app/tests/orders.test.ts` | **Tested** |
 | NFR-SEC3 | Uploads limited by type and size; uploaded files served only by generated names. | `app/src/modules/platform/api/upload.ts`<br>`app/src/modules/platform/api/uploadsServe.ts` | `app/tests/menu.test.ts`<br>`app/tests/e2e/diner-flow.e2e.test.ts` | **Tested** · type is the browser-declared MIME type |

@@ -47,7 +47,7 @@ describe("UC-1 / UC-2 / UC-3 / UC-8 / UC-9 / PC-2 / SF-3 / SF-4 / SF-5 a diner o
     await staffLogin("1111");
     const pickOnFloor = (await call(floor)).data.picks.find((p: any) => p.id === sent.data.id);
     expect(pickOnFloor).toMatchObject({ table: "5", status: "picked", allergy: "peanut" });
-    expect(pickOnFloor.items).toEqual([{ name: "Mango Sticky Rice", qty: 2, price: 100 }]);
+    expect(pickOnFloor.items).toEqual([{ name: "Mango Sticky Rice", qty: 2, price: 100, flag: "" }]);   // no allergy profile: nothing flagged
     const act = (id: number, action: string) => call(orderAction, { method: "POST", params: { id: String(id) }, body: { action } });
     expect((await act(sent.data.id, "take")).status).toBe(200);
 

@@ -16,6 +16,10 @@ const en: Dict = {
   tableBill: "Table bill", billTotal: "Total to pay", billEmpty: "Nothing ordered yet.", billPending: "Waiting for staff to confirm (not in the total yet)", askBill: "Ask for the bill", billAsked: "The staff will bring your bill.", billRequested: "Bill requested. Staff are on the way.",
   heroEyebrow: "AI-Powered Menu Assistant", heroPlaceholder: "Ask about dishes, allergies, or get a recommendation…",
   heroChip1: "What's spicy?", heroChip2: "Vegan options?", heroChip3: "Surprise me",
+  // allergy profile
+  myAllergies: "My allergies", setAllergies: "Set my allergies", clearAll: "Clear", done: "Done", mine: "Without my allergens", yourAllergen: "Your allergen",
+  profileHelp: "Saved only on this phone. The AI uses it for every answer and the staff see it on your order. It never makes a dish safe: always confirm with the staff.",
+  conflictToast: "lists your allergen. The staff will be told.", chipMyAllergies: "What can I eat?",
 };
 const th: Dict = {
   kitchen: "ครัว", search: "ค้นหาเมนู", all: "ทั้งหมด", vegetarian: "มังสวิรัติ", noPeanuts: "ไม่มีถั่วลิสง", under100: "ต่ำกว่า ฿100", spicy: "เผ็ด",
@@ -29,6 +33,10 @@ const th: Dict = {
   reasonPrompt: "ผิดตรงไหน", reasonWrong: "ข้อมูลผิด", reasonConfused: "ไม่เข้าใจคำตอบ", reasonAllergen: "พลาดเรื่องแพ้อาหาร",
   escalate: "ขออภัย ตอบเรื่องนี้ไม่ได้ค่ะ", escalateCall: "เรียกพนักงาน",
   tableBill: "บิลของโต๊ะ", billTotal: "ยอดที่ต้องชำระ", billEmpty: "ยังไม่มีรายการสั่ง", billPending: "รอพนักงานยืนยัน (ยังไม่รวมในยอด)", askBill: "ขอเช็คบิล", billAsked: "พนักงานจะนำบิลมาให้", billRequested: "ขอเช็คบิลแล้ว พนักงานกำลังมา",
+  // allergy profile (first draft: have a native speaker review it)
+  myAllergies: "อาหารที่ฉันแพ้", setAllergies: "ตั้งค่าอาหารที่แพ้", clearAll: "ล้าง", done: "เสร็จ", mine: "ไม่มีสิ่งที่ฉันแพ้", yourAllergen: "สิ่งที่คุณแพ้",
+  profileHelp: "บันทึกไว้ในโทรศัพท์เครื่องนี้เท่านั้น AI ใช้กับทุกคำตอบ และพนักงานจะเห็นในออเดอร์ของคุณ ไม่ได้ทำให้เมนูใดปลอดภัย กรุณายืนยันกับพนักงานทุกครั้ง",
+  conflictToast: "มีสิ่งที่คุณแพ้ จะแจ้งพนักงานให้", chipMyAllergies: "กินอะไรได้บ้าง",
 };
 const my: Dict = {
   kitchen: "မီးဖိုချောင်", search: "ဟင်းလျာရှာရန်", all: "အားလုံး", vegetarian: "သက်သတ်လွတ်", noPeanuts: "မြေပဲမပါ", under100: "၁၀၀ ဘတ်အောက်", spicy: "စပ်",
@@ -42,6 +50,10 @@ const my: Dict = {
   reasonPrompt: "ဘာမှားနေလဲ", reasonWrong: "အချက်အလက် မှား", reasonConfused: "အဖြေကို နားမလည်ဘူး", reasonAllergen: "ဓာတ်မတည့်မှု လွဲသွား",
   escalate: "တောင်းပန်ပါတယ်ခင်ဗျာ၊ ဒါကို ဖြေပေးနိုင်ခြင်း မရှိပါ။", escalateCall: "ဝန်ထမ်းခေါ်ရန်",
   tableBill: "စားပွဲ ကျသင့်ငွေ", billTotal: "ပေးရမယ့် စုစုပေါင်း", billEmpty: "မှာထားတာ မရှိသေးပါဘူး", billPending: "ဝန်ထမ်း အတည်ပြုဖို့ စောင့်နေပါတယ် (စုစုပေါင်းထဲ မပါသေးပါဘူး)", askBill: "ငွေရှင်းမယ်", billAsked: "ဝန်ထမ်းက ဘေလ် ယူလာပေးပါမယ်ခင်ဗျာ", billRequested: "ဘေလ် တောင်းထားပြီးပါပြီ။ ဝန်ထမ်း လာနေပါပြီခင်ဗျာ",
+  // allergy profile (first draft: have a native speaker review it; "Allergens" stays English)
+  myAllergies: "ကိုယ့် Allergens", setAllergies: "ကိုယ့် Allergens ရွေးရန်", clearAll: "ဖျက်ရန်", done: "ပြီးပြီ", mine: "ကိုယ့် Allergens မပါတာ", yourAllergen: "ကိုယ့် Allergen",
+  profileHelp: "ဒီဖုန်းထဲမှာပဲ သိမ်းထားပါတယ်။ AI က အဖြေတိုင်းမှာ သုံးပြီး ဝန်ထမ်းတွေလည်း အော်ဒါမှာ မြင်ရပါမယ်။ ဟင်းလျာတစ်ခုခုကို လုံခြုံတယ်လို့ မဆိုပါဘူး၊ ဝန်ထမ်းကို အမြဲမေးပါ။",
+  conflictToast: "ပါပါတယ်။ ဝန်ထမ်းကို အသိပေးပါမယ်", chipMyAllergies: "ဘာစားလို့ရလဲ?",
 };
 export const DICT: Record<Lang, Dict> = { en, th, my };
 export const tr = (lang: Lang, key: string) => DICT[lang][key] ?? en[key] ?? key;

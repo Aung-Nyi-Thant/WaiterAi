@@ -3,8 +3,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Icon from "@/modules/platform/Icon";
 import { api, useEscape } from "@/modules/platform/client";
 import { tr, priceLabel, chatLineHeight } from "@/modules/diner/i18n";
-import { filterMenu } from "@/modules/diner/filters";
+import { clash, filterMenu } from "@/modules/diner/filters";
 import type { Item, Category, Lang } from "@/modules/platform/menu";
+import { ALLERGENS, allergenName, cleanProfile } from "@/modules/platform/constants";
 
 type Menu = { restaurant: { name: string; city: string; currency: string; hours: any; persona: { name: string; gender: string; greeting: string } }; categories: Category[]; items: Item[]; specials: { id: number; title: string; text: string }[] };
 type Msg = { id: string; role: "user" | "assistant"; text: string; dishes?: Item[]; topic?: string; messageId?: number; rated?: number; answered?: boolean };
@@ -31,7 +32,12 @@ export default function Diner({ slug }: { slug: string }) {
   const [table, setTable] = useState("");
   const [cat, setCat] = useState<number | 0>(0);
   const [q, setQ] = useState("");
-  const [f, setF] = useState({ veg: false, noPeanut: false, u100: false, spicy: false });
+  const [f, setF] = useState({ veg: false, noPeanut: false, u100: false, spicy: false, mine: false });
+  // The allergy profile: chosen once, kept only on this phone, sent with every chat message and order.
+  const [profile, setProfile] = useState<string[]>([]);
+  const [profileOpen, setProfileOpen] = useState(false);
+  useEffect(() => { try { setProfile(cleanProfile(JSON.parse(localStorage.getItem("allergyProfile") || "[]"))); } catch {} }, []);
+  const changeProfile = (next: string[]) => { setProfile(next); try { localStorage.setItem("allergyProfile", JSON.stringify(next)); } catch {} if (!next.length) setF((x) => ({ ...x, mine: false })); };
   const [filtersOpen, setFiltersOpen] = useState(false);
   const activeFilterCount = Object.values(f).filter(Boolean).length;
   const [picks, setPicks] = useState<Pick[]>([]);
@@ -44,6 +50,7 @@ export default function Diner({ slug }: { slug: string }) {
   const [billOpen, setBillOpen] = useState(false);
   useEscape(() => setPicksOpen(false), picksOpen);
   useEscape(() => setBillOpen(false), billOpen);
+  useEscape(() => setProfileOpen(false), profileOpen);
   const [sessionId] = useState(() => uid());
   const t = (k: string) => tr(lang, k);
   const say = (m: string) => { setToast(m); setTimeout(() => setToast(""), 2600); };
@@ -125,11 +132,13 @@ export default function Diner({ slug }: { slug: string }) {
 
   const shown = useMemo(() => {
     if (!menu) return [];
-    return filterMenu(menu.items, { cat, q, f });
-  }, [menu, cat, q, f]);
+    return filterMenu(menu.items, { cat, q, f, profile });
+  }, [menu, cat, q, f, profile]);
 
   const addPick = (id: number, qty = 1) => setPicks((p) => (p.some((x) => x.id === id) ? p.map((x) => (x.id === id ? { ...x, qty: Math.min(20, x.qty + qty) } : x)) : [...p, { id, qty }]));
   const removePick = (id: number) => setPicks((p) => p.filter((x) => x.id !== id));
+  // "Added: X" and, when the dish lists one of the diner's allergens (or has no allergen data), a warning. The diner may still pick it.
+  const addMsg = (i: Item) => { const c = clash(i, profile); return `${t("added")}: ${i.name[lang] || i.name.en}${c === "unknown" ? ` ⚠ ${t("allergenUnknown")}` : c ? ` ⚠ ${c.map((a) => allergenName(a, lang)).join(", ")} ${t("conflictToast")}` : ""}`; };
   const valid = picks.filter((p) => byId.get(p.id)?.available);
   const total = valid.reduce((s, p) => s + p.qty, 0);
 
@@ -151,7 +160,7 @@ export default function Diner({ slug }: { slug: string }) {
   };
   async function sendPicks() {
     try {
-      await api(`/api/public/${slug}/orders`, { body: { table, lang, sessionId, receipt: receiptCode(), items: valid } });
+      await api(`/api/public/${slug}/orders`, { body: { table, lang, sessionId, receipt: receiptCode(), profile, items: valid } });
       setPicks([]); say(t("sent")); loadBill();
     } catch (e: any) { say(e.message); }
   }
@@ -194,13 +203,13 @@ export default function Diner({ slug }: { slug: string }) {
                   <span style={{ flex: 1 }}>{t("heroPlaceholder")}<span className="hero-cursor" aria-hidden="true" /></span>
                 </button>
                 <div className="hero-ai__chips">
-                  {(["heroChip1", "heroChip2", "heroChip3"] as const).map((k) => <button type="button" key={k} className="sa-chip" onClick={() => askQuick(t(k))}>{t(k)}</button>)}
+                  {(profile.length ? ["heroChip1", "heroChip2", "chipMyAllergies"] : ["heroChip1", "heroChip2", "heroChip3"]).map((k) => <button type="button" key={k} className="sa-chip" onClick={() => askQuick(t(k))}>{t(k)}</button>)}
                 </div>
               </>
             )}
             <div className={`hero-expand${chatOpen ? " open" : ""}`}>
               <div className="hero-expand-inner">
-                {chatOpen && <Chat slug={slug} table={table} lang={lang} sessionId={sessionId} menu={menu} t={t} onClose={() => setChatOpen(false)} addPick={addPick} aiAdd={aiAdd} say={say} picksCount={total} sendPicks={sendPicks} callStaff={() => callStaff()} />}
+                {chatOpen && <Chat slug={slug} table={table} lang={lang} sessionId={sessionId} profile={profile} addMsg={addMsg} menu={menu} t={t} onClose={() => setChatOpen(false)} addPick={addPick} aiAdd={aiAdd} say={say} picksCount={total} sendPicks={sendPicks} callStaff={() => callStaff()} />}
               </div>
             </div>
           </div>
@@ -208,6 +217,11 @@ export default function Diner({ slug }: { slug: string }) {
           <div className="diner-search" style={{ marginTop: 16 }}>
             <Icon name="search" />
             <input className="sa-input" aria-label={t("search")} value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("search")} />
+          </div>
+          <div style={{ marginTop: 12 }}>
+            <button type="button" className="sa-chip" aria-haspopup="dialog" aria-pressed={profile.length > 0} onClick={() => setProfileOpen(true)}>
+              <Icon name="alert" size={16} />{profile.length ? `${t("myAllergies")}: ${profile.map((a) => allergenName(a, lang)).join(", ")}` : t("setAllergies")}
+            </button>
           </div>
         </div>
 
@@ -223,8 +237,8 @@ export default function Diner({ slug }: { slug: string }) {
           </nav>
           {filtersOpen && (
             <div id="diner-filters" className="diner-filters">
-              {([["veg", "vegetarian"], ["noPeanut", "noPeanuts"], ["u100", "under100"], ["spicy", "spicy"]] as const).map(([k, label]) => (
-                <button type="button" key={k} className="sa-chip" aria-pressed={f[k]} onClick={() => setF({ ...f, [k]: !f[k] })}>{f[k] && <Icon name="check" size={16} />}{t(label)}</button>
+              {(["veg", "noPeanut", "u100", "spicy", ...(profile.length ? ["mine"] : [])] as (keyof typeof f)[]).map((k) => (
+                <button type="button" key={k} className="sa-chip" aria-pressed={f[k]} onClick={() => setF({ ...f, [k]: !f[k] })}>{f[k] && <Icon name="check" size={16} />}{t({ veg: "vegetarian", noPeanut: "noPeanuts", u100: "under100", spicy: "spicy", mine: "mine" }[k])}</button>
               ))}
             </div>
           )}
@@ -239,7 +253,7 @@ export default function Diner({ slug }: { slug: string }) {
             </div>
           )}
           {shown.length === 0 && <div className="sa-plate sa-empty">{t("none")}</div>}
-          {shown.map((i) => <DishCard key={i.id} item={i} lang={lang} onOpen={() => setDetail(i)} onAdd={() => { addPick(i.id); say(`${t("added")}: ${nm(i)}`); }} t={t} />)}
+          {shown.map((i) => <DishCard key={i.id} item={i} lang={lang} profile={profile} onOpen={() => setDetail(i)} onAdd={() => { addPick(i.id); say(addMsg(i)); }} t={t} />)}
         </div>
       </div>
 
@@ -269,7 +283,7 @@ export default function Diner({ slug }: { slug: string }) {
         </div>
       </div>
 
-      {detail && <Detail item={detail} lang={lang} t={t} onClose={() => setDetail(null)} onAdd={() => { addPick(detail.id); say(`${t("added")}: ${nm(detail)}`); setDetail(null); }} onAsk={() => { setDetail(null); setChatOpen(true); setTimeout(() => window.dispatchEvent(new CustomEvent("ask", { detail: `${nm(detail)}?` })), 50); }} />}
+      {detail && <Detail item={detail} lang={lang} profile={profile} t={t} onClose={() => setDetail(null)} onAdd={() => { addPick(detail.id); say(addMsg(detail)); setDetail(null); }} onAsk={() => { setDetail(null); setChatOpen(true); setTimeout(() => window.dispatchEvent(new CustomEvent("ask", { detail: `${nm(detail)}?` })), 50); }} />}
       {picksOpen && (
         // biome-ignore lint/a11y/noStaticElementInteractions: clicking outside is a mouse shortcut; keyboard users close this with Escape (useEscape)
         <div className="sheet-back" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) setPicksOpen(false); }}>
@@ -297,6 +311,32 @@ export default function Diner({ slug }: { slug: string }) {
               </div>
             )}
             {valid.length > 0 && <button type="button" className="sa-btn sa-btn--staff sa-btn--block" onClick={() => { setPicksOpen(false); sendPicks(); }}><Icon name="send" />{t("showToWaiter")} · {priceLabel(lang, valid.reduce((s, p) => s + p.qty * (byId.get(p.id)?.price || 0), 0))}</button>}
+          </section>
+        </div>
+      )}
+      {profileOpen && (
+        // biome-ignore lint/a11y/noStaticElementInteractions: clicking outside is a mouse shortcut; keyboard users close this with Escape (useEscape)
+        // biome-ignore lint/a11y/useKeyWithClickEvents: same as above, the keyboard way is Escape
+        <div className="sheet-back" onClick={() => setProfileOpen(false)}>
+          {/* biome-ignore lint/a11y/useKeyWithClickEvents: this only stops clicks inside the dialog from reaching the backdrop */}
+          <section className="sa-picks" role="dialog" aria-label={t("myAllergies")} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 12 }}>
+              <h3 className="sa-display" style={{ margin: 0, fontSize: 24 }}>{t("myAllergies")}</h3>
+              <button type="button" className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" onClick={() => setProfileOpen(false)} aria-label={t("close")}><Icon name="close" size={18} /></button>
+            </div>
+            <p className="muted" style={{ fontSize: 14, margin: "0 0 12px" }}>{t("profileHelp")}</p>
+            {/* all 14 allergens must be visible at once, so the chips wrap (the filter row scrolls sideways) */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+              {ALLERGENS.map((a) => (
+                <button type="button" key={a} className="sa-chip" aria-pressed={profile.includes(a)} onClick={() => changeProfile(profile.includes(a) ? profile.filter((x) => x !== a) : [...profile, a])}>
+                  {profile.includes(a) && <Icon name="check" size={16} />}{allergenName(a, lang)}
+                </button>
+              ))}
+            </div>
+            <div className="row" style={{ gap: 12 }}>
+              {profile.length > 0 && <button type="button" className="sa-btn sa-btn--quiet" onClick={() => changeProfile([])}>{t("clearAll")}</button>}
+              <button type="button" className="sa-btn sa-btn--staff sa-btn--block" onClick={() => setProfileOpen(false)}><Icon name="check" />{t("done")}</button>
+            </div>
           </section>
         </div>
       )}
@@ -353,21 +393,26 @@ const BellSvg = () => (
 
 const DIET: Record<string, string> = { vegan: "sa-tag--veg", vegetarian: "sa-tag--veg", spicy: "sa-tag--spicy" };
 
-function AllergenTags({ item, t, max = 3 }: { item: Item; t: (k: string) => string; max?: number }) {
-  if (item.allergens === null) return <span className="sa-tag sa-tag--unknown">{t("allergenUnknown")}</span>;
-  const extra = item.allergens.length - max;
-  return <>{item.allergens.slice(0, max).map((a) => <span key={a} className="sa-tag">{a.replace("_", " ")}</span>)}{extra > 0 && <span className="sa-tag">+{extra}</span>}</>;
+// The allergens a dish lists. The ones in the diner's profile come first and are marked, so they are never hidden behind "+2".
+function AllergenTags({ item, t, profile, max = 3 }: { item: Item; t: (k: string) => string; profile: string[]; max?: number }) {
+  if (item.allergens === null) return <span className={`sa-tag sa-tag--unknown${profile.length ? " sa-tag--alert" : ""}`}>{profile.length ? "⚠ " : ""}{t("allergenUnknown")}</span>;
+  const sorted = [...item.allergens].sort((a, b) => Number(profile.includes(b)) - Number(profile.includes(a)));
+  const shownN = Math.max(max, sorted.filter((a) => profile.includes(a)).length);
+  const extra = sorted.length - shownN;
+  return <>{sorted.slice(0, shownN).map((a) => profile.includes(a)
+    ? <span key={a} className="sa-tag sa-tag--alert" title={t("yourAllergen")}>⚠ {a.replace("_", " ")}</span>
+    : <span key={a} className="sa-tag">{a.replace("_", " ")}</span>)}{extra > 0 && <span className="sa-tag">+{extra}</span>}</>;
 }
 
 function Plate({ item }: { item: Item }) {
   return <div className={`sa-dish__plate${item.photo_url ? "" : " sa-dish__plate--empty"}`} aria-hidden="true">{item.photo_url && <img src={item.photo_url} alt="" />}</div>;
 }
 
-function DishCard({ item, lang, onOpen, onAdd, t }: { item: Item; lang: Lang; onOpen: () => void; onAdd: () => void; t: (k: string) => string }) {
+function DishCard({ item, lang, profile, onOpen, onAdd, t }: { item: Item; lang: Lang; profile: string[]; onOpen: () => void; onAdd: () => void; t: (k: string) => string }) {
   const nm = item.name[lang] || item.name.en;
   const other = (["th", "my", "en"] as Lang[]).filter((l) => l !== lang).map((l) => item.name[l]).filter((n) => n && n !== nm);
   return (
-    <article className={`sa-plate sa-dish${item.available ? "" : " sa-dish--soldout"}`}>
+    <article className={`sa-plate sa-dish${item.available ? "" : " sa-dish--soldout"}${clash(item, profile) ? " sa-dish--conflict" : ""}`}>
       <Plate item={item} />
       {!item.available && <span className="sa-stamp">{t("soldOut")}</span>}
       <div className="sa-dish__body">
@@ -376,7 +421,7 @@ function DishCard({ item, lang, onOpen, onAdd, t }: { item: Item; lang: Lang; on
         {other.length > 0 && <p className="sa-dish__alt">{other.join(" · ")}</p>}
         <div className="sa-dish__tags">
           {item.tags.filter((x) => DIET[x]).slice(0, 2).map((x) => <span key={x} className={`sa-tag ${DIET[x]}`}>{x}</span>)}
-          <AllergenTags item={item} t={t} />
+          <AllergenTags item={item} t={t} profile={profile} />
         </div>
         <div className="sa-dish__foot">
           <span className="sa-price">{priceLabel(lang, item.price)}</span>
@@ -389,7 +434,7 @@ function DishCard({ item, lang, onOpen, onAdd, t }: { item: Item; lang: Lang; on
   );
 }
 
-function Detail({ item, lang, t, onClose, onAdd, onAsk }: { item: Item; lang: Lang; t: (k: string) => string; onClose: () => void; onAdd: () => void; onAsk: () => void }) {
+function Detail({ item, lang, profile, t, onClose, onAdd, onAsk }: { item: Item; lang: Lang; profile: string[]; t: (k: string) => string; onClose: () => void; onAdd: () => void; onAsk: () => void }) {
   useEscape(onClose);
   const nm = item.name[lang] || item.name.en;
   const other = (["th", "my", "en"] as Lang[]).filter((l) => l !== lang).map((l) => item.name[l]).filter((n) => n && n !== nm);
@@ -404,7 +449,7 @@ function Detail({ item, lang, t, onClose, onAdd, onAsk }: { item: Item; lang: La
         {other.length > 0 && <p className="sa-dish__alt">{other.join(" · ")}</p>}
         {item.desc[lang] && <p style={{ margin: "8px 0 0" }}>{item.desc[lang]}</p>}
         <p className="sa-sheet__label">{t("allergens")}</p>
-        <div className="sa-dish__tags">{item.allergens && item.allergens.length === 0 ? <span className="sa-tag">{t("allergenNone")}</span> : <AllergenTags item={item} t={t} max={20} />}</div>
+        <div className="sa-dish__tags">{item.allergens && item.allergens.length === 0 ? <span className="sa-tag">{t("allergenNone")}</span> : <AllergenTags item={item} t={t} profile={profile} max={20} />}</div>
         {item.ingredients && <><p className="sa-sheet__label">{t("ingredients")}</p><p className="muted" style={{ margin: 0 }}>{item.ingredients}</p></>}
         <div className="sa-sheet__actions">
           <button type="button" className="sa-btn sa-btn--ai" onClick={onAsk}><Icon name="sparkles" />{t("askWaiter")}</button>
@@ -419,7 +464,7 @@ function Detail({ item, lang, t, onClose, onAdd, onAsk }: { item: Item; lang: La
 const ESCALATE_AFTER_MISSES = 2;
 const REASON_KEYS = { wrong: "reasonWrong", confused: "reasonConfused", allergen: "reasonAllergen" } as const;
 
-function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, aiAdd, say, picksCount, sendPicks, callStaff }: any) {
+function Chat({ slug, table, lang, sessionId, profile, addMsg, menu, t, onClose, addPick, aiAdd, say, picksCount, sendPicks, callStaff }: any) {
   const persona = menu.restaurant.persona;
   const [msgs, setMsgs] = useState<Msg[]>([{ id: "hello", role: "assistant", text: persona.greeting || t("hello") }]);
   const [text, setText] = useState("");
@@ -455,7 +500,7 @@ function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, aiAdd, 
     setMsgs((m) => [...m, { id: uid(), role: "user", text: message }]);
     setBusy(true);
     try {
-      const r = await api<any>(`/api/public/${slug}/chat`, { body: { message, sessionId, table, lang } });
+      const r = await api<any>(`/api/public/${slug}/chat`, { body: { message, sessionId, table, lang, profile } });
       const answered = r.answered !== false;
       setMsgs((m) => [...m, { id: uid(), role: "assistant", text: r.reply, dishes: r.dishes, topic: r.action?.type === "show_dishes" ? "dishes" : undefined, messageId: r.messageId, answered }]);
       setMissCount((n) => { const next = answered ? 0 : n + 1; setEscalate(next >= ESCALATE_AFTER_MISSES); return next; });
@@ -500,7 +545,7 @@ function Chat({ slug, table, lang, sessionId, menu, t, onClose, addPick, aiAdd, 
               <div key={d.id} className="sa-mini">
                 <div className={`sa-dish__plate${cur.photo_url ? "" : " sa-dish__plate--empty"}`} aria-hidden="true">{cur.photo_url && <img src={cur.photo_url} alt="" />}</div>
                 <div className="sa-mini__txt">{name}<br /><span className="sa-dish__alt">{priceLabel(lang, cur.price)}</span></div>
-                <button type="button" className="sa-btn sa-btn--special sa-btn--sm sa-btn--icon" aria-label={`${t("add")} ${name}`} onClick={() => { addPick(cur.id); say(`${t("added")}: ${name}`); }}><Icon name="plus" /></button>
+                <button type="button" className="sa-btn sa-btn--special sa-btn--sm sa-btn--icon" aria-label={`${t("add")} ${name}`} onClick={() => { addPick(cur.id); say(addMsg(cur)); }}><Icon name="plus" /></button>
               </div>); })}
             {m.messageId && (
               <>

@@ -6,7 +6,7 @@ import { answer, allergensMentioned, detectLang } from "@/modules/ai/ai";
 
 afterEach(() => { vi.unstubAllGlobals(); });
 
-describe("AI-2 short Thai allergen words do not match inside ordinary words", () => {
+describe("AI-2 / AI-20 short Thai allergen words do not match inside ordinary words", () => {
   it.each([
     ["พนักงาน", "staff (contains งา, sesame)"], ["งานเลี้ยง", "a party (งา + น)"], ["ปูนซีเมนต์", "cement (contains ปู, crab)"],
     ["ปู่", "grandfather (contains ปู, crab)"], ["ปลายทาง", "destination (contains ปลา, fish)"], ["ร้านมีพนักงานกี่คน", "how many staff"],
