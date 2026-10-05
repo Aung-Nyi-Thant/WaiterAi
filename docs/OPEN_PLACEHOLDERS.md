@@ -30,12 +30,6 @@ Line 7 of the same file only explains the marker; it is not a cell to fill in.
 
 The PDF corrections themselves (the table above these rows) are for the team to apply to the PDFs; the repo only records what to change.
 
-## `docs/SRS_Shop_AI.md`
-
-| Line | What is missing |
-|---|---|
-| 4 | `Supervisor: [name]`: the supervisor's name. (The authors and the course were filled in from the M1 charter and the member list.) |
-
 ## Other open items (no marker in a file, listed so they are not forgotten)
 
 - Native-speaker review of the new Thai and Burmese allergen words: `eval/native_review_allergens.html`.
