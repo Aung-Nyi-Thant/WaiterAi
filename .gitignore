@@ -24,3 +24,6 @@ eval/results/full_run.log
 .env.local
 app/.env.local
 .env.production
+
+# personal study notes, kept out of the repository
+docs/ORAL_EXAM_PREP.md
