@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop AI Prototype</title>
+<meta name="description" content="Clickable prototype of Shop AI (team MFU 888): diner, staff and owner journeys, with mock data and no server.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;800&family=Courier+Prime:wght@400;700&family=Noto+Sans+Myanmar:wght@400;700&family=Noto+Sans+Thai:wght@400;600;700&family=Righteous&display=swap">
+<link rel="stylesheet" href="proto.css">
+</head>
+<body>
+<header class="top">
+  <div class="top__brand"><b>Shop AI</b> <span>clickable prototype · mock data, no server, no database</span></div>
+  <nav class="top__tabs" id="tabs" aria-label="Journeys"></nav>
+  <button type="button" class="btn btn--quiet" data-act="reset">Reset demo</button>
+</header>
+<main id="stage" class="stage"></main>
+<footer class="foot">
+  Intro to Software Engineering 2569 · Milestone 4 · Team MFU 888. Every screen carries a <b>Covers:</b> bar naming the requirements it demonstrates (IDs as in
+  <code>docs/SRS_Shop_AI.md</code> and <code>docs/TRACEABILITY.md</code>). Buttons that would save to a server only change this page's memory.
+</footer>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="i18n.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script src="owner.js"></script>
+</body>
+</html>

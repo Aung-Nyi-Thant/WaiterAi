@@ -16,6 +16,7 @@ The rule in `CONTRIBUTING.md`: code written with an AI tool is logged, and the a
 | 56 | 5 Oct 2026 (follow-up), notes removed, Thai fix, warm-up | **[team to review]** | whoever reviews the PRs |
 | 57 | 5 Oct 2026 (integration), merge of PR #48 and the tests branch | **[team to review the resolutions]** | the authors of both lines of work |
 | (new) | 5 Oct 2026 (security round 2) | **[team to review]** | whoever reviews the PRs |
+| (new) | 5 Oct 2026 (M4 submission) | **[team to review]** | whoever reviews the PRs |
 
 Line 7 of the same file only explains the marker; it is not a cell to fill in.
 
@@ -48,3 +49,12 @@ The PDF corrections themselves (the table above these rows) are for the team to 
 - Native-speaker review of the new Thai and Burmese allergen words: `eval/native_review_allergens.html`.
 - A short README note on why the topic changed from the original brief to Shop AI (the charter and SRS PDFs define Shop AI).
 - Applying `docs/PDF_CORRECTIONS.md` to the M1 and M2 PDFs.
+
+## The M4 drafts (`docs/FINAL_REPORT.md`, `docs/AI_USE_STATEMENT.md`, `docs/DEMO_SLIDES.html`)
+
+Each marks what only the team can answer with **[team to complete]**:
+
+- Final report cover and section 8: which GitHub account is which member; for each member, where their work is in the repository (commits, pull requests, documents, diagrams, design, testing, the Burmese review, the PDFs).
+- Final report section 7 and the AI-use statement: the tools each member used, and what each member changed or rejected in the AI's output.
+- Demo slides 9 (team) and 10: who built what, and what each member changed in the AI's output.
+- Individual contribution is measured from GitHub, and today `main` shows one account. This is the item to settle first.

@@ -12,6 +12,10 @@ The AI never decides anything safety-critical: allergens, prices, opening hours,
 | `docs/` | SRS, feature plan, project explanation, team work plan, measured results (`NFR_RESULTS.md`), and the product worksheet answers (`PRODUCT_IDEA_WORKSHEET.md`) |
 | `design/` | UI design generators (Art Deco and Glass mock-ups) |
 
+## Clickable prototype (no server needed)
+
+Open `prototype/index.html` in a browser. It walks the diner, staff and owner journeys with mock data, shows every Must requirement and some unhappy paths, and labels each screen with the SRS IDs it covers (`prototype/README.md`).
+
 ## Run it in 2 minutes
 
 **With Docker** (nothing else to install except Docker):

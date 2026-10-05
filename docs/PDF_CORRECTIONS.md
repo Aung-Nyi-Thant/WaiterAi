@@ -2,6 +2,23 @@
 
 `Team18_M2_SRS.pdf.pdf` and `M1-Charter_ MFU888.pdf` are your submitted deliverables, so they were **not edited**. This file lists what no longer matches the project, with the current wording quoted and replacement text you can paste. Check each one yourself before you change the PDF.
 
+## Status (5 October 2026)
+
+`docs/deliverables/` holds the three PDFs: the M1 charter as submitted, the M2 SRS as submitted (`M2_SRS_Team18_submitted.pdf`), and **`M2_SRS_Team18_v1.1.pdf`**, the SRS with the corrections below applied. The v1.1 file was made by editing the submitted PDF in place (same pages, tables and typeface; two pages added); the charter was not touched because it was already submitted.
+
+| Item (section A) | In v1.1? |
+|---|---|
+| 1 template banner and "This example" | done (the line "Worked Example — StudyMate…" and the callout are removed; header is "Value") |
+| 2 SDLC | done: the SRS now says Agile, with the reason from the charter |
+| 3, 4, 5 "Show to waiter" | done: "Send to staff" |
+| 6 use-case diagram | done: Figure 1 on its own page after §5.2; the box in §9 is ticked |
+| 7, 8, 9, 10 NFR-1, 2, 4, 7 | done, with the measured figures (NFR-2: server side only) |
+| 11 test count | done in words: automated tests run on every push, see `docs/TRACEABILITY.md` (no number, so it does not go stale) |
+| 12 "12 tables", "64-check" | **not changed on purpose**: that row says what was built and run on 21 Sep, so the old numbers are true for that day; the current figures are in the new rows |
+| 13 new AI-log rows | done: six rows on a continuation page, with "[team to complete]" where only a member can answer |
+| 14 self-check | only "Use-case diagram inserted" is ticked; the three boxes about stakeholders and the honest log stay open, and two lines were reworded because three interviews were done in M1 (see the charter) |
+| (extra) version | "v1.1 October 2026" |
+
 ## A. Team M2 SRS (`Team18_M2_SRS.pdf.pdf`)
 
 | # | Where | Current text | Replace with / do |
