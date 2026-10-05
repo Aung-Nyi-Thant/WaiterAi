@@ -1,0 +1,13 @@
+.git
+**/node_modules
+**/.next
+**/.npm-cache
+app/data
+**/*.log
+**/.env
+**/.env.local
+docs
+design
+reports
+research_notes
+eval/results

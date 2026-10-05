@@ -99,6 +99,21 @@ c, r = chef("POST", "/api/staff/items/10", {"available": False}); check("chef ma
 c, r = diner("POST", "/api/public/golden-lotus/chat", {"message": "Can I have the Thai iced tea?", "sessionId": "e2e-2", "table": "1"}); check("AI knows sold-out state at once", "sold out" in r["reply"].lower(), r["reply"])
 chef("POST", "/api/staff/items/10", {"available": True})
 
+# ---- allergy profile, recommendations, and what the owner learns from them
+c, r = diner("POST", "/api/public/golden-lotus/chat", {"message": "What can I eat with my allergies?", "sessionId": "e2e-prof", "table": "12", "profile": ["peanut"]})
+check("allergy profile applied to the chat", "do not list peanut" in r["reply"] and "Massaman" not in r["reply"] and "confirm with the staff" in r["reply"], r.get("reply"))
+check("profile answer never says safe", "safe" not in r["reply"].lower())
+c, r = diner("POST", "/api/public/golden-lotus/chat", {"message": "I'll have the Beef Massaman Curry", "sessionId": "e2e-prof", "table": "12", "profile": ["peanut"]})
+check("conflicting pick is allowed but warned", r["action"]["type"] == "add_to_picks" and "lists peanut" in r["reply"], r.get("reply"))
+c, r = diner("POST", "/api/public/golden-lotus/chat", {"message": "What's spicy?", "sessionId": "e2e-rec", "table": "12"}); check("recommendation from the data", "Tom Yum Goong" in r["reply"] and r["action"]["type"] == "show_dishes", r.get("reply"))
+c, r = diner("POST", "/api/public/golden-lotus/chat", {"message": "something mild under 100 baht", "sessionId": "e2e-rec", "table": "12"}); check("mild and budget", "under ฿100" in r["reply"] and "mild" in r["reply"], r.get("reply"))
+c, r = diner("POST", "/api/public/golden-lotus/orders", {"table": "12", "lang": "en", "sessionId": "e2e-prof", "profile": ["peanut"], "items": [{"id": 7, "qty": 1}, {"id": 10, "qty": 1}]}); poid = r.get("id"); check("order with profile", c == 200)
+c, fl = waiter("GET", "/api/staff/floor"); pk = next((o for o in fl["picks"] if o["id"] == poid), None)
+check("waiter sees the profile and the flagged dish", pk is not None and pk["allergy"] == "peanut" and {i["name"]: i["flag"] for i in pk["items"]} == {"Beef Massaman Curry": "peanut", "Thai Iced Tea": ""}, pk)
+waiter("POST", f"/api/staff/orders/{poid}", {"action": "take"}); c, k = chef("GET", "/api/staff/kitchen"); kt = next((o for o in k["tickets"]["new"] if o["id"] == poid), None)
+check("chef ticket shows the profile and the flagged dish", kt is not None and kt["allergy"] == "peanut" and {i["name"]: i["flag"] for i in kt["items"]} == {"Beef Massaman Curry": "peanut", "Thai Iced Tea": ""}, kt)
+c, r = owner("GET", "/api/owner/insights?days=7"); check("owner sees allergy profiles, popular dishes", c == 200 and any(a["allergen"] == "peanut" for a in r["allergyProfiles"]) and len(r["topDishes"]) > 0 and "noAllergenData" in r, r.get("allergyProfiles"))
+
 # ---- insights
 c, r = owner("GET", "/api/owner/insights?days=7"); check("insights", c == 200 and r["questions"] > 0 and len(r["topics"]) > 0 and r["opens"] >= 1, r)
 c, r = diner("POST", "/api/public/golden-lotus/feedback", {"messageId": 1, "value": -1}); check("feedback", c == 200)

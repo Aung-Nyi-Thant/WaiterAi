@@ -1,0 +1,30 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "files": { "includes": ["src/**", "tests/**", "scripts/**", "*.mts", "*.ts", "!.next", "!data", "!node_modules", "!.npm-cache", "!next-env.d.ts", "!**/*.css"] },
+  "formatter": { "enabled": false },
+  "assist": { "enabled": false },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "suspicious": {
+        "noExplicitAny": "off",
+        "noArrayIndexKey": "warn",
+        "useIterableCallbackReturn": "warn",
+        "noAssignInExpressions": "warn",
+        "noImplicitAnyLet": "warn"
+      },
+      "style": { "noNonNullAssertion": "off", "useTemplate": "off" },
+      "performance": { "noImgElement": "off" },
+      "correctness": { "useExhaustiveDependencies": "warn" },
+      "a11y": {
+        "useButtonType": "warn",
+        "useKeyWithClickEvents": "warn",
+        "noStaticElementInteractions": "warn",
+        "useSemanticElements": "warn",
+        "noLabelWithoutControl": "warn",
+        "noSvgWithoutTitle": "warn"
+      }
+    }
+  }
+}

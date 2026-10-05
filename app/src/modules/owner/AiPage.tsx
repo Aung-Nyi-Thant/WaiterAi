@@ -18,7 +18,7 @@ export default function AiPage() {
     <>
       <div><h1 style={{ fontSize: 40 }}>AI waiter</h1><p className="soft-l" style={{ margin: "6px 0 0" }}>Choose how your assistant sounds, then try it on the right.</p></div>
       <div className="grid2" style={{ alignItems: "start" }}>
-        <div className="gl r-xl" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 14 }}>
+        <div className="sa-plate r-xl" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 14 }}>
           <div className="grid2" style={{ gap: 12 }}>
             <div><label className="lbl" htmlFor="rn">Restaurant name</label><input id="rn" className="in-l" value={name} onChange={(e) => setName(e.target.value)} /></div>
             <div><label className="lbl" htmlFor="rc">City</label><input id="rc" className="in-l" value={city} onChange={(e) => setCity(e.target.value)} /></div>
@@ -31,9 +31,9 @@ export default function AiPage() {
           <div><label className="lbl" htmlFor="gr">Greeting (optional)</label><input id="gr" className="in-l" value={p.greeting} onChange={(e) => setP({ ...p, greeting: e.target.value })} placeholder="Welcome to Golden Lotus! Ask me anything." /></div>
           <label className="check" style={{ alignSelf: "flex-start" }}><input type="checkbox" checked={p.upsell} onChange={(e) => setP({ ...p, upsell: e.target.checked })} />Suggest drinks and desserts</label>
           {err && <div className="err" role="alert">{err}</div>}
-          <button className="btn btn-p" style={{ alignSelf: "flex-start" }} onClick={save}>Save changes</button>
+          <button type="button" className="btn btn-p" style={{ alignSelf: "flex-start" }} onClick={save}>Save changes</button>
         </div>
-        <div className="gl r-xl" style={{ padding: 24 }}><h2 style={{ fontSize: 22, marginBottom: 12 }}>Try it</h2><TestChat slug={restaurant.slug} /></div>
+        <div className="sa-plate r-xl" style={{ padding: 24 }}><h2 style={{ fontSize: 22, marginBottom: 12 }}>Try it</h2><TestChat slug={restaurant.slug} /></div>
       </div>
     </>
   );

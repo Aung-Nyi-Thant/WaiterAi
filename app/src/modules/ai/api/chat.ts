@@ -1,8 +1,10 @@
-import { restaurantBySlug, itemsOf, faqsOf, specialsOf } from "@/modules/platform/menu";
+import { restaurantBySlug, itemsOf, faqsOf, specialsOf, categoriesOf, popularDishes } from "@/modules/platform/menu";
 import { all, get, run } from "@/modules/platform/db";
-import { json, bad, body } from "@/modules/platform/http";
-import { answer, detectLang, limitReply } from "@/modules/ai/ai";
+import { json, bad, body, tooMany } from "@/modules/platform/http";
+import { hit, setting, clientIp } from "@/modules/platform/rateLimit";
+import { answer, detectLang, limitReply, type ChatResult } from "@/modules/ai/ai";
 import type { Lang } from "@/modules/platform/menu";
+import { cleanProfile } from "@/modules/platform/constants";
 import crypto from "node:crypto";
 
 export async function POST(req: Request, { params }: { params: Promise<{ slug: string }> }) {
@@ -18,17 +20,30 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   const uiLang = (["en", "th", "my"].includes(b.lang) ? b.lang : "en") as Lang;
   const lang = detectLang(message, uiLang);
   const p = r.persona.gender === "female" ? "female" : "male";
+  const profile = cleanProfile(b.profile);        // the allergies the diner chose once on their phone
 
-  if (!preview) run("INSERT OR IGNORE INTO chat_sessions (id, restaurant_id, table_no, lang) VALUES (?,?,?,?)", sessionId, r.id, table, lang);
+  // rate limits: every model answer costs seconds of the shop's one computer, so a runaway client must not be able to queue them up
+  const win = setting("RATE_LIMIT_CHAT_WINDOW_SEC", 60), ip = clientIp(req);
+  // checked in order; a request refused by one limit is not counted against the next (a spamming session must not use up the restaurant's quota)
+  const checks: [string | null, number][] = [[b.sessionId ? `chat:session:${sessionId}` : null, setting("RATE_LIMIT_CHAT_MAX", 20)], [`chat:restaurant:${r.id}`, setting("RATE_LIMIT_CHAT_RESTAURANT_MAX", 120)], [ip ? `chat:ip:${ip}` : null, setting("RATE_LIMIT_CHAT_IP_MAX", 60)]];
+  for (const [key, max] of checks) {
+    const v = key ? hit(key, max, win) : null;
+    if (v && !v.allowed) return tooMany(v.retryAfter);
+  }
+
+  if (!preview) {
+    run("INSERT OR IGNORE INTO chat_sessions (id, restaurant_id, table_no, lang) VALUES (?,?,?,?)", sessionId, r.id, table, lang);
+    run("UPDATE chat_sessions SET profile = ? WHERE id = ? AND restaurant_id = ?", JSON.stringify(profile), sessionId, r.id);
+  }
   const used = get("SELECT COUNT(*) AS n FROM chat_messages m JOIN chat_sessions s ON s.id = m.session_id WHERE m.restaurant_id = ? AND m.role = 'user' AND m.created_at >= date('now','start of month')", r.id)!.n;
 
   const items = itemsOf(r.id);
-  let result;
+  let result: ChatResult;
   if (used >= r.chat_cap && !preview) {
     result = { reply: limitReply(lang, p === "female" ? "ค่ะ" : ""), action: { type: "show_menu" as const }, topic: "other", allergens: [], answered: false, usedModel: false };
   } else {
     const history = preview || !b.sessionId ? [] : all("SELECT role, text FROM chat_messages WHERE session_id = ? ORDER BY id DESC LIMIT 8", sessionId).reverse();
-    result = await answer(message, lang, { restaurant: r, items, faqs: faqsOf(r.id) as any, specials: specialsOf(r.id), history: history as any });
+    result = await answer(message, lang, { restaurant: r, items, faqs: faqsOf(r.id) as any, specials: specialsOf(r.id), history: history as any, profile, categories: categoriesOf(r.id), popular: popularDishes(r.id) });
   }
 
   let messageId = 0;
@@ -37,10 +52,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
       sessionId, r.id, "user", message, lang, result.topic, JSON.stringify(result.allergens), result.answered ? 1 : 0);
     messageId = run("INSERT INTO chat_messages (session_id, restaurant_id, role, text, lang, topic, action_json, answered) VALUES (?,?,?,?,?,?,?,?)",
       sessionId, r.id, "assistant", result.reply, lang, result.topic, JSON.stringify(result.action), result.answered ? 1 : 0).id;
-    if (result.action.type === "call_staff") run("INSERT INTO calls (restaurant_id, table_no, kind) VALUES (?,?,?)", r.id, table, result.action.kind || "help");
+    if (result.action.type === "call_staff") {
+      // same rule as the "Call staff" button (FR-3): one open call of a kind per table
+      const kind = result.action.kind || "help";
+      if (!get("SELECT id FROM calls WHERE restaurant_id = ? AND table_no = ? AND kind = ? AND status = 'open'", r.id, table, kind))
+        run("INSERT INTO calls (restaurant_id, table_no, kind) VALUES (?,?,?)", r.id, table, kind);
+    }
   }
-  const ids = result.action.ids || [];
+  const ids = result.action.ids || [];       // the dish cards below follow this order: it is the AI's ranking (for example by orders)
   // "answered" lets the diner UI notice two unhelpful replies in a row and offer to call staff
   // proactively, instead of only reacting if the diner happens to spot the bell icon themselves.
-  return json({ sessionId, messageId, reply: result.reply, action: result.action, dishes: items.filter((i) => ids.includes(i.id)), lang, answered: result.answered });
+  return json({ sessionId, messageId, reply: result.reply, action: result.action, dishes: ids.map((id) => items.find((i) => i.id === id)).filter(Boolean), lang, answered: result.answered });
 }

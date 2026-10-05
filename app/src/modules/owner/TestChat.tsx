@@ -9,6 +9,7 @@ export default function TestChat({ slug }: { slug: string }) {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const end = useRef<HTMLDivElement>(null);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: msgs and busy are the triggers (scroll to the newest message), not values read inside
   useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, busy]);
   async function send(m: string) {
     m = m.trim(); if (!m || busy) return;
@@ -23,20 +24,21 @@ export default function TestChat({ slug }: { slug: string }) {
   const samples = ["Vegetarian dishes under 100 baht", "I'm allergic to peanuts", "What time do you close?", "แนะนำเมนูหน่อย", "ပီဇာ ရှိလား"];
   return (
     <div>
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>{samples.map((s) => <button key={s} className="pill pill-l" onClick={() => send(s)} style={{ minHeight: 34, fontSize: 12 }}>{s}</button>)}</div>
-      <div className="gl r-l" style={{ height: 280, overflowY: "auto", padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>{samples.map((s) => <button type="button" key={s} className="sa-chip" onClick={() => send(s)} style={{ minHeight: 36, fontSize: 13 }}>{s}</button>)}</div>
+      <div className="r-l" style={{ background: "var(--surface-page)", border: "1px solid var(--line)", height: 280, overflowY: "auto", padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
         {msgs.length === 0 && <div className="soft-l">Ask anything a diner would ask. Nothing here is saved or counted.</div>}
         {msgs.map((m, i) => (
-          <div key={i} style={{ alignSelf: m.role === "user" ? "flex-end" : "flex-start", maxWidth: "85%" }}>
-            <div style={{ padding: "8px 14px", borderRadius: 16, background: m.role === "user" ? "var(--purp)" : "rgba(255,255,255,.9)", color: m.role === "user" ? "#fff" : "var(--navy)", whiteSpace: "pre-wrap", lineHeight: 1.7 }}>{m.text}</div>
+          // biome-ignore lint/suspicious/noArrayIndexKey: append-only chat log that is never reordered
+          <div key={i} style={{ alignSelf: m.role === "user" ? "flex-end" : "flex-start", maxWidth: "86%", display: "flex", flexDirection: "column" }}>
+            <div className={`sa-msg ${m.role === "user" ? "sa-msg--me" : "sa-msg--ai"}`} style={{ maxWidth: "100%", lineHeight: 1.7 }}>{m.text}</div>
             {m.note && <div className="soft-l" style={{ fontSize: 12, marginTop: 2 }}>{m.note}</div>}
           </div>))}
         {busy && <div className="soft-l">Thinking…</div>}
         <div ref={end} />
       </div>
       <form className="row" style={{ gap: 8, marginTop: 10 }} onSubmit={(e) => { e.preventDefault(); send(text); }}>
-        <input className="in-l" value={text} onChange={(e) => setText(e.target.value)} placeholder="Type a diner question" aria-label="Test question" />
-        <button className="btn btn-p btn-icon" type="submit" aria-label="Send" disabled={busy}><Icon name="send" /></button>
+        <input className="sa-input" style={{ flex: 1 }} value={text} onChange={(e) => setText(e.target.value)} placeholder="Type a diner question" aria-label="Test question" />
+        <button className="sa-btn sa-btn--ai sa-btn--icon" type="submit" aria-label="Send" disabled={busy}><Icon name="send" /></button>
       </form>
     </div>
   );

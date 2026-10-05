@@ -8,12 +8,11 @@ export async function PUT(req: Request, { params }: P) {
   const { resource, id } = await params;
   const c = RESOURCES[resource]; if (!c) return bad("Unknown resource.", 404);
   const r = update(s.restaurantId, c, Number(id), await body(req));
-  return r.error ? bad(r.error, 404) : json({ ok: true });
+  return r.error ? bad(r.error, r.notFound ? 404 : r.conflict ? 409 : 400) : json({ ok: true });
 }
 export async function DELETE(_: Request, { params }: P) {
   const s = await ownerSession(); if (!s) return unauthorized();
   const { resource, id } = await params;
   const c = RESOURCES[resource]; if (!c) return bad("Unknown resource.", 404);
-  remove(s.restaurantId, c, Number(id));
-  return json({ ok: true });
+  return remove(s.restaurantId, c, Number(id)) ? json({ ok: true }) : bad("Not found.", 404);
 }

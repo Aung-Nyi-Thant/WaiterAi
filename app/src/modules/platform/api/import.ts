@@ -2,9 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { ownerSession } from "@/modules/platform/auth";
-import { ollamaJson } from "@/modules/ai/ollama";
+import { completeJson } from "@/modules/ai/provider";
 import { run } from "@/modules/platform/db";
 import { json, bad, unauthorized } from "@/modules/platform/http";
+import { UPLOAD_DIR } from "@/modules/platform/paths";
+import { MAX_IMAGE_BYTES, sniffImage } from "@/modules/platform/images";
 
 const TYPES: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 
@@ -14,16 +16,17 @@ export async function POST(req: Request) {
   if (!(file instanceof File)) return bad("Please choose a photo of the menu.");
   const ext = TYPES[file.type];
   if (!ext) return bad("Only JPG, PNG or WebP photos are allowed.");
-  if (file.size > 8 * 1024 * 1024) return bad("The photo is larger than 8 MB.");
+  if (file.size > MAX_IMAGE_BYTES) return bad("The photo is larger than 8 MB.");
   const buf = Buffer.from(await file.arrayBuffer());
-  const dir = path.join(process.cwd(), "data", "uploads");
+  if (sniffImage(buf) !== ext) return bad("This file is not a real JPG, PNG or WebP photo.");
+  const dir = UPLOAD_DIR;
   fs.mkdirSync(dir, { recursive: true });
   const name = `${crypto.randomBytes(8).toString("hex")}.${ext}`;
-  fs.writeFileSync(path.join(dir, name), buf);
+  fs.writeFileSync(path.join(/*turbopackIgnore: true*/ dir, name), buf);   // DATA_DIR is set at run time
 
   let parsed: any;
   try {
-    parsed = await ollamaJson(
+    parsed = await completeJson(
       `This is a photo of a restaurant menu. Read every dish on it.
 Return ONLY JSON: {"items":[{"name":"dish name exactly as printed","price":number,"category":"section heading, or Starters / Mains / Curries / Salads / Desserts / Drinks","description":"printed description or empty"}]}
 Rules: price is a plain number without currency. Do not invent dishes or prices. If a price is unreadable use 0.`,

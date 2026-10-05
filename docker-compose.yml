@@ -1,0 +1,39 @@
+# Start everything with one command:   docker compose up --build
+# Then open http://localhost:3000 . The sign-in details are printed once in the log:  docker compose logs app
+#
+# The AI waiter needs a model. By default it talks to Ollama running on your computer (ollama serve).
+# There is no cloud AI option (SRS 2.2, NFR-5). Without Ollama the rule-based answers (allergens, prices, hours,
+# orders, the bill) still work; open questions get the "AI unavailable" message.
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-gemma4:12b}
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-}
+      AI_WARMUP: ${AI_WARMUP:-}
+      RATE_LIMIT_LOGIN_MAX: ${RATE_LIMIT_LOGIN_MAX:-}
+      RATE_LIMIT_LOGIN_WINDOW_SEC: ${RATE_LIMIT_LOGIN_WINDOW_SEC:-}
+      RATE_LIMIT_CHAT_MAX: ${RATE_LIMIT_CHAT_MAX:-}
+      RATE_LIMIT_CHAT_WINDOW_SEC: ${RATE_LIMIT_CHAT_WINDOW_SEC:-}
+      RATE_LIMIT_CHAT_RESTAURANT_MAX: ${RATE_LIMIT_CHAT_RESTAURANT_MAX:-}
+      RATE_LIMIT_CHAT_IP_MAX: ${RATE_LIMIT_CHAT_IP_MAX:-}
+      RATE_LIMIT_REGISTER_MAX: ${RATE_LIMIT_REGISTER_MAX:-}
+      RATE_LIMIT_REGISTER_WINDOW_SEC: ${RATE_LIMIT_REGISTER_WINDOW_SEC:-}
+      RATE_LIMIT_REGISTER_IP_MAX: ${RATE_LIMIT_REGISTER_IP_MAX:-}
+      RATE_LIMIT_TRUST_PROXY: ${RATE_LIMIT_TRUST_PROXY:-}
+      SESSION_SECRET: ${SESSION_SECRET:-}        # empty = one is generated and kept in the data volume
+      SEED_OWNER_EMAIL: ${SEED_OWNER_EMAIL:-}    # empty = owner@example.com
+      SEED_OWNER_PASSWORD: ${SEED_OWNER_PASSWORD:-}   # empty = random, printed once
+      SEED_WAITER_PIN: ${SEED_WAITER_PIN:-}
+      SEED_CHEF_PIN: ${SEED_CHEF_PIN:-}
+    volumes:
+      - shop-data:/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"      # lets Linux reach Ollama on the host too
+    restart: unless-stopped
+
+volumes:
+  shop-data:
