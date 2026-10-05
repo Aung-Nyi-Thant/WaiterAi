@@ -42,7 +42,7 @@ The PDF corrections themselves (the table above these rows) are for the team to 
 
 | Line | What is missing |
 |---|---|
-| 4 | `Author: [your name] · Course: [course] · Supervisor: [name]`: the author names, the course and the supervisor's name (the M1 charter lists the five members and their IDs) |
+| 4 | `Supervisor: [name]`: the supervisor's name. (The authors and the course were filled in from the M1 charter and the member list.) |
 
 ## Other open items (no marker in a file, listed so they are not forgotten)
 
