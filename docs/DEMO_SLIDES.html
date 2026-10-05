@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop AI Demo Slides</title>
+<meta name="description" content="Demo slides for Shop AI (team MFU 888): problem, solution, live demo, evidence, limits, Q&A.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=Righteous&family=Noto+Sans+Thai:wght@400;700&display=swap">
+<style>
+  :root { --page:#fbf3e4; --card:#fffaf2; --sunk:#f3e7d3; --ink:#221a16; --muted:#5f5249; --line:#e3d3bb; --cherry:#c8102e; --teal:#0e766c; --teal-soft:#d8f0eb; --mustard:#f5b82e; --warn:#fff3c4; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #2b211c; color: var(--ink); font: 22px/1.45 Archivo, "Noto Sans Thai", system-ui, sans-serif; }
+  .deck { height: 100%; display: grid; place-items: center; }
+  .slide { display: none; width: min(100vw, 177.78vh); height: min(56.25vw, 100vh); background: var(--page); padding: 3.2vmin 5vmin; overflow: hidden; position: relative; flex-direction: column; font-size: clamp(14px, 2.15vmin, 26px); }
+  .slide.on { display: flex; }
+  h1, h2 { font-family: Righteous, system-ui, sans-serif; font-weight: 400; margin: 0 0 .5em; line-height: 1.1; }
+  h1 { font-size: 3.4em; color: var(--cherry); } h2 { font-size: 2.1em; color: var(--cherry); }
+  h3 { margin: .2em 0 .3em; font-size: 1.1em; color: var(--teal); }
+  .kicker { font-weight: 800; letter-spacing: .06em; text-transform: uppercase; font-size: .7em; color: var(--teal); margin-bottom: .4em; }
+  ul { margin: .2em 0; padding-left: 1.1em; } li { margin: .22em 0; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 3vmin; align-items: start; } .cols3 { grid-template-columns: repeat(3, 1fr); }
+  .card { background: var(--card); border: .25vmin solid var(--line); border-radius: 1.6vmin; padding: 1.6vmin 2vmin; box-shadow: 0 .4vmin 0 var(--line); }
+  .quote { border-left: .8vmin solid var(--mustard); padding-left: 1.6vmin; font-style: italic; }
+  .big { font-family: Righteous, sans-serif; font-size: 2.6em; color: var(--teal); line-height: 1; }
+  table { border-collapse: collapse; width: 100%; font-size: .78em; } th, td { border-bottom: .2vmin solid var(--line); padding: .45vmin .9vmin; text-align: left; vertical-align: top; } th { background: var(--sunk); font-size: .8em; text-transform: uppercase; letter-spacing: .04em; }
+  img { max-width: 100%; max-height: 62vh; border-radius: 1vmin; border: .25vmin solid var(--line); background: #fff; }
+  .todo { background: var(--warn); border: .25vmin dashed #b67f08; padding: .6vmin 1.2vmin; border-radius: 1vmin; font-weight: 700; }
+  .foot { position: absolute; left: 5vmin; right: 5vmin; bottom: 1.6vmin; display: flex; justify-content: space-between; font-size: .6em; color: var(--muted); }
+  .notes { display: none; position: fixed; left: 0; right: 0; bottom: 0; max-height: 34vh; overflow: auto; background: #000d; color: #fff; padding: 1.4vmin 3vmin; font-size: clamp(13px, 1.9vmin, 22px); z-index: 10; }
+  body.show-notes .notes { display: block; }
+  .help { position: fixed; top: 8px; right: 12px; color: #fff9; font-size: 12px; z-index: 9; }
+  code { font-family: "Courier Prime", ui-monospace, monospace; background: var(--sunk); padding: 0 .3em; border-radius: .4em; font-size: .9em; }
+  .qa dt { font-weight: 800; color: var(--teal); margin-top: .5em; } .qa dd { margin: 0 0 .2em; }
+  @media print { html, body { background: #fff; height: auto; } .deck { display: block; } .slide { display: flex !important; width: 100%; height: 100vh; page-break-after: always; } .help, .notes { display: none !important; } }
+</style>
+</head>
+<body>
+<div class="help">← → or Space: move · N: speaker notes · Print to PDF: every slide is one page</div>
+<div class="deck" id="deck">
+
+<section class="slide" data-notes="Introduce the team and the one-sentence pitch. Say: 'Shop AI is an AI waiter for small restaurants that answers in Thai, Burmese and English, and never guesses about allergies.' Mention that everything runs on one laptop with no cloud and no paid service.">
+  <div class="kicker">Intro to Software Engineering 2569 · Milestone 4</div>
+  <h1>Shop AI<br>the digital waiter</h1>
+  <p style="max-width:34em">Diners scan a QR code, browse the menu in Thai, Burmese or English, and ask an AI waiter. Staff and the kitchen see calls and orders live. The AI never guesses about allergies.</p>
+  <p><b>Team MFU 888</b> · Aung Nyi Nyi Thant · Chawakron Singkaew · Tharathon Plengsri · Sasiwimon Chatkaew · Natthanon Wongsai</p>
+  <div class="foot"><span>github.com/Aung-Nyi-Thant/WaiterAi</span><span>1</span></div>
+</section>
+
+<section class="slide" data-notes="Tell the problem as the interviews told it. Three real interviews on 22 September 2026 in Chiang Rai. Keep to 60 seconds. The cost: Chef Kung says a remade bowl costs 5-7 minutes and 20-30 baht.">
+  <div class="kicker">1 · The problem</div>
+  <h2>Busy staff miss orders and cannot answer every question</h2>
+  <div class="cols cols3">
+    <div class="card"><h3>May · front of house</h3><p class="quote">“Sometimes several tables call us at the same time… sometimes orders get missed.”</p><p>15–20 customers arrive at once at lunch; three staff do everything.</p></div>
+    <div class="card"><h3>Chef Kung · chef-owner</h3><p class="quote">“A customer tells us not to add fresh pork blood, but after we finish making the dish, we realize that we forgot.”</p><p>A remade bowl: 5–7 minutes, 20–30 baht.</p></div>
+    <div class="card"><h3>P’Nut · fried-food shop</h3><p class="quote">“Customers may say several things at the same time, which makes it difficult for us to remember everything.”</p><p>Same questions all evening; a non-spicy dish arrives spicy.</p></div>
+  </div>
+  <p style="margin-top:2vmin"><b>Who has it:</b> front-of-house staff and owner-chefs in small restaurants. <b>What it costs:</b> wasted food and kitchen time, slow service, bad reviews.</p>
+  <div class="foot"><span>Source: M1 charter, Gate 1 (three interviews, 22 Sep 2026)</span><span>2</span></div>
+</section>
+
+<section class="slide" data-notes="This is the solution in one picture. Walk left to right: diner phone, AI waiter, staff and kitchen screens, owner dashboard. Stress: one laptop, SQLite, a local model (gemma4:12b through Ollama), no cloud, no paid service. The charter says so and so does the SRS.">
+  <div class="kicker">2 · The solution</div>
+  <h2>One QR code, three kinds of users, one laptop</h2>
+  <div class="cols">
+    <ul>
+      <li><b>Diner</b> (phone, no account): menu in TH / MY / EN, filters, allergy profile, AI chat, picks, call staff, table bill.</li>
+      <li><b>Staff</b> (PIN): waiter floor screen and chef board, live every 3 s.</li>
+      <li><b>Owner</b> (laptop): menu and 14 allergens, import a menu from a photo, hours, FAQ, AI voice, QR codes, staff, insights.</li>
+      <li>Next.js + SQLite + a <b>local</b> model (<code>gemma4:12b</code>, Ollama). No cloud, no paid API.</li>
+    </ul>
+    <img src="diagrams/01-architecture.png" alt="Architecture diagram">
+  </div>
+  <div class="foot"><span>Requirements: FR-1 … FR-10 (M1), SRS 56 Must · 14 Should</span><span>3</span></div>
+</section>
+
+<section class="slide" data-notes="This is the key design decision and the answer to the question 'why can I trust the AI with allergies?'. Anything that could hurt a customer is answered by rules from the database with fixed sentences. The model only answers open questions, and its answer is checked: a safety claim, an allergen statement, a wrong price or a dish that is not on the menu is replaced by 'please ask the staff'. Example to say aloud: 'Is the Pad Thai safe for a peanut allergy?' The AI lists the allergens and says to confirm with the staff. It never says safe.">
+  <div class="kicker">3 · Key idea</div>
+  <h2>The AI never decides anything safety-critical</h2>
+  <div class="cols">
+    <div>
+      <div class="card"><h3>Rules + database (fixed sentences)</h3><p>allergens · prices · opening hours · sold-out · orders · the bill · vegetarian lists</p></div>
+      <div class="card" style="margin-top:1.4vmin"><h3>Language model (open questions only)</h3><p>“What would you recommend on a hot day?” Then <b>checked</b>: no safety claim, no allergen statement, price must match, dish must exist. Otherwise: “please ask the staff”.</p></div>
+      <p><b>Missing allergen data is “not provided”, never “none”. A dish is never called “safe”.</b></p>
+    </div>
+    <img src="diagrams/04-ai-flow.png" alt="AI decision flow">
+  </div>
+  <div class="foot"><span>docs/AI_SAFETY.md: rules R1 … R14, each with its test</span><span>4</span></div>
+</section>
+
+<section class="slide" data-notes="LIVE DEMO, about 3 minutes. Open the running app (docker compose up) or, if the laptop or model is not available, the clickable prototype at prototype/index.html. Steps: 1) scan or open /r/golden-lotus?t=5 on a phone, switch language. 2) Set allergies: peanut and shellfish; dishes that list them turn red; open Fresh Spring Rolls: allergen info not provided. 3) Ask: 'What can I eat with my allergies?' then 'Is the Shrimp Pad Thai safe?' 4) Add Pad Thai, Send to staff. 5) On the laptop, staff sign in: the pick appears with the allergy banner and a tag on the Pad Thai line; take order; chef cooks; ready; served. 6) Owner: switch a dish off; Insights shows the question. If something fails, say so and switch to the prototype.">
+  <div class="kicker">4 · Live demo (3 minutes)</div>
+  <h2>From the QR code to the kitchen</h2>
+  <table>
+    <tr><th>#</th><th>Do</th><th>Show</th><th>Requirement</th></tr>
+    <tr><td>1</td><td>Open <code>/r/golden-lotus?t=5</code> on a phone; switch TH / MY / EN</td><td>names, labels and prices change at once</td><td>DM-1, DM-5</td></tr>
+    <tr><td>2</td><td>Set allergies: peanut + shellfish; open the spring rolls</td><td>dishes turn red; “allergen info not provided”</td><td>DM-11, DM-7</td></tr>
+    <tr><td>3</td><td>Ask “What can I eat?” then “Is the Pad Thai safe?”</td><td>list from data; never “safe”; “confirm with the staff”</td><td>AI-18, AI-2, AI-3</td></tr>
+    <tr><td>4</td><td>Add Pad Thai → Send to staff</td><td>warning that it lists the allergens</td><td>PC-1, PC-2</td></tr>
+    <tr><td>5</td><td>Waiter PIN: take order · chef: cook, ready · waiter: served</td><td>allergy banner and tag on the line; 3 s refresh</td><td>SF-3 … SF-5, PC-7</td></tr>
+    <tr><td>6</td><td>Owner: switch a dish off; open Insights</td><td>“sold out” for diner and AI at once; the question is logged</td><td>MM-4, IN-1</td></tr>
+  </table>
+  <p style="margin-top:1.4vmin">No laptop or model? <b>Same story in <code>prototype/index.html</code>: no server needed.</b> It also shows the unhappy paths (AI offline, wrong PIN, empty search).</p>
+  <div class="foot"><span>Plan B: the clickable prototype</span><span>5</span></div>
+</section>
+
+<section class="slide" data-notes="Show the Golden Thread: problem to requirement to design to feature to test. Point at one row and trace it fully: 'forgotten special requests' to FR-3 PC-7 to the allergy note on the order to the banner on the waiter and chef screens to allergy-profile.test.ts. The traceability table has 108 IDs and a test fails if an ID is missing, so it cannot go stale.">
+  <div class="kicker">5 · Golden Thread</div>
+  <h2>Every feature traces back to the problem and forward to a test</h2>
+  <table>
+    <tr><th>Pain</th><th>Requirement</th><th>Design</th><th>Feature</th><th>Test</th></tr>
+    <tr><td>Same questions all day</td><td>AI-5, AI-9</td><td>rules + checked local model</td><td>Ask AI</td><td>ai-rules, 30-question eval</td></tr>
+    <tr><td>Allergy and special requests forgotten</td><td>AI-2, AI-3, PC-2, PC-7</td><td>stored data only; allergy note travels with the order</td><td>profile, banner on staff screens</td><td>allergy-profile, ai-guard</td></tr>
+    <tr><td>Tables call at once; orders missed</td><td>PC-3, SF-3, SF-4, SF-6</td><td>live screens, 3 s refresh, one call per table</td><td>Floor and chef screens</td><td>orders, e2e</td></tr>
+    <tr><td>New staff do not know the menu</td><td>DM-1…7, MM-1, MM-2</td><td>QR menu in 3 languages</td><td>Menu, owner menu items</td><td>menu, diner-filters</td></tr>
+    <tr><td>Owners cannot keep a menu current</td><td>MI-1…4, QR-1</td><td>import from a photo with review</td><td>Import, QR codes</td><td>import</td></tr>
+  </table>
+  <p><b>108 requirement IDs</b> are traced to code and tests; a test fails if the table goes stale.</p>
+  <div class="foot"><span>docs/TRACEABILITY.md · docs/FINAL_REPORT.md section 6</span><span>6</span></div>
+</section>
+
+<section class="slide" data-notes="Evidence slide. Be precise and honest. 518 unit and integration tests and 14 end-to-end tests pass; CI runs them on every push on Node 22 and 24 plus a Docker build. The live model scores 30 of 30 on the 30-question set (once 29 of 30). For speed: 100 open questions, median 5.5 s, 90th percentile 10.7 s. Load: 3 diners and 2 staff screens for 10 minutes, 0 errors, every AI answer under 18 s. Say what is not measured: a phone over Wi-Fi, real owners, a restaurant's own computer.">
+  <div class="kicker">6 · Evidence</div>
+  <h2>What we measured</h2>
+  <div class="cols cols3">
+    <div class="card"><div class="big">518</div>unit and integration tests, plus <b>14</b> end-to-end tests through a real server (diner → waiter → chef → bill)</div>
+    <div class="card"><div class="big">30/30</div>AI safety and answer questions with the real model (once 29/30; thresholds met every time)</div>
+    <div class="card"><div class="big">5.5 s</div>median for 100 open questions (90th percentile 10.7 s; target: 90% within 15 s)</div>
+    <div class="card"><div class="big">0 errors</div>3 diners + 2 staff screens for 10 minutes; every AI answer within 17.4 s (target 30 s)</div>
+    <div class="card"><div class="big">&lt; 80 ms</div>rule-based answers with 30 diners at once (target 1 s)</div>
+    <div class="card"><div class="big">108</div>requirement IDs traced to code and tests; CI on Node 22 and 24 and a Docker build</div>
+  </div>
+  <p class="todo" style="margin-top:1.6vmin">Not measured: a phone over Wi-Fi · real owners (first menu in 30 min) · a restaurant's own computer · photo import on real menu photos.</p>
+  <div class="foot"><span>docs/PERFORMANCE.md · docs/NFR_RESULTS.md · docs/AI_SAFETY.md</span><span>7</span></div>
+</section>
+
+<section class="slide" data-notes="Be honest about the limits. These are the answers to 'what doesn't work?'. One: speed numbers are from one laptop and a 13-dish menu. Two: with three diners chatting continuously about 1 answer in 7 is the fallback message, because they wait for one model. Three: the first question after a restart can still fall back. Four: Thai and Burmese allergen words need a native speaker. Five: no HTTPS public deployment yet.">
+  <div class="kicker">7 · Honest limits</div>
+  <h2>What does not work yet</h2>
+  <div class="cols">
+    <ul>
+      <li>Speed figures are from <b>one laptop</b> and a <b>13-dish menu</b>; a longer menu means a longer prompt and a slower first answer.</li>
+      <li>Three diners chatting nonstop: <b>about 1 answer in 7</b> is the fallback message (one model, one at a time).</li>
+      <li>The first question after a restart or a menu edit can fall back for up to a minute while the prompt is read.</li>
+    </ul>
+    <ul>
+      <li>New Thai and Burmese <b>allergen words need a native speaker</b>.</li>
+      <li>Not tested on real phones, with real owners, or on a public HTTPS server.</li>
+      <li>Out of scope by design: online payment, delivery, POS, cloud AI.</li>
+    </ul>
+  </div>
+  <div class="foot"><span>docs/FINAL_REPORT.md section 9</span><span>8</span></div>
+</section>
+
+<section class="slide" data-notes="The AI-first slide. Be honest: Claude Code was used for development and every use is logged in docs/AI_USAGE_LOG.md. What worked: tests found real bugs; measuring instead of guessing. What a person had to decide: wording, Burmese review, no cloud AI. The team must fill in who did what by hand.">
+  <div class="kicker">8 · AI-first process</div>
+  <h2>What AI helped with, and what people had to decide</h2>
+  <div class="cols">
+    <div class="card"><h3>Worked</h3><ul><li>Tests written first found real bugs: “bill” inside “papaya”, “x4 … x2”, the Thai word for staff read as sesame.</li><li>Measuring beat guessing: the slow first answer was the prompt being read, not the model loading (40–65 s, now warmed at start-up).</li><li>A test keeps the requirements table honest.</li></ul></div>
+    <div class="card"><h3>People decided</h3><ul><li>“AI” vs “staff” wording (corrected twice by a member).</li><li>Burmese replies: four native-speaker reviews.</li><li>No cloud AI, even though it was easier.</li><li>How to merge two lines of AI-assisted work.</li></ul></div>
+  </div>
+  <p class="todo" style="margin-top:1.4vmin">[team to complete] what each member changed or rejected in the AI's output · docs/AI_USAGE_LOG.md</p>
+  <div class="foot"><span>docs/AI_USAGE_LOG.md</span><span>9</span></div>
+</section>
+
+<section class="slide" data-notes="The team slide. The team must fill in what each member did and where it lives in the repository. GitHub is the record of individual contribution, so non-code work must be pointed to in the repo.">
+  <div class="kicker">9 · Team</div>
+  <h2>Who built what</h2>
+  <table>
+    <tr><th>Part</th><th>Covers</th><th>Member and where the work is in the repository</th></tr>
+    <tr><td>1 · Diner web app</td><td>FR-1, FR-3 diner side</td><td>[team to complete]</td></tr>
+    <tr><td>2 · AI waiter and backend core</td><td>FR-2, backend of FR-5, FR-6, FR-9</td><td>Aung Nyi Nyi Thant · <code>app/src/modules/ai</code>, <code>platform</code></td></tr>
+    <tr><td>3 · Owner back office</td><td>FR-5, FR-7</td><td>[team to complete]</td></tr>
+    <tr><td>4 · Staff and orders</td><td>FR-4, FR-9</td><td>Natthanon Wongsai (account wujieiei): [team to complete where in the repository]</td></tr>
+    <tr><td>5 · QR, insights, import screen, tests, docs</td><td>FR-6, FR-8, FR-10</td><td>[team to complete]</td></tr>
+  </table>
+  <div class="foot"><span>docs/TEAM_WORK_PLAN.md</span><span>10</span></div>
+</section>
+
+<section class="slide" data-notes="Use this as the Q&A cheat sheet. Answers are short and true; each points to evidence.">
+  <div class="kicker">Q&amp;A</div>
+  <h2>Questions we expect</h2>
+  <dl class="qa" style="columns:2; column-gap:3vmin; font-size:.92em; margin:0">
+    <dt>Why not let the model answer allergy questions?</dt><dd>It can be wrong and a wrong allergy answer can hurt someone. Allergen sentences come from stored data; the model's reply is checked and replaced if it states allergen facts (AI-17).</dd>
+    <dt>Why a local model?</dt><dd>No cost, no API key, no diner data leaves the shop; the charter and the SRS forbid a cloud AI.</dd>
+    <dt>What if Ollama is down?</dt><dd>A fallback message at once; menu, picks, staff calls and the rule-based answers still work (NFR-R1).</dd>
+    <dt>How do you know the AI is safe?</dt><dd>14 rules each with a test (docs/AI_SAFETY.md), 30-question eval, and a guard on every model reply.</dd>
+    <dt>What if a dish has no allergen data?</dt><dd>“Allergen info not provided”, never “none”; it is hidden from diners who set an allergy profile (NFR-S2, NFR-S5).</dd>
+    <dt>Is a diner's data stored?</dt><dd>No name, phone or email. The allergy profile stays on the phone; only allergen keys go with the chat and the order (NFR-PR1).</dd>
+    <dt>How is access controlled?</dt><dd>Owner login and staff PIN, hashed, signed cookies, every query scoped to the restaurant, login and chat rate limits.</dd>
+    <dt>Why SQLite?</dt><dd>One laptop, no server to run; built into Node; write-ahead logging; the file can be copied as a backup.</dd>
+    <dt>What would you do next?</dt><dd>Test on real phones and with real owners; native review of every label; a restaurant's own computer; HTTPS deployment.</dd>
+  </dl>
+  <div class="foot"><span>Each answer has its evidence in the repository</span><span>11</span></div>
+</section>
+
+</div>
+<div class="notes" id="notes"></div>
+<script>
+  const slides = [...document.querySelectorAll('.slide')], notes = document.getElementById('notes');
+  let i = Math.max(0, Math.min(slides.length - 1, (parseInt(location.hash.slice(1), 10) || 1) - 1));
+  function show(n) { i = Math.max(0, Math.min(slides.length - 1, n)); slides.forEach((s, k) => s.classList.toggle('on', k === i)); notes.textContent = 'Notes: ' + (slides[i].dataset.notes || ''); history.replaceState(null, '', '#' + (i + 1)); }
+  document.addEventListener('keydown', (e) => {
+    if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); show(i + 1); }
+    else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); show(i - 1); }
+    else if (e.key === 'Home') show(0); else if (e.key === 'End') show(slides.length - 1);
+    else if (e.key === 'n' || e.key === 'N') document.body.classList.toggle('show-notes');
+  });
+  document.getElementById('deck').addEventListener('click', (e) => { show(e.clientX < innerWidth / 3 ? i - 1 : i + 1); });
+  show(i);
+</script>
+</body>
+</html>
