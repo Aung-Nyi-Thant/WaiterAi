@@ -1,16 +1,17 @@
 import { vi } from "vitest";
 
 export const jar: Map<string, string> = (globalThis as any).__cookieJar;
+export const jarOptions: Map<string, any> = (globalThis as any).__cookieOptions;
 
 type Handler = (req: Request, ctx: { params: Promise<any> }) => Promise<Response> | Response;
-export type CallOpts = { method?: string; url?: string; body?: unknown; form?: FormData; params?: Record<string, string> };
+export type CallOpts = { method?: string; url?: string; body?: unknown; form?: FormData; params?: Record<string, string>; headers?: Record<string, string> };
 
 // Calls a route handler directly (no HTTP server) and parses the JSON answer.
 export async function call(handler: Handler, o: CallOpts = {}) {
   const method = o.method || "GET";
-  const init: RequestInit = { method };
+  const init: RequestInit = { method, headers: { ...(o.headers || {}) } };
   if (o.form) init.body = o.form;
-  else if (o.body !== undefined) { init.body = JSON.stringify(o.body); init.headers = { "content-type": "application/json" }; }
+  else if (o.body !== undefined) { init.body = JSON.stringify(o.body); init.headers = { ...(init.headers as object), "content-type": "application/json" }; }
   const res = await handler(new Request(o.url || "http://test.local/api/x", init), { params: Promise.resolve(o.params || {}) });
   const text = await res.text();
   let data: any = text;
@@ -34,10 +35,10 @@ export async function ownerLogin(email = "demo@shop.ai", password = "demo1234") 
   signOut();
   return call(POST, { method: "POST", body: { email, password } });
 }
-export async function staffLogin(pin: string, slug = "golden-lotus", role?: string) {
+export async function staffLogin(pin: string, slug = "golden-lotus", role?: string, headers?: Record<string, string>) {
   const { POST } = await import("@/modules/staff/api/login");
   signOut();
-  return call(POST, { method: "POST", body: { slug, pin, role } });
+  return call(POST, { method: "POST", body: { slug, pin, role }, headers });
 }
 
 // Replaces the global fetch (the only way the app talks to a model). Returns the list of calls made.

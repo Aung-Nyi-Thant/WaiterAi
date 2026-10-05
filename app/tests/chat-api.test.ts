@@ -52,7 +52,9 @@ describe("AI-16 / NFR-PR1 every question is stored with its language, topic and 
   it("ST-5 test chats from the owner dashboard (preview) are not stored", async () => {
     noModel();
     const before = [count("chat_messages"), count("chat_sessions")];
+    await ownerLogin();                                                    // only the signed-in owner of this restaurant gets a preview
     const r = await say("How much is the Massaman curry?", { preview: true });
+    signOut();
     expect(r.status).toBe(200);
     expect([count("chat_messages"), count("chat_sessions")]).toEqual(before);
   });
@@ -126,7 +128,9 @@ describe("AI-15 / BR-3 monthly chat limit", () => {
     expect(r.data.reply).toMatch(/reached its chat limit/);
     expect(r.data.action.type).toBe("show_menu");
     expect(calls.length).toBe(1);
+    await ownerLogin();
     expect((await say("What would you recommend?", { preview: true })).data.reply).toBe("model answer");   // the owner's test chat is not limited
+    signOut();
     run("UPDATE restaurants SET chat_cap = 300 WHERE slug = ?", slug);
   });
 });

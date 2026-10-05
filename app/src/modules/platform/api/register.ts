@@ -19,9 +19,10 @@ export async function POST(req: Request) {
     const v = key ? hit(key, max, win) : null;
     if (v && !v.allowed) return tooMany(v.retryAfter);
   }
+  const passwordHash = await hashPassword(password);      // before BEGIN: nothing may be awaited inside a transaction (the connection is shared)
   db.exec("BEGIN");
   try {
-    const userId = run("INSERT INTO users (email, password_hash) VALUES (?, ?)", email, hashPassword(password)).id;
+    const userId = run("INSERT INTO users (email, password_hash) VALUES (?, ?)", email, passwordHash).id;
     const slug = uniqueSlug(name);
     const rid = run("INSERT INTO restaurants (owner_id, slug, name, city) VALUES (?,?,?,?)", userId, slug, name, String(b.city || "").trim()).id;
     ["Starters", "Mains", "Desserts", "Drinks"].forEach((c, i) => { run("INSERT INTO categories (restaurant_id, name_en, sort) VALUES (?,?,?)", rid, c, i); });

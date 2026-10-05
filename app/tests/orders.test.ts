@@ -167,11 +167,16 @@ describe("SF-5 / BR-4 the order life cycle: picked -> new -> cooking -> ready ->
 });
 
 describe("table bills (UC-9 / PC-4 / PC-5 / PC-6)", () => {
-  // the phone's random receipt code, sent with its picks and again when it asks for the bill
-  const RC = "phone-one-0123456789abcdef";
+  // the receipt code the server issues with a phone's first picks for a table; the phone sends it back with later picks and when it asks for the bill
+  let RC = "";
   const bill = async (t: string, r = RC) => (await call(dinerBill, { params: { slug }, url: `http://t/api/bill?t=${t}&r=${r}` })).data;
   it("counts only orders the staff have taken, merges identical lines, and lists picks as pending", async () => {
-    const mk = async (items: object[]) => (await order({ table: "20", receipt: RC, items })).data.id as number;
+    const mk = async (items: object[]) => {
+      const res = (await order({ table: "20", receipt: RC, items })).data;
+      if (RC) expect(res.receipt).toBe(RC);                                         // a phone that holds its code keeps it
+      RC = res.receipt;
+      return res.id as number;
+    };
     const a = await mk([{ id: id("Thai Iced Tea"), qty: 1 }]);
     const b = await mk([{ id: id("Thai Iced Tea"), qty: 2 }, { id: id("Papaya Salad"), qty: 1 }]);
     const pending = await mk([{ id: id("Chicken Fried Rice"), qty: 1 }]);
@@ -185,9 +190,10 @@ describe("table bills (UC-9 / PC-4 / PC-5 / PC-6)", () => {
   });
   it("shows a table's bill only to a phone that sent picks from that table (no reading other tables by number)", async () => {
     const empty = { table: "20", lines: [], total: 0, pending: [], asked: false };
-    expect(await bill("20", "someone-else-0123456789abcdef")).toEqual(empty);    // wrong code
+    expect(await bill("20", "ab".repeat(24))).toEqual(empty);                     // well-formed but never issued
     expect(await bill("20", "")).toEqual(empty);                                  // no code
     expect(await bill("20", "short")).toEqual(empty);                             // malformed code
+    expect(await bill("20", "phone-one-0123456789abcdef")).toEqual(empty);        // the old client-made format is no longer accepted
     expect((await bill("21")).total).toBe(0);                                     // right code, but it never ordered at table 21
     expect((await call(dinerBill, { params: { slug }, url: "http://t/api/bill?t=20" })).data).toEqual(empty);
     expect((await bill("20")).total).toBe(220);                                   // the real phone still sees it

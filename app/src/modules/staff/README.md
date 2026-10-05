@@ -1,7 +1,7 @@
 # Module 4: Staff and orders
 Owner: Member 4 · Requirements: FR-4 (waiter and kitchen screens), FR-9 (staff accounts)
 
-What it does: PIN sign-in for waiters and chefs (unique PIN per restaurant, 5 wrong PINs lock sign-in for 10 minutes), the waiter "Floor" screen (calls, picks with allergy banners **and a warning tag on each dish line that clashes with the diner's allergy profile**, ready orders, tables, sold-out), the chef "Kitchen" screen (New / Cooking / Ready), the order status rules, and the owner's staff management page.
+What it does: PIN sign-in for waiters and chefs (unique PIN per restaurant, 5 wrong PINs from one address, or 20 in total for the restaurant, lock sign-in for 10 minutes; see `pinGate` in `platform/auth.ts`), the waiter "Floor" screen (calls, picks with allergy banners **and a warning tag on each dish line that clashes with the diner's allergy profile**, ready orders, tables, sold-out), the chef "Kitchen" screen (New / Cooking / Ready), the order status rules, and the owner's staff management page.
 
 | File | Purpose |
 |---|---|
