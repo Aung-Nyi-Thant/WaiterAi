@@ -52,6 +52,8 @@ export default function Diner({ slug }: { slug: string }) {
   useEscape(() => setBillOpen(false), billOpen);
   useEscape(() => setProfileOpen(false), profileOpen);
   const [sessionId] = useState(() => uid());
+  // The chat's messages live here, not in Chat: closing the chat unmounts Chat, and the conversation must still be there when it is reopened.
+  const [msgs, setMsgs] = useState<Msg[]>([]);
   const t = (k: string) => tr(lang, k);
   const say = (m: string) => { setToast(m); setTimeout(() => setToast(""), 2600); };
   const heroRef = useRef<HTMLDivElement>(null);
@@ -209,7 +211,7 @@ export default function Diner({ slug }: { slug: string }) {
             )}
             <div className={`hero-expand${chatOpen ? " open" : ""}`}>
               <div className="hero-expand-inner">
-                {chatOpen && <Chat slug={slug} table={table} lang={lang} sessionId={sessionId} profile={profile} addMsg={addMsg} menu={menu} t={t} onClose={() => setChatOpen(false)} addPick={addPick} aiAdd={aiAdd} say={say} picksCount={total} sendPicks={sendPicks} callStaff={() => callStaff()} />}
+                {chatOpen && <Chat slug={slug} table={table} lang={lang} sessionId={sessionId} msgs={msgs} setMsgs={setMsgs} profile={profile} addMsg={addMsg} menu={menu} t={t} onClose={() => setChatOpen(false)} addPick={addPick} aiAdd={aiAdd} say={say} picksCount={total} sendPicks={sendPicks} callStaff={() => callStaff()} />}
               </div>
             </div>
           </div>
@@ -464,13 +466,25 @@ function Detail({ item, lang, profile, t, onClose, onAdd, onAsk }: { item: Item;
 const ESCALATE_AFTER_MISSES = 2;
 const REASON_KEYS = { wrong: "reasonWrong", confused: "reasonConfused", allergen: "reasonAllergen" } as const;
 
-function Chat({ slug, table, lang, sessionId, profile, addMsg, menu, t, onClose, addPick, aiAdd, say, picksCount, sendPicks, callStaff }: any) {
+// How many unanswered assistant replies are at the end of the history: a reopened chat that already had trouble shows the same "call staff?" offer.
+function trailingMisses(list: Msg[]): number {
+  let n = 0;
+  for (let i = list.length - 1; i >= 0; i--) {
+    if (list[i].role !== "assistant") continue;
+    if (list[i].answered === false) n++; else break;
+  }
+  return n;
+}
+
+function Chat({ slug, table, lang, sessionId, msgs, setMsgs, profile, addMsg, menu, t, onClose, addPick, aiAdd, say, picksCount, sendPicks, callStaff }: any) {
   const persona = menu.restaurant.persona;
-  const [msgs, setMsgs] = useState<Msg[]>([{ id: "hello", role: "assistant", text: persona.greeting || t("hello") }]);
+  // the greeting only the first time the chat is ever opened; a reopened chat already has its messages
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs once when the chat opens
+  useEffect(() => { if (msgs.length === 0) setMsgs([{ id: "hello", role: "assistant", text: persona.greeting || t("hello") }]); }, []);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
-  const [, setMissCount] = useState(0);
-  const [escalate, setEscalate] = useState(false);
+  const [, setMissCount] = useState(() => trailingMisses(msgs));
+  const [escalate, setEscalate] = useState(() => trailingMisses(msgs) >= ESCALATE_AFTER_MISSES);
   const [reasonFor, setReasonFor] = useState<string | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
