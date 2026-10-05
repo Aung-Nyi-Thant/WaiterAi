@@ -253,6 +253,13 @@ const W = {
   pork: ["pork", "หมู", "ဝက်"],
   recommend: ["recommend", "suggest", "popular", "best", "แนะนำ", "ยอดนิยม", "อะไรอร่อย", "ဘာစားသင့်", "အကြံပြု"],
 };
+// Bare "I want" / "I'd like" are too generic to mean "show me the menu" on their own - they match any
+// sentence that happens to start that way, including "I want to report the problems". They stay in
+// W.order for its other use above (confirming an ordering verb next to an already-matched dish name,
+// where the dish itself disambiguates), but are left out here. The Thai/Burmese entries in W.order do
+// not have this problem: unlike English "want", their words for "order/reserve" are not also the
+// general word for "want", so they are unambiguous even alone.
+const MENU_INTENT = W.order.filter((w) => w !== "i want" && w !== "i'd like");
 const INJ_VERB = ["ignore", "forget", "disregard", "override", "bypass", "ลืม", "ไม่ต้องสนใจ", "ละเว้น", "မေ့", "လျစ်လျူရှု"];
 const INJ_OBJ = ["rule", "instruction", "prompt", "guideline", "restriction", "polic", "previous", "above", "กฎ", "คำสั่ง", "ข้อจำกัด", "စည်းမျဉ်း", "ညွှန်ကြား", "ကန့်သတ်"];
 // phrases that only make sense as an attempt to change or reveal the assistant's rules
@@ -450,7 +457,7 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
   if (has(t, W.hours) && !dishes.length) return done(hoursReply(lang, p, r), { type: "none" });
 
   // 6. show the menu / start ordering
-  if ((has(t, W.menu) || (has(t, W.order) && !dishes.length)) && !has(t, W.recommend) && t.trim().length < 60) {
+  if ((has(t, W.menu) || (has(t, MENU_INTENT) && !dishes.length)) && !has(t, W.recommend) && t.trim().length < 60) {
     return done(lang === "en" ? "Here is our menu." : lang === "th" ? `นี่คือเมนูของเรา${p}` : `မီနူးကို ပြပေးထားပါတယ်${p}။`, { type: "show_menu" });
   }
 

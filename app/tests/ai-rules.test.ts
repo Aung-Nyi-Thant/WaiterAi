@@ -248,6 +248,18 @@ describe("AI-6 order wording adds dishes and quantities to the picks (never plac
   it("'I want to order' only shows the menu", async () => {
     expect((await ask("I want to order")).action.type).toBe("show_menu");
   });
+  it("a bare 'I want ...' that is not about ordering is not answered with the menu (it goes to the model)", async () => {
+    for (const q of ["I want to report the problems", "I want to report problem", "I want", "I'd like to complain about the noise"]) {
+      modelCalls.length = 0;
+      const r = await ask(q);
+      expect(r.reply, q).not.toBe("Here is our menu.");
+      expect(modelCalls.length, `${q} should reach the model`).toBeGreaterThan(0);
+    }
+  });
+  it("'I want a vegetarian dish' and 'I want to order' keep working", async () => {
+    expect((await ask("I want a vegetarian dish")).reply).toMatch(/vegetarian/i);
+    expect((await ask("I would like to order")).action.type).toBe("show_menu");
+  });
 });
 
 describe("AI-7 bill and staff requests create a staff call", () => {
