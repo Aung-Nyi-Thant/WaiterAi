@@ -68,7 +68,7 @@ describe("diner flow against the running server", () => {
   });
 
   it("sends the picks to the staff; a sold-out dish is ignored", async () => {
-    const o = await diner(`/api/public/${slug}/orders`, { table: "5", lang: "en", sessionId: "e2e-1", items: [{ id: dish("Mango Sticky Rice").id, qty: 2 }, { id: dish("Coconut Ice Cream").id, qty: 1 }] });
+    const o = await diner(`/api/public/${slug}/orders`, { table: "5", lang: "en", sessionId: "e2e-1", receipt: "e2e-phone-0123456789abcdef", items: [{ id: dish("Mango Sticky Rice").id, qty: 2 }, { id: dish("Coconut Ice Cream").id, qty: 1 }] });
     expect(o.status).toBe(200);
     orderId = o.data.id;
     expect((await diner(`/api/public/${slug}/orders`, { table: "5", items: [{ id: dish("Coconut Ice Cream").id, qty: 1 }] })).status).toBe(400);
@@ -86,8 +86,10 @@ describe("diner flow against the running server", () => {
     expect((await chef(`/api/staff/orders/${orderId}`, { action: "cooking" })).status).toBe(200);
     expect((await chef(`/api/staff/orders/${orderId}`, { action: "ready" })).status).toBe(200);
     expect((await waiter(`/api/staff/orders/${orderId}`, { action: "served" })).status).toBe(200);
-    const bill = await diner(`/api/public/${slug}/bill?t=5`);
+    const bill = await diner(`/api/public/${slug}/bill?t=5&r=e2e-phone-0123456789abcdef`);
     expect(bill.data.total).toBe(200);
+    expect((await diner(`/api/public/${slug}/bill?t=5`)).data.total).toBe(0);                        // no receipt code: nothing is shown
+    expect((await diner(`/api/public/${slug}/bill?t=5&r=another-phone-0123456789abcd`)).data.total).toBe(0);
   });
 });
 

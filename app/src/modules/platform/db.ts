@@ -100,7 +100,8 @@ CREATE TABLE IF NOT EXISTS orders (
   allergy_note TEXT NOT NULL DEFAULT '',
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-  paid_at TEXT
+  paid_at TEXT,
+  receipt TEXT NOT NULL DEFAULT ''     -- random code from the diner's phone; lets that phone read its table's bill
 );
 CREATE TABLE IF NOT EXISTS order_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -147,6 +148,8 @@ function open(): DB {
   try { database.exec("ALTER TABLE chat_messages ADD COLUMN feedback_reason TEXT NOT NULL DEFAULT ''"); } catch {}
   // ...and before table bills existed: an order counts toward its table's bill until staff mark it paid
   try { database.exec("ALTER TABLE orders ADD COLUMN paid_at TEXT"); } catch {}
+  // ...and before a diner's phone had to prove it ordered at a table before reading that table's bill
+  try { database.exec("ALTER TABLE orders ADD COLUMN receipt TEXT NOT NULL DEFAULT ''"); } catch {}
   // The demo accounts (demo@shop.ai / demo1234, PINs 1111 and 2222) are for local development only.
   // In production nothing is created: register an owner, or run `npm run db:seed` with your own credentials.
   if (process.env.NODE_ENV !== "production") {

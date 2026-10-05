@@ -182,8 +182,11 @@ const W = {
   pork: ["pork", "หมู", "ဝက်"],
   recommend: ["recommend", "suggest", "popular", "best", "แนะนำ", "ยอดนิยม", "อะไรอร่อย", "ဘာစားသင့်", "အကြံပြု"],
 };
-const INJ_VERB = ["ignore", "forget", "disregard", "override", "ลืม", "ไม่ต้องสนใจ", "ละเว้น", "မေ့"];
-const INJ_OBJ = ["rule", "instruction", "prompt", "กฎ", "คำสั่ง", "စည်းမျဉ်း", "ညွှန်ကြား"];
+const INJ_VERB = ["ignore", "forget", "disregard", "override", "bypass", "ลืม", "ไม่ต้องสนใจ", "ละเว้น", "မေ့", "လျစ်လျူရှု"];
+const INJ_OBJ = ["rule", "instruction", "prompt", "guideline", "restriction", "polic", "previous", "above", "กฎ", "คำสั่ง", "ข้อจำกัด", "စည်းမျဉ်း", "ညွှန်ကြား", "ကန့်သတ်"];
+// phrases that only make sense as an attempt to change or reveal the assistant's rules
+const INJ_PHRASES = ["system prompt", "jailbreak", "developer mode", "dan mode", "you are now", "pretend to be", "pretend you", "act as if you", "new instructions", "reveal your", "show your prompt", "print your prompt", "your instructions", "change the price", "set the price", "เปลี่ยนราคา", "คำสั่งของคุณ", "พรอมต์", "ဈေးနှုန်းကို ပြောင်း"];
+export const isInjection = (t: string) => (has(t, INJ_VERB) && has(t, INJ_OBJ)) || INJ_PHRASES.some((p) => t.includes(p));
 export function topicOf(text: string): string {
   const t = norm(text);
   if (allergensMentioned(t).length && has(t, ALLERGY_INTENT)) return "allergens";
@@ -215,7 +218,7 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
   const done = (reply: string, action: Action, extra: Partial<ChatResult> = {}): ChatResult => ({ reply, action, topic, allergens: mentioned, answered: true, usedModel: false, ...extra });
 
   // 00. attempts to change the rules
-  if ((has(t, INJ_VERB) && has(t, INJ_OBJ)) || t.includes("system prompt")) {
+  if (isInjection(t)) {
     return done(lang === "en" ? "I can only help with our menu, our prices as listed, and information about the restaurant." : lang === "th" ? `ขออภัย${p} ช่วยได้เฉพาะเรื่องเมนู ราคาตามที่ระบุ และข้อมูลของร้าน${p}` : `တောင်းပန်ပါတယ်${p}။ မီနူး၊ စာရင်းပါ ဈေးနှုန်းနဲ့ ဆိုင်အကြောင်း အချက်အလက်တွေကိုပဲ ကူညီပေးနိုင်ပါတယ်${p}။`, { type: "none" }, { topic: "other" });
   }
 
@@ -308,7 +311,7 @@ function systemPrompt(ctx: Ctx, lang: Lang): string {
   const pr = r.persona, male = pr.gender !== "female";
   const data = {
     restaurant: r.name, currency: r.currency,
-    hours: `Open every day ${r.hours.open}-${r.hours.close} (last order ${r.hours.lastOrder}).`,
+    hours: `Open ${r.hours.closedDays?.length ? `every day except ${r.hours.closedDays.join(", ")}` : "every day"} ${r.hours.open}-${r.hours.close} (last order ${r.hours.lastOrder}).`,
     faq: faqs, specials: specials.map((s: any) => ({ title: s.title, text: s.text })),
     // ingredients are left out here on purpose: ingredient questions are answered by the rule-based
     // step above (see "0. ingredients of a named dish"), so the model does not need this text, and it
@@ -344,7 +347,24 @@ async function askModel(message: string, lang: Lang, ctx: Ctx): Promise<string> 
   const messages = [{ role: "system", content: systemPrompt(ctx, lang) }, ...ctx.history.slice(-2).map((m) => ({ role: m.role, content: m.text })), { role: "user", content: message }];
   // num_predict (maxTokens) caps a reply at ~220 tokens (well over the "max 4 sentences" rule) so one
   // unusually long answer cannot make a diner wait far longer than the rest.
-  return complete(messages as Msg[], { temperature: 0.2, maxTokens: 220, timeoutMs: 90_000 });
+  // SRS FR-2 / NFR-1: an open question is answered within 15 seconds. A slower model is cut off and the
+  // diner gets the "AI unavailable" message with the menu and staff call still at hand, not a long wait.
+  return complete(messages as Msg[], { temperature: 0.2, maxTokens: 220, timeoutMs: CHAT_TIMEOUT_MS });
+}
+export const CHAT_TIMEOUT_MS = 15_000;
+
+// FR-7: the owner's voice setting decides how a Thai or Burmese reply ends. The model is told this in its
+// prompt, but it is not trusted to do it, so the ending is fixed here (a wrong one is swapped, a missing one added).
+const ENDING: Record<"th" | "my", Record<"male" | "female", RegExp>> = {
+  th: { male: /(ครับ|คับ)$/, female: /(ค่ะ|คะ)$/ },
+  my: { male: /ခင်ဗျာ$/, female: /ရှင်$/ },
+};
+export function withVoiceEnding(text: string, lang: Lang, gender: string): string {
+  if (lang === "en") return text;
+  const g = gender === "female" ? "female" : "male", other = g === "female" ? "male" : "female";
+  const core = text.replace(/[\s။.!?…~]+$/u, "");
+  if (!core || ENDING[lang][g].test(core)) return text;
+  return core.replace(ENDING[lang][other], "") + particle(lang, g) + (lang === "my" ? "။" : "");
 }
 
 const UNSAFE = [/\b(is safe|safe to eat|safe for you|allergy-free|allergen-free|no allergens|guarantee[sd]?)\b/i, /(?<!ไม่)ปลอดภัย/, /ဘေးကင်း|အန္တရာယ်ကင်း/];
@@ -387,5 +407,5 @@ function checkModelReply(raw: string, lang: Lang, p: string, ctx: Ctx, topic: st
   const bad = !text || UNSAFE.some((re) => re.test(text)) || wrongPrice(text, ctx.items);
   if (bad) return { reply: dontKnow(lang, p), action: { type: "none" }, topic, allergens, answered: false, usedModel: true };
   const staffish = /ask the staff|check with the staff|confirm with the staff|don't have that|do not have that|ไม่มีข้อมูล|พนักงาน|ဝန်ထမ်း|မရှိပါဘူး/i.test(text);
-  return { reply: text, action, topic, allergens, answered: !staffish, usedModel: true };
+  return { reply: withVoiceEnding(text, lang, ctx.restaurant.persona.gender), action, topic, allergens, answered: !staffish, usedModel: true };
 }

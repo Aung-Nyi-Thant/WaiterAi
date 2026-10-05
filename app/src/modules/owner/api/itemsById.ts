@@ -16,6 +16,6 @@ export async function PUT(req: Request, { params }: P) {
 }
 export async function DELETE(_: Request, { params }: P) {
   const s = await ownerSession(); if (!s) return unauthorized();
-  run("DELETE FROM menu_items WHERE id = ? AND restaurant_id = ?", Number((await params).id), s.restaurantId);
-  return json({ ok: true });
+  const gone = run("DELETE FROM menu_items WHERE id = ? AND restaurant_id = ?", Number((await params).id), s.restaurantId).changes;
+  return gone ? json({ ok: true }) : bad("Dish not found.", 404);
 }

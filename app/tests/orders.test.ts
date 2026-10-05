@@ -167,9 +167,11 @@ describe("SF-5 / BR-4 the order life cycle: picked -> new -> cooking -> ready ->
 });
 
 describe("table bills", () => {
-  const bill = async (t: string) => (await call(dinerBill, { params: { slug }, url: `http://t/api/bill?t=${t}` })).data;
+  // the phone's random receipt code, sent with its picks and again when it asks for the bill
+  const RC = "phone-one-0123456789abcdef";
+  const bill = async (t: string, r = RC) => (await call(dinerBill, { params: { slug }, url: `http://t/api/bill?t=${t}&r=${r}` })).data;
   it("counts only orders the staff have taken, merges identical lines, and lists picks as pending", async () => {
-    const mk = async (items: object[]) => (await order({ table: "20", items })).data.id as number;
+    const mk = async (items: object[]) => (await order({ table: "20", receipt: RC, items })).data.id as number;
     const a = await mk([{ id: id("Thai Iced Tea"), qty: 1 }]);
     const b = await mk([{ id: id("Thai Iced Tea"), qty: 2 }, { id: id("Papaya Salad"), qty: 1 }]);
     const pending = await mk([{ id: id("Chicken Fried Rice"), qty: 1 }]);
@@ -180,6 +182,18 @@ describe("table bills", () => {
     expect(r.total).toBe(220);
     expect(r.pending).toEqual([{ name: "Chicken Fried Rice", qty: 1, price: 80 }]);
     expect(status(pending)).toBe("picked");
+  });
+  it("shows a table's bill only to a phone that sent picks from that table (no reading other tables by number)", async () => {
+    const empty = { table: "20", lines: [], total: 0, pending: [], asked: false };
+    expect(await bill("20", "someone-else-0123456789abcdef")).toEqual(empty);    // wrong code
+    expect(await bill("20", "")).toEqual(empty);                                  // no code
+    expect(await bill("20", "short")).toEqual(empty);                             // malformed code
+    expect((await bill("21")).total).toBe(0);                                     // right code, but it never ordered at table 21
+    expect((await call(dinerBill, { params: { slug }, url: "http://t/api/bill?t=20" })).data).toEqual(empty);
+    expect((await bill("20")).total).toBe(220);                                   // the real phone still sees it
+  });
+  it("does not show kitchen progress to the diner (order status for diners is out of scope)", async () => {
+    expect(Object.keys(await bill("20")).sort()).toEqual(["asked", "lines", "pending", "table", "total"]);
   });
   it("needs a table number, and an empty table owes nothing", async () => {
     expect((await call(dinerBill, { params: { slug }, url: "http://t/api/bill" })).status).toBe(400);

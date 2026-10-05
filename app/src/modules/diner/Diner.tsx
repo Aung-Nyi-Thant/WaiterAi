@@ -9,9 +9,18 @@ type Menu = { restaurant: { name: string; city: string; currency: string; hours:
 type Msg = { id: string; role: "user" | "assistant"; text: string; dishes?: Item[]; topic?: string; messageId?: number; rated?: number; answered?: boolean };
 type Pick = { id: number; qty: number };
 type BillLine = { name: string; qty: number; price: number };
-type Bill = { table: string; lines: BillLine[]; total: number; pending: BillLine[]; inKitchen: number; asked: boolean };
+type Bill = { table: string; lines: BillLine[]; total: number; pending: BillLine[]; asked: boolean };
 
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+// A random code kept on this phone (not an account, no personal data); it lets the phone see its table's bill.
+let receiptMemo = "";
+const receiptCode = () => {
+  try {
+    let r = localStorage.getItem("receipt") || "";
+    if (r.length < 24) { r = crypto.randomUUID().replace(/-/g, ""); localStorage.setItem("receipt", r); }
+    return r;
+  } catch { return receiptMemo || (receiptMemo = crypto.randomUUID().replace(/-/g, "")); }
+};
 
 export default function Diner({ slug }: { slug: string }) {
   const [menu, setMenu] = useState<Menu | null>(null);
@@ -96,7 +105,9 @@ export default function Diner({ slug }: { slug: string }) {
   }, [slug]);
 
   // The table's running bill: what everyone at this table has ordered and what it owes so far.
-  const loadBill = () => { if (table) api<Bill>(`/api/public/${slug}/bill?t=${encodeURIComponent(table)}`).then(setBill).catch(() => {}); };
+  // Only a phone that has sent picks from this table gets the bill: the server checks the receipt code
+  // that was saved with those picks, so other tables' bills cannot be read by trying table numbers.
+  const loadBill = () => { if (table) api<Bill>(`/api/public/${slug}/bill?t=${encodeURIComponent(table)}&r=${encodeURIComponent(receiptCode())}`).then(setBill).catch(() => {}); };
   useEffect(() => {
     loadBill();
     const i = setInterval(() => { if (!document.hidden) loadBill(); }, 20000);
@@ -142,7 +153,7 @@ export default function Diner({ slug }: { slug: string }) {
   };
   async function sendPicks() {
     try {
-      await api(`/api/public/${slug}/orders`, { body: { table, lang, sessionId, items: valid } });
+      await api(`/api/public/${slug}/orders`, { body: { table, lang, sessionId, receipt: receiptCode(), items: valid } });
       setPicks([]); say(t("sent")); loadBill();
     } catch (e: any) { say(e.message); }
   }
@@ -305,7 +316,6 @@ export default function Diner({ slug }: { slug: string }) {
                 <div className="sa-picks__row bill-total"><span>{t("billTotal")}</span><span>{priceLabel(lang, bill.total)}</span></div>
               </div>
             )}
-            {bill.inKitchen > 0 && <p className="muted" style={{ fontSize: 14, margin: "0 0 12px" }}>{bill.inKitchen} {bill.inKitchen === 1 ? t("dish") : t("dishes")} · {t("billKitchen")}</p>}
             {bill.pending.length > 0 && (
               <div style={{ marginBottom: 12 }}>
                 <p className="sa-sheet__label" style={{ marginTop: 0 }}>{t("billPending")}</p>

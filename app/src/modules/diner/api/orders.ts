@@ -20,7 +20,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   const lang = ["en", "th", "my"].includes(b.lang) ? b.lang : "en";
   db.exec("BEGIN");
   try {
-    const id = run("INSERT INTO orders (restaurant_id, table_no, status, lang, allergy_note) VALUES (?,?,?,?,?)", r.id, String(b.table || "").slice(0, 10), "picked", lang, [...said].join(", ")).id;
+    const receipt = /^[A-Za-z0-9-]{24,64}$/.test(String(b.receipt || "")) ? String(b.receipt) : "";   // see diner/api/bill.ts
+    const id = run("INSERT INTO orders (restaurant_id, table_no, status, lang, allergy_note, receipt) VALUES (?,?,?,?,?,?)", r.id, String(b.table || "").slice(0, 10), "picked", lang, [...said].join(", "), receipt).id;
     for (const { it, qty } of lines) run("INSERT INTO order_items (order_id, item_id, name, qty, price) VALUES (?,?,?,?,?)", id, it.id, it.name.en, qty, it.price);
     db.exec("COMMIT");
     return json({ ok: true, id });

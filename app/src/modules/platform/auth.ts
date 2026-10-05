@@ -60,5 +60,27 @@ export async function ownerSession(): Promise<OwnerSession | null> {
   return get("SELECT id FROM restaurants WHERE id = ? AND owner_id = ?", s.restaurantId, s.userId) ? s : null;
 }
 export async function staffSession(): Promise<StaffSession | null> {
-  return verify<StaffSession>((await cookies()).get("staff")?.value);
+  const s = verify<StaffSession>((await cookies()).get("staff")?.value);
+  if (!s) return null;
+  // like the owner session: a staff member the owner deleted loses access at once, and a changed role applies at once
+  const row = get("SELECT name, role FROM staff WHERE id = ? AND restaurant_id = ?", s.staffId, s.restaurantId);
+  return row ? { ...s, name: row.name, role: row.role } : null;
 }
+
+// ---- PIN guessing limit: a 4-digit PIN has only 10,000 values, so repeated wrong PINs lock sign-in for a while.
+const MAX_FAILS = 5, LOCK_MS = 10 * 60_000;
+const fails = new Map<string, { n: number; until: number; last: number }>();
+export const pinLockedFor = (key: string): number => {
+  const f = fails.get(key);
+  return f && f.until > Date.now() ? Math.ceil((f.until - Date.now()) / 1000) : 0;
+};
+export const pinFailed = (key: string) => {
+  const now = Date.now();
+  let f = fails.get(key);
+  if (!f || f.until <= now && now - f.last > LOCK_MS) f = { n: 0, until: 0, last: now };   // old failures do not add up forever
+  f.n++; f.last = now;
+  if (f.n >= MAX_FAILS) { f.until = now + LOCK_MS; f.n = 0; }
+  fails.set(key, f);
+  if (fails.size > 5000) for (const [k, v] of fails) if (v.until <= now && now - v.last > LOCK_MS) fails.delete(k);
+};
+export const pinOk = (key: string) => { fails.delete(key); };
