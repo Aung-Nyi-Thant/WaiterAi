@@ -9,7 +9,7 @@ Fill in the names in the first table.
 | 2 | Aung Nyi Thant | Aung-Nyi-Thant | AI waiter and backend core (FR-2, backend of FR-5, FR-6, FR-9) |
 | 3 | Chawakron Singkaew | chawakron50-lab | Owner back office (FR-5, FR-7) |
 | 4 | Natthanon Wongsai | wujieiei | Staff and orders (FR-4, FR-9) |
-| 5 | (fill in) | noeysasi | QR codes, insights, import screen, tests and docs (FR-6, FR-8, FR-10) |
+| 5 | Sasiwimon Chatkaew | noeysasi | QR codes, insights, import screen, tests and docs (FR-6, FR-8, FR-10) |
 
 The parts were reassigned on request: Member 2 now takes the AI waiter and the backend core; Member 5 takes QR, insights, the import screen, tests and docs. Swap parts if the team agrees, and update this table and the Issue assignees.
 
