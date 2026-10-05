@@ -108,7 +108,7 @@ Priority: **M** = must, **S** = should.
 | DM-4 | The system shall offer filters: vegetarian, no peanuts, under ฿100, spicy. The "no peanuts" filter shall exclude dishes with missing allergen data. | M |
 | DM-5 | The system shall let the diner switch between Thai, Burmese and English; labels and dish names change accordingly. | M |
 | DM-6 | The system shall show dishes that are not available as "sold out today" and refresh availability at least every 20 seconds. | M |
-| DM-7 | The system shall show a detail view with description, all allergens (or "allergen info not provided"), ingredients, an Add button and an "Ask the waiter" button. | M |
+| DM-7 | The system shall show a detail view with description, all allergens (or "allergen info not provided"), ingredients, an Add button and an "Ask AI about this dish" button. | M |
 | DM-8 | The system shall show active specials. | S |
 | DM-9 | The system shall show a saved copy of the menu with a notice if the server cannot be reached. | S |
 | DM-10 | The system shall record each menu open for insights. | S |
@@ -137,7 +137,7 @@ Priority: **M** = must, **S** = should.
 | ID | Requirement | Pri |
 |---|---|---|
 | PC-1 | The diner shall add, change quantity, remove dishes in "My picks" (kept in the browser). | M |
-| PC-2 | "Show to waiter" shall create an order in status *picked*, with table, language, items and the allergens the diner mentioned in the chat. Sold-out dishes shall be ignored; an order with no available dish shall be rejected. | M |
+| PC-2 | "Send to staff" shall create an order in status *picked*, with table, language, items and the allergens the diner mentioned in the chat. Sold-out dishes shall be ignored; an order with no available dish shall be rejected. | M |
 | PC-3 | The call-staff button shall create a call for the table; a second open call of the same type for the same table shall reuse the first. | M |
 
 #### 3.1.4 Owner accounts (OA)
@@ -257,7 +257,7 @@ Priority: **M** = must, **S** = should.
 |---|---|---|---|
 | UC-1 | Browse the menu | Diner | Scan QR → menu opens → pick language → search/filter → open a dish |
 | UC-2 | Ask about allergens | Diner | Open chat → type "I'm allergic to peanuts" → system lists dishes from data and asks to confirm with staff |
-| UC-3 | Place picks | Diner | Add dishes → "Show to waiter" → order *picked* created |
+| UC-3 | Place picks | Diner | Add dishes → "Send to staff" → order *picked* created |
 | UC-4 | Call staff | Diner | Press bell (or ask for the bill) → call created |
 | UC-5 | Manage menu | Owner | Sign in → Menu items → add/edit dish, set allergens, sold-out switch |
 | UC-6 | Import a menu | Owner | Upload photo → AI reads → owner reviews and edits → confirm and publish |
@@ -313,11 +313,14 @@ A native Burmese speaker reviewed four rounds of Burmese answers; their correcti
 ## 5. Verification
 | Requirement group | Method | Result to date |
 |---|---|---|
-| AI-1 … AI-13 | 30-question chat test through the real chat API (`scripts/chat_smoke.py`) | 30/30 as expected |
-| OA, MM, ST, QR, SF, PC, IN, MI | 64-check API test (`scripts/e2e.py`): validation, roles, order flow, isolation, photo import | all passed |
+| AI-1 … AI-16 | 30-question chat test through the real chat API (`scripts/chat_smoke.py`, `npm run eval:live`) and the automated suite (`app/tests/`) | 30/30 as expected; all automated tests pass |
+| OA, MM, ST, QR, SF, PC, IN, MI | 67-check API script (`scripts/e2e.py`) and the automated suite (`npm test`, `npm run test:e2e`): validation, roles, order flow, isolation, photo import | all passed |
 | DM, UI, NFR-U | Manual test on phone, tablet and desktop | **to do** |
-| NFR-P1/P3/P4, NFR-U3 | Timing and load test with several phones; trial with real owners | **to do** |
+| NFR-P1/P3/P4 | Load test with simulated diners and staff screens (`npm run load-test`, `docs/PERFORMANCE.md`) | measured on one laptop: one AI answer about 5 s, 3 at once up to about 16 s; **phone and Wi-Fi times not measured** |
+| NFR-U3 | Trial with real owners | **to do** |
 | AI-12 Burmese/Thai wording | Native-speaker review | Burmese assistant answers reviewed; interface labels to review |
+
+Requirement-by-requirement evidence (code, automated tests, what is only checked by hand): `docs/TRACEABILITY.md`. How the AI's safety rules are enforced and tested: `docs/AI_SAFETY.md`. Automated tests run on every push (`.github/workflows/ci.yml`).
 
 ### Requirements not yet implemented / future
 Online payment, LINE/WhatsApp, billing plans, AI-generated dish photos, email summaries, order status for diners, owner dashboard in Thai/Burmese, POS integration.

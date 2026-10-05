@@ -22,10 +22,10 @@ The main idea: the AI waiter knows only this restaurant's menu, and everything t
 | Menu browsing | Categories, search, photos, prices, allergen chips, "sold out today" label | Loaded from the database; refreshes every 20 seconds so sold-out changes appear |
 | Filters | Vegetarian, No peanuts, Under ฿100, Spicy | Filter on dish tags, allergens and price. "No peanuts" hides dishes whose allergen data is missing |
 | 3 languages | TH / MY / EN buttons change labels and dish names | Each dish stores its name in all three languages |
-| Dish detail | Description, ingredients, all allergens, Add button, "Ask the waiter about this dish" | Bottom sheet |
+| Dish detail | Description, ingredients, all allergens, Add button, "Ask AI about this dish" | Bottom sheet |
 | AI chat | Ask anything about the menu in any language; the AI replies in the language you wrote in | See section 4 |
 | Dish cards in chat | The AI shows the dishes it talks about with an Add button | The app checks that each dish exists and is on sale |
-| My picks | Add dishes, change quantity, then "Show to waiter" | Creates an order with status "picked"; allergies the diner mentioned in chat are attached |
+| My picks | Add dishes, change quantity, then "Send to staff" | Creates an order with status "picked"; allergies the diner mentioned in chat are attached |
 | Call staff | Bell button | Creates a call for that table; one open call per type per table |
 | Feedback | Thumbs up/down on each AI answer | A thumbs-down flags the answer for the owner |
 | Offline copy | If the connection drops the last saved menu is shown with a notice | Saved in the browser |
@@ -48,7 +48,7 @@ The main idea: the AI waiter knows only this restaurant's menu, and everything t
 - **Calls**: table number, reason (bill, help), minutes waiting, "Done".
 - **Picks**: what a table chose. A red banner shows an allergy the diner mentioned ("Confirm with the kitchen before ordering"). Buttons: Take order (sends it to the kitchen) or Dismiss.
 - **Ready**: dishes the chef finished; "Served".
-- **Tables**: 12 tables coloured by state (calling, picks, in kitchen, free).
+- **Tables**: 14 tables coloured by state (calling, picks, in kitchen, free).
 - **Sold out**: mark a dish sold out from the floor.
 - Updates every 3 seconds, shows LIVE/OFFLINE.
 
@@ -91,7 +91,7 @@ The main idea: the AI waiter knows only this restaurant's menu, and everything t
 | Design | Glassmorphism (frosted panels on a coloured background), Outfit and Manrope fonts, Noto Thai/Myanmar | Chosen by the team |
 | Live updates | Screens ask the server every 3 seconds | Simple and reliable on a local network |
 
-## 6. Database (12 tables)
+## 6. Database (14 tables)
 users, restaurants (hours, AI voice settings, chat limit), categories, menu_items (3-language names, price, allergens or "not provided", tags), specials, faqs, staff (PIN hashes), chat_sessions, chat_messages (topic, language, answered, feedback), orders, order_items, calls, events (menu opens), imports.
 Every owner or staff query is limited to their own restaurant, so one restaurant cannot see or change another's data.
 
@@ -104,19 +104,22 @@ Every owner or staff query is limited to their own restaurant, so one restaurant
 ## 8. How it was tested
 - **Eval of 4 models** (30 questions, 3 languages) plus 4 rounds of Burmese review by a native speaker.
 - **Chat test**: the same 30 questions through the real chat API: 30/30 match the expected answers.
-- **End-to-end API test (64 checks)**: login and wrong password, dish create/update/delete and validation, categories, FAQs, specials, staff, hours flowing into AI answers, female voice, QR, diner picks, sold-out dishes ignored, waiter/chef order flow and role limits, insights, registering a second restaurant and isolation, and reading a menu photo.
+- **End-to-end API test script** (`app/scripts/e2e.py`, 67 checks): login and wrong password, dish create/update/delete and validation, categories, FAQs, specials, staff, hours flowing into AI answers, female voice, QR, diner picks, sold-out dishes ignored, waiter/chef order flow and role limits, insights, registering a second restaurant and isolation, and reading a menu photo.
+- **Automated test suite** (`cd app && npm test`, 390+ tests, no AI model or server needed) and **end-to-end tests against the real server** (`npm run test:e2e`), run on every push by GitHub Actions: permissions, validation, the order flow, the AI rules, the model-output checks, rate limits, uploads, the seed script, and the 30-question eval as a gate (`eval/thresholds.json`). Every requirement is mapped to its code and tests in `docs/TRACEABILITY.md`; the AI's safety rules and the test for each are in `docs/AI_SAFETY.md`.
+- **Live eval** (`npm run eval:live`): the 30 questions through the real model: 30/30 (10 per language).
+- **Load test** (`npm run load-test`): simulated diners and staff screens against the real server; results in `docs/PERFORMANCE.md`.
 
 ## 9. Limits and future work
-- Screens were tested through the API; a full visual check on phones is still to do.
+- Screens were tested through the API and by hand on the developer's computer; a full visual check on real phones is still to do.
 - Thai and Burmese interface labels are first drafts and need a native review; the owner dashboard is English only.
-- Runs on one laptop, so it serves a few tables at once (one AI answer at a time, about 5 seconds each). More restaurants need a GPU server or a hosted model.
+- Runs on one laptop, so it serves a few tables at once: AI answers are queued one at a time (about 5 seconds each, about 22 seconds for the first one after the model was unloaded), so 3 diners asking at once wait up to about 16 seconds and 10 at once up to about 86 seconds (`docs/PERFORMANCE.md`). Everything safety-critical is answered without the model in milliseconds. More restaurants need a GPU server or a hosted model.
 - Not built yet: online payment, LINE/WhatsApp, billing plans, AI-generated dish photos, email summaries, order status for diners.
 - Photo import may misread unclear photos; the owner review step exists for this reason.
 
 ## 10. Suggested demo (5 minutes)
 1. Diner phone: open the menu at table 5, switch TH/MY/EN, use the "No peanuts" filter.
 2. Chat: "I'm allergic to peanuts" (fixed safe answer), "vegetarian under 100 baht", then in Burmese "ပီဇာ ရှိလား", then "2 x mango sticky rice please".
-3. Tap **Show to waiter**. On the waiter screen, see the pick with the allergy banner; tap **Take order**.
+3. Tap **Send to staff**. On the waiter screen, see the pick with the allergy banner; tap **Take order**.
 4. Chef screen: **Start cooking**, **Mark ready**; waiter taps **Served**.
 5. Chef marks a dish sold out; ask the AI for it and show the answer changes at once.
 6. Owner: import a menu photo, review and publish; show QR codes and Insights.
