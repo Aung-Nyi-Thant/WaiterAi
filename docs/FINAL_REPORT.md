@@ -96,7 +96,7 @@ Full log: `docs/AI_USAGE_LOG.md`; statement: `docs/AI_USE_STATEMENT.md`. The pro
 
 ## 8. Team and individual contribution
 
-Parts (`docs/TEAM_WORK_PLAN.md`): 1 diner app · 2 AI waiter and backend core · 3 owner back office · 4 staff and orders · 5 QR, insights, import screen, tests, docs. Which GitHub account is which member: **[team to complete]**.
+Parts (`docs/TEAM_WORK_PLAN.md`): 1 diner app · 2 AI waiter and backend core · 3 owner back office · 4 staff and orders · 5 QR, insights, import screen, tests, docs. Accounts: `Tharathon47` = Tharathon Plengsri (6931503042, part 1) · `Aung-Nyi-Thant` = Aung Nyi Nyi Thant (6931503001, part 2) · `chawakron50-lab` = Chawakron Singkaew (6931503031, part 3) · `wujieiei` = Natthanon Wongsai (6931503103, part 4) · `noeysasi` (part 5): **[team to confirm the name]**.
 
 **What GitHub shows today (21 Sep – 6 Oct 2026):** all commits on `main` and all pull requests come from the account `Aung-Nyi-Thant`, so the other members' work is not yet visible in the repository. **[team to complete: for each member, their commits, pull requests, documents, diagrams, tests or reviews in the repository, and where non-code work lives]**
 
