@@ -37,7 +37,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
       sessionId, r.id, "user", message, lang, result.topic, JSON.stringify(result.allergens), result.answered ? 1 : 0);
     messageId = run("INSERT INTO chat_messages (session_id, restaurant_id, role, text, lang, topic, action_json, answered) VALUES (?,?,?,?,?,?,?,?)",
       sessionId, r.id, "assistant", result.reply, lang, result.topic, JSON.stringify(result.action), result.answered ? 1 : 0).id;
-    if (result.action.type === "call_staff") run("INSERT INTO calls (restaurant_id, table_no, kind) VALUES (?,?,?)", r.id, table, result.action.kind || "help");
+    if (result.action.type === "call_staff") {
+      // same rule as the "Call staff" button (FR-3): one open call of a kind per table
+      const kind = result.action.kind || "help";
+      if (!get("SELECT id FROM calls WHERE restaurant_id = ? AND table_no = ? AND kind = ? AND status = 'open'", r.id, table, kind))
+        run("INSERT INTO calls (restaurant_id, table_no, kind) VALUES (?,?,?)", r.id, table, kind);
+    }
   }
   const ids = result.action.ids || [];
   // "answered" lets the diner UI notice two unhelpful replies in a row and offer to call staff

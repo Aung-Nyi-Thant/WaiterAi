@@ -64,6 +64,24 @@ describe("AI-7 asking for the bill or staff creates a call for that table", () =
     expect(get("SELECT kind, status FROM calls WHERE table_no = '15'")).toEqual({ kind: "bill", status: "open" });
     expect(count("orders")).toBe(orders);
   });
+  it("FR-3: asking for the bill twice (chat, then chat or button) leaves one open call per table and kind", async () => {
+    noModel();
+    const open = (kind: string) => get("SELECT COUNT(*) AS n FROM calls WHERE table_no = '17' AND kind = ? AND status = 'open'", kind)!.n;
+    await say("Can I get the bill?", { table: "17" });
+    await say("check please", { table: "17" });
+    const { POST: button } = await import("@/modules/diner/api/calls");
+    await call(button, { method: "POST", params: { slug }, body: { table: "17", kind: "bill" } });
+    expect(open("bill")).toBe(1);
+    await say("I need help, call the staff", { table: "17" });
+    await say("call the staff please", { table: "17" });
+    expect(open("help")).toBe(1);
+    // another table is not affected, and a closed call can be raised again
+    await say("Can I get the bill?", { table: "18" });
+    expect(get("SELECT COUNT(*) AS n FROM calls WHERE table_no = '18' AND kind = 'bill'")!.n).toBe(1);
+    run("UPDATE calls SET status = 'done' WHERE table_no = '17' AND kind = 'bill'");
+    await say("Can I get the bill?", { table: "17" });
+    expect(open("bill")).toBe(1);
+  });
 });
 
 describe("AI safety: the chat can never place an order by itself", () => {

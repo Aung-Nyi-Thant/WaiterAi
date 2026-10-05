@@ -30,7 +30,7 @@ Return ONLY JSON: {"items":[{"name":"dish name exactly as printed","price":numbe
 Rules: price is a plain number without currency. Do not invent dishes or prices. If a price is unreadable use 0.`,
       [buf.toString("base64")], 3000);
   } catch (e: any) {
-    return bad("The AI could not read this photo (" + (e?.message || "error") + "). Is the AI provider running and configured? You can also add dishes by hand.", 502);
+    return bad("The AI could not read this photo (" + (e?.message || "error") + "). Is Ollama running? You can also add dishes by hand.", 502);
   }
   const items = (Array.isArray(parsed?.items) ? parsed.items : [])
     .map((i: any) => ({ name: String(i.name || "").trim().slice(0, 80), price: Number(String(i.price).replace(/[^\d.]/g, "")) || 0, category: String(i.category || "").trim().slice(0, 40) || "Mains", description: String(i.description || "").trim().slice(0, 200) }))
