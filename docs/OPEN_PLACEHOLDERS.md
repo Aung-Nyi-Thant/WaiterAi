@@ -41,6 +41,6 @@ The PDF corrections themselves (the table above these rows) are for the team to 
 Each marks what only the team can answer with **[team to complete]**:
 
 - Final report cover and section 8: which GitHub account is which member; for each member, where their work is in the repository (commits, pull requests, documents, diagrams, design, testing, the Burmese review, the PDFs).
-- Final report section 7 and the AI-use statement: the tools each member used, and what each member changed or rejected in the AI's output.
-- Demo slides 9 (team) and 10: who built what, and what each member changed in the AI's output.
+- Final report section 7 and the AI-use statement: confirm that only one member used an AI tool (so the other members have no AI-log rows), and what that member changed or rejected in the AI's output.
+- Demo slides 9 (team) and 10: who built what, and what was changed in the AI's output.
 - Individual contribution is measured from GitHub, and today `main` shows one account. This is the item to settle first.

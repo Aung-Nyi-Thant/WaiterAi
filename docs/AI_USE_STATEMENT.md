@@ -5,7 +5,7 @@
 ## Two different uses of AI
 
 1. **The product's own model.** `gemma4:12b`, run locally through Ollama, answers open questions for diners. It is part of the system, chosen with a comparison in `eval/` (SRS 4.5), and it is never the source of an allergen, price, hours or order answer: those come from the database (`docs/AI_SAFETY.md`).
-2. **AI tools used to build it.** Claude Code (Claude Sonnet 5 and 5.5). **[team to complete: any other tool, and which member used which.]**
+2. **AI tools used to build it.** Claude Code (Claude Sonnet 5 and 5.5), used by Aung Nyi Nyi Thant. The other members did not use an AI tool, so the log has no rows for them. **[team to confirm.]**
 
 ## Where AI tools helped (from the log and `git`)
 
@@ -37,7 +37,7 @@ On `main`, 11 of the 18 commits carry a `Co-Authored-By: Claude` trailer (the ot
 
 ## What people had to decide
 
-The "AI" versus "staff" wording; the Burmese replies (four native-speaker reviews, M1 charter); that no cloud AI is allowed (charter Gate 3, SRS NFR-5); how to merge two lines of work; and what to leave out. **[team to complete: for each member, what you changed, rejected or rewrote in the AI's output, in your own words.]**
+The "AI" versus "staff" wording; the Burmese replies (four native-speaker reviews, M1 charter); that no cloud AI is allowed (charter Gate 3, SRS NFR-5); how to merge two lines of work; and what to leave out. **[team to complete: what Aung Nyi Nyi Thant changed, rejected or rewrote in the AI's output, in their own words.]**
 
 ## Rules the team follows (`CONTRIBUTING.md`)
 
