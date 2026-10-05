@@ -3,6 +3,7 @@ import { all, get, run } from "@/modules/platform/db";
 import { json, bad, body } from "@/modules/platform/http";
 import { answer, detectLang, limitReply } from "@/modules/ai/ai";
 import type { Lang } from "@/modules/platform/menu";
+import { cleanProfile } from "@/modules/platform/constants";
 import crypto from "node:crypto";
 
 export async function POST(req: Request, { params }: { params: Promise<{ slug: string }> }) {
@@ -18,8 +19,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   const uiLang = (["en", "th", "my"].includes(b.lang) ? b.lang : "en") as Lang;
   const lang = detectLang(message, uiLang);
   const p = r.persona.gender === "female" ? "female" : "male";
+  const profile = cleanProfile(b.profile);        // the allergies the diner chose once on their phone
 
-  if (!preview) run("INSERT OR IGNORE INTO chat_sessions (id, restaurant_id, table_no, lang) VALUES (?,?,?,?)", sessionId, r.id, table, lang);
+  if (!preview) {
+    run("INSERT OR IGNORE INTO chat_sessions (id, restaurant_id, table_no, lang) VALUES (?,?,?,?)", sessionId, r.id, table, lang);
+    run("UPDATE chat_sessions SET profile = ? WHERE id = ? AND restaurant_id = ?", JSON.stringify(profile), sessionId, r.id);
+  }
   const used = get("SELECT COUNT(*) AS n FROM chat_messages m JOIN chat_sessions s ON s.id = m.session_id WHERE m.restaurant_id = ? AND m.role = 'user' AND m.created_at >= date('now','start of month')", r.id)!.n;
 
   const items = itemsOf(r.id);
@@ -28,7 +33,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
     result = { reply: limitReply(lang, p === "female" ? "ค่ะ" : ""), action: { type: "show_menu" as const }, topic: "other", allergens: [], answered: false, usedModel: false };
   } else {
     const history = preview || !b.sessionId ? [] : all("SELECT role, text FROM chat_messages WHERE session_id = ? ORDER BY id DESC LIMIT 8", sessionId).reverse();
-    result = await answer(message, lang, { restaurant: r, items, faqs: faqsOf(r.id) as any, specials: specialsOf(r.id), history: history as any });
+    result = await answer(message, lang, { restaurant: r, items, faqs: faqsOf(r.id) as any, specials: specialsOf(r.id), history: history as any, profile });
   }
 
   let messageId = 0;

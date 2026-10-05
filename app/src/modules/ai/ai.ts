@@ -2,12 +2,13 @@
 // order/bill requests) are built from the database with fixed sentences. The language model only handles
 // open questions (recommendations, FAQs, greetings), and its output is checked before it is shown.
 import type { Item, Lang, Restaurant } from "@/modules/platform/menu";
-import { ALLERGEN_LABEL } from "@/modules/platform/constants";
+import { allergenName } from "@/modules/platform/constants";
 import { complete, type Msg } from "@/modules/ai/provider";
 
 export type Action = { type: "none" | "show_menu" | "show_dishes" | "add_to_picks" | "call_staff"; ids?: number[]; kind?: string; qty?: Record<number, number> };
 export type ChatResult = { reply: string; action: Action; topic: string; allergens: string[]; answered: boolean; usedModel: boolean };
-type Ctx = { restaurant: Restaurant; items: Item[]; faqs: { q: string; a: string }[]; specials: any[]; history: { role: "user" | "assistant"; text: string }[] };
+// profile: the allergens the diner chose once for this visit (see "allergy profile" below)
+type Ctx = { restaurant: Restaurant; items: Item[]; faqs: { q: string; a: string }[]; specials: any[]; history: { role: "user" | "assistant"; text: string }[]; profile?: string[] };
 
 // ------------------------------------------------------------------ language helpers
 export function detectLang(text: string, fallback: Lang = "en"): Lang {
@@ -45,9 +46,8 @@ const ALLERGEN_WORDS: Record<string, string[]> = {
 const GENERIC_NUTS = ["ถั่ว", "nuts", " nut"];
 const ALLERGY_INTENT = ["allerg", "intoleran", "แพ้", "ဓာတ်မတည့်", "ဓါတ်မတ", "without", "ไม่ใส่", "မပါ", "avoid", "หลีกเลี่ยง", "ရှောင်", "contain", "ingredient", "ส่วนผสม", "ပါဝင်", "ပါလား", "ပါသလား", "have any", "มีสาร"];
 
-const AL_TH: Record<string, string> = { peanut: "ถั่วลิสง", tree_nut: "ถั่วเปลือกแข็ง", shellfish: "กุ้ง/สัตว์น้ำมีเปลือก", fish: "ปลา", egg: "ไข่", milk: "นม", soy: "ถั่วเหลือง", gluten: "กลูเตน", sesame: "งา", celery: "คื่นช่าย", mustard: "มัสตาร์ด", molluscs: "หอย", sulphites: "ซัลไฟต์", lupin: "ลูพิน" };
 // English allergen names are kept in Burmese answers (the owner asked for this); Thai gets Thai names.
-const alName = (k: string, l: Lang) => (l === "th" ? AL_TH[k] || k : (ALLERGEN_LABEL[k] || k).toLowerCase());
+const alName = allergenName;
 const alNames = (keys: string[], l: Lang) => keys.map((k) => alName(k, l));
 // Thai has no spaces, so a short allergen word can sit inside a common word: "งา" (sesame) in "พนักงาน" (staff) and "งาน" (work),
 // "ปู" (crab) in "ปูน" (cement) and "ปู่" (grandfather), "ปลา" (fish) in "ปลาย" (end). These are not allergen mentions.
@@ -173,6 +173,30 @@ function soldOutReply(l: Lang, p: string, i: Item): string {
 function dontKnow(l: Lang, p: string): string {
   return (l === "en" ? "I don't have that information. " : l === "th" ? `ขออภัย ไม่มีข้อมูลนี้${p} ` : `${p === "ရှင်" ? "ကျွန်မ" : "ကျွန်တော်"}မှာ အဲဒီအချက်အလက် မရှိပါဘူး${p}။ `) + (l === "en" ? "Please ask the staff." : l === "th" ? `กรุณาสอบถามพนักงาน${p}` : `ဝန်ထမ်းကို မေးမြန်းပေးပါ${p}။`);
 }
+// ------------------------------------------------------------------ allergy profile
+// The diner can choose their allergies once. Every dish the AI suggests is then checked against the stored allergen data:
+// a dish is suggested only if it HAS allergen data and lists none of the diner's allergens. "Not listed" is never said to
+// be "safe": the confirm-with-staff sentence always follows, and dishes without data are left out, not guessed.
+const profileHit = (i: Item, profile: string[]) => (i.allergens ?? []).filter((a) => profile.includes(a));
+export const fitsProfile = (i: Item, profile: string[]) => !profile.length || (i.allergens !== null && profileHit(i, profile).length === 0);
+function profileNote(l: Lang, p: string, profile: string[]): string {
+  const a = A(alNames(profile, l));
+  return l === "en" ? `Your allergy profile (${a}) is applied: dishes that list it, or have no allergen data, are left out. ${STAFF(l, p)}`
+    : l === "th" ? `ใช้โปรไฟล์การแพ้ของคุณ (${a}) แล้ว${p} ตัดเมนูที่ระบุสารนี้หรือยังไม่มีข้อมูลสารก่อภูมิแพ้ออก ${STAFF(l, p)}`
+    : `သင်ရွေးထားတဲ့ Allergens (${a}) ကို ထည့်တွက်ထားပါတယ်${p}။ အဲဒီ Allergens ပါတဲ့ ဟင်းလျာနဲ့ Allergen အချက်အလက် မရှိတဲ့ ဟင်းလျာတွေကို ဖယ်ထားပါတယ်${p}။ ${STAFF(l, p)}`;
+}
+function profileConflictReply(l: Lang, p: string, item: Item, profile: string[]): string {
+  const n = nm(item, l), a = A(alNames(profileHit(item, profile), l)), all = A(alNames(profile, l));
+  if (item.allergens === null) return l === "en" ? `Allergen information is not provided for ${n}, so I can't suggest it with your allergy profile (${all}). ${STAFF(l, p)}`
+    : l === "th" ? `ยังไม่มีข้อมูลสารก่อภูมิแพ้ของ${n}${p} จึงแนะนำตามโปรไฟล์การแพ้ของคุณ (${all}) ไม่ได้ ${STAFF(l, p)}`
+    : `${n} အတွက် Allergen အချက်အလက် မရှိတဲ့အတွက် သင့်ရဲ့ Allergens (${all}) နဲ့ မညွှန်းနိုင်ပါဘူး${p}။ ${STAFF(l, p)}`;
+  return l === "en" ? `${n} lists ${a}, which is in your allergy profile. ${STAFF(l, p)}`
+    : l === "th" ? `${n} ระบุว่ามี ${a} ซึ่งอยู่ในโปรไฟล์การแพ้ของคุณ${p} ${STAFF(l, p)}`
+    : `${n} မှာ ${a} ပါဝင်ပါတယ်${p}။ ဒါက သင့်ရဲ့ Allergens ထဲမှာ ပါပါတယ်${p}။ ${STAFF(l, p)}`;
+}
+// "what can I eat?" / "what suits my allergies?" (only used when the diner has a profile)
+const PROFILE_CUES = ["my allerg", "my profile", "can i eat", "what can i have", "what can i order", "safe for me", "suitable for me", "ที่ฉันกินได้", "ที่ผมกินได้", "ที่กินได้", "กินอะไรได้", "ฉันกินได้", "ผมกินได้", "โปรไฟล์", "ကျွန်တော်စားလို့", "ကျွန်မစားလို့", "စားလို့ရတဲ့", "စားလို့ရမလဲ"];
+
 // An allergy question (or a model reply about allergens) that cannot be matched to a dish or an allergen in the data.
 const allergenAskReply = (l: Lang, p: string) =>
   l === "en" ? `I can't confirm allergens for that. Tell me the dish or the allergen (for example "peanut") and I will check the menu. ${STAFF(l, p)}`
@@ -221,6 +245,7 @@ const budgetOf = (t: string): number | null => {
 // ------------------------------------------------------------------ the pipeline
 export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<ChatResult> {
   const { restaurant: r, items } = ctx;
+  const profile = ctx.profile ?? [];
   const p = particle(lang, r.persona.gender);
   const t = norm(message);
   const live = items.filter((i) => i.available);
@@ -259,6 +284,12 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
     return done(allergenListReply(lang, p, mentioned, containing, unknown), { type: "show_dishes", ids: containing.slice(0, 4).map((i) => i.id) });
   }
 
+  // 1b. "what can I eat with my allergies?": the dishes that do not list the diner's allergens, from the data
+  if (profile.length && !mentioned.length && has(t, PROFILE_CUES)) {
+    const free = items.filter((i) => i.available && fitsProfile(i, profile));
+    return done(allergenFreeReply(lang, p, profile, free, items.filter((i) => i.allergens === null)), { type: "show_dishes", ids: free.slice(0, 4).map((i) => i.id) }, { topic: "allergens", allergens: profile });
+  }
+
   // 2. bill / call staff
   if (has(t, W.bill)) return done(lang === "en" ? "I've called the staff to bring your bill." : lang === "th" ? `เรียกพนักงานมาเช็คบิลให้แล้ว${p} รอสักครู่${p}` : `ဘေလ်ချိန်ဖို့ ဝန်ထမ်းကို ခေါ်ပေးလိုက်ပါတယ်${p}။ ခဏစောင့်ပေးပါ${p}။`, { type: "call_staff", kind: "bill" });
   if (has(t, W.staff) && !dishes.length && (has(t, ["call", "need", "เรียก", "ခေါ်", "help", "ช่วย"]))) return done(lang === "en" ? "I've called the staff to your table. They'll be with you shortly." : lang === "th" ? `เรียกพนักงานมาที่โต๊ะให้แล้ว${p} รอสักครู่${p}` : `ဝန်ထမ်းကို စားပွဲဆီ ခေါ်ပေးလိုက်ပါတယ်${p}။ ခဏစောင့်ပေးပါ${p}။`, { type: "call_staff", kind: "help" });
@@ -268,8 +299,8 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
     const vegan = has(t, W.vegan);
     const budget = budgetOf(t);
     const pool = live.filter((i) => (vegan ? i.tags.includes("vegan") : i.tags.includes("vegetarian") || i.tags.includes("vegan")));
-    const list = pool.filter((i) => !budget || i.price < budget);
-    return done(vegReply(lang, p, vegan, budget, list), { type: "show_dishes", ids: list.slice(0, 4).map((i) => i.id) });
+    const list = pool.filter((i) => (!budget || i.price < budget) && fitsProfile(i, profile));
+    return done(vegReply(lang, p, vegan, budget, list) + (profile.length ? ` ${profileNote(lang, p, profile)}` : ""), { type: "show_dishes", ids: list.slice(0, 4).map((i) => i.id) });
   }
 
   // 4. a named dish: sold out, price, or ordering
@@ -285,12 +316,16 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
       const qty: Record<number, number> = {};
       dishes.forEach((d) => (qty[d.item.id] = d.qty));
       const names = join(lang, dishes.map((d) => `${d.qty > 1 ? d.qty + "× " : ""}${nm(d.item, lang)}`));
-      return done(lang === "en" ? `Added to your picks: ${names}. Tap "Show to waiter" when you're ready.` : lang === "th" ? `เพิ่มลงในรายการที่เลือกแล้ว: ${names}${p} กด "ให้พนักงานดู" เมื่อพร้อมสั่ง` : `${names} ကို ရွေးထားတာတွေထဲ ထည့်လိုက်ပါတယ်${p}။`, { type: "add_to_picks", ids: dishes.map((d) => d.item.id), qty });
+      // the diner may still pick a dish that conflicts with their profile (it is their choice), but is told, and the staff are told too
+      const conflict = dishes.find((d) => !fitsProfile(d.item, profile));
+      return done((lang === "en" ? `Added to your picks: ${names}. Tap "Send to staff" when you're ready.` : lang === "th" ? `เพิ่มลงในรายการที่เลือกแล้ว: ${names}${p} กด "ให้พนักงานดู" เมื่อพร้อมสั่ง` : `${names} ကို ရွေးထားတာတွေထဲ ထည့်လိုက်ပါတယ်${p}။`)
+        + (conflict ? ` ⚠ ${profileConflictReply(lang, p, conflict.item, profile)}` : ""), { type: "add_to_picks", ids: dishes.map((d) => d.item.id), qty });
     }
   }
 
   // 4b. pork (from the owner's "contains pork" tag)
   if (has(t, W.pork) && !dishes.length && !has(t, ALLERGY_INTENT.slice(0, 5))) {
+    // dishes WITH pork are listed so a diner can avoid them; the allergy profile does not hide any of them (it only filters suggestions)
     const list = items.filter((i) => i.available && i.tags.includes("contains_pork"));
     const names = join(lang, list.map((i) => `${nm(i, lang)} (${money(lang, i.price)})`));
     return done(list.length
@@ -344,7 +379,7 @@ RULES
 8. ${pr.upsell ? "You may suggest one drink or dessert that goes well, politely." : "Do not upsell or push extra dishes."}
 9. The waiter is ${male ? "MALE" : "FEMALE"}. In Burmese say "${male ? "ကျွန်တော်" : "ကျွန်မ"}" for "I" and end sentences with "${male ? "ခင်ဗျာ" : "ရှင်"}". Use polite spoken style ending in "ပါတယ်${male ? "ခင်ဗျာ" : "ရှင်"}" / "ပါဘူး${male ? "ခင်ဗျာ" : "ရှင်"}", never the formal "သည်" / "ပါသည်". Write prices with "ဘတ်", write the word "Allergens" in English, keep allergen names in English, use the Burmese dish names from the data. To offer more help say "ဘာကူညီပေးရမလဲ${male ? "ခင်ဗျာ" : "ရှင်"}".
 10. Vegetarian requests: list ONLY dishes tagged "vegetarian" or "vegan".
-${pr.rules ? `11. Owner rules: ${pr.rules}\n` : ""}12. UI actions. After your reply, write a last line "ACTION: <json>":
+${pr.rules ? `11. Owner rules: ${pr.rules}\n` : ""}${ctx.profile?.length ? `11b. The customer has told us their allergies: ${ctx.profile.join(", ")}. Never suggest a dish whose "allergens" list contains any of them, or whose "allergens" is null. Do not say anything else about allergens.\n` : ""}12. UI actions. After your reply, write a last line "ACTION: <json>":
 - {"type":"show_dishes","ids":[dish ids]} when you recommend or discuss specific dishes (max 4 ids from the data, available dishes only).
 - ACTION: none for greetings, opening hours, Wi-Fi, parking, dishes not on the menu, and refusals.
 The ACTION line is never shown to the customer, so never mention it in the reply.
@@ -426,6 +461,15 @@ function checkModelReply(raw: string, lang: Lang, p: string, ctx: Ctx, topic: st
   // it only sees the data it was given and has been wrong about it. Allergen facts come from the database only, so such
   // a reply is replaced by the stored allergen data of the dish it names (or by a request to name the dish).
   const named = matchDishes(text, ctx.items)[0]?.item;
+  // The diner's allergy profile: a reply that suggests a dish with one of their allergens (or no allergen data) is replaced,
+  // and dish cards the model attaches are limited to dishes that fit the profile.
+  const profile = ctx.profile ?? [];
+  const misfit = profile.length ? matchDishes(text, ctx.items).map((d) => d.item).find((i) => !fitsProfile(i, profile)) : undefined;
+  if (misfit) return { reply: profileConflictReply(lang, p, misfit, profile), action: { type: "show_dishes", ids: [misfit.id] }, topic: "allergens", allergens, answered: true, usedModel: true };
+  if (action.type === "show_dishes" && profile.length) {
+    const ids = (action.ids ?? []).filter((id) => { const it = ctx.items.find((i) => i.id === id); return it && fitsProfile(it, profile); });
+    action = ids.length ? { type: "show_dishes", ids } : { type: "none" };
+  }
   if (allergensOutsideDishNames(text, ctx.items).length) {
     return named
       ? { reply: dishAllergenReply(lang, p, named), action: { type: "show_dishes", ids: [named.id] }, topic: "allergens", allergens, answered: true, usedModel: true }

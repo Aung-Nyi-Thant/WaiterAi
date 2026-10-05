@@ -73,7 +73,8 @@ CREATE TABLE IF NOT EXISTS chat_sessions (
   restaurant_id INTEGER NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
   table_no TEXT NOT NULL DEFAULT '',
   lang TEXT NOT NULL DEFAULT 'en',
-  started_at TEXT NOT NULL DEFAULT (datetime('now'))
+  started_at TEXT NOT NULL DEFAULT (datetime('now')),
+  profile TEXT NOT NULL DEFAULT '[]'    -- allergens the diner chose (no name or contact data); for the owner's insights
 );
 CREATE TABLE IF NOT EXISTS chat_messages (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -106,7 +107,8 @@ CREATE TABLE IF NOT EXISTS orders (
 CREATE TABLE IF NOT EXISTS order_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-  item_id INTEGER, name TEXT NOT NULL, qty INTEGER NOT NULL DEFAULT 1, price REAL NOT NULL DEFAULT 0
+  item_id INTEGER, name TEXT NOT NULL, qty INTEGER NOT NULL DEFAULT 1, price REAL NOT NULL DEFAULT 0,
+  flag TEXT NOT NULL DEFAULT ''          -- the diner's allergens this dish lists ("peanut,egg"), or "unknown" when it has no allergen data
 );
 CREATE TABLE IF NOT EXISTS calls (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -148,6 +150,9 @@ function open(): DB {
   try { database.exec("ALTER TABLE chat_messages ADD COLUMN feedback_reason TEXT NOT NULL DEFAULT ''"); } catch {}
   // ...and before table bills existed: an order counts toward its table's bill until staff mark it paid
   try { database.exec("ALTER TABLE orders ADD COLUMN paid_at TEXT"); } catch {}
+  // ...and before the diner's allergy profile existed
+  try { database.exec("ALTER TABLE chat_sessions ADD COLUMN profile TEXT NOT NULL DEFAULT '[]'"); } catch {}
+  try { database.exec("ALTER TABLE order_items ADD COLUMN flag TEXT NOT NULL DEFAULT ''"); } catch {}
   // ...and before a diner's phone had to prove it ordered at a table before reading that table's bill
   try { database.exec("ALTER TABLE orders ADD COLUMN receipt TEXT NOT NULL DEFAULT ''"); } catch {}
   // The demo accounts (demo@shop.ai / demo1234, PINs 1111 and 2222) are for local development only.

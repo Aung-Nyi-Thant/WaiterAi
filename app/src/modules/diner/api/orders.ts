@@ -1,6 +1,7 @@
 import { restaurantBySlug, itemsOf } from "@/modules/platform/menu";
 import { run, all, db } from "@/modules/platform/db";
 import { json, bad, body } from "@/modules/platform/http";
+import { cleanProfile } from "@/modules/platform/constants";
 
 export async function POST(req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -14,15 +15,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
     if (it && it.available) lines.push({ it, qty: Math.max(1, Math.min(20, Number(l.qty) || 1)) });
   }
   if (!lines.length) return bad("No available dishes were picked.");
-  // allergies the diner asked about in this chat session
-  const said = new Set<string>();
+  // allergies the diner chose in their profile, and the ones they asked about in this chat session: both go to the staff
+  const profile = cleanProfile(b.profile);
+  const said = new Set<string>(profile);
   if (b.sessionId) for (const m of all("SELECT allergens FROM chat_messages WHERE session_id = ? AND role = 'user'", String(b.sessionId))) JSON.parse(m.allergens || "[]").forEach((a: string) => said.add(a));
   const lang = ["en", "th", "my"].includes(b.lang) ? b.lang : "en";
   db.exec("BEGIN");
   try {
     const receipt = /^[A-Za-z0-9-]{24,64}$/.test(String(b.receipt || "")) ? String(b.receipt) : "";   // see diner/api/bill.ts
     const id = run("INSERT INTO orders (restaurant_id, table_no, status, lang, allergy_note, receipt) VALUES (?,?,?,?,?,?)", r.id, String(b.table || "").slice(0, 10), "picked", lang, [...said].join(", "), receipt).id;
-    for (const { it, qty } of lines) run("INSERT INTO order_items (order_id, item_id, name, qty, price) VALUES (?,?,?,?,?)", id, it.id, it.name.en, qty, it.price);
+    for (const { it, qty } of lines) {
+      // flag the dish lines that clash with the diner's profile: the allergens the dish lists, or "unknown" when it has no allergen data
+      const flag = !profile.length ? "" : it.allergens === null ? "unknown" : it.allergens.filter((a: string) => profile.includes(a)).join(",");
+      run("INSERT INTO order_items (order_id, item_id, name, qty, price, flag) VALUES (?,?,?,?,?,?)", id, it.id, it.name.en, qty, it.price, flag);
+    }
     db.exec("COMMIT");
     return json({ ok: true, id });
   } catch (e) { db.exec("ROLLBACK"); throw e; }

@@ -45,7 +45,9 @@ describe("AI-16 every question is stored with its language, topic and whether it
     expect(JSON.parse(rows[0].allergens)).toEqual(["peanut"]);
     expect(get("SELECT table_no FROM chat_sessions WHERE id = 'log-1'")!.table_no).toBe("11");
     expect(r.data.messageId).toBeGreaterThan(0);
-    expect(Object.keys(get("SELECT * FROM chat_sessions WHERE id = 'log-1'")!).sort()).toEqual(["id", "lang", "restaurant_id", "started_at", "table_no"]);
+    // no name, phone, email or device id is stored; "profile" holds only allergen keys the diner chose (empty here)
+    expect(Object.keys(get("SELECT * FROM chat_sessions WHERE id = 'log-1'")!).sort()).toEqual(["id", "lang", "profile", "restaurant_id", "started_at", "table_no"]);
+    expect(get("SELECT profile FROM chat_sessions WHERE id = 'log-1'")!.profile).toBe("[]");
   });
   it("test chats from the owner dashboard (preview) are not stored", async () => {
     noModel();
