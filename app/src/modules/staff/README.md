@@ -1,7 +1,7 @@
 # Module 4: Staff and orders
 Owner: Member 4 · Requirements: FR-4 (waiter and kitchen screens), FR-9 (staff accounts)
 
-What it does: PIN sign-in for waiters and chefs, the waiter "Floor" screen (calls, picks with allergy banners, ready orders, tables, sold-out), the chef "Kitchen" screen (New / Cooking / Ready), the order status rules, and the owner's staff management page.
+What it does: PIN sign-in for waiters and chefs (unique PIN per restaurant, 5 wrong PINs lock sign-in for 10 minutes), the waiter "Floor" screen (calls, picks with allergy banners **and a warning tag on each dish line that clashes with the diner's allergy profile**, ready orders, tables, sold-out), the chef "Kitchen" screen (New / Cooking / Ready), the order status rules, and the owner's staff management page.
 
 | File | Purpose |
 |---|---|
@@ -9,7 +9,8 @@ What it does: PIN sign-in for waiters and chefs, the waiter "Floor" screen (call
 | `WaiterPage.tsx` | Waiter floor screen (refreshes every 3 s) |
 | `ChefPage.tsx` | Kitchen screen with sold-out panel |
 | `ManageStaffPage.tsx` | Owner page to add staff, change PINs, remove staff |
-| `orders.ts` | Reads orders with their items and open calls |
+| `orders.ts` | Reads orders with their items (and each line's allergy `flag`) and open calls; builds the table bills |
+| `api/bills.ts` | Mark a table paid (waiter only) |
 | `api/login.ts`, `api/me.ts` | Staff sign-in and session check |
 | `api/floor.ts`, `api/kitchen.ts` | Data for the two screens |
 | `api/orders.ts` | Order status changes: picked to new to cooking to ready to served, with role and step checks (403 / 409) |

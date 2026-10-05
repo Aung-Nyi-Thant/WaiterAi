@@ -7,7 +7,7 @@ Menu-aware AI waiter for restaurants (Thai, Burmese, English). Diners scan a QR 
 | `app/` | The web app (Next.js + SQLite + Ollama). Start here: `app/README.md` |
 | `app/src/modules/` | The code, split into 5 modules: `diner`, `ai`, `owner`, `staff`, `platform`. Each has its own README |
 | `eval/` | Test questions, sample menu and the model comparison scripts |
-| `docs/` | SRS, feature plan, project explanation, team work plan |
+| `docs/` | SRS, feature plan, project explanation, team work plan, measured results (`NFR_RESULTS.md`), and the product worksheet answers (`PRODUCT_IDEA_WORKSHEET.md`) |
 | `design/` | UI design generators (Art Deco and Glass mock-ups) |
 
 ## Run it

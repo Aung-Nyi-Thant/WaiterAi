@@ -9,12 +9,13 @@ What it does: the database and its demo data, login and sessions, the shared hel
 | `db.ts` | SQLite database: 12 tables, demo restaurant, query helpers |
 | `auth.ts` | Password and PIN hashing, signed cookies, owner and staff sessions |
 | `http.ts` | JSON response helpers |
-| `menu.ts`, `constants.ts` | Shared types, allergen and tag lists, restaurant and menu queries |
+| `menu.ts`, `constants.ts` | Shared types, allergen and tag lists (`allergenName`, `cleanProfile`), restaurant and menu queries, `popularDishes` (orders of the last 30 days) |
+| `images.ts` | Checks that an upload really is a JPEG, PNG or WebP (by its first bytes) |
 | `client.ts`, `Icon.tsx` | Browser helpers (fetch wrapper, polling) and icon set |
 | `AuthCard.tsx` | Owner sign-in and register form |
 | `ImportPage.tsx`, `api/import*.ts` | Menu photo import: upload, AI reading, review, confirm, name suggestions |
 | `QrPage.tsx`, `api/qr.ts`, `api/lan.ts` | QR codes per table and the Wi-Fi address |
-| `InsightsPage.tsx`, `api/insights.ts` | What diners asked |
+| `InsightsPage.tsx`, `api/insights.ts` | What diners asked and what the AI learned for the owner: topics, languages, unanswered questions, unmet vegetarian demand, **the allergies diners have and how many dishes serve each, dishes with no allergen data (hidden from diners with an allergy profile), most-ordered dishes, questions asked again and again** |
 | `api/register.ts`, `api/login.ts`, `api/logout.ts`, `api/ownerMe.ts` | Owner accounts |
 | `api/upload.ts`, `api/uploadsServe.ts` | Photo upload and serving |
 

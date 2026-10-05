@@ -113,6 +113,7 @@ Priority: **M** = must, **S** = should.
 | DM-8 | The system shall show active specials. | S |
 | DM-9 | The system shall show a saved copy of the menu with a notice if the server cannot be reached. | S |
 | DM-10 | The system shall record each menu open for insights. | S |
+| DM-11 | The diner shall be able to choose their allergies once (the 14 allergens). The choice is kept only on the diner's phone. Dishes that list a chosen allergen shall be marked with a warning sign and the allergen name (never colour alone), allergens in the profile shall be listed first on a dish, dishes with no allergen data shall be marked, and a "without my allergens" filter shall appear. Adding a clashing dish shall show a warning but remain possible. | M |
 
 #### 3.1.2 AI chat (AI)
 | ID | Requirement | Pri |
@@ -132,16 +133,21 @@ Priority: **M** = must, **S** = should.
 | AI-13 | The system shall show dish cards with an Add button under replies that discuss dishes. | M |
 | AI-14 | The diner shall be able to rate each reply; a negative rating flags it for the owner. | S |
 | AI-15 | Each restaurant shall have a monthly chat limit (default 300); when reached, a fixed message and the plain menu are shown. | S |
+| AI-17 | A model reply shall not state any allergen fact, in either direction ("contains peanuts", "nut-free", "no dairy"). Such a reply shall be replaced by the stored allergen data of the dish it names (or by a request to name the dish or the allergen). Allergen words inside a dish name are not allergen statements. | M |
+| AI-18 | With an allergy profile (DM-11) the assistant shall apply it to every answer: "what can I eat?" shall list the dishes that have allergen data and do not list the diner's allergens, name the dishes without data separately, and end with the confirm-with-the-staff sentence; vegetarian lists and recommendations shall leave out dishes that list a profile allergen or have no allergen data; a model reply that suggests such a dish shall be replaced; picking a clashing dish shall give a warning. The assistant shall never say a dish is safe. | M |
+| AI-19 | Questions with details shall be answered from the menu data without the model: spice level ("mild", "spicy"), budget ("under / up to 100 baht"), type of dish (drink, dessert, starter, salad, curry, main), vegetarian/vegan and "popular". Dishes shall be on sale, shall fit the allergy profile, and shall be ranked by how often diners ordered them in the last 30 days (cancelled orders excluded); no order counts shall be invented when there are none. Open questions without such details shall go to the model. | S |
+| AI-20 | Short Thai allergen words shall not be matched inside other Thai words (for example "งา" (sesame) in "พนักงาน" (staff) or "งาน" (work)). | M |
 | AI-16 | The system shall store for each question: text, language, topic, allergens mentioned and whether it was answered, without personal data. | M |
 
 #### 3.1.3 Picks and staff calls (PC)
 | ID | Requirement | Pri |
 |---|---|---|
 | PC-1 | The diner shall add, change quantity, remove dishes in "My picks" (kept in the browser). | M |
-| PC-2 | "Show to waiter" shall create an order in status *picked*, with table, language, items and the allergens the diner mentioned in the chat. Sold-out dishes shall be ignored; an order with no available dish shall be rejected. | M |
+| PC-2 | "Send to staff" shall create an order in status *picked*, with table, language, items and the allergens the diner mentioned in the chat. Sold-out dishes shall be ignored; an order with no available dish shall be rejected. | M |
 | PC-3 | The call-staff button and a bill or help request typed in the chat shall create a call for the table; a second open call of the same type for the same table shall reuse the first, whichever way it was raised. | M |
 | PC-4 | The waiter shall see, per table, the running bill: dishes of orders the staff have taken (picked orders are listed as pending and are not in the total). The waiter shall mark a table paid; this clears its bill and its open "bill" call. Only the waiter role may do this (HTTP 403 otherwise). | M |
 | PC-5 | The diner shall see the running bill of their own table. A phone is shown a table's bill only if it sent picks from that table: the phone keeps a random receipt code, saves it with its picks, and sends it when asking for the bill. Without a matching code nothing is shown, so other tables' orders cannot be read by trying table numbers. | M |
+| PC-7 | An order shall carry the diner's allergy profile together with the allergens mentioned in the chat as its allergy note, and each order line that lists a profile allergen, or has no allergen data, shall be flagged (the allergens, or "unknown"). The waiter screen and the chef's kitchen ticket shall show the allergy banner and a warning tag on each flagged line. | M |
 | PC-6 | The diner shall not be shown kitchen progress of an order (order status for diners is out of scope). The table bill is a view and a manual "paid" mark only; there is no online payment or bill splitting. | M |
 
 #### 3.1.4 Owner accounts (OA)
@@ -201,6 +207,7 @@ Priority: **M** = must, **S** = should.
 |---|---|---|
 | IN-1 | The owner shall see, for 1, 7 or 30 days: number of chats, tables, questions, share answered from data, unanswered count, menu opens. | S |
 | IN-2 | The system shall show most-asked topics, languages used, and an "unmet demand" card, shown only when the number of vegetarian/vegan questions is greater than the number of vegetarian/vegan dishes on the menu. | S |
+| IN-4 | The owner shall see which allergies diners chose (one count per chat session, with no personal data) with the number of dishes on sale that serve each (a dish serves a diner who avoids X only if it has allergen data and does not list X), the allergens diners asked about, the dishes on sale with no allergen data (hidden from diners with a profile), the most-ordered dishes of the period, and the questions asked more than once. | S |
 | IN-3 | The system shall list unanswered questions with a shortcut to add an FAQ, and answers diners rated wrong. | S |
 
 ### 3.2 External interface requirements
@@ -243,7 +250,9 @@ Priority: **M** = must, **S** = should.
 - NFR-M2: The model name and server address are configuration values (`OLLAMA_MODEL`, `OLLAMA_URL`).
 - NFR-M3: Automated tests exist for the API and the chat.
 **Privacy**
-- NFR-PR1: No diner name, phone number or email is collected; chat logs contain no personal identifiers.
+- NFR-PR1: No diner name, phone number or email is collected; chat logs contain no personal identifiers. The allergy profile is kept on the diner's phone; the server stores only allergen keys with the chat session and with the order.
+- NFR-S4: The language model shall make no allergen statement; every allergen sentence shown to a diner comes from stored data (AI-17).
+- NFR-S5: A dish with no allergen data shall never be suggested to a diner with an allergy profile, and "not listed" shall never be worded as "safe" (AI-18).
 
 ### 3.4 Business rules
 - BR-1 A dish with allergen data "not provided" is listed under "allergen information not provided" in any allergen answer.
@@ -261,7 +270,7 @@ Priority: **M** = must, **S** = should.
 |---|---|---|---|
 | UC-1 | Browse the menu | Diner | Scan QR → menu opens → pick language → search/filter → open a dish |
 | UC-2 | Ask about allergens | Diner | Open chat → type "I'm allergic to peanuts" → system lists dishes from data and asks to confirm with staff |
-| UC-3 | Place picks | Diner | Add dishes → "Show to waiter" → order *picked* created |
+| UC-3 | Place picks | Diner | Add dishes → "Send to staff" → order *picked* created |
 | UC-4 | Call staff | Diner | Press bell (or ask for the bill) → call created |
 | UC-5 | Manage menu | Owner | Sign in → Menu items → add/edit dish, set allergens, sold-out switch |
 | UC-6 | Import a menu | Owner | Upload photo → AI reads → owner reviews and edits → confirm and publish |
