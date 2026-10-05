@@ -50,6 +50,40 @@ export default function InsightsPage() {
           {d.flagged.length > 0 && <div className="sa-plate r-xl" style={{ padding: "18px 24px" }}><div className="eyebrow soft-l" style={{ marginBottom: 4 }}>Answers diners marked “not right”</div>{d.flagged.map((f: any) => <div key={f.id} style={{ padding: "8px 0", borderBottom: "1px solid var(--line)", fontSize: 14 }}>{f.answer}</div>)}</div>}
         </div>
       </div>
+      <div className="grid2" style={{ alignItems: "start" }}>
+        <div className="sa-plate r-xl" style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 10 }}>
+          <div className="eyebrow soft-l">Allergies your diners have</div>
+          {d.allergyProfiles.length === 0 && <div className="soft-l">No diner has set an allergy profile in this period.</div>}
+          {d.allergyProfiles.map((a: any) => (
+            <div key={a.allergen} className="row" style={{ justifyContent: "space-between", gap: 12, padding: "6px 0", borderBottom: "1px solid var(--line)" }}>
+              <div style={{ fontWeight: 600 }}>{a.label}</div>
+              <div style={{ textAlign: "right" }}>
+                <b>{a.diners}</b> {a.diners === 1 ? "diner" : "diners"} · <span style={a.dishes < 3 ? { color: "var(--cherry-text)", fontWeight: 700 } : undefined}>{a.dishes} {a.dishes === 1 ? "dish fits" : "dishes fit"}{a.dishes < 3 ? " ⚠" : ""}</span>
+              </div>
+            </div>))}
+          {d.allergensAsked.length > 0 && <>
+            <div className="eyebrow soft-l" style={{ marginTop: 8 }}>Allergens diners asked about in the chat</div>
+            <div className="soft-l">{d.allergensAsked.map((a: any) => `${a.label} ×${a.n}`).join(" · ")}</div>
+          </>}
+          {d.noAllergenData.length > 0 && (
+            <div className="sa-notice" role="status" style={{ marginTop: 8 }}>
+              <div style={{ flex: 1 }}><b>{d.noAllergenData.length} {d.noAllergenData.length === 1 ? "dish has" : "dishes have"} no allergen data</b> ({d.noAllergenData.slice(0, 4).join(", ")}{d.noAllergenData.length > 4 ? "…" : ""}). The AI never suggests these to a diner with an allergy profile, so they are hidden from them.</div>
+              <Link className="btn btn-ol btn-sm" href="/owner/menu">Fill in</Link>
+            </div>)}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div className="sa-plate r-xl" style={{ padding: "18px 24px" }}>
+            <div className="eyebrow soft-l" style={{ marginBottom: 4 }}>Most ordered dishes</div>
+            {d.topDishes.length === 0 && <div className="soft-l" style={{ padding: "8px 0" }}>No orders in this period yet.</div>}
+            {d.topDishes.map((t: any) => <div key={t.name} className="row" style={{ justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--line)" }}><span style={{ fontWeight: 500 }}>{t.name}</span><b>{t.n}×</b></div>)}
+          </div>
+          <div className="sa-plate r-xl" style={{ padding: "18px 24px" }}>
+            <div className="eyebrow soft-l" style={{ marginBottom: 4 }}>Questions asked again and again</div>
+            {d.topQuestions.length === 0 && <div className="soft-l" style={{ padding: "8px 0" }}>No question was asked more than once.</div>}
+            {d.topQuestions.map((q: any, i: number) => <div key={i} className="row" style={{ justifyContent: "space-between", gap: 10, padding: "6px 0", borderBottom: "1px solid var(--line)" }}><span style={{ fontWeight: 500 }}>{q.text}</span><b>×{q.n}</b></div>)}
+          </div>
+        </div>
+      </div>
     </>
   );
 }
