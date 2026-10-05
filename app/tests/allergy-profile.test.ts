@@ -4,7 +4,8 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { aiCtx, call, mockModel, noModel, staffLogin } from "./helpers";
 import { answer, fitsProfile } from "@/modules/ai/ai";
-import { cleanProfile } from "@/modules/platform/constants";
+import { ALLERGENS, allergenName, cleanProfile } from "@/modules/platform/constants";
+import { DICT } from "@/modules/diner/i18n";
 import { POST as chat } from "@/modules/ai/api/chat";
 import { POST as placeOrder } from "@/modules/diner/api/orders";
 import { POST as orderAction } from "@/modules/staff/api/orders";
@@ -74,6 +75,29 @@ describe("'what can I eat?' with a profile is answered from the database", () =>
     expect(my.reply).toContain("peanut");
     expect(my.reply).toContain("ဝန်ထမ်းကို မေးမြန်းပေးပါ");
     expect(my.reply).not.toContain("အမဲသား မတ်စမန်ကာရီ");
+  });
+});
+
+describe("the diner screen's allergy texts exist in every language, and its quick question is understood in each", () => {
+  const KEYS = ["myAllergies", "setAllergies", "clearAll", "done", "mine", "yourAllergen", "profileHelp", "conflictToast", "chipMyAllergies"];
+  it.each(["en", "th", "my"] as const)("%s has every label and says the profile never makes a dish safe", (lang) => {
+    for (const k of KEYS) expect(DICT[lang][k], `${lang}.${k}`).toBeTruthy();
+    expect(DICT[lang].profileHelp.length).toBeGreaterThan(40);
+  });
+  it.each(["en", "th", "my"] as const)("the %s quick question 'what can I eat?' is answered from the data, not by the model", async (lang) => {
+    const noModelCalls = noModel();
+    const r = await answer(DICT[lang].chipMyAllergies, lang, await aiCtx({ profile: ["peanut"] }));
+    expect(noModelCalls).toHaveLength(0);
+    expect(r.topic).toBe("allergens");
+    expect(r.action.type).toBe("show_dishes");
+    expect(r.reply).toMatch(lang === "en" ? /Dishes that do not list peanut/ : lang === "th" ? /เมนูที่ไม่ได้ระบุว่ามี ถั่วลิสง/ : /peanut ပါဝင်တယ်လို့ မဖော်ပြထားတဲ့/);
+  });
+  it("every allergen has a Thai name, and the English and Burmese screens use the English names", () => {
+    for (const a of ALLERGENS) {
+      expect(allergenName(a, "th"), a).not.toBe(a);
+      expect(allergenName(a, "en")).toBe(allergenName(a, "my"));   // the owner asked for English allergen names in Burmese
+      expect(allergenName(a, "en").length).toBeGreaterThan(2);
+    }
   });
 });
 

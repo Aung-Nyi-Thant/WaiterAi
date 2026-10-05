@@ -184,6 +184,9 @@
 .sa-tag--unknown { background: transparent; border-style: dashed; color: var(--ink-muted); font-weight: 500; }
 .sa-tag--veg { background: var(--ok-soft); border-color: var(--ok); color: var(--ink); }
 .sa-tag--spicy { background: var(--cherry-soft); border-color: var(--cherry-text); color: var(--ink); }
+/* an allergen the diner chose in their allergy profile (also used on the staff tickets): never colour alone, the tag carries a warning sign and text */
+.sa-tag--alert { background: var(--cherry-soft); border: 2px solid var(--cherry-text); color: var(--cherry-text); font-weight: 800; }
+.sa-dish--conflict { box-shadow: inset 6px 0 0 var(--cherry-text), var(--lift-1); }
 
 /* ---------- Sign header + checker + tabs ---------- */
 .sa-checker { height: 12px; background-color: var(--checker-b);

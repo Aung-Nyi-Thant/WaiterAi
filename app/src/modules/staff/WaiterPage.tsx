@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Icon from "@/modules/platform/Icon";
 import SwipeCard from "@/modules/staff/SwipeCard";
 import { api, usePoll, minutesAgo } from "@/modules/platform/client";
+import { ALLERGEN_LABEL } from "@/modules/platform/constants";
 
 const KIND: Record<string, string> = { bill: "Bill, please", help: "Needs help at the table", other: "Needs the staff" };
 type Bill = { table: string; lines: { name: string; qty: number; price: number }[]; total: number; pending: { name: string; qty: number; price: number }[]; inKitchen: number; asked: boolean };
@@ -84,7 +85,7 @@ export default function Waiter() {
           <SwipeCard key={`pick-${o.id}`} onSwipeRight={() => act(`/api/staff/orders/${o.id}`, { action: "take" })} onSwipeLeft={() => act(`/api/staff/orders/${o.id}`, { action: "later" })} rightLabel="Take order" leftLabel="Dismiss">
             <article className="sa-ticket">
               <div className="sa-ticket__head"><div className="sa-ticket__table">T{o.table || "?"}</div><div className="sa-ticket__meta">{{ en: "English", th: "Thai", my: "Burmese" }[o.lang as string]} · {minutesAgo(o.createdAt)}<br /><span className="sa-status sa-status--new">Picks</span></div></div>
-              <ul className="sa-ticket__lines">{o.items.map((i: any, k: number) => <li key={k}><b>{i.qty}×</b><span>{i.name}</span><span className="sa-ticket__price">฿{i.price * i.qty}</span></li>)}</ul>
+              <ul className="sa-ticket__lines">{o.items.map((i: any, k: number) => <li key={k}><b>{i.qty}×</b><span>{i.name} <LineFlag flag={i.flag} /></span><span className="sa-ticket__price">฿{i.price * i.qty}</span></li>)}</ul>
               {o.allergy && <AllergyBanner allergen={o.allergy} note="Confirm with the kitchen before ordering." />}
               <div className="sa-ticket__actions">
                 <button className="sa-btn sa-btn--staff" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "take" })}>Take order</button>
@@ -97,7 +98,7 @@ export default function Waiter() {
           <SwipeCard key={`ready-${o.id}`} onSwipeRight={() => act(`/api/staff/orders/${o.id}`, { action: "served" })} rightLabel="Served">
             <article className="sa-ticket sa-ticket--ready">
               <div className="sa-ticket__head"><div className="sa-ticket__table">T{o.table || "?"}</div><div className="sa-ticket__meta">#{o.id}<br /><span className="sa-status sa-status--ready">Ready</span></div></div>
-              <ul className="sa-ticket__lines">{o.items.map((i: any, k: number) => <li key={k}><b>{i.qty}×</b><span>{i.name}</span></li>)}</ul>
+              <ul className="sa-ticket__lines">{o.items.map((i: any, k: number) => <li key={k}><b>{i.qty}×</b><span>{i.name} <LineFlag flag={i.flag} /></span></li>)}</ul>
               <button className="sa-btn sa-btn--ok sa-btn--block" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "served" })}><Icon name="check" />Served</button>
             </article>
           </SwipeCard>
@@ -147,6 +148,13 @@ export default function Waiter() {
   );
 }
 const Empty = ({ text }: { text: string }) => <div className="sa-plate sa-empty">{text}</div>;
+
+// A dish line that clashes with the diner's allergy profile: the allergens the dish lists, or "unknown" when the dish has no allergen data.
+export function LineFlag({ flag }: { flag?: string }) {
+  if (!flag) return null;
+  const text = flag === "unknown" ? "Allergen data missing" : flag.split(",").map((a) => ALLERGEN_LABEL[a] || a).join(", ");
+  return <span className="sa-tag sa-tag--alert" title="Clashes with the diner's allergy profile">⚠ {text}</span>;
+}
 
 // The design system's allergy banner: caution-sign yellow, the allergen in big type. Never dismissible.
 export function AllergyBanner({ allergen, note }: { allergen: string; note: string }) {

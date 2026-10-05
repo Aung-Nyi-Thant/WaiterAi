@@ -195,7 +195,7 @@ function profileConflictReply(l: Lang, p: string, item: Item, profile: string[])
     : `${n} မှာ ${a} ပါဝင်ပါတယ်${p}။ ဒါက သင့်ရဲ့ Allergens ထဲမှာ ပါပါတယ်${p}။ ${STAFF(l, p)}`;
 }
 // "what can I eat?" / "what suits my allergies?" (only used when the diner has a profile)
-const PROFILE_CUES = ["my allerg", "my profile", "can i eat", "what can i have", "what can i order", "safe for me", "suitable for me", "ที่ฉันกินได้", "ที่ผมกินได้", "ที่กินได้", "กินอะไรได้", "ฉันกินได้", "ผมกินได้", "โปรไฟล์", "ကျွန်တော်စားလို့", "ကျွန်မစားလို့", "စားလို့ရတဲ့", "စားလို့ရမလဲ"];
+const PROFILE_CUES = ["my allerg", "my profile", "can i eat", "what can i have", "what can i order", "safe for me", "suitable for me", "ที่ฉันกินได้", "ที่ผมกินได้", "ที่กินได้", "กินอะไรได้", "ฉันกินได้", "ผมกินได้", "โปรไฟล์", "ကျွန်တော်စားလို့", "ကျွန်မစားလို့", "စားလို့ရတဲ့", "စားလို့ရမလဲ", "စားလို့ရလဲ"];
 
 // An allergy question (or a model reply about allergens) that cannot be matched to a dish or an allergen in the data.
 const allergenAskReply = (l: Lang, p: string) =>
