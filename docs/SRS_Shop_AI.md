@@ -221,7 +221,7 @@ Priority: **M** = must, **S** = should.
 - NFR-P1: AI reply for open questions within 15 s on the reference computer (measured average about 5–6 s with `gemma4:12b`).
 - NFR-P2: Rule-based answers (allergens, prices, hours, orders) within 1 s (observed in tests: milliseconds).
 - NFR-P3: Menu page usable within 3 s on a local network.
-- NFR-P4: Support at least 3 simultaneous diners on the reference computer; AI requests are processed one at a time, first come first served. A request is processed for at most 15 s (NFR-P1) and waits in line for at most 15 s, so a diner has an answer or the fallback message within 30 s. Rule-based answers (allergens, prices, hours, orders) never wait for the AI.
+- NFR-P4: Support at least 3 simultaneous diners on the reference computer; AI requests are processed one at a time, first come first served. A request is processed for at most 15 s (NFR-P1) and waits in line for at most 14 s, so a diner has an answer or the fallback message within 30 s. Rule-based answers (allergens, prices, hours, orders) never wait for the AI.
 **Safety**
 - NFR-S1: Allergen answers must be generated from stored data only.
 - NFR-S2: Missing allergen data must never be presented as "no allergens".
@@ -318,7 +318,7 @@ A native Burmese speaker reviewed four rounds of Burmese answers; their correcti
 | Requirement group | Method | Result to date |
 |---|---|---|
 | AI-1 … AI-13 | 30-question chat test through the real chat API (`scripts/chat_smoke.py`) and `npm run eval:live` with `gemma4:12b` | 30/30 as expected (5 Oct 2026); `eval:live` 29/30 once and 30/30 four times, thresholds met |
-| OA, MM, ST, QR, SF, PC, IN, MI | API test (`scripts/e2e.py`, 38 checks) and automated tests (`npm test`: 205, `npm run test:e2e`: 11): validation, roles, order flow, isolation, photo import, PIN rules, bill access | all passed (5 Oct 2026) |
+| OA, MM, ST, QR, SF, PC, IN, MI | API test (`scripts/e2e.py`, 66 checks on a fresh database) and automated tests (`npm test`: 215, `npm run test:e2e`: 11): validation, roles, order flow, isolation, photo import, PIN rules, bill access | all passed (5 Oct 2026) |
 | NFR-R1 / AI-11 | `scripts/nfr_check.py nfr4`: server with Ollama unreachable | passed: fallback message in 0.0 s; menu, picks, calls and rule-based answers still work. If the model hangs instead of stopping, the answer is cut off at the 15 s limit. |
 | NFR-P3 (server side) | `scripts/nfr_check.py nfr2` | menu data max 3 ms, staff floor data max 1 ms; phone over Wi-Fi **to do** |
 | NFR-P1 (open questions in 15 s) | `scripts/nfr_check.py nfr1` | **not valid yet**: the run was disturbed by another program using the same Ollama (see `docs/NFR_RESULTS.md`); re-run on a quiet computer |

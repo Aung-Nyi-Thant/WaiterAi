@@ -350,11 +350,11 @@ async function askModel(message: string, lang: Lang, ctx: Ctx): Promise<string> 
   // SRS FR-2 / NFR-1: once an answer is started it takes at most 15 seconds; a slower model is cut off and the
   // diner gets the "AI unavailable" message with the menu and staff call still at hand, not a long wait.
   // SRS NFR-7: with several diners at once the answers are made one at a time, and nobody waits more than
-  // another 15 seconds for a turn, so a diner has an answer or the message within 30 seconds.
+  // 14 seconds for a turn (15 s of work + 14 s of waiting + request overhead stays under the 30 s of NFR-7).
   return complete(messages as Msg[], { temperature: 0.2, maxTokens: 220, timeoutMs: CHAT_TIMEOUT_MS, maxWaitMs: CHAT_QUEUE_WAIT_MS });
 }
 export const CHAT_TIMEOUT_MS = 15_000;
-export const CHAT_QUEUE_WAIT_MS = 15_000;
+export const CHAT_QUEUE_WAIT_MS = 14_000;
 
 // FR-7: the owner's voice setting decides how a Thai or Burmese reply ends. The model is told this in its
 // prompt, but it is not trusted to do it, so the ending is fixed here (a wrong one is swapped, a missing one added).

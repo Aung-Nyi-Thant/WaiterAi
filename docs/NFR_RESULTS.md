@@ -14,7 +14,7 @@ computer (no phone, no Wi-Fi). Scripts: `app/scripts/nfr_check.py`, `app/scripts
 | NFR-2 menu and staff screens within 3 s | menu data: average 1 ms, maximum 3 ms; staff floor data: average 1 ms, maximum 1 ms (20 requests each). Staff screens poll every 3 s (`usePoll(load, 3000)`), diner menu every 20 s. **Server side only; the phone-over-Wi-Fi timing in the SRS is still to do.** | `nfr_check.py nfr2` |
 | NFR-4 AI unavailable (Ollama stopped / port closed) | menu opens, picks and staff call work, chat shows the fallback message in 0.0 s (limit 5 s), rule-based and allergy answers still work | `nfr_check.py nfr4` (server started with `OLLAMA_URL=http://127.0.0.1:9`) |
 | NFR-4 AI hangs (accepts the connection, never answers) | fallback after **15.0 s**, not 5 s. The 5 s limit holds for a stopped Ollama; a hung or very slow model is cut off at the 15 s limit (before the fix it was 90 s). | `nfr_check.py nfr4` against a fake hanging Ollama |
-| Old API checks | `e2e.py`: 38 checks, all passed (including photo import with the real vision model) | `e2e.py` |
+| Old API checks | `e2e.py`: 66 of 66 checks passed on a fresh database (including photo import with the real vision model). Run it once per fresh database: a second run fails the "register" check only because the test restaurant already exists. | `e2e.py` |
 | Automated tests | `npm test`: 205 passed; `npm run test:e2e`: 11 passed; `tsc --noEmit` clean; `next build` OK | |
 
 ## NFR-1 (open questions within 15 s): PASS on a quiet machine
@@ -57,11 +57,18 @@ bundles share it). Once a request starts it may take 15 s (NFR-1); it may wait a
 an answer or the fallback within 30 s (NFR-7). Covered by 4 tests in `tests/provider.test.ts`.
 `nfr_check.py nfr7` now takes a think-time (seconds between a diner's questions, default 10; 2 = stress test).
 
-**After the fix:** see the last section of this file for the re-run (it needs a quiet computer; on 5 Oct 2026 the machine
-became slow again during the re-run, with Ollama decoding at 2.7-8 tokens/s while a Chrome helper process used >100% CPU).
+**After the fix (queue, 15 s work + 14 s waiting):**
+
+| Pace of each diner | Result | Verdict |
+|---|---|---|
+| asks again 10 s after each answer, machine slower than usual at the time (heavy load) | 74 answers, 25 fallbacks (34%), 0 errors, 90th percentile 21.2 s, slowest 30.0 s (the budget was 15 + 15 and landed on 30.0 s; the wait is now 14 s) | FAIL by 0.0x s, fixed by the 14 s wait. Also shows the limit of one model: 3 people asking every ~20 s need more than one answer slot gives. |
+| **asks again 30 s after each answer (a person reading and typing), `nfr_check.py nfr7 … 10 30`** | **46 answers, 7 fallbacks (15%), 0 errors, 400 staff-screen refreshes all under 3 s, average 11.6 s, 90th percentile 17.6 s, slowest 25.7 s** | **PASS** (no error, every answer or fallback within 30 s) |
+
+Be precise in the SRS: NFR-7 passes as worded (no error, every reply within 30 s), but about 1 in 7 answers is the fallback
+message when 3 diners chat continuously; answers take about 12 s on average because they wait for their turn. A restaurant
+with more simultaneous chatters needs a faster computer or a smaller menu prompt.
 
 ## Not done
 
-- NFR-7 re-run after the queue fix, if the last section does not show a result.
 - NFR-3 (owner publishes a first menu within 30 minutes): needs people.
 - Phone tests, interviews, native Burmese review: need people.
