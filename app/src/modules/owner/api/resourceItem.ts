@@ -8,7 +8,7 @@ export async function PUT(req: Request, { params }: P) {
   const { resource, id } = await params;
   const c = RESOURCES[resource]; if (!c) return bad("Unknown resource.", 404);
   const r = update(s.restaurantId, c, Number(id), await body(req));
-  return r.error ? bad(r.error, 404) : json({ ok: true });
+  return r.error ? bad(r.error, r.notFound ? 404 : 400) : json({ ok: true });
 }
 export async function DELETE(_: Request, { params }: P) {
   const s = await ownerSession(); if (!s) return unauthorized();

@@ -99,7 +99,8 @@ CREATE TABLE IF NOT EXISTS orders (
   lang TEXT NOT NULL DEFAULT 'en',
   allergy_note TEXT NOT NULL DEFAULT '',
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  paid_at TEXT
 );
 CREATE TABLE IF NOT EXISTS order_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -137,14 +138,20 @@ CREATE INDEX IF NOT EXISTS idx_calls_rest ON calls(restaurant_id, status);
 
 function open(): DB {
   const { DatabaseSync } = (process as any).getBuiltinModule("node:sqlite");
-  const dir = path.join(process.cwd(), "data");
+  const dir = process.env.DATA_DIR || path.join(process.cwd(), "data");   // same rule as paths.ts (no import: scripts/seed.mts loads this file directly)
   fs.mkdirSync(dir, { recursive: true });
   const database = new DatabaseSync(path.join(dir, "shop.db"));
   database.exec("PRAGMA busy_timeout = 10000");   // several server processes may start at once
   database.exec(SCHEMA);
   // migration for databases created before feedback_reason existed; SQLite has no "ADD COLUMN IF NOT EXISTS"
   try { database.exec("ALTER TABLE chat_messages ADD COLUMN feedback_reason TEXT NOT NULL DEFAULT ''"); } catch {}
-  try { seedIfEmpty(database); } catch (e: any) { if (!/UNIQUE|locked|busy/i.test(String(e?.message))) throw e; }
+  // ...and before table bills existed: an order counts toward its table's bill until staff mark it paid
+  try { database.exec("ALTER TABLE orders ADD COLUMN paid_at TEXT"); } catch {}
+  // The demo accounts (demo@shop.ai / demo1234, PINs 1111 and 2222) are for local development only.
+  // In production nothing is created: register an owner, or run `npm run db:seed` with your own credentials.
+  if (process.env.NODE_ENV !== "production") {
+    try { seedIfEmpty(database); } catch (e: any) { if (!/UNIQUE|locked|busy/i.test(String(e?.message))) throw e; }
+  }
   return database;
 }
 

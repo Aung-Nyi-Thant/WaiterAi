@@ -15,7 +15,7 @@ export default function QrPage() {
   return (
     <>
       <div className="no-print"><h1 style={{ fontSize: 40 }}>QR codes</h1><p className="soft-l" style={{ margin: "6px 0 0" }}>One code per table. Print, cut out and put them on the tables.</p></div>
-      <div className="gl r-xl no-print" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
+      <div className="sa-plate r-xl no-print" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
         <div className="grid2" style={{ gap: 12 }}>
           <div><label className="lbl" htmlFor="qb">Address diners will open</label><input id="qb" className="in-l" value={base} onChange={(e) => setBase(e.target.value)} /></div>
           <div><label className="lbl" htmlFor="qt">Number of tables</label><input id="qt" type="number" min={1} max={60} className="in-l" value={tables} onChange={(e) => setTables(Math.max(1, Math.min(60, Number(e.target.value) || 1)))} /></div>
@@ -26,7 +26,7 @@ export default function QrPage() {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 16 }}>
         {Array.from({ length: tables }, (_, i) => i + 1).map((t) => (
-          <div key={t} className="gl r-xl qr-card" style={{ padding: 16, textAlign: "center" }}>
+          <div key={t} className="sa-plate r-xl qr-card" style={{ padding: 16, textAlign: "center" }}>
             <div style={{ font: "600 13px var(--font-b)", letterSpacing: ".1em" }} className="soft-l">{restaurant.name.toUpperCase()}</div>
             <img src={q(t)} alt={`QR code for table ${t}`} style={{ width: "100%", maxWidth: 170, background: "#fff", borderRadius: 12, margin: "8px auto" }} />
             <div style={{ font: "600 26px var(--font-h)" }}>Table {t}</div>

@@ -3,13 +3,11 @@
 // open questions (recommendations, FAQs, greetings), and its output is checked before it is shown.
 import type { Item, Lang, Restaurant } from "@/modules/platform/menu";
 import { ALLERGEN_LABEL } from "@/modules/platform/constants";
+import { complete, type Msg } from "@/modules/ai/provider";
 
 export type Action = { type: "none" | "show_menu" | "show_dishes" | "add_to_picks" | "call_staff"; ids?: number[]; kind?: string; qty?: Record<number, number> };
 export type ChatResult = { reply: string; action: Action; topic: string; allergens: string[]; answered: boolean; usedModel: boolean };
 type Ctx = { restaurant: Restaurant; items: Item[]; faqs: { q: string; a: string }[]; specials: any[]; history: { role: "user" | "assistant"; text: string }[] };
-
-const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
-const MODEL = process.env.OLLAMA_MODEL || "gemma4:12b";
 
 // ------------------------------------------------------------------ language helpers
 export function detectLang(text: string, fallback: Lang = "en"): Lang {
@@ -22,7 +20,8 @@ export function detectLang(text: string, fallback: Lang = "en"): Lang {
 const BD = "၀၁၂၃၄၅၆၇၈၉";
 const bd = (n: number | string) => String(n).replace(/\d/g, (d) => BD[+d]);
 const norm = (s: string) => s.toLowerCase().replace(/[၀-၉]/g, (d) => String(BD.indexOf(d)));
-const has = (t: string, words: string[]) => words.some((w) => t.includes(w));
+// English keywords must start a word ("pay" is not found in "papaya"); Thai and Burmese have no spaces, so they match anywhere.
+const has = (t: string, words: string[]) => words.some((w) => wordIn(t, w));
 
 const particle = (lang: Lang, g: string) => (lang === "th" ? (g === "female" ? "ค่ะ" : "ครับ") : lang === "my" ? (g === "female" ? "ရှင်" : "ခင်ဗျာ") : "");
 const money = (lang: Lang, n: number) => (lang === "en" ? `฿${n}` : lang === "th" ? `${n} บาท` : `${bd(n)} ဘတ်`);
@@ -343,16 +342,9 @@ async function askModel(message: string, lang: Lang, ctx: Ctx): Promise<string> 
   // menu each time, not from a long conversation, and every extra message is more tokens to read
   // before the model can start answering.
   const messages = [{ role: "system", content: systemPrompt(ctx, lang) }, ...ctx.history.slice(-2).map((m) => ({ role: m.role, content: m.text })), { role: "user", content: message }];
-  const res = await fetch(`${OLLAMA_URL}/api/chat`, {
-    method: "POST", headers: { "content-type": "application/json" },
-    // num_predict caps a reply at ~220 tokens (well over the "max 4 sentences" rule) so one unusually
-    // long answer cannot make a diner wait far longer than the rest.
-    body: JSON.stringify({ model: MODEL, stream: false, think: false, keep_alive: "30m", options: { temperature: 0.2, num_ctx: 8192, num_predict: 220 }, messages }),
-    signal: AbortSignal.timeout(90_000),
-  });
-  if (!res.ok) throw new Error(`Ollama ${res.status}`);
-  const j = await res.json();
-  return String(j.message?.content ?? "");
+  // num_predict (maxTokens) caps a reply at ~220 tokens (well over the "max 4 sentences" rule) so one
+  // unusually long answer cannot make a diner wait far longer than the rest.
+  return complete(messages as Msg[], { temperature: 0.2, maxTokens: 220, timeoutMs: 90_000 });
 }
 
 const UNSAFE = [/\b(is safe|safe to eat|safe for you|allergy-free|allergen-free|no allergens|guarantee[sd]?)\b/i, /(?<!ไม่)ปลอดภัย/, /ဘေးကင်း|အန္တရာယ်ကင်း/];

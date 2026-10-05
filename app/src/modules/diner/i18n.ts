@@ -13,6 +13,7 @@ const en: Dict = {
   filters: "Filters", thinking: "Thinking about the menu…",
   reasonPrompt: "What was wrong?", reasonWrong: "Wrong info", reasonConfused: "Didn't understand", reasonAllergen: "Missed my allergy",
   escalate: "Sorry, I'm having trouble with that.", escalateCall: "Call the staff",
+  tableBill: "Table bill", billTotal: "Total to pay", billEmpty: "Nothing ordered yet.", billPending: "Waiting for staff to confirm (not in the total yet)", billKitchen: "still being prepared", askBill: "Ask for the bill", billAsked: "The staff will bring your bill.", billRequested: "Bill requested. Staff are on the way.",
   heroEyebrow: "AI-Powered Menu Assistant", heroPlaceholder: "Ask about dishes, allergies, or get a recommendation…",
   heroChip1: "What's spicy?", heroChip2: "Vegan options?", heroChip3: "Surprise me",
 };
@@ -27,6 +28,7 @@ const th: Dict = {
   filters: "ตัวกรอง", thinking: "กำลังดูเมนูให้อยู่…",
   reasonPrompt: "ผิดตรงไหน", reasonWrong: "ข้อมูลผิด", reasonConfused: "ไม่เข้าใจคำตอบ", reasonAllergen: "พลาดเรื่องแพ้อาหาร",
   escalate: "ขออภัย ตอบเรื่องนี้ไม่ได้ค่ะ", escalateCall: "เรียกพนักงาน",
+  tableBill: "บิลของโต๊ะ", billTotal: "ยอดที่ต้องชำระ", billEmpty: "ยังไม่มีรายการสั่ง", billPending: "รอพนักงานยืนยัน (ยังไม่รวมในยอด)", billKitchen: "กำลังเตรียม", askBill: "ขอเช็คบิล", billAsked: "พนักงานจะนำบิลมาให้", billRequested: "ขอเช็คบิลแล้ว พนักงานกำลังมา",
 };
 const my: Dict = {
   kitchen: "မီးဖိုချောင်", search: "ဟင်းလျာရှာရန်", all: "အားလုံး", vegetarian: "သက်သတ်လွတ်", noPeanuts: "မြေပဲမပါ", under100: "၁၀၀ ဘတ်အောက်", spicy: "စပ်",
@@ -39,10 +41,11 @@ const my: Dict = {
   filters: "စစ်ထုတ်ရန်", thinking: "မီနူးကို ကြည့်နေပါတယ်…",
   reasonPrompt: "ဘာမှားနေလဲ", reasonWrong: "အချက်အလက် မှား", reasonConfused: "အဖြေကို နားမလည်ဘူး", reasonAllergen: "ဓာတ်မတည့်မှု လွဲသွား",
   escalate: "တောင်းပန်ပါတယ်ခင်ဗျာ၊ ဒါကို ဖြေပေးနိုင်ခြင်း မရှိပါ။", escalateCall: "ဝန်ထမ်းခေါ်ရန်",
+  tableBill: "စားပွဲ ကျသင့်ငွေ", billTotal: "ပေးရမယ့် စုစုပေါင်း", billEmpty: "မှာထားတာ မရှိသေးပါဘူး", billPending: "ဝန်ထမ်း အတည်ပြုဖို့ စောင့်နေပါတယ် (စုစုပေါင်းထဲ မပါသေးပါဘူး)", billKitchen: "ပြင်ဆင်နေဆဲ", askBill: "ငွေရှင်းမယ်", billAsked: "ဝန်ထမ်းက ဘေလ် ယူလာပေးပါမယ်ခင်ဗျာ", billRequested: "ဘေလ် တောင်းထားပြီးပါပြီ။ ဝန်ထမ်း လာနေပါပြီခင်ဗျာ",
 };
 export const DICT: Record<Lang, Dict> = { en, th, my };
 export const tr = (lang: Lang, key: string) => DICT[lang][key] ?? en[key] ?? key;
-export const priceLabel = (lang: Lang, p: number) => (lang === "en" ? `฿${p}` : lang === "th" ? `฿${p}` : `${String(p).replace(/\d/g, (d) => "၀၁၂၃၄၅၆၇၈၉"[+d])} ဘတ်`);
+export const priceLabel = (lang: Lang, p: number) => (lang === "en" || lang === "th" ? `฿\u2009${p}` : `${String(p).replace(/\d/g, (d) => "၀၁၂၃၄၅၆၇၈၉"[+d])} ဘတ်`);
 // Both Thai and Burmese stack marks above/below the base letter and need more line-height than Latin
 // text to avoid the lines overlapping; Burmese needs the most room.
 export const chatLineHeight = (lang: Lang) => (lang === "my" ? 1.9 : lang === "th" ? 1.75 : 1.5);

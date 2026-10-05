@@ -24,7 +24,7 @@ export default function StaffPage() {
     <>
       <div><h1 style={{ fontSize: 40 }}>Staff</h1><p className="soft-l" style={{ margin: "6px 0 0" }}>Waiters and chefs sign in at <b>/staff</b> with a PIN. Restaurant code: <b>{restaurant.slug}</b></p></div>
       <div className="grid2" style={{ alignItems: "start" }}>
-        <form onSubmit={add} className="gl r-xl" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 12 }}>
+        <form onSubmit={add} className="sa-plate r-xl" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 12 }}>
           <h2 style={{ fontSize: 22 }}>Add a team member</h2>
           <div><label className="lbl" htmlFor="sn">Name</label><input id="sn" className="in-l" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} required /></div>
           <div className="grid2" style={{ gap: 12 }}>
@@ -34,10 +34,10 @@ export default function StaffPage() {
           {err && <div className="err" role="alert">{err}</div>}
           <button className="btn btn-p" style={{ alignSelf: "flex-start" }} type="submit"><Icon name="plus" size={18} />Add</button>
         </form>
-        <div className="gl r-xl" style={{ padding: 24 }}>
+        <div className="sa-plate r-xl" style={{ padding: 24 }}>
           <h2 style={{ fontSize: 22, marginBottom: 8 }}>Team</h2>
           {staff.map((s) => (
-            <div key={s.id} className="row" style={{ gap: 12, padding: "10px 0", borderTop: "1px solid rgba(46,42,120,.15)" }}>
+            <div key={s.id} className="row" style={{ gap: 12, padding: "10px 0", borderTop: "1px solid var(--line)" }}>
               <div style={{ flex: 1 }}><div style={{ fontWeight: 700 }}>{s.name}</div><span className="chip chip-l">{s.role}</span></div>
               <button className="btn btn-ol btn-sm" onClick={() => reset(s)}>Change PIN</button>
               <button className="btn btn-ol btn-icon btn-sm" style={{ width: 36 }} aria-label={`Remove ${s.name}`} onClick={async () => { if (confirm(`Remove ${s.name}?`)) { await api(`/api/owner/staff/${s.id}`, { method: "DELETE" }); load(); } }}><Icon name="trash" size={16} /></button>

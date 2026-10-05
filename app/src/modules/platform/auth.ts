@@ -4,10 +4,11 @@ import path from "node:path";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { get } from "@/modules/platform/db";
+import { DATA_DIR } from "@/modules/platform/paths";
 
 function secret(): string {
   if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
-  const file = path.join(process.cwd(), "data", "secret");
+  const file = path.join(DATA_DIR, "secret");
   try { return fs.readFileSync(file, "utf8"); } catch {}
   fs.mkdirSync(path.dirname(file), { recursive: true });
   const s = crypto.randomBytes(32).toString("hex");

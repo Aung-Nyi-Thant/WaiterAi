@@ -1,6 +1,6 @@
 import { staffSession } from "@/modules/platform/auth";
 import { all } from "@/modules/platform/db";
-import { ordersWith, openCalls } from "@/modules/staff/orders";
+import { ordersWith, openCalls, tableBills } from "@/modules/staff/orders";
 import { json, unauthorized } from "@/modules/platform/http";
 
 export async function GET() {
@@ -9,6 +9,7 @@ export async function GET() {
   const orders = ordersWith(rid, ["picked", "new", "cooking", "ready"]);
   return json({
     me: s, calls: openCalls(rid),
+    bills: tableBills(rid).filter((b) => b.lines.length > 0),
     picks: orders.filter((o) => o.status === "picked"),
     active: orders.filter((o) => o.status !== "picked"),
     soldOut: all("SELECT id, name_en AS name FROM menu_items WHERE restaurant_id = ? AND available = 0 ORDER BY name_en", rid),

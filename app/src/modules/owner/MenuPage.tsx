@@ -30,11 +30,10 @@ export default function MenuPage() {
     <>
       <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-end", gap: 20, flexWrap: "wrap" }}>
         <div><h1 style={{ fontSize: 40 }}>Menu items</h1><p className="soft-l" style={{ margin: "6px 0 0" }}>What diners see, and what the AI waiter is allowed to say.</p></div>
-        <div className="gl r-l" style={{ width: 320, padding: "14px 18px" }}>
-          <div className="eyebrow soft-l">Allergen data</div>
-          <div style={{ font: "700 17px var(--font-b)", margin: "2px 0 10px" }}>{complete} of {items.length} dishes complete</div>
-          <div className="meter">{items.map((i, k) => <i key={k} className={i.allergens !== null ? "on" : ""} />)}</div>
-          {missing.length > 0 && <div className="soft-l" style={{ fontSize: 12, marginTop: 8 }}>{missing.slice(0, 2).map((m) => m.name.en).join(", ")}{missing.length > 2 ? ` and ${missing.length - 2} more` : ""} — no allergen info yet.</div>}
+        <div className="sa-plate sa-meter" style={{ width: 320, padding: "14px 18px" }}>
+          <div className="sa-meter__row"><b>Allergen data complete</b><span>{complete} of {items.length} dishes</span></div>
+          <div className="sa-meter__bar" role="meter" aria-valuenow={items.length ? Math.round((complete / items.length) * 100) : 0} aria-valuemin={0} aria-valuemax={100} aria-label="Allergen data complete"><div className="sa-meter__fill" style={{ width: `${items.length ? (complete / items.length) * 100 : 0}%` }} /></div>
+          {missing.length > 0 && <div className="soft-l" style={{ fontSize: 13 }}>{missing.slice(0, 2).map((m) => m.name.en).join(", ")}{missing.length > 2 ? ` and ${missing.length - 2} more` : ""} — no allergen info yet.</div>}
         </div>
       </div>
       <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
@@ -45,7 +44,7 @@ export default function MenuPage() {
         <div style={{ flex: 1 }} />
         <button className="btn btn-p" onClick={() => setEdit(blank(tab || cats[0]?.id || null))}><Icon name="plus" size={18} />Add dish</button>
       </div>
-      <div className="gl r-xl" style={{ overflow: "hidden" }}>
+      <div className="sa-plate r-xl" style={{ overflow: "hidden" }}>
         <div className="table-head"><div>Dish</div><div>Price</div><div>Allergens</div><div>Tags</div><div>Today</div><div /></div>
         {shown.length === 0 && <div className="soft-l" style={{ padding: 24 }}>No dishes here yet. Add one, or import a menu photo.</div>}
         {shown.map((i) => (
@@ -54,10 +53,10 @@ export default function MenuPage() {
               {i.photo_url ? <img className="photo" src={i.photo_url} alt="" /> : <div className="photo">PHOTO</div>}
               <div style={{ minWidth: 0 }}><div style={{ fontWeight: 700 }}>{i.name.en}</div><div className="soft-l" style={{ fontSize: 12, lineHeight: 1.7 }}>{[i.name.th !== i.name.en && i.name.th, i.name.my !== i.name.en && i.name.my].filter(Boolean).join(" · ")}</div></div>
             </div>
-            <div style={{ font: "700 16px var(--font-h)" }}>฿{i.price}</div>
+            <div><span className="sa-price" style={{ fontSize: 17, lineHeight: "22px" }}>฿{i.price}</span></div>
             <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>{i.allergens === null ? <span className="chip chip-l chip-r">Not provided</span> : i.allergens.length === 0 ? <span className="chip chip-l chip-y">None listed</span> : i.allergens.map((a) => <span key={a} className="chip chip-l">{ALLERGEN_LABEL[a] || a}</span>)}</div>
             <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>{i.tags.filter((t) => t !== "vegetarian" || !i.tags.includes("vegan")).map((t) => <span key={t} className="chip chip-l chip-g">{TAG_LABEL[t] || t}</span>)}</div>
-            <div className="row" style={{ gap: 8, fontWeight: 700, fontSize: 13, color: i.available ? "#0b6b57" : "#9b1c1c" }}>
+            <div className="row" style={{ gap: 8, fontWeight: 700, fontSize: 13, color: i.available ? "var(--ok)" : "var(--cherry-text)" }}>
               <button className={`switch ${i.available ? "on" : ""}`} role="switch" aria-checked={i.available} aria-label={`${i.name.en} on sale`} onClick={() => toggle(i)} />{i.available ? "On sale" : "Sold out"}
             </div>
             <button className="btn btn-ol btn-icon" style={{ borderRadius: 14 }} aria-label={`Edit ${i.name.en}`} onClick={() => setEdit(JSON.parse(JSON.stringify(i)))}><Icon name="edit" size={18} /></button>
@@ -128,7 +127,7 @@ function ItemForm({ item, cats, onClose, onSaved }: { item: any; cats: any[]; on
         </div>
         {err && <div className="err" role="alert">{err}</div>}
         <div className="row" style={{ gap: 10, justifyContent: "flex-end" }}>
-          {!isNew && <button className="btn btn-ol" style={{ marginRight: "auto", color: "#9b1c1c" }} onClick={del}><Icon name="trash" size={16} />Delete</button>}
+          {!isNew && <button className="btn btn-ol" style={{ marginRight: "auto" }} onClick={del}><Icon name="trash" size={16} />Delete</button>}
           <button className="btn btn-ol" onClick={onClose}>Cancel</button>
           <button className="btn btn-p" onClick={save} disabled={busy}>{busy ? "Saving…" : "Save dish"}</button>
         </div>
@@ -156,7 +155,7 @@ function CatForm({ cat, onClose, onSaved }: { cat: any; onClose: () => void; onS
         <div><label className="lbl" htmlFor="c-my">Name (Burmese)</label><input id="c-my" className="in-l" value={f.name_my} onChange={(e) => setF({ ...f, name_my: e.target.value })} /></div>
         {err && <div className="err" role="alert">{err}</div>}
         <div className="row" style={{ gap: 10, justifyContent: "flex-end" }}>
-          {f.id && <button className="btn btn-ol" style={{ marginRight: "auto", color: "#9b1c1c" }} onClick={del}>Delete</button>}
+          {f.id && <button className="btn btn-ol" style={{ marginRight: "auto" }} onClick={del}>Delete</button>}
           <button className="btn btn-ol" onClick={onClose}>Cancel</button><button className="btn btn-p" onClick={save}>Save</button>
         </div>
       </div>
