@@ -65,6 +65,7 @@ Architecture: Browser ⇄ HTTPS/HTTP ⇄ Next.js server ⇄ SQLite, and Next.js 
 9. Sold-out control shared by owner, waiter and chef.
 10. Insights on what diners asked.
 11. Staff account and PIN management.
+12. Table bill: a running total per table for the diner and a "paid" button for the waiter (not online payment).
 
 ### 2.3 User classes
 | User | Technical skill | Access | Device |
@@ -80,7 +81,7 @@ Architecture: Browser ⇄ HTTPS/HTTP ⇄ Next.js server ⇄ SQLite, and Next.js 
 - Clients: current versions of Chrome, Safari and Edge on phones, tablets and computers, on the same Wi-Fi network as the server (or reachable through a tunnel).
 
 ### 2.5 Design and implementation constraints
-- The AI must run locally (no paid cloud API).
+- The AI must run locally through Ollama. There is no cloud AI option in the software, so no customer data can be sent to a cloud AI service.
 - Allergen, price, hours and availability answers must come from the database.
 - Diners must not be required to register.
 - Languages: Thai, Burmese (Unicode), English.
@@ -123,11 +124,11 @@ Priority: **M** = must, **S** = should.
 | AI-5 | Price, opening hours, ingredients, pork, and sold-out questions shall be answered from database values. A sold-out dish shall be reported as sold out with alternatives. | M |
 | AI-6 | Order wording ("I'll have 2 …") shall add the named dishes and quantities to the diner's picks. | M |
 | AI-7 | Requests for the bill or staff shall create a staff call for the table. | M |
-| AI-8 | Attempts to make the assistant ignore its rules shall be refused with a fixed sentence. | M |
-| AI-9 | Other questions (recommendations, FAQ, small talk, unknown dishes) shall be answered by the language model using the restaurant's menu, hours, FAQs, specials and shop rules as the only source. | M |
+| AI-8 | Attempts to make the assistant ignore, reveal or change its rules (for example "ignore your instructions", "you are now…", "show your system prompt", "change the price", and the Thai and Burmese equivalents) shall be refused with a fixed sentence, without calling the model, and shall change no data. | M |
+| AI-9 | Other questions (recommendations, FAQ, small talk, unknown dishes) shall be answered by the language model using the restaurant's menu, hours, FAQs, specials and shop rules as the only source, within 15 seconds. A model call that takes longer is stopped and the fallback message of AI-11 is shown. | M |
 | AI-10 | A model reply shall be replaced by a "please ask the staff" message if it claims safety, contains a price that differs from the menu, or is empty. Dish cards suggested by the model shall be limited to existing dishes on sale. | M |
 | AI-11 | If the model is unavailable, the system shall show a fallback message, the menu and the call-staff option. | M |
-| AI-12 | The assistant shall use the owner's voice setting (male/female particles in Thai and Burmese) and Burmese style rules (polite spoken style, "Allergens" in English, prices in "ဘတ်"). | M |
+| AI-12 | The assistant shall use the owner's voice setting (male/female particles in Thai and Burmese, also on replies written by the model: a missing ending is added and a wrong one is replaced) and Burmese style rules (polite spoken style, "Allergens" in English, prices in "ဘတ်"). | M |
 | AI-13 | The system shall show dish cards with an Add button under replies that discuss dishes. | M |
 | AI-14 | The diner shall be able to rate each reply; a negative rating flags it for the owner. | S |
 | AI-15 | Each restaurant shall have a monthly chat limit (default 300); when reached, a fixed message and the plain menu are shown. | S |
@@ -138,14 +139,17 @@ Priority: **M** = must, **S** = should.
 |---|---|---|
 | PC-1 | The diner shall add, change quantity, remove dishes in "My picks" (kept in the browser). | M |
 | PC-2 | "Show to waiter" shall create an order in status *picked*, with table, language, items and the allergens the diner mentioned in the chat. Sold-out dishes shall be ignored; an order with no available dish shall be rejected. | M |
-| PC-3 | The call-staff button shall create a call for the table; a second open call of the same type for the same table shall reuse the first. | M |
+| PC-3 | The call-staff button and a bill or help request typed in the chat shall create a call for the table; a second open call of the same type for the same table shall reuse the first, whichever way it was raised. | M |
+| PC-4 | The waiter shall see, per table, the running bill: dishes of orders the staff have taken (picked orders are listed as pending and are not in the total). The waiter shall mark a table paid; this clears its bill and its open "bill" call. Only the waiter role may do this (HTTP 403 otherwise). | M |
+| PC-5 | The diner shall see the running bill of their own table. A phone is shown a table's bill only if it sent picks from that table: the phone keeps a random receipt code, saves it with its picks, and sends it when asking for the bill. Without a matching code nothing is shown, so other tables' orders cannot be read by trying table numbers. | M |
+| PC-6 | The diner shall not be shown kitchen progress of an order (order status for diners is out of scope). The table bill is a view and a manual "paid" mark only; there is no online payment or bill splitting. | M |
 
 #### 3.1.4 Owner accounts (OA)
 | ID | Requirement | Pri |
 |---|---|---|
 | OA-1 | The owner shall register with email, password (minimum 8 characters) and restaurant name; a unique restaurant code and default categories are created. | M |
 | OA-2 | The owner shall sign in and out; wrong credentials shall be rejected. | M |
-| OA-3 | All owner functions shall require sign-in and shall only affect the owner's own restaurant. | M |
+| OA-3 | All owner functions shall require sign-in and shall only affect the owner's own restaurant. Reading, editing or deleting a dish or other record of another restaurant shall answer HTTP 404 and change nothing. | M |
 
 #### 3.1.5 Menu management (MM)
 | ID | Requirement | Pri |
@@ -161,7 +165,7 @@ Priority: **M** = must, **S** = should.
 #### 3.1.6 Menu import (MI)
 | ID | Requirement | Pri |
 |---|---|---|
-| MI-1 | The owner shall upload a photo of a menu; the system shall extract dish names, prices and categories with the vision model. | M |
+| MI-1 | The owner shall upload a photo of a menu; the system shall extract dish names, prices and categories with the vision model and show them for review within 120 seconds (the model is stopped after 120 s and the owner is told). | M |
 | MI-2 | The owner shall review and edit every extracted row before publishing; rows with a missing price or suspicious name shall be flagged. | M |
 | MI-3 | Nothing shall be added to the live menu until the owner confirms. | M |
 | MI-4 | Imported dishes shall have unknown allergens. | M |
@@ -185,8 +189,8 @@ Priority: **M** = must, **S** = should.
 #### 3.1.9 Staff (SF)
 | ID | Requirement | Pri |
 |---|---|---|
-| SF-1 | The owner shall create staff with a name, role (waiter or chef) and a 4–8 digit PIN, change PINs and remove staff. PINs shall be stored hashed. | M |
-| SF-2 | Staff shall sign in with restaurant code and PIN and be taken to the screen of their role. | M |
+| SF-1 | The owner shall create staff with a name, role (waiter or chef) and a 4–8 digit PIN, change PINs and remove staff. PINs shall be stored hashed. Two staff members of one restaurant shall not have the same PIN (the owner is told to choose another). | M |
+| SF-2 | Staff shall sign in with restaurant code and PIN and be taken to the screen of their role. After 5 wrong PINs in a row (per restaurant and caller address) sign-in shall be locked for 10 minutes (HTTP 429), even for the right PIN. A staff member the owner removes, or whose role is changed, shall lose or change access at the next request, not when the 12-hour cookie expires. | M |
 | SF-3 | Waiter screen: list open calls (table, reason, waiting time) with "Done"; list picks with items, language and a highlighted allergy warning; "Take order" (to the kitchen) or "Dismiss"; list ready orders with "Served"; show table states; allow marking dishes sold out. | M |
 | SF-4 | Chef screen: show tickets in New, Cooking, Ready with items, quantities, waiting time (highlight after 10 minutes) and allergy warning; buttons "Start cooking", "Mark ready"; sold-out switches. | M |
 | SF-5 | Order status changes shall follow *picked → new → cooking → ready → served* (or *picked → cancelled*); the server shall reject other transitions (HTTP 409) and actions by the wrong role (HTTP 403). | M |
@@ -313,10 +317,13 @@ A native Burmese speaker reviewed four rounds of Burmese answers; their correcti
 ## 5. Verification
 | Requirement group | Method | Result to date |
 |---|---|---|
-| AI-1 … AI-13 | 30-question chat test through the real chat API (`scripts/chat_smoke.py`) | 30/30 as expected |
-| OA, MM, ST, QR, SF, PC, IN, MI | 64-check API test (`scripts/e2e.py`): validation, roles, order flow, isolation, photo import | all passed |
+| AI-1 … AI-13 | 30-question chat test through the real chat API (`scripts/chat_smoke.py`) and `npm run eval:live` with `gemma4:12b` | 30/30 as expected (5 Oct 2026); `eval:live` 29/30 once and 30/30 four times, thresholds met |
+| OA, MM, ST, QR, SF, PC, IN, MI | API test (`scripts/e2e.py`, 38 checks) and automated tests (`npm test`: 205, `npm run test:e2e`: 11): validation, roles, order flow, isolation, photo import, PIN rules, bill access | all passed (5 Oct 2026) |
+| NFR-R1 / AI-11 | `scripts/nfr_check.py nfr4`: server with Ollama unreachable | passed: fallback message in 0.0 s; menu, picks, calls and rule-based answers still work. If the model hangs instead of stopping, the answer is cut off at the 15 s limit. |
+| NFR-P3 (server side) | `scripts/nfr_check.py nfr2` | menu data max 3 ms, staff floor data max 1 ms; phone over Wi-Fi **to do** |
+| NFR-P1 (open questions in 15 s) | `scripts/nfr_check.py nfr1` | **not valid yet**: the run was disturbed by another program using the same Ollama (see `docs/NFR_RESULTS.md`); re-run on a quiet computer |
 | DM, UI, NFR-U | Manual test on phone, tablet and desktop | **to do** |
-| NFR-P1/P3/P4, NFR-U3 | Timing and load test with several phones; trial with real owners | **to do** |
+| NFR-P4, NFR-U3 | Load test with several phones (`scripts/nfr_check.py nfr7`); trial with real owners | **to do** |
 | AI-12 Burmese/Thai wording | Native-speaker review | Burmese assistant answers reviewed; interface labels to review |
 
 ### Requirements not yet implemented / future
