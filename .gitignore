@@ -18,3 +18,8 @@ app/public/uploads/*
 __pycache__/
 design/canvas.server.json
 eval/results/full_run.log
+
+# local environment files (only .env.example is committed)
+.env.local
+app/.env.local
+.env.production
