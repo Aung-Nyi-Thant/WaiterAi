@@ -11,12 +11,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   const lines: { it: any; qty: number }[] = [];
   for (const l of Array.isArray(b.items) ? b.items : []) {
     const it = menu.find((m) => m.id === Number(l.id));
-    if (it && it.available) lines.push({ it, qty: Math.max(1, Math.min(20, Number(l.qty) || 1)) });
+    if (it?.available) lines.push({ it, qty: Math.max(1, Math.min(20, Number(l.qty) || 1)) });
   }
   if (!lines.length) return bad("No available dishes were picked.");
   // allergies the diner asked about in this chat session
   const said = new Set<string>();
-  if (b.sessionId) for (const m of all("SELECT allergens FROM chat_messages WHERE session_id = ? AND role = 'user'", String(b.sessionId))) JSON.parse(m.allergens || "[]").forEach((a: string) => said.add(a));
+  if (b.sessionId) for (const m of all("SELECT allergens FROM chat_messages WHERE session_id = ? AND role = 'user'", String(b.sessionId))) for (const a of JSON.parse(m.allergens || "[]") as string[]) said.add(a);
   const lang = ["en", "th", "my"].includes(b.lang) ? b.lang : "en";
   db.exec("BEGIN");
   try {

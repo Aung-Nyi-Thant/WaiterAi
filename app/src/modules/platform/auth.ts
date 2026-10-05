@@ -4,10 +4,11 @@ import path from "node:path";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { get } from "@/modules/platform/db";
+import { DATA_DIR } from "@/modules/platform/paths";
 
 function secret(): string {
   if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
-  const file = path.join(process.cwd(), "data", "secret");
+  const file = path.join(DATA_DIR, "secret");
   try { return fs.readFileSync(file, "utf8"); } catch {}
   fs.mkdirSync(path.dirname(file), { recursive: true });
   const s = crypto.randomBytes(32).toString("hex");
@@ -59,5 +60,9 @@ export async function ownerSession(): Promise<OwnerSession | null> {
   return get("SELECT id FROM restaurants WHERE id = ? AND owner_id = ?", s.restaurantId, s.userId) ? s : null;
 }
 export async function staffSession(): Promise<StaffSession | null> {
-  return verify<StaffSession>((await cookies()).get("staff")?.value);
+  const s = verify<StaffSession>((await cookies()).get("staff")?.value);
+  if (!s) return null;
+  // the account must still exist with the same role: removing a staff member (or changing their role) ends their session at once,
+  // instead of leaving the cookie valid for the rest of its 12 hours
+  return get("SELECT id FROM staff WHERE id = ? AND restaurant_id = ? AND role = ?", s.staffId, s.restaurantId, s.role) ? s : null;
 }

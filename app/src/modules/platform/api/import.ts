@@ -2,9 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { ownerSession } from "@/modules/platform/auth";
-import { ollamaJson } from "@/modules/ai/ollama";
+import { completeJson } from "@/modules/ai/provider";
 import { run } from "@/modules/platform/db";
 import { json, bad, unauthorized } from "@/modules/platform/http";
+import { UPLOAD_DIR } from "@/modules/platform/paths";
+import { sniffImage } from "@/modules/platform/imageType";
 
 const TYPES: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 
@@ -16,20 +18,22 @@ export async function POST(req: Request) {
   if (!ext) return bad("Only JPG, PNG or WebP photos are allowed.");
   if (file.size > 8 * 1024 * 1024) return bad("The photo is larger than 8 MB.");
   const buf = Buffer.from(await file.arrayBuffer());
-  const dir = path.join(process.cwd(), "data", "uploads");
+  const kind = sniffImage(buf);                                       // the real content decides, not the declared type
+  if (!kind) return bad("This file is not a real JPG, PNG or WebP image.");
+  const dir = UPLOAD_DIR;
   fs.mkdirSync(dir, { recursive: true });
-  const name = `${crypto.randomBytes(8).toString("hex")}.${ext}`;
-  fs.writeFileSync(path.join(dir, name), buf);
+  const name = `${crypto.randomBytes(8).toString("hex")}.${kind}`;
+  fs.writeFileSync(path.join(/*turbopackIgnore: true*/ dir, name), buf);   // DATA_DIR is set at run time
 
   let parsed: any;
   try {
-    parsed = await ollamaJson(
+    parsed = await completeJson(
       `This is a photo of a restaurant menu. Read every dish on it.
 Return ONLY JSON: {"items":[{"name":"dish name exactly as printed","price":number,"category":"section heading, or Starters / Mains / Curries / Salads / Desserts / Drinks","description":"printed description or empty"}]}
 Rules: price is a plain number without currency. Do not invent dishes or prices. If a price is unreadable use 0.`,
       [buf.toString("base64")], 3000);
   } catch (e: any) {
-    return bad("The AI could not read this photo (" + (e?.message || "error") + "). Is Ollama running? You can also add dishes by hand.", 502);
+    return bad("The AI could not read this photo (" + (e?.message || "error") + "). Is the AI provider running and configured? You can also add dishes by hand.", 502);
   }
   const items = (Array.isArray(parsed?.items) ? parsed.items : [])
     .map((i: any) => ({ name: String(i.name || "").trim().slice(0, 80), price: Number(String(i.price).replace(/[^\d.]/g, "")) || 0, category: String(i.category || "").trim().slice(0, 40) || "Mains", description: String(i.description || "").trim().slice(0, 200) }))

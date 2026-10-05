@@ -3,13 +3,11 @@
 // open questions (recommendations, FAQs, greetings), and its output is checked before it is shown.
 import type { Item, Lang, Restaurant } from "@/modules/platform/menu";
 import { ALLERGEN_LABEL } from "@/modules/platform/constants";
+import { complete, type Msg } from "@/modules/ai/provider";
 
 export type Action = { type: "none" | "show_menu" | "show_dishes" | "add_to_picks" | "call_staff"; ids?: number[]; kind?: string; qty?: Record<number, number> };
 export type ChatResult = { reply: string; action: Action; topic: string; allergens: string[]; answered: boolean; usedModel: boolean };
 type Ctx = { restaurant: Restaurant; items: Item[]; faqs: { q: string; a: string }[]; specials: any[]; history: { role: "user" | "assistant"; text: string }[] };
-
-const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
-const MODEL = process.env.OLLAMA_MODEL || "gemma4:12b";
 
 // ------------------------------------------------------------------ language helpers
 export function detectLang(text: string, fallback: Lang = "en"): Lang {
@@ -22,28 +20,35 @@ export function detectLang(text: string, fallback: Lang = "en"): Lang {
 const BD = "၀၁၂၃၄၅၆၇၈၉";
 const bd = (n: number | string) => String(n).replace(/\d/g, (d) => BD[+d]);
 const norm = (s: string) => s.toLowerCase().replace(/[၀-၉]/g, (d) => String(BD.indexOf(d)));
-const has = (t: string, words: string[]) => words.some((w) => t.includes(w));
+// English keywords must start a word ("pay" is not found in "papaya"); Thai and Burmese have no spaces, so they match anywhere.
+const has = (t: string, words: string[]) => words.some((w) => wordIn(t, w));
 
 const particle = (lang: Lang, g: string) => (lang === "th" ? (g === "female" ? "ค่ะ" : "ครับ") : lang === "my" ? (g === "female" ? "ရှင်" : "ခင်ဗျာ") : "");
 const money = (lang: Lang, n: number) => (lang === "en" ? `฿${n}` : lang === "th" ? `${n} บาท` : `${bd(n)} ဘတ်`);
 const join = (lang: Lang, xs: string[]) => xs.join(lang === "my" ? "၊ " : ", ");
 
 // ------------------------------------------------------------------ allergens
+// Keywords for the 14 major (EU) allergens. English words match at the start of a word, Thai and Burmese anywhere.
+// An allergen with no keyword here is simply not recognised: the diner then gets "I can't confirm", never a guess.
 const ALLERGEN_WORDS: Record<string, string[]> = {
   peanut: ["peanut", "groundnut", "ถั่วลิสง", "မြေပဲ"],
-  tree_nut: ["tree nut", "almond", "cashew", "walnut", "pistachio", "อัลมอนด์", "มะม่วงหิมพานต์"],
-  shellfish: ["shellfish", "shrimp", "prawn", "crab", "lobster", "กุ้ง", "ปู", "ပုစွန်", "ဂဏန်း"],
-  molluscs: ["mollusc", "squid", "oyster", "mussel", "clam", "หอย", "หมึก"],
-  fish: ["fish", "ปลา", "ငါး"],
+  tree_nut: ["tree nut", "almond", "cashew", "walnut", "pistachio", "hazelnut", "pecan", "macadamia", "brazil nut", "pine nut", "อัลมอนด์", "มะม่วงหิมพานต์", "วอลนัท", "พิสตาชิโอ", "เฮเซลนัท", "แมคคาเดเมีย"],
+  shellfish: ["shellfish", "crustacean", "shrimp", "prawn", "crab", "lobster", "crayfish", "langoustine", "กุ้ง", "กั้ง", "ปู", "ပုစွန်", "ဂဏန်း"],
+  molluscs: ["mollusc", "mollusk", "squid", "octopus", "cuttlefish", "oyster", "mussel", "clam", "scallop", "snail", "abalone", "หอย", "หมึก"],
+  fish: ["fish", "catfish", "swordfish", "whitefish", "anchovy", "anchovies", "salmon", "tuna", "cod", "sardine", "mackerel", "tilapia", "ปลา", "ငါး"],
   egg: ["egg", "ไข่", "ကြက်ဥ", "ဘဲဥ"],
-  milk: ["milk", "dairy", "lactose", "นมวัว", "แลคโตส", "နွားနို့"],
-  soy: ["soy", "ถั่วเหลือง", "ပဲပိစပ်"],
-  gluten: ["gluten", "wheat", "กลูเตน", "แป้งสาลี"],
-  sesame: ["sesame", "งา", "နှမ်း"],
-  celery: ["celery", "คื่นช่าย"],
-  mustard: ["mustard", "มัสตาร์ด"],
+  milk: ["milk", "dairy", "lactose", "cheese", "yogurt", "yoghurt", "whey", "casein", "นมวัว", "นมสด", "นมข้น", "แพ้นม", "ชีส", "เนย", "แลคโตส", "နွားနို့"],
+  soy: ["soy", "edamame", "ถั่วเหลือง", "ပဲပိစပ်"],
+  gluten: ["gluten", "wheat", "barley", "rye", "celiac", "coeliac", "กลูเตน", "แป้งสาลี", "ข้าวสาลี", "ဂျုံ"],
+  sesame: ["sesame", "tahini", "งา", "နှမ်း"],
+  celery: ["celery", "celeriac", "คื่นช่าย"],
+  mustard: ["mustard", "มัสตาร์ด", "မုန်ညင်း"],
+  sulphites: ["sulphite", "sulfite", "sulphur dioxide", "sulfur dioxide", "ซัลไฟต์", "ซัลเฟอร์ไดออกไซด์"],
+  lupin: ["lupin", "ลูพิน", "ลูปิน"],
 };
-const GENERIC_NUTS = ["ถั่ว", "nuts", " nut"];
+const GENERIC_NUTS = ["ถั่ว"];   // plus the English word "nut" / "nuts", see allergensMentioned()
+// "I am allergic to ..." in a statement (not the question word "allergens"; Thai สารก่อภูมิแพ้ means allergen)
+const STATES_ALLERGY = /allergic|allergy|allergies|intoleran|(?<!ภูมิ)แพ้|ဓာတ်မတည့်(?:ပါဘူး|တယ်|ပါတယ်|လို့)/;
 const ALLERGY_INTENT = ["allerg", "intoleran", "แพ้", "ဓာတ်မတည့်", "ဓါတ်မတ", "without", "ไม่ใส่", "မပါ", "avoid", "หลีกเลี่ยง", "ရှောင်", "contain", "ingredient", "ส่วนผสม", "ပါဝင်", "ပါလား", "ပါသလား", "have any", "มีสาร"];
 
 const AL_TH: Record<string, string> = { peanut: "ถั่วลิสง", tree_nut: "ถั่วเปลือกแข็ง", shellfish: "กุ้ง/สัตว์น้ำมีเปลือก", fish: "ปลา", egg: "ไข่", milk: "นม", soy: "ถั่วเหลือง", gluten: "กลูเตน", sesame: "งา", celery: "คื่นช่าย", mustard: "มัสตาร์ด", molluscs: "หอย", sulphites: "ซัลไฟต์", lupin: "ลูพิน" };
@@ -52,11 +57,14 @@ const alName = (k: string, l: Lang) => (l === "th" ? AL_TH[k] || k : (ALLERGEN_L
 const alNames = (keys: string[], l: Lang) => keys.map((k) => alName(k, l));
 const wordIn = (t: string, w: string) => (/^[a-z' ]+$/.test(w) ? new RegExp("(?<![a-z])" + w.replace(/ /g, "\\s+")).test(t) : t.includes(w));
 
+// Words that contain an allergen word but are not that allergen.
+const NOT_ALLERGEN = [/eggplants?/g, /ปลาหมึก/g];   // eggplant is not egg; ปลาหมึก (squid) is a mollusc, not a fish
 export function allergensMentioned(text: string): string[] {
-  const t = norm(text);
+  let t = norm(text);
+  t = t.replace(NOT_ALLERGEN[0], " ").replace(NOT_ALLERGEN[1], "หมึก");
   const out = new Set<string>();
   for (const [k, words] of Object.entries(ALLERGEN_WORDS)) if (words.some((w) => wordIn(t, w))) out.add(k);
-  if (!out.size && GENERIC_NUTS.some((w) => t.includes(w))) { out.add("peanut"); out.add("tree_nut"); }
+  if (!out.size && (GENERIC_NUTS.some((w) => t.includes(w)) || /(?<![a-z])nuts?(?![a-z])/.test(t))) { out.add("peanut"); out.add("tree_nut"); }
   return [...out];
 }
 
@@ -88,23 +96,45 @@ function variants(item: Item, all: Item[]): string[] {
   // Thai/Burmese short forms used in speech
   const th = item.name.th.replace(/\s+/g, "");
   if (th.startsWith("แกง") && th.length > 5) v.add(th.slice(3));
+  // singular / plural of English names ("spring roll" for "Fresh Spring Rolls"). Only plural<->singular, never fuzzy spelling:
+  // a loose match could attach the WRONG dish's allergens to a question, which is worse than "I can't confirm".
+  for (const x of [...v]) {
+    if (!/^[a-z' -]+$/.test(x) || x.length < 5) continue;
+    const other = x.endsWith("s") ? x.slice(0, -1) : x + "s";
+    if (other.length >= 4 && !STOP.has(other) && !isAllergenWord(other) && !all.some((o) => o.id !== item.id && norm(o.name.en).includes(other))) v.add(other);
+  }
   return [...v].filter((x) => x.length >= 3);
 }
+// "3 x dish", "3x dish", "dish x3", "dish 3x", "dish 3 plates". Each number belongs to ONE dish: the dishes are read left to
+// right and a number already used by an earlier dish ("papaya salad x4 thai tea x2": the 4 is the salad's) is skipped.
+const QTY_BEFORE = /(\d+)\s*(?:x|×)?\s*$/;
+const QTY_AFTER = /^(?:[\s,]*[x×]\s*(\d+)|\s*(\d+)\s*(?:x|×|จาน|ที่|ชุด|ခွက်|ပွဲ|plates?|portions?|pcs|pieces))/;
 function matchDishes(text: string, items: Item[]): { item: Item; qty: number }[] {
   const t = norm(text);
-  const out: { item: Item; qty: number; len: number }[] = [];
+  const found: { item: Item; len: number; at: number }[] = [];
   for (const it of items) {
     let best = 0, at = -1;
     for (const v of variants(it, items)) {
       const i = t.indexOf(v);
       if (i >= 0 && v.length > best) { best = v.length; at = i; }
     }
-    if (best) {
-      const before = t.slice(Math.max(0, at - 6), at).match(/(\d+)\s*(?:x|×)?\s*$/);
-      const after = t.slice(at + best, at + best + 14).match(/^\s*[x×]?\s*(\d+)\s*(?:x|×|จาน|ที่|ชุด|ခွက်|ပွဲ|plates?|portions?|pcs|pieces)/);
-      const q = before ? +before[1] : after ? +after[1] : 1;
-      out.push({ item: it, qty: Math.max(1, Math.min(20, q)), len: best });
+    if (best) found.push({ item: it, len: best, at });
+  }
+  const used: [number, number][] = [];                                    // character ranges of numbers already read as a quantity
+  const free = (a: number, b: number) => !used.some(([x, y]) => a < y && b > x);
+  const out: { item: Item; qty: number; len: number }[] = [];
+  for (const { item, len, at } of [...found].sort((a, b) => a.at - b.at)) {
+    let q = 1;
+    const from = Math.max(0, at - 6), head = t.slice(from, at), before = head.match(QTY_BEFORE);
+    const tailAt = at + len, after = t.slice(tailAt, tailAt + 14).match(QTY_AFTER);
+    if (before && free(from + before.index!, from + before.index! + before[1].length)) {
+      q = +before[1];
+      used.push([from + before.index!, from + before.index! + before[1].length]);
+    } else if (after) {
+      const digits = after[1] ?? after[2], start = tailAt + after[0].indexOf(digits, after[0].search(/[x×\d]/));
+      if (free(start, start + digits.length)) { q = +digits; used.push([start, start + digits.length]); }
     }
+    out.push({ item, qty: Math.max(1, Math.min(20, q)), len });
   }
   // a longer match that contains a shorter dish name wins ("Thai Iced Tea" vs another "Tea")
   return out.sort((a, b) => b.len - a.len).map(({ item, qty }) => ({ item, qty }));
@@ -134,6 +164,10 @@ function dishAllergenReply(l: Lang, p: string, item: Item): string {
   const list = alNames(item.allergens, l).join(", ");
   if (!item.allergens.length) return l === "en" ? `${n} has no allergens listed. ${STAFF(l, p)}` : l === "th" ? `${n}ไม่มีสารก่อภูมิแพ้ที่ระบุไว้${p} ${STAFF(l, p)}` : `${n} မှာ ဖော်ပြထားတဲ့ Allergens မရှိပါဘူး${p}။ ${STAFF(l, p)}`;
   return l === "en" ? `${n} lists these allergens: ${list}. ${STAFF(l, p)}` : l === "th" ? `${n} มีสารก่อภูมิแพ้: ${list}${p} ${STAFF(l, p)}` : `${n} မှာ ${list} ပါဝင်ပါတယ်${p}။ ${STAFF(l, p)}`;
+}
+// Used whenever an allergy question cannot be matched to the allergen data: say so, and send the diner to the staff.
+function cantConfirmReply(l: Lang, p: string): string {
+  return l === "en" ? `I can't confirm allergens for that. Tell me the dish or the allergen (for example "peanut") and I will check the menu. ${STAFF(l, p)}` : l === "th" ? `ยืนยันสารก่อภูมิแพ้ให้ไม่ได้${p} บอกชื่อเมนูหรือสารที่แพ้ได้เลย${p} ${STAFF(l, p)}` : `Allergens ကို အတည်မပြုနိုင်ပါဘူး${p}။ ဟင်းလျာနာမည် ဒါမှမဟုတ် ဓာတ်မတည့်တဲ့အရာ (ဥပမာ peanut) ကို ပြောပေးပါ${p}။ ${STAFF(l, p)}`;
 }
 function vegReply(l: Lang, p: string, vegan: boolean, budget: number | null, list: Item[]): string {
   const price = (i: Item) => `${nm(i, l)} (${money(l, i.price)})`;
@@ -185,6 +219,14 @@ const W = {
 };
 const INJ_VERB = ["ignore", "forget", "disregard", "override", "ลืม", "ไม่ต้องสนใจ", "ละเว้น", "မေ့"];
 const INJ_OBJ = ["rule", "instruction", "prompt", "กฎ", "คำสั่ง", "စည်းမျဉ်း", "ညွှန်ကြား"];
+// More ways to ask the assistant to drop its rules, without the words "ignore ... rules" (English; Thai and Burmese use INJ_VERB/INJ_OBJ).
+const INJ_PHRASES = [
+  /\b(?:act|behave|respond|answer|talk) as (?:a|an|if|though|the|my)\b/, /\bpretend\b/, /\byou are now (?:a|an|the|my|in|free|no longer)\b/, /\bfrom now on you\b/,
+  /\bnew (?:instructions|system prompt)\b/, /\b(?:developer|admin|debug|maintenance|dan|god|sudo) mode\b/, /\bjailbreak/, /\bdo anything now\b/,
+  /\b(?:reveal|show|print|repeat|display|leak|tell me|give me) (?:me )?(?:your|the) (?:system |initial |original |hidden )?(?:prompt|instructions)\b/,
+  /\bwhat (?:are|were) your (?:instructions|initial prompt)\b/,
+  /\b(?:ignore|disregard|forget|bypass|override)\b.{0,30}\b(?:previous|above|earlier|prior|everything you|all (?:of )?your)\b/,
+];
 export function topicOf(text: string): string {
   const t = norm(text);
   if (allergensMentioned(t).length && has(t, ALLERGY_INTENT)) return "allergens";
@@ -216,7 +258,7 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
   const done = (reply: string, action: Action, extra: Partial<ChatResult> = {}): ChatResult => ({ reply, action, topic, allergens: mentioned, answered: true, usedModel: false, ...extra });
 
   // 00. attempts to change the rules
-  if ((has(t, INJ_VERB) && has(t, INJ_OBJ)) || t.includes("system prompt")) {
+  if ((has(t, INJ_VERB) && has(t, INJ_OBJ)) || t.includes("system prompt") || INJ_PHRASES.some((re) => re.test(t))) {
     return done(lang === "en" ? "I can only help with our menu, our prices as listed, and information about the restaurant." : lang === "th" ? `ขออภัย${p} ช่วยได้เฉพาะเรื่องเมนู ราคาตามที่ระบุ และข้อมูลของร้าน${p}` : `တောင်းပန်ပါတယ်${p}။ မီနူး၊ စာရင်းပါ ဈေးနှုန်းနဲ့ ဆိုင်အကြောင်း အချက်အလက်တွေကိုပဲ ကူညီပေးနိုင်ပါတယ်${p}။`, { type: "none" }, { topic: "other" });
   }
 
@@ -225,6 +267,10 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
     const it = dishes[0].item, n = nm(it, lang);
     return done(lang === "en" ? `${n} is made with: ${it.ingredients}.` : lang === "th" ? `ส่วนผสมของ${n}: ${it.ingredients}${p}` : `${n} ပါဝင်ပစ္စည်းများ: ${it.ingredients} ဖြစ်ပါတယ်${p}။`, { type: "show_dishes", ids: [it.id] });
   }
+
+  // 0c. the diner states an allergy but none of the 14 major allergens was recognised (kiwi, an unusual spelling ...):
+  // answering with a dish's allergen list would sound like "this dish is fine for you", so say we cannot confirm
+  if (!mentioned.length && STATES_ALLERGY.test(t)) return done(cantConfirmReply(lang, p), { type: "none" }, { answered: false });
 
   // 1. allergens: always from the database
   const intent = has(t, ALLERGY_INTENT);
@@ -266,9 +312,9 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
     if (has(t, W.price)) return done(priceReply(lang, p, dishes[0].item), { type: "show_dishes", ids: [dishes[0].item.id] });
     if (has(t, W.order) || has(t, ["please", "หน่อย"]) || /\d+\s*[x×]|[x×]\s*\d+/.test(t)) {
       const qty: Record<number, number> = {};
-      dishes.forEach((d) => (qty[d.item.id] = d.qty));
+      dishes.forEach((d) => { qty[d.item.id] = d.qty; });
       const names = join(lang, dishes.map((d) => `${d.qty > 1 ? d.qty + "× " : ""}${nm(d.item, lang)}`));
-      return done(lang === "en" ? `Added to your picks: ${names}. Tap "Show to waiter" when you're ready.` : lang === "th" ? `เพิ่มลงในรายการที่เลือกแล้ว: ${names}${p} กด "ให้พนักงานดู" เมื่อพร้อมสั่ง` : `${names} ကို ရွေးထားတာတွေထဲ ထည့်လိုက်ပါတယ်${p}။`, { type: "add_to_picks", ids: dishes.map((d) => d.item.id), qty });
+      return done(lang === "en" ? `Added to your picks: ${names}. Tap "Send to staff" when you're ready.` : lang === "th" ? `เพิ่มลงในรายการที่เลือกแล้ว: ${names}${p} กด "ให้พนักงานดู" เมื่อพร้อมสั่ง` : `${names} ကို ရွေးထားတာတွေထဲ ထည့်လိုက်ပါတယ်${p}။`, { type: "add_to_picks", ids: dishes.map((d) => d.item.id), qty });
     }
   }
 
@@ -291,20 +337,20 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
 
   // 6b. an allergy question we could not match to a dish or allergen: never let the model guess
   if (topic === "allergens") {
-    return done(lang === "en" ? `I can't confirm allergens for that. Tell me the dish or the allergen (for example "peanut") and I will check the menu. ${STAFF(lang, p)}` : lang === "th" ? `ยืนยันสารก่อภูมิแพ้ให้ไม่ได้${p} บอกชื่อเมนูหรือสารที่แพ้ได้เลย${p} ${STAFF(lang, p)}` : `Allergens ကို အတည်မပြုနိုင်ပါဘူး${p}။ ဟင်းလျာနာမည် ဒါမှမဟုတ် ဓာတ်မတည့်တဲ့အရာ (ဥပမာ peanut) ကို ပြောပေးပါ${p}။ ${STAFF(lang, p)}`, { type: "none" }, { answered: false });
+    return done(cantConfirmReply(lang, p), { type: "none" }, { answered: false });
   }
 
   // 7. everything else goes to the language model, with checks on its output
   try {
-    const raw = await askModel(message, lang, ctx);
-    return checkModelReply(raw, lang, p, ctx, topic, mentioned);
+    const raw = await askModel(message, ctx);
+    return checkModelReply(raw, lang, p, ctx, topic, mentioned, message);
   } catch {
     return done(unavailableReply(lang, p), { type: "show_menu" }, { answered: false });
   }
 }
 
 // ------------------------------------------------------------------ language model
-function systemPrompt(ctx: Ctx, lang: Lang): string {
+function systemPrompt(ctx: Ctx): string {
   const { restaurant: r, items, faqs, specials } = ctx;
   const pr = r.persona, male = pr.gender !== "female";
   const data = {
@@ -338,21 +384,14 @@ RESTAURANT DATA (JSON)
 ${JSON.stringify(data)}`;
 }
 
-async function askModel(message: string, lang: Lang, ctx: Ctx): Promise<string> {
+async function askModel(message: string, ctx: Ctx): Promise<string> {
   // Only the last couple of turns are kept: these questions are answered from a fresh read of the
   // menu each time, not from a long conversation, and every extra message is more tokens to read
   // before the model can start answering.
-  const messages = [{ role: "system", content: systemPrompt(ctx, lang) }, ...ctx.history.slice(-2).map((m) => ({ role: m.role, content: m.text })), { role: "user", content: message }];
-  const res = await fetch(`${OLLAMA_URL}/api/chat`, {
-    method: "POST", headers: { "content-type": "application/json" },
-    // num_predict caps a reply at ~220 tokens (well over the "max 4 sentences" rule) so one unusually
-    // long answer cannot make a diner wait far longer than the rest.
-    body: JSON.stringify({ model: MODEL, stream: false, think: false, keep_alive: "30m", options: { temperature: 0.2, num_ctx: 8192, num_predict: 220 }, messages }),
-    signal: AbortSignal.timeout(90_000),
-  });
-  if (!res.ok) throw new Error(`Ollama ${res.status}`);
-  const j = await res.json();
-  return String(j.message?.content ?? "");
+  const messages = [{ role: "system", content: systemPrompt(ctx) }, ...ctx.history.slice(-2).map((m) => ({ role: m.role, content: m.text })), { role: "user", content: message }];
+  // num_predict (maxTokens) caps a reply at ~220 tokens (well over the "max 4 sentences" rule) so one
+  // unusually long answer cannot make a diner wait far longer than the rest.
+  return complete(messages as Msg[], { temperature: 0.2, maxTokens: 220, timeoutMs: 90_000 });
 }
 
 const UNSAFE = [/\b(is safe|safe to eat|safe for you|allergy-free|allergen-free|no allergens|guarantee[sd]?)\b/i, /(?<!ไม่)ปลอดภัย/, /ဘေးကင်း|အန္တရာယ်ကင်း/];
@@ -360,7 +399,7 @@ function wrongPrice(text: string, items: Item[]): boolean {
   const s = text.replace(/[၀-၉]/g, (d) => String(BD.indexOf(d)));
   for (const it of items) {
     const names = new Set<string>();
-    for (const n of Object.values(it.name)) { names.add(n); (n.split("(")).forEach((x) => x.trim().replace(/\)$/, "") && names.add(x.trim().replace(/\)$/, ""))); }
+    for (const n of Object.values(it.name)) { names.add(n); for (const x of n.split("(")) { const part = x.trim().replace(/\)$/, ""); if (part) names.add(part); } }
     for (const n of names) {
       let from = 0;
       for (;;) {
@@ -376,9 +415,79 @@ function wrongPrice(text: string, items: Item[]): boolean {
   return false;
 }
 
-function checkModelReply(raw: string, lang: Lang, p: string, ctx: Ctx, topic: string, allergens: string[]): ChatResult {
+// Every money amount in a reply must be a real menu price, or a number the diner wrote themselves (a budget
+// such as "under 150 baht"). wrongPrice() only looks after a dish name, so this also catches "฿99 for the Pad Thai".
+function unknownAmount(text: string, items: Item[], question: string): boolean {
+  const digits = (s: string) => s.replace(/[၀-၉]/g, (d) => String(BD.indexOf(d)));
+  const allowed = new Set<number>([...items.map((i) => i.price), ...(digits(question).match(/\d+(?:\.\d+)?/g) || []).map(Number)]);
+  const amounts = [...digits(text).matchAll(/(?:฿|THB)\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*(?:฿|THB|baht|บาท|ဘတ်)/gi)].map((m) => Number(m[1] ?? m[2]));
+  return amounts.some((a) => !allowed.has(a));
+}
+
+// A price must sit next to the dish it belongs to, wherever it stands in the sentence. wrongPrice() checks the number after a dish
+// name; this checks each clause ("For ฿50 you can get the Shrimp Pad Thai"): every money amount must be the price of a dish named
+// in that same clause (or a number the diner wrote). A clause with an amount and no dish is left to unknownAmount().
+function misPricedClause(text: string, items: Item[], question: string): boolean {
+  const digits = (s: string) => s.replace(/[၀-၉]/g, (d) => String(BD.indexOf(d)));
+  const asked = new Set((digits(question).match(/\d+(?:\.\d+)?/g) || []).map(Number));
+  for (const clause of digits(text).split(/(?<=[.!?])\s+|[;\n]|,\s+/)) {
+    const amounts = [...clause.matchAll(/(?:฿|THB)\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*(?:฿|THB|baht|บาท|ဘတ်)/gi)].map((m) => Number(m[1] ?? m[2]));
+    if (!amounts.length) continue;
+    // a dish counts as named if the matcher finds it, or if the clause has a word (4+ letters) that only that dish's name contains ("the tofu for ฿90")
+    const low = clause.toLowerCase(), mentioned = new Set(matchDishes(clause, items).map((d) => d.item));
+    for (const it of items) {
+      for (const w of norm(it.name.en).match(/[a-z]{4,}/g) || []) {
+        if (!STOP.has(w) && !items.some((o) => o.id !== it.id && norm(o.name.en).includes(w)) && new RegExp(`(?<![a-z])${w}`).test(low)) mentioned.add(it);
+      }
+    }
+    const prices = new Set([...mentioned].map((i) => i.price));
+    if (prices.size && amounts.some((a) => !prices.has(a) && !asked.has(a))) return true;
+  }
+  return false;
+}
+
+// Dish names in a model reply must be on the menu. Free text cannot be parsed exactly, so this looks for what a dish name
+// looks like in an English reply: a run of two or more Capitalised Words ("Lobster Thermidor"), or one capitalised word right after
+// "try / recommend / order ..." ("Try our Moussaka"). Every word of such a name must come from the restaurant's own data
+// (dish names and descriptions, restaurant and assistant names, FAQs, specials) or from the diner's own question.
+// A name inside a negation ("we do not serve Margherita Pizza") is a refusal, not a recommendation, and is allowed.
+// Not covered: dish names written only in Thai or Burmese script, names in lower case, and a single capitalised word with no cue.
+const OPENERS = new Set("a an and are as at but can certainly could do does for from great hello hey hi how i if in is it its let me my no not of ok okay on or our please sorry sure thank thanks that the their there these they this today we welcome what when where which while will with would yes you your absolutely actually also here unfortunately however".split(" "));
+const COMMON = new Set("monday tuesday wednesday thursday friday saturday sunday january february march april may june july august september october november december thai burmese english myanmar thailand wi fi wifi allergen allergens ai thb baht staff chef waiter menu ok".split(" "));
+const CUE = /\b(?:try|recommend|suggest|enjoy|order|get|have|choose|like|serve|serving|offer|pick|special)\s+(?:[a-z'’-]+\s+){0,2}$/i;
+const words = (s: string) => (s.toLowerCase().match(/[a-z]+/g) || []);
+function unknownDish(text: string, ctx: Ctx, question: string): string | null {
+  const r = ctx.restaurant;
+  const known = new Set<string>([...COMMON]);
+  const learn = (s: string) => { for (const w of words(s)) known.add(w); };
+  learn(question); learn(r.name); learn(r.city || ""); learn(r.persona.name || ""); learn(r.persona.rules || "");
+  for (const i of ctx.items) { learn(i.name.en); learn(i.desc.en); learn(i.ingredients); }
+  for (const f of ctx.faqs) { learn(f.q); learn(f.a); }
+  for (const s of ctx.specials) { learn(String(s.title || "")); learn(String(s.text || "")); }
+  const clean = text.replace(/[*_#`>]/g, " ");
+  const stem = (w: string) => w.replace(/['’]s$/, "");
+  for (const m of clean.matchAll(/(?:[A-Z][A-Za-z'’-]+)(?:[ ]+[A-Z][A-Za-z'’-]+)*/g)) {
+    let toks = m[0].split(/ +/);
+    const start = m.index!;
+    const before = clean.slice(0, start);
+    const atSentenceStart = /(?:^|[.!?:\n])\s*(?:[-•]\s*|\d+[.)]\s*)?$/.test(before);
+    if (atSentenceStart) while (toks.length && OPENERS.has(stem(toks[0]).toLowerCase())) { toks = toks.slice(1); }
+    if (!toks.length) continue;
+    const prefix = before + m[0].slice(0, m[0].length - toks.join(" ").length);
+    const cued = CUE.test(prefix.slice(-40));
+    if (toks.length < 2 && !cued) continue;
+    const sentence = prefix.split(/[.!?;\n]/).pop() || "";
+    const clause = sentence.split(/\b(?:but|however|instead|alternatively|try|recommend|suggest|enjoy|how about)\b|[,;]/i).pop() || "";
+    if (/\b(?:not|never|no|without|cannot)\b|n['’]t/i.test(clause)) continue;
+    const bad = toks.find((t) => !known.has(stem(t).toLowerCase().replace(/[^a-z]/g, "")) && !words(t).every((w) => known.has(w)));
+    if (bad) return toks.join(" ");
+  }
+  return null;
+}
+
+function checkModelReply(raw: string, lang: Lang, p: string, ctx: Ctx, topic: string, allergens: string[], question: string): ChatResult {
   const m = raw.match(/\n?\s*ACTION:\s*(.*)$/s);
-  let text = raw.replace(/\n?\s*ACTION:.*$/s, "").trim();
+  const text = raw.replace(/\n?\s*ACTION:.*$/s, "").trim();
   let action: Action = { type: "none" };
   if (m) {
     const line = m[1].trim().split("\n")[0];
@@ -392,7 +501,7 @@ function checkModelReply(raw: string, lang: Lang, p: string, ctx: Ctx, topic: st
       } catch {}
     }
   }
-  const bad = !text || UNSAFE.some((re) => re.test(text)) || wrongPrice(text, ctx.items);
+  const bad = !text || UNSAFE.some((re) => re.test(text)) || wrongPrice(text, ctx.items) || unknownAmount(text, ctx.items, question) || misPricedClause(text, ctx.items, question) || unknownDish(text, ctx, question) !== null;
   if (bad) return { reply: dontKnow(lang, p), action: { type: "none" }, topic, allergens, answered: false, usedModel: true };
   const staffish = /ask the staff|check with the staff|confirm with the staff|don't have that|do not have that|ไม่มีข้อมูล|พนักงาน|ဝန်ထမ်း|မရှိပါဘူး/i.test(text);
   return { reply: text, action, topic, allergens, answered: !staffish, usedModel: true };

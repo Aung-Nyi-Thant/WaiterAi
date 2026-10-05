@@ -3,8 +3,10 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { ownerSession } from "@/modules/platform/auth";
 import { json, bad, unauthorized } from "@/modules/platform/http";
+import { UPLOAD_DIR } from "@/modules/platform/paths";
+import { sniffImage } from "@/modules/platform/imageType";
 
-export const UPLOAD_DIR = path.join(process.cwd(), "data", "uploads");
+export { UPLOAD_DIR };
 const TYPES: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 
 export async function POST(req: Request) {
@@ -14,8 +16,11 @@ export async function POST(req: Request) {
   const ext = TYPES[file.type];
   if (!ext) return bad("Only JPG, PNG or WebP images are allowed.");
   if (file.size > 8 * 1024 * 1024) return bad("The image is larger than 8 MB.");
+  const buf = Buffer.from(await file.arrayBuffer());
+  const kind = sniffImage(buf);                                       // the real content decides, not the declared type
+  if (!kind) return bad("This file is not a real JPG, PNG or WebP image.");
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-  const name = `${crypto.randomBytes(8).toString("hex")}.${ext}`;
-  fs.writeFileSync(path.join(UPLOAD_DIR, name), Buffer.from(await file.arrayBuffer()));
+  const name = `${crypto.randomBytes(8).toString("hex")}.${kind}`;
+  fs.writeFileSync(path.join(/*turbopackIgnore: true*/ UPLOAD_DIR, name), buf);
   return json({ url: `/api/uploads/${name}` });
 }
