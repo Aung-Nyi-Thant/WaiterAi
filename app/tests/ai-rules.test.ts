@@ -13,6 +13,30 @@ const female = async () => { const c = await aiCtx(); return { restaurant: { ...
 const UNSAFE = /\b(is safe|safe to eat|safe for you|allergy-free|allergen-free|no allergens|guarantee)/i;
 const STAFF = { en: /confirm with the staff/, th: /กรุณายืนยันกับพนักงาน/, my: /ဝန်ထမ်းကို မေးမြန်းပေးပါ/ };
 
+describe("Thai has no spaces, so short allergen words must not match inside other words", () => {
+  // "งา" (sesame) is inside "พนักงาน" (staff) and "งาน" (work); "ปู" (crab) is inside "ปูน" (cement) and "ปู่" (grandfather)
+  it.each([
+    ["เรียกพนักงานหน่อย", "call_staff"],
+    ["ขอเรียกพนักงานมาที่โต๊ะ", "call_staff"],
+    ["เช็คบิลพนักงานด้วยครับ", "call_staff"],
+  ])("'%s' calls the staff and is not read as a sesame allergy", async (msg, type) => {
+    expect(allergensMentioned(msg)).toEqual([]);
+    const r = await ask(msg);
+    expect(r.action.type).toBe(type);
+    expect(r.allergens).toEqual([]);
+  });
+  it("still recognises the real words, alone and inside a sentence", () => {
+    expect(allergensMentioned("ฉันแพ้งา")).toEqual(["sesame"]);
+    expect(allergensMentioned("น้ำมันงาดำ")).toEqual(["sesame"]);
+    expect(allergensMentioned("แพ้ปู")).toEqual(["shellfish"]);
+    expect(allergensMentioned("ผัดปูผงกะหรี่")).toEqual(["shellfish"]);
+    expect(allergensMentioned("แพ้ปลา")).toEqual(["fish"]);
+  });
+  it("words that merely contain a short allergen word are not allergens", () => {
+    for (const w of ["ปูนซีเมนต์", "ปู่ย่าตายาย", "ปลายทาง", "งานเลี้ยง", "งามมาก"]) expect(allergensMentioned(w), w).toEqual([]);
+  });
+});
+
 describe("language detection", () => {
   it("tells Thai, Burmese and English apart and falls back to the interface language", () => {
     expect(detectLang("ร้านปิดกี่โมง")).toBe("th");

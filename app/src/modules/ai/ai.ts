@@ -49,7 +49,10 @@ const AL_TH: Record<string, string> = { peanut: "ถั่วลิสง", tree
 // English allergen names are kept in Burmese answers (the owner asked for this); Thai gets Thai names.
 const alName = (k: string, l: Lang) => (l === "th" ? AL_TH[k] || k : (ALLERGEN_LABEL[k] || k).toLowerCase());
 const alNames = (keys: string[], l: Lang) => keys.map((k) => alName(k, l));
-const wordIn = (t: string, w: string) => (/^[a-z' ]+$/.test(w) ? new RegExp("(?<![a-z])" + w.replace(/ /g, "\\s+")).test(t) : t.includes(w));
+// Thai has no spaces, so a short allergen word can sit inside a common word: "งา" (sesame) in "พนักงาน" (staff) and "งาน" (work),
+// "ปู" (crab) in "ปูน" (cement) and "ปู่" (grandfather), "ปลา" (fish) in "ปลาย" (end). These are not allergen mentions.
+const THAI_NOT_INSIDE: Record<string, RegExp> = { "งา": /งา(?![นมย])/, "ปู": /ปู(?![นมก่-๋])/, "ปลา": /ปลา(?!ย)/ };
+const wordIn = (t: string, w: string) => (/^[a-z' ]+$/.test(w) ? new RegExp("(?<![a-z])" + w.replace(/ /g, "\\s+")).test(t) : THAI_NOT_INSIDE[w] ? THAI_NOT_INSIDE[w].test(t) : t.includes(w));
 
 export function allergensMentioned(text: string): string[] {
   const t = norm(text);
@@ -109,6 +112,13 @@ function matchDishes(text: string, items: Item[]): { item: Item; qty: number }[]
   return out.sort((a, b) => b.len - a.len).map(({ item, qty }) => ({ item, qty }));
 }
 
+// Allergen words in a text, ignoring the ones that are part of a dish name ("Shrimp Pad Thai" is not an allergy statement).
+export function allergensOutsideDishNames(text: string, items: Item[]): string[] {
+  let t = norm(text);
+  for (const d of matchDishes(text, items)) for (const v of variants(d.item, items).sort((a, b) => b.length - a.length)) t = t.split(v).join(" ");
+  return allergensMentioned(t);
+}
+
 // ------------------------------------------------------------------ fixed sentences
 const STAFF = (l: Lang, p: string) => (l === "en" ? "Please confirm with the staff before ordering." : l === "th" ? `กรุณายืนยันกับพนักงานก่อนสั่งอาหาร${p}` : `ဝန်ထမ်းကို မေးမြန်းပေးပါ${p}။`);
 const HELP = (l: Lang, p: string) => (l === "en" ? "Anything else I can help with?" : l === "th" ? `มีอะไรให้ช่วยอีกไหม${p}` : `ဘာကူညီပေးရမလဲ${p}?`);
@@ -163,6 +173,11 @@ function soldOutReply(l: Lang, p: string, i: Item): string {
 function dontKnow(l: Lang, p: string): string {
   return (l === "en" ? "I don't have that information. " : l === "th" ? `ขออภัย ไม่มีข้อมูลนี้${p} ` : `${p === "ရှင်" ? "ကျွန်မ" : "ကျွန်တော်"}မှာ အဲဒီအချက်အလက် မရှိပါဘူး${p}။ `) + (l === "en" ? "Please ask the staff." : l === "th" ? `กรุณาสอบถามพนักงาน${p}` : `ဝန်ထမ်းကို မေးမြန်းပေးပါ${p}။`);
 }
+// An allergy question (or a model reply about allergens) that cannot be matched to a dish or an allergen in the data.
+const allergenAskReply = (l: Lang, p: string) =>
+  l === "en" ? `I can't confirm allergens for that. Tell me the dish or the allergen (for example "peanut") and I will check the menu. ${STAFF(l, p)}`
+  : l === "th" ? `ยืนยันสารก่อภูมิแพ้ให้ไม่ได้${p} บอกชื่อเมนูหรือสารที่แพ้ได้เลย${p} ${STAFF(l, p)}`
+  : `Allergens ကို အတည်မပြုနိုင်ပါဘူး${p}။ ဟင်းလျာနာမည် ဒါမှမဟုတ် ဓာတ်မတည့်တဲ့အရာ (ဥပမာ peanut) ကို ပြောပေးပါ${p}။ ${STAFF(l, p)}`;
 export const unavailableReply = (l: Lang, p: string) =>
   l === "en" ? "The AI waiter is unavailable right now. You can browse the menu or call the staff." : l === "th" ? `ผู้ช่วย AI ใช้งานไม่ได้ในขณะนี้${p} ดูเมนูหรือเรียกพนักงานได้${p}` : `AI စားပွဲထိုး ခဏမရနိုင်ပါဘူး${p}။ မီနူးကို ကြည့်နိုင်ပါတယ်၊ ဝန်ထမ်းကိုလည်း ခေါ်နိုင်ပါတယ်${p}။`;
 export const limitReply = (l: Lang, p: string) =>
@@ -292,9 +307,7 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
   }
 
   // 6b. an allergy question we could not match to a dish or allergen: never let the model guess
-  if (topic === "allergens") {
-    return done(lang === "en" ? `I can't confirm allergens for that. Tell me the dish or the allergen (for example "peanut") and I will check the menu. ${STAFF(lang, p)}` : lang === "th" ? `ยืนยันสารก่อภูมิแพ้ให้ไม่ได้${p} บอกชื่อเมนูหรือสารที่แพ้ได้เลย${p} ${STAFF(lang, p)}` : `Allergens ကို အတည်မပြုနိုင်ပါဘူး${p}။ ဟင်းလျာနာမည် ဒါမှမဟုတ် ဓာတ်မတည့်တဲ့အရာ (ဥပမာ peanut) ကို ပြောပေးပါ${p}။ ${STAFF(lang, p)}`, { type: "none" }, { answered: false });
-  }
+  if (topic === "allergens") return done(allergenAskReply(lang, p), { type: "none" }, { answered: false });
 
   // 7. everything else goes to the language model, with checks on its output
   try {
@@ -409,6 +422,15 @@ function checkModelReply(raw: string, lang: Lang, p: string, ctx: Ctx, topic: st
   }
   const bad = !text || UNSAFE.some((re) => re.test(text)) || wrongPrice(text, ctx.items);
   if (bad) return { reply: dontKnow(lang, p), action: { type: "none" }, topic, allergens, answered: false, usedModel: true };
+  // The model may not say anything about allergens, in either direction ("contains peanuts", "nut-free", "no dairy"):
+  // it only sees the data it was given and has been wrong about it. Allergen facts come from the database only, so such
+  // a reply is replaced by the stored allergen data of the dish it names (or by a request to name the dish).
+  const named = matchDishes(text, ctx.items)[0]?.item;
+  if (allergensOutsideDishNames(text, ctx.items).length) {
+    return named
+      ? { reply: dishAllergenReply(lang, p, named), action: { type: "show_dishes", ids: [named.id] }, topic: "allergens", allergens, answered: true, usedModel: true }
+      : { reply: allergenAskReply(lang, p), action: { type: "none" }, topic: "allergens", allergens, answered: false, usedModel: true };
+  }
   const staffish = /ask the staff|check with the staff|confirm with the staff|don't have that|do not have that|ไม่มีข้อมูล|พนักงาน|ဝန်ထမ်း|မရှိပါဘူး/i.test(text);
   return { reply: withVoiceEnding(text, lang, ctx.restaurant.persona.gender), action, topic, allergens, answered: !staffish, usedModel: true };
 }
