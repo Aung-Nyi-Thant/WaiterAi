@@ -47,7 +47,14 @@ export const categoriesOf = (rid: number): Category[] =>
   all("SELECT * FROM categories WHERE restaurant_id = ? ORDER BY sort, id", rid).map((c: any) => ({
     id: c.id, sort: c.sort, name: { en: c.name_en, th: c.name_th || c.name_en, my: c.name_my || c.name_en },
   }));
-export const faqsOf = (rid: number) => all("SELECT id, q, a FROM faqs WHERE restaurant_id = ? ORDER BY sort, id", rid);
+// How many of each dish diners ordered at this restaurant in the last 30 days (orders the staff cancelled do not count).
+// The AI uses it to rank recommendations, so "what's popular" is real data, not the model's opinion.
+export const popularDishes = (rid: number): Record<number, number> =>
+  Object.fromEntries(all(
+    `SELECT i.item_id AS id, SUM(i.qty) AS n FROM order_items i JOIN orders o ON o.id = i.order_id
+     WHERE o.restaurant_id = ? AND o.status != 'cancelled' AND i.item_id IS NOT NULL AND o.created_at >= datetime('now','-30 day') GROUP BY i.item_id`, rid)
+    .map((r: any) => [r.id, Number(r.n)]));
+export const faqsOf =(rid: number) => all("SELECT id, q, a FROM faqs WHERE restaurant_id = ? ORDER BY sort, id", rid);
 export const specialsOf = (rid: number) => {
   const today = new Date().toISOString().slice(0, 10);
   return all("SELECT * FROM specials WHERE restaurant_id = ? AND active = 1 AND (starts_on = '' OR starts_on <= ?) AND (ends_on = '' OR ends_on >= ?)", rid, today, today);

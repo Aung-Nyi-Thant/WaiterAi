@@ -1,4 +1,4 @@
-import { restaurantBySlug, itemsOf, faqsOf, specialsOf } from "@/modules/platform/menu";
+import { restaurantBySlug, itemsOf, faqsOf, specialsOf, categoriesOf, popularDishes } from "@/modules/platform/menu";
 import { all, get, run } from "@/modules/platform/db";
 import { json, bad, body } from "@/modules/platform/http";
 import { answer, detectLang, limitReply } from "@/modules/ai/ai";
@@ -33,7 +33,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
     result = { reply: limitReply(lang, p === "female" ? "ค่ะ" : ""), action: { type: "show_menu" as const }, topic: "other", allergens: [], answered: false, usedModel: false };
   } else {
     const history = preview || !b.sessionId ? [] : all("SELECT role, text FROM chat_messages WHERE session_id = ? ORDER BY id DESC LIMIT 8", sessionId).reverse();
-    result = await answer(message, lang, { restaurant: r, items, faqs: faqsOf(r.id) as any, specials: specialsOf(r.id), history: history as any, profile });
+    result = await answer(message, lang, { restaurant: r, items, faqs: faqsOf(r.id) as any, specials: specialsOf(r.id), history: history as any, profile, categories: categoriesOf(r.id), popular: popularDishes(r.id) });
   }
 
   let messageId = 0;
@@ -49,8 +49,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
         run("INSERT INTO calls (restaurant_id, table_no, kind) VALUES (?,?,?)", r.id, table, kind);
     }
   }
-  const ids = result.action.ids || [];
+  const ids = result.action.ids || [];       // the dish cards below follow this order: it is the AI's ranking (for example by orders)
   // "answered" lets the diner UI notice two unhelpful replies in a row and offer to call staff
   // proactively, instead of only reacting if the diner happens to spot the bell icon themselves.
-  return json({ sessionId, messageId, reply: result.reply, action: result.action, dishes: items.filter((i) => ids.includes(i.id)), lang, answered: result.answered });
+  return json({ sessionId, messageId, reply: result.reply, action: result.action, dishes: ids.map((id) => items.find((i) => i.id === id)).filter(Boolean), lang, answered: result.answered });
 }

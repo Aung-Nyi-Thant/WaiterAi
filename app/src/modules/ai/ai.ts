@@ -8,7 +8,9 @@ import { complete, type Msg } from "@/modules/ai/provider";
 export type Action = { type: "none" | "show_menu" | "show_dishes" | "add_to_picks" | "call_staff"; ids?: number[]; kind?: string; qty?: Record<number, number> };
 export type ChatResult = { reply: string; action: Action; topic: string; allergens: string[]; answered: boolean; usedModel: boolean };
 // profile: the allergens the diner chose once for this visit (see "allergy profile" below)
-type Ctx = { restaurant: Restaurant; items: Item[]; faqs: { q: string; a: string }[]; specials: any[]; history: { role: "user" | "assistant"; text: string }[]; profile?: string[] };
+type Ctx = { restaurant: Restaurant; items: Item[]; faqs: { q: string; a: string }[]; specials: any[]; history: { role: "user" | "assistant"; text: string }[]; profile?: string[];
+  // the menu's categories (to understand "a dessert") and how many of each dish diners ordered here in the last 30 days (to rank)
+  categories?: { id: number; name: Record<Lang, string> }[]; popular?: Record<number, number> };
 
 // ------------------------------------------------------------------ language helpers
 export function detectLang(text: string, fallback: Lang = "en"): Lang {
@@ -242,6 +244,53 @@ const budgetOf = (t: string): number | null => {
   return m ? +m[1] : null;
 };
 
+// ------------------------------------------------------------------ smart recommendations
+// "something mild under 100 baht", "what's spicy?", "a dessert", "what's popular?" are answered from the menu data (spice level,
+// price, category, tags), ranked by what diners really ordered here in the last 30 days, and filtered by the allergy profile.
+// Only a question without such details ("what's good on a hot day?") goes to the language model.
+type Rec = { mild?: boolean; hot?: boolean; budget?: number; inclusive?: boolean; category?: string; popular?: boolean };
+const MILD = ["not spicy", "no spice", "not too spicy", "less spicy", "mild", "ไม่เผ็ด", "เผ็ดน้อย", "ไม่เอาเผ็ด", "မစပ်"];
+const HOT = ["spicy", "เผ็ด", "စပ်"];
+const POPULAR = ["popular", "best seller", "bestseller", "most ordered", "surprise me", "chef's pick", "chefs pick", "ยอดนิยม", "ขายดี", "สุ่ม", "เซอร์ไพรส์", "လူကြိုက်များ", "ရောင်းအား"];
+// [the word in the category's English name, words a diner uses for it]
+const CATEGORY_WORDS: [string, string[]][] = [
+  ["drink", ["drink", "beverage", "เครื่องดื่ม", "ของดื่ม", "သောက်စရာ"]], ["dessert", ["dessert", "sweet", "ของหวาน", "အချိုပွဲ"]],
+  ["starter", ["starter", "appetizer", "appetiser", "snack", "ของทานเล่น", "အစာစား"]], ["salad", ["salad", "สลัด", "သုပ်"]],
+  ["curr", ["curry", "curries", "แกง", "ဟင်းချို"]], ["main", ["main course", "mains", "จานหลัก", "ပင်မဟင်း"]],
+];
+const INCLUSIVE = ["within", "up to", "max", "budget", "ไม่เกิน", "งบ", "or less", "or under"];
+function parseRec(t: string): Rec {
+  const rec: Rec = {};
+  const b = t.match(/(under|below|less than|within|up to|maximum|max|budget|ไม่เกิน|ต่ำกว่า|งบ|ဘတ်|฿)\s*(?:of\s*)?฿?\s*(\d{2,4})/) || t.match(/(\d{2,4})\s*(?:baht|บาท|ဘတ်|฿)?\s*(or less|or under|အောက်)/);
+  if (b) { const num = +(b[2].match(/^\d+$/) ? b[2] : b[1]); rec.budget = num; rec.inclusive = INCLUSIVE.includes(b[1]) || INCLUSIVE.includes(b[2]); }
+  if (has(t, MILD)) rec.mild = true; else if (has(t, HOT)) rec.hot = true;
+  for (const [key, words] of CATEGORY_WORDS) if (has(t, words)) { rec.category = key; break; }
+  if (has(t, POPULAR)) rec.popular = true;
+  return rec;
+}
+const SPICE = { en: ["not spicy", "mild", "spicy", "very spicy"], th: ["ไม่เผ็ด", "เผ็ดน้อย", "เผ็ด", "เผ็ดมาก"], my: ["မစပ်ပါ", "စပ်နည်းနည်း", "စပ်", "အရမ်းစပ်"] };
+function recReply(l: Lang, p: string, rec: Rec, vegan: boolean | null, catName: string, list: Item[], popular: Record<number, number>, profile: string[]): string {
+  const crit = [
+    rec.mild && (l === "en" ? "mild" : l === "th" ? "ไม่เผ็ด" : "မစပ်"), rec.hot && (l === "en" ? "spicy" : l === "th" ? "เผ็ด" : "စပ်"),
+    vegan !== null && (vegan ? (l === "en" ? "vegan" : l === "th" ? "วีแกน" : "Vegan") : (l === "en" ? "vegetarian" : l === "th" ? "มังสวิรัติ" : "သက်သတ်လွတ်")),
+    rec.budget !== undefined && (l === "en" ? `${rec.inclusive ? "up to" : "under"} ฿${rec.budget}` : l === "th" ? `ไม่เกิน ${rec.budget} บาท` : `ဘတ် ${bd(rec.budget)} အောက်`),
+    catName, rec.popular && (l === "en" ? "popular here" : l === "th" ? "ยอดนิยม" : "လူကြိုက်များ"),
+  ].filter(Boolean).join(l === "my" ? "၊ " : ", ");
+  const note = profile.length ? ` ${profileNote(l, p, profile)}` : "";
+  if (!list.length) return (l === "en" ? `No dish on the menu matches ${crit} right now. Tell me what to change (budget, spice level or type of dish).`
+    : l === "th" ? `ตอนนี้ไม่มีเมนูที่ตรงกับ ${crit}${p} ลองเปลี่ยนงบ ระดับความเผ็ด หรือประเภทอาหารได้เลย${p}`
+    : `${crit} နဲ့ ကိုက်ညီတဲ့ ဟင်းလျာ မရှိပါဘူး${p}။ ဘတ်ဈေး၊ စပ်ချိန် ဒါမှမဟုတ် ဟင်းလျာအမျိုးအစား ပြောင်းပြီး ပြောပေးပါ${p}။`) + note;
+  const item = (i: Item) => {
+    const n = rec.popular ? popular[i.id] || 0 : 0;
+    const bits = [money(l, i.price), SPICE[l][Math.min(3, Math.max(0, i.spice))], n ? (l === "en" ? `ordered ${n}×` : l === "th" ? `สั่งแล้ว ${n} ครั้ง` : `${bd(n)} ကြိမ် မှာထားပြီး`) : ""].filter(Boolean);
+    return `${nm(i, l)} (${bits.join(", ")})`;
+  };
+  const names = join(l, list.map(item));
+  return (l === "en" ? `Based on what you asked (${crit}), here ${list.length === 1 ? "is a dish" : "are dishes"} from our menu: ${names}. ${HELP(l, p)}`
+    : l === "th" ? `ตามที่คุณบอก (${crit}) ขอแนะนำจากเมนูของเรา: ${names}${p} ${HELP(l, p)}`
+    : `${crit} အရ ${names} ကို အကြံပြုပါတယ်${p}။ ${HELP(l, p)}`) + note;
+}
+
 // ------------------------------------------------------------------ the pipeline
 export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<ChatResult> {
   const { restaurant: r, items } = ctx;
@@ -293,6 +342,27 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
   // 2. bill / call staff
   if (has(t, W.bill)) return done(lang === "en" ? "I've called the staff to bring your bill." : lang === "th" ? `เรียกพนักงานมาเช็คบิลให้แล้ว${p} รอสักครู่${p}` : `ဘေလ်ချိန်ဖို့ ဝန်ထမ်းကို ခေါ်ပေးလိုက်ပါတယ်${p}။ ခဏစောင့်ပေးပါ${p}။`, { type: "call_staff", kind: "bill" });
   if (has(t, W.staff) && !dishes.length && (has(t, ["call", "need", "เรียก", "ခေါ်", "help", "ช่วย"]))) return done(lang === "en" ? "I've called the staff to your table. They'll be with you shortly." : lang === "th" ? `เรียกพนักงานมาที่โต๊ะให้แล้ว${p} รอสักครู่${p}` : `ဝန်ထမ်းကို စားပွဲဆီ ခေါ်ပေးလိုက်ပါတယ်${p}။ ခဏစောင့်ပေးပါ${p}။`, { type: "call_staff", kind: "help" });
+
+  // 2b. smart recommendation from what the diner asked for (spice, budget, type of dish, "popular"), from the data only.
+  // A vegetarian question with just a budget stays with the vegetarian rule below.
+  if (!dishes.length) {
+    const rec = parseRec(t), wantsVeg = has(t, W.veg), vegan = wantsVeg ? has(t, W.vegan) : null;
+    const catIds = rec.category ? (ctx.categories ?? []).filter((c) => c.name.en.toLowerCase().includes(rec.category!)).map((c) => c.id) : [];
+    if (rec.category && !catIds.length) delete rec.category;       // the owner has no such category: ignore the word
+    const detail = rec.mild || rec.hot || rec.category || rec.popular || (rec.budget !== undefined && !wantsVeg);
+    if (detail && !(wantsVeg && !rec.mild && !rec.hot && !rec.category && !rec.popular)) {
+      const popular = ctx.popular ?? {};
+      const list = live.filter((i) =>
+        fitsProfile(i, profile) && (rec.budget === undefined || (rec.inclusive ? i.price <= rec.budget : i.price < rec.budget)) &&
+        (!rec.mild || i.spice <= 1) && (!rec.hot || i.spice >= 2 || i.tags.includes("spicy")) &&
+        (!rec.category || (i.category_id !== null && catIds.includes(i.category_id))) &&
+        (!wantsVeg || (vegan ? i.tags.includes("vegan") : i.tags.includes("vegetarian") || i.tags.includes("vegan"))))
+        .sort((a, b) => (popular[b.id] || 0) - (popular[a.id] || 0) || (rec.hot ? b.spice - a.spice : rec.mild ? a.spice - b.spice : 0) || (rec.budget !== undefined ? a.price - b.price : 0))
+        .slice(0, 3);
+      const catName = rec.category ? (ctx.categories ?? []).find((c) => catIds.includes(c.id))?.name[lang] ?? "" : "";
+      return done(recReply(lang, p, rec, vegan, catName, list, popular, profile), { type: "show_dishes", ids: list.map((i) => i.id) }, { topic: "recommend" });
+    }
+  }
 
   // 3. vegetarian / vegan lists with an optional budget
   if (has(t, W.veg) && !dishes.length) {
