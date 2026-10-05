@@ -1,6 +1,6 @@
 # Software Requirements Specification (SRS)
 ## Shop AI: The Digital Waiter
-Version 1.0 · September 2026 · Format follows IEEE 830 / ISO 29148
+Version 1.1 · October 2026 · Format follows IEEE 830 / ISO 29148
 Author: [your name] · Course: [course] · Supervisor: [name]
 
 ---
@@ -225,7 +225,7 @@ Priority: **M** = must, **S** = should.
 
 ### 3.3 Non-functional requirements
 **Performance** (targets; measured values in brackets where available)
-- NFR-P1: AI reply for open questions within 15 s on the reference computer (measured average about 5–6 s with `gemma4:12b`).
+- NFR-P1: AI reply for open questions within 15 s on the reference computer (measured on an idle laptop, 13-dish menu: median 5.5 s and 90th percentile 10.7 s over 100 questions with `gemma4:12b`; `docs/PERFORMANCE.md`).
 - NFR-P2: Rule-based answers (allergens, prices, hours, orders) within 1 s (observed in tests: milliseconds).
 - NFR-P3: Menu page usable within 3 s on a local network.
 - NFR-P4: Support at least 3 simultaneous diners on the reference computer; AI requests are processed one at a time, first come first served. A request is processed for at most 15 s (NFR-P1) and waits in line for at most 14 s, so a diner has an answer or the fallback message within 30 s. Rule-based answers (allergens, prices, hours, orders) never wait for the AI.
@@ -327,12 +327,13 @@ A native Burmese speaker reviewed four rounds of Burmese answers; their correcti
 | Requirement group | Method | Result to date |
 |---|---|---|
 | AI-1 … AI-13 | 30-question chat test through the real chat API (`scripts/chat_smoke.py`) and `npm run eval:live` with `gemma4:12b` | 30/30 as expected (5 Oct 2026); `eval:live` 29/30 once and 30/30 four times, thresholds met |
-| OA, MM, ST, QR, SF, PC, IN, MI | API test (`scripts/e2e.py`, 66 checks on a fresh database) and automated tests (`npm test`: 215, `npm run test:e2e`: 11): validation, roles, order flow, isolation, photo import, PIN rules, bill access | all passed (5 Oct 2026) |
+| OA, MM, ST, QR, SF, PC, IN, MI | API test (`scripts/e2e.py`, on a fresh database) and automated tests (`npm test`: 537 tests, `npm run test:e2e`: 14 tests, run on every push on Node 22 and 24): validation, roles, order flow, isolation, photo import, PIN rules, bill access | all pass in CI; `scripts/e2e.py` last run 5 Oct 2026, all passed |
 | NFR-R1 / AI-11 | `scripts/nfr_check.py nfr4`: server with Ollama unreachable | passed: fallback message in 0.0 s; menu, picks, calls and rule-based answers still work. If the model hangs instead of stopping, the answer is cut off at the 15 s limit. |
-| NFR-P3 (server side) | `scripts/nfr_check.py nfr2` | menu data max 3 ms, staff floor data max 1 ms; phone over Wi-Fi **to do** |
-| NFR-P1 (open questions in 15 s) | `scripts/nfr_check.py nfr1` | **not valid yet**: the run was disturbed by another program using the same Ollama (see `docs/NFR_RESULTS.md`); re-run on a quiet computer |
+| NFR-P3 (server side) | `npm run load-test` with 30 diners at once (`docs/PERFORMANCE.md`) | diner page about 50 ms, menu about 15 ms; staff screens poll every 3 s; phone over Wi-Fi **to do** |
+| NFR-P1 (open questions in 15 s) | `npm run load-test -- --ai-questions 100` on an idle laptop | 100 open questions (EN, TH, MY): median 5.5 s, 90th percentile 10.7 s, 100 of 100 within 15 s, 0 errors. Valid for a 13-dish menu; a longer menu means a longer prompt and a slower first answer (`docs/PERFORMANCE.md`) |
 | DM, UI, NFR-U | Manual test on phone, tablet and desktop | **to do** |
-| NFR-P4, NFR-U3 | Load test with several phones (`scripts/nfr_check.py nfr7`); trial with real owners | **to do** |
+| NFR-P4 | `npm run load-test -- --diners 3 --staff 2 --minutes 10 --ai` | 0 errors; 93 AI answers, median 9.8 s, slowest 17.4 s (limit 30 s). Simulated clients on one computer, no real phones. With three diners chatting nonstop about 1 answer in 7 was the fallback message in an earlier run (`docs/NFR_RESULTS.md`) |
+| NFR-U3 | Trial with real owners | **to do** |
 | AI-12 Burmese/Thai wording | Native-speaker review | Burmese assistant answers reviewed; interface labels to review |
 
 Requirement-by-requirement evidence (code, automated tests, what is only checked by hand): `docs/TRACEABILITY.md`. How the AI's safety rules are enforced and tested: `docs/AI_SAFETY.md`. Automated tests run on every push (`.github/workflows/ci.yml`).
