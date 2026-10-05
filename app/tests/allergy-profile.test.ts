@@ -2,7 +2,7 @@
 // Safety rules that must hold: facts only from the database, a dish with no allergen data is never suggested for an
 // allergy, and nothing is ever called "safe".
 import { describe, it, expect, afterEach, vi } from "vitest";
-import { aiCtx, call, mockModel, noModel, staffLogin } from "./helpers";
+import { aiCtx, call, mockModel, noModel, ownerLogin, signOut, staffLogin } from "./helpers";
 import { answer, fitsProfile } from "@/modules/ai/ai";
 import { ALLERGENS, allergenName, cleanProfile } from "@/modules/platform/constants";
 import { DICT } from "@/modules/diner/i18n";
@@ -193,7 +193,9 @@ describe("the chat endpoint takes the profile", () => {
   });
   it("test chats from the owner dashboard (preview) store nothing", async () => {
     noModel();
+    await ownerLogin();
     await say("What can I eat with my allergies?", { sessionId: "prof-prev", profile: ["peanut"], preview: true });
+    signOut();
     expect(get("SELECT 1 AS x FROM chat_sessions WHERE id = 'prof-prev'")).toBeUndefined();
   });
 });

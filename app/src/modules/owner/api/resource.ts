@@ -10,6 +10,6 @@ export async function GET(_: Request, { params }: { params: Promise<{ resource: 
 export async function POST(req: Request, { params }: { params: Promise<{ resource: string }> }) {
   const s = await ownerSession(); if (!s) return unauthorized();
   const c = RESOURCES[(await params).resource]; if (!c) return bad("Unknown resource.", 404);
-  const r = create(s.restaurantId, c, await body(req));
+  const r = await create(s.restaurantId, c, await body(req));
   return r.error ? bad(r.error, r.conflict ? 409 : 400) : json({ ok: true, id: r.id });
 }

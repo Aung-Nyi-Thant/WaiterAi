@@ -17,11 +17,13 @@ delete process.env.RATE_LIMIT_TRUST_PROXY;
 
 // next/headers cookies() only works inside a real request, so tests use a plain map instead
 const jar = new Map<string, string>();
+const jarOptions = new Map<string, any>();            // the options each cookie was set with (httpOnly, secure ...)
 (globalThis as any).__cookieJar = jar;
+(globalThis as any).__cookieOptions = jarOptions;
 vi.mock("next/headers", () => ({
   cookies: async () => ({
     get: (n: string) => (jar.has(n) ? { name: n, value: jar.get(n) } : undefined),
-    set: (n: string, v: string) => { jar.set(n, v); },
+    set: (n: string, v: string, o?: any) => { jar.set(n, v); jarOptions.set(n, o); },
     delete: (n: string) => { jar.delete(n); },
   }),
 }));

@@ -5,6 +5,7 @@ import { hit, setting, clientIp } from "@/modules/platform/rateLimit";
 import { answer, detectLang, limitReply, type ChatResult } from "@/modules/ai/ai";
 import type { Lang } from "@/modules/platform/menu";
 import { cleanProfile } from "@/modules/platform/constants";
+import { ownerSession } from "@/modules/platform/auth";
 import crypto from "node:crypto";
 
 export async function POST(req: Request, { params }: { params: Promise<{ slug: string }> }) {
@@ -14,7 +15,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   if (!r) return bad("Restaurant not found.", 404);
   const message = String(b.message || "").trim().slice(0, 500);
   if (!message) return bad("Please type a question.");
-  const preview = !!b.preview;
+  // "preview" (the owner's test chat: nothing stored, no monthly limit) is only honoured for the signed-in owner of THIS restaurant;
+  // from anyone else the flag is ignored, so a diner cannot use it to dodge the monthly chat limit or to hide their messages.
+  const preview = !!b.preview && (await ownerSession())?.restaurantId === r.id;
   const sessionId = String(b.sessionId || "").slice(0, 60) || crypto.randomUUID();
   const table = String(b.table || "").slice(0, 10);
   const uiLang = (["en", "th", "my"].includes(b.lang) ? b.lang : "en") as Lang;
@@ -42,7 +45,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   if (used >= r.chat_cap && !preview) {
     result = { reply: limitReply(lang, p === "female" ? "ค่ะ" : ""), action: { type: "show_menu" as const }, topic: "other", allergens: [], answered: false, usedModel: false };
   } else {
-    const history = preview || !b.sessionId ? [] : all("SELECT role, text FROM chat_messages WHERE session_id = ? ORDER BY id DESC LIMIT 8", sessionId).reverse();
+    const history = preview || !b.sessionId ? [] : all("SELECT role, text FROM chat_messages WHERE session_id = ? AND restaurant_id = ? ORDER BY id DESC LIMIT 8", sessionId, r.id).reverse();
     result = await answer(message, lang, { restaurant: r, items, faqs: faqsOf(r.id) as any, specials: specialsOf(r.id), history: history as any, profile, categories: categoriesOf(r.id), popular: popularDishes(r.id) });
   }
 

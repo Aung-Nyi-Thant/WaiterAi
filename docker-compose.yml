@@ -23,7 +23,9 @@ services:
       RATE_LIMIT_REGISTER_MAX: ${RATE_LIMIT_REGISTER_MAX:-}
       RATE_LIMIT_REGISTER_WINDOW_SEC: ${RATE_LIMIT_REGISTER_WINDOW_SEC:-}
       RATE_LIMIT_REGISTER_IP_MAX: ${RATE_LIMIT_REGISTER_IP_MAX:-}
+      RATE_LIMIT_PIN_RESTAURANT_MAX: ${RATE_LIMIT_PIN_RESTAURANT_MAX:-}
       RATE_LIMIT_TRUST_PROXY: ${RATE_LIMIT_TRUST_PROXY:-}
+      COOKIE_SECURE: ${COOKIE_SECURE:-}          # empty = Secure cookies in production; 0 = allow sign-in over plain http on a LAN (see README)
       SESSION_SECRET: ${SESSION_SECRET:-}        # empty = one is generated and kept in the data volume
       SEED_OWNER_EMAIL: ${SEED_OWNER_EMAIL:-}    # empty = owner@example.com
       SEED_OWNER_PASSWORD: ${SEED_OWNER_PASSWORD:-}   # empty = random, printed once

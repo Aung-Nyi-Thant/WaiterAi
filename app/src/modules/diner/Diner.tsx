@@ -14,14 +14,16 @@ type BillLine = { name: string; qty: number; price: number };
 type Bill = { table: string; lines: BillLine[]; total: number; pending: BillLine[]; asked: boolean };
 
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
-// A random code kept on this phone (not an account, no personal data); it lets the phone see its table's bill.
-let receiptMemo = "";
-const receiptCode = () => {
-  try {
-    let r = localStorage.getItem("receipt") || "";
-    if (r.length < 24) { r = crypto.randomUUID().replace(/-/g, ""); localStorage.setItem("receipt", r); }
-    return r;
-  } catch { receiptMemo ||= crypto.randomUUID().replace(/-/g, ""); return receiptMemo; }
+// The receipt code the SERVER issued with this phone's first picks for this table (not an account, no personal data). It lets the
+// phone see its table's bill; the phone cannot make one up. "" until picks have been sent.
+const receiptMemo = new Map<string, string>();
+const receiptKey = (slug: string, table: string) => `receipt:${slug}:${table}`;
+const getReceipt = (slug: string, table: string): string => {
+  try { return localStorage.getItem(receiptKey(slug, table)) || ""; } catch { return receiptMemo.get(receiptKey(slug, table)) || ""; }
+};
+const saveReceipt = (slug: string, table: string, code: string) => {
+  receiptMemo.set(receiptKey(slug, table), code);
+  try { localStorage.setItem(receiptKey(slug, table), code); } catch {}
 };
 
 export default function Diner({ slug }: { slug: string }) {
@@ -119,7 +121,10 @@ export default function Diner({ slug }: { slug: string }) {
   // The table's running bill: what everyone at this table has ordered and what it owes so far.
   // Only a phone that has sent picks from this table gets the bill: the server checks the receipt code
   // that was saved with those picks, so other tables' bills cannot be read by trying table numbers.
-  const loadBill = () => { if (table) api<Bill>(`/api/public/${slug}/bill?t=${encodeURIComponent(table)}&r=${encodeURIComponent(receiptCode())}`).then(setBill).catch(() => {}); };
+  const loadBill = () => {
+    const receipt = table ? getReceipt(slug, table) : "";
+    if (receipt) api<Bill>(`/api/public/${slug}/bill?t=${encodeURIComponent(table)}&r=${encodeURIComponent(receipt)}`).then(setBill).catch(() => {});
+  };
   // biome-ignore lint/correctness/useExhaustiveDependencies: polling is set up once per table; loadBill is recreated on every render
   useEffect(() => {
     loadBill();
@@ -162,7 +167,8 @@ export default function Diner({ slug }: { slug: string }) {
   };
   async function sendPicks() {
     try {
-      await api(`/api/public/${slug}/orders`, { body: { table, lang, sessionId, receipt: receiptCode(), profile, items: valid } });
+      const sent = await api<{ receipt?: string }>(`/api/public/${slug}/orders`, { body: { table, lang, sessionId, receipt: getReceipt(slug, table), profile, items: valid } });
+      if (sent.receipt) saveReceipt(slug, table, sent.receipt);
       setPicks([]); say(t("sent")); loadBill();
     } catch (e: any) { say(e.message); }
   }
