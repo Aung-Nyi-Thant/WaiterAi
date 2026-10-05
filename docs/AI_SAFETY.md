@@ -53,6 +53,8 @@ Each of these is a way the rules above can be weaker than they sound. They are l
 
 A bug of this kind was found while writing these tests: the bill keyword `pay` matched inside "pa**pay**a", so asking the price of *Papaya Salad* called the staff to the table with a bill request. It is fixed (English keywords now match at the start of a word) and has regression tests (`ai-rules.test.ts` › "does not mistake a dish name for a bill request").
 
+A second bug of the same kind (short Thai allergen words inside ordinary words) was found by a parallel review: in Thai, `เรียกพนักงาน` ("call the staff") contains `งา` (sesame), so the diner got a sesame allergen list and no staff call. Short Thai allergen words (`งา`, `ปู`, `ปลา`) no longer match inside `พนักงาน`, `งาน`, `ปูน`, `ปู่`, `ปลาย` (`app/tests/thai-keywords.test.ts`). Thai and Burmese have no spaces, so other short words may still hide inside longer ones; the native-speaker review sheet (`eval/native_review_allergens.html`) is the place to check.
+
 ## Results
 
 Per-language accuracy on the 30 questions of `eval/questions.json`:

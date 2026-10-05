@@ -55,7 +55,10 @@ const AL_TH: Record<string, string> = { peanut: "ถั่วลิสง", tree
 // English allergen names are kept in Burmese answers (the owner asked for this); Thai gets Thai names.
 const alName = (k: string, l: Lang) => (l === "th" ? AL_TH[k] || k : (ALLERGEN_LABEL[k] || k).toLowerCase());
 const alNames = (keys: string[], l: Lang) => keys.map((k) => alName(k, l));
-const wordIn = (t: string, w: string) => (/^[a-z' ]+$/.test(w) ? new RegExp("(?<![a-z])" + w.replace(/ /g, "\\s+")).test(t) : t.includes(w));
+// Thai has no spaces, so a short allergen word can sit inside a common word: "งา" (sesame) in "พนักงาน" (staff) and "งาน" (work),
+// "ปู" (crab) in "ปูน" (cement) and "ปู่" (grandfather), "ปลา" (fish) in "ปลาย" (end). These are not allergen mentions.
+const THAI_NOT_INSIDE: Record<string, RegExp> = { "งา": /งา(?![นมย])/, "ปู": /ปู(?![นมก่-๋])/, "ปลา": /ปลา(?!ย)/ };
+const wordIn = (t: string, w: string) => (/^[a-z' ]+$/.test(w) ? new RegExp("(?<![a-z])" + w.replace(/ /g, "\\s+")).test(t) : THAI_NOT_INSIDE[w] ? THAI_NOT_INSIDE[w].test(t) : t.includes(w));
 
 // Words that contain an allergen word but are not that allergen.
 const NOT_ALLERGEN = [/eggplants?/g, /ปลาหมึก/g];   // eggplant is not egg; ปลาหมึก (squid) is a mollusc, not a fish
