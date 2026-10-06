@@ -45,6 +45,97 @@ jobs:
       - name: End-to-end tests (real server)
         run: npm run test:e2e
 
+  windows:
+    name: Windows (build, tests, helper scripts)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - name: Install, lint, type-check, test, build, end-to-end
+        working-directory: app
+        shell: bash
+        run: |
+          npm ci
+          npm run lint
+          npm run typecheck
+          npm test
+          npm run build
+          npm run test:e2e
+      # The scripts in windows/ are for beginners' laptops: check that they parse in Windows PowerShell 5.1 and in
+      # PowerShell 7, and run their safe test modes (nothing is installed or downloaded).
+      - name: Windows scripts parse (PowerShell 5.1)
+        shell: powershell
+        run: |
+          $bad = 0
+          foreach ($f in Get-ChildItem windows -Filter *.ps1) {
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($f.FullName, [ref]$null, [ref]$errors)
+            if ($errors) { $errors | ForEach-Object { Write-Host ($f.Name + ': ' + $_.Message) }; $bad++ }
+          }
+          if ($bad) { exit 1 }
+      - name: Windows scripts parse (PowerShell 7)
+        shell: pwsh
+        run: |
+          $bad = 0
+          foreach ($f in Get-ChildItem windows -Filter *.ps1) {
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($f.FullName, [ref]$null, [ref]$errors)
+            if ($errors) { $errors | ForEach-Object { Write-Host ($f.Name + ': ' + $_.Message) }; $bad++ }
+          }
+          if ($bad) { exit 1 }
+      - name: check-windows.ps1
+        shell: powershell
+        run: ./windows/check-windows.ps1 -NoPause
+      - name: setup-windows.ps1 (dry run)
+        shell: powershell
+        run: ./windows/setup-windows.ps1 -DryRun -SkipAI -NoPause
+      - name: start.ps1 (checks only)
+        shell: powershell
+        run: ./windows/start.ps1 -CheckOnly -NoPause
+      - name: prepare-offline-pack.ps1 (dry run)
+        shell: powershell
+        run: ./windows/prepare-offline-pack.ps1 -DryRun -NoPause
+      - name: install-from-offline-pack.ps1 (dry run, empty pack)
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force -Path $env:RUNNER_TEMP\pack | Out-Null
+          ./windows/install-from-offline-pack.ps1 -Pack $env:RUNNER_TEMP\pack -DryRun -NoPause
+      - name: prepare-offline-pack.ps1 copies a model (fake model, no installers)
+        shell: powershell
+        run: |
+          $m = Join-Path $env:RUNNER_TEMP 'fakemodels'
+          $a = 'a' * 64; $b = 'b' * 64
+          New-Item -ItemType Directory -Force -Path "$m\manifests\registry.ollama.ai\library\fake", "$m\blobs" | Out-Null
+          Set-Content "$m\blobs\sha256-$a" 'config'; Set-Content "$m\blobs\sha256-$b" 'layer'
+          @{ config = @{ digest = "sha256:$a" }; layers = @(@{ digest = "sha256:$b" }) } | ConvertTo-Json -Depth 5 | Set-Content "$m\manifests\registry.ollama.ai\library\fake\1b"
+          $env:OLLAMA_MODELS = $m; $env:OLLAMA_MODEL = 'fake:1b'
+          $out = Join-Path $env:RUNNER_TEMP 'pack2'
+          ./windows/prepare-offline-pack.ps1 -Out $out -SkipInstallers -NoPause
+          foreach ($f in @("$out\ollama-models\manifests\registry.ollama.ai\library\fake\1b", "$out\ollama-models\blobs\sha256-$a", "$out\ollama-models\blobs\sha256-$b")) {
+            if (-not (Test-Path $f)) { Write-Host "Missing in the pack: $f"; exit 1 }
+          }
+      - name: start.ps1 really starts the app; stop.ps1 stops it; reset-data.ps1 deletes the data
+        shell: powershell
+        run: |
+          $p = Start-Process -FilePath powershell -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', 'windows\start.ps1', '-NoBrowser', '-NoPause' -PassThru -RedirectStandardOutput start.log -RedirectStandardError start.err
+          $ok = $false
+          for ($i = 0; $i -lt 90; $i++) {
+            try { $r = Invoke-WebRequest -Uri 'http://localhost:3000/r/golden-lotus?t=5' -UseBasicParsing -TimeoutSec 10; if ($r.StatusCode -eq 200) { $ok = $true; break } } catch { Start-Sleep -Seconds 2 }
+          }
+          Write-Host '--- start.log'; Get-Content start.log -ErrorAction SilentlyContinue | Select-Object -Last 20
+          if (-not $ok) { Write-Host '--- start.err'; Get-Content start.err -ErrorAction SilentlyContinue | Select-Object -Last 30; Write-Host 'The app did not start'; exit 1 }
+          Write-Host 'The diner page answered 200.'
+          ./windows/stop.ps1 -NoPause
+          Start-Sleep -Seconds 3
+          if (Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue) { Write-Host 'Port 3000 is still in use after stop.ps1'; exit 1 }
+          ./windows/reset-data.ps1 -Yes -NoPause
+          if (Get-ChildItem app\data -Filter *.db* -ErrorAction SilentlyContinue) { Write-Host 'The database files are still there after reset-data.ps1'; exit 1 }
+
   docker:
     name: Docker image builds
     runs-on: ubuntu-latest

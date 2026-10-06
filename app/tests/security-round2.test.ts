@@ -144,7 +144,7 @@ describe("NFR-SEC1 owner login takes one bcrypt compare whether or not the email
   it("no request path uses the synchronous bcrypt calls (only the first-start demo seed and the seed script do)", () => {
     const root = path.resolve(__dirname, "../src");
     const hits: string[] = [];
-    const walk = (d: string) => { for (const f of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, f.name); if (f.isDirectory()) walk(p); else if (/\.tsx?$/.test(f.name) && /(hash|compare|genSalt)Sync/.test(fs.readFileSync(p, "utf8"))) hits.push(path.relative(root, p)); } };
+    const walk = (d: string) => { for (const f of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, f.name); if (f.isDirectory()) walk(p); else if (/\.tsx?$/.test(f.name) && /(hash|compare|genSalt)Sync/.test(fs.readFileSync(p, "utf8"))) hits.push(path.relative(root, p).split(path.sep).join("/")); } };
     walk(root);
     expect(hits).toEqual(["modules/platform/db.ts"]);          // the development demo seed, run once at start-up and never in production
   });

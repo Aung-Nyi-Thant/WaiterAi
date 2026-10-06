@@ -36,6 +36,8 @@ docker compose logs app        # the sign-in details are printed here once
 Open <http://localhost:3000/r/golden-lotus?t=5> (the diner page for table 5). Owners sign in at `/login`, staff at `/staff`.
 The password and PINs are **random, generated on first start** and shown only in that log; set `SEED_OWNER_PASSWORD`, `SEED_WAITER_PIN`, `SEED_CHEF_PIN` in a `.env` file (copy `.env.example`) to choose your own.
 
+**On Windows, step by step (for beginners):** download the project as a ZIP, open the `windows` folder and double-click `setup-windows.bat`, then `start.bat`. It installs Node.js (and, if you want it, the AI) for you, and there are scripts to check your computer, stop the app and set up laptops from a USB stick. See [`windows/README-WINDOWS.md`](windows/README-WINDOWS.md).
+
 **Without Docker** (Node 22.13+):
 ```
 cd app

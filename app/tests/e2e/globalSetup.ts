@@ -40,5 +40,13 @@ export default async function setup() {
   process.env.E2E_OWNER_PASSWORD = creds.SEED_OWNER_PASSWORD;
   process.env.E2E_WAITER_PIN = creds.SEED_WAITER_PIN;
   process.env.E2E_CHEF_PIN = creds.SEED_CHEF_PIN;
-  return async () => { server?.kill("SIGTERM"); fs.rmSync(dir, { recursive: true, force: true }); };
+  return async () => {
+    // wait until the server has really exited: on Windows it still holds the database file for a moment, and deleting it fails
+    if (server && server.exitCode === null) {
+      const exited = new Promise<void>((resolve) => server?.once("exit", () => resolve()));
+      server.kill("SIGTERM");
+      await Promise.race([exited, new Promise((resolve) => setTimeout(resolve, 5000))]);
+    }
+    try { fs.rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 300 }); } catch { /* a temporary folder that cannot be removed is not a test failure */ }
+  };
 }
