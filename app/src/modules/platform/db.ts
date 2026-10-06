@@ -141,11 +141,12 @@ CREATE INDEX IF NOT EXISTS idx_calls_rest ON calls(restaurant_id, status);
 
 // SQLite can answer "database is locked" while a brand-new file is being set up by several processes at once (the
 // worker processes of `next build`, or two servers starting together), even with busy_timeout set: switching to WAL mode does
-// not always wait. Setting up is safe to repeat, so try again a few times before giving up.
+// not always wait. Setting up is safe to repeat, so try again a few times before giving up. On Windows the same race can be
+// reported as "disk I/O error" (the shared-memory file of WAL mode is briefly locked), so that is retried too.
 export function retryWhileLocked<T>(fn: () => T, tries = 60, sleep: (ms: number) => void = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)): T {
   for (let attempt = 1; ; attempt++) {
     try { return fn(); } catch (e: any) {
-      if (attempt >= tries || !/database is locked|SQLITE_BUSY/i.test(String(e?.message))) throw e;
+      if (attempt >= tries || !/database is locked|SQLITE_BUSY|disk I\/O error|SQLITE_IOERR/i.test(String(e?.message))) throw e;
       sleep(Math.min(250, 20 + attempt * 10) + Math.floor(Math.random() * 20));   // a little random, so competing processes do not retry in step
     }
   }

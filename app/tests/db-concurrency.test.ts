@@ -50,6 +50,11 @@ describe("NFR-R2 retryWhileLocked (the fix for 'database is locked' on first set
     expect(() => retryWhileLocked(() => { calls++; throw locked(); }, 5, noSleep)).toThrow("database is locked");
     expect(calls).toBe(5);
   });
+  it("also retries 'disk I/O error', which is what Windows reports for the same race (found by the Windows CI job)", () => {
+    let calls = 0;
+    expect(retryWhileLocked(() => { if (++calls < 3) throw new Error("disk I/O error"); return "ok"; }, 10, noSleep)).toBe("ok");
+    expect(calls).toBe(3);
+  });
   it("does not retry other errors", () => {
     let calls = 0;
     expect(() => retryWhileLocked(() => { calls++; throw new Error("no such table: x"); }, 5, noSleep)).toThrow("no such table");
