@@ -4,6 +4,20 @@ Menu-aware AI waiter for restaurants (Thai, Burmese, English). Diners scan a QR 
 
 The AI never decides anything safety-critical: allergens, prices, opening hours, sold-out dishes, orders and the bill are answered from the database with fixed sentences. The language model only handles open questions, and its reply is checked before it is shown (details and tests: [`docs/AI_SAFETY.md`](docs/AI_SAFETY.md)).
 
+## Live prototype: try it in your browser
+
+**▶ [Open the prototype](https://aung-nyi-thant.github.io/WaiterAi/)** · https://aung-nyi-thant.github.io/WaiterAi/
+
+A clickable prototype of Shop AI. No install, no server and no account needed: open the link and click.
+
+- **What it is.** The three journeys of the product with mock data and the real app's own Thai, Burmese and English labels and sample menu (13 dishes): **1 · Diner** (phone: menu, filters, allergy profile, AI chat, My picks, Send to staff, Call staff, table bill), **2 · Staff** (phone: PIN sign-in, waiter floor screen, chef board) and **3 · Owner** (laptop: menu and 14 allergens, import a menu from a photo, hours and FAQ, AI settings, QR codes, staff, insights). The tabs share one memory, so a dish added on the diner screen and sent to staff shows up on the waiter screen, then on the chef's board, and ends on the diner's bill.
+- **How to try it.** Each tab has a "Try this" panel with the steps. Staff PINs for the demo: `1111` (waiter), `2222` (chef). Owner sign-in: `owner@example.com` / `demo1234`. These are prototype-only hints, not real credentials.
+- **Every screen says which requirement it shows.** The green **Covers:** bar names the SRS IDs (for example `DM-11`, `AI-18`), and the **Requirements map** tab lists FR-1 … FR-10 with the screens and an unhappy path to try for each (AI offline, a wrong PIN, five wrong PINs locking sign-in, an empty search, a sold-out dish, invalid input, flagged import rows). All 56 Must requirements of the SRS are covered, and a test (`app/tests/prototype.test.ts`) fails if that stops being true.
+- **What is mock.** Nothing is saved (reloading resets it), and the AI is a scripted stand-in that follows the same rules for the sample questions: allergen answers come from the data and never say a dish is "safe". The real application in `app/` answers from the database and uses a local language model only for open questions, checking every model reply (`docs/AI_SAFETY.md`).
+- **Offline copy.** Open `prototype/index.html` in a browser (double-click). Details and the file list: [`prototype/README.md`](prototype/README.md). GitHub Pages republishes the page whenever `prototype/` changes on `main`.
+
+*(GitHub may redirect this address to another domain over plain `http`, so a browser can show "Not secure". The page is static and holds no personal data.)*
+
 | Folder | What it holds |
 |---|---|
 | `app/` | The web app (Next.js + SQLite + Ollama). Start here: `app/README.md` |
@@ -11,10 +25,6 @@ The AI never decides anything safety-critical: allergens, prices, opening hours,
 | `eval/` | Test questions, sample menu and the model comparison scripts |
 | `docs/` | SRS, feature plan, project explanation, team work plan, measured results (`NFR_RESULTS.md`), and the product worksheet answers (`PRODUCT_IDEA_WORKSHEET.md`) |
 | `design/` | UI design generators (Art Deco and Glass mock-ups) |
-
-## Clickable prototype (no server needed)
-
-Open <https://aung-nyi-thant.github.io/WaiterAi/> (published by GitHub Pages from `prototype/`), or open `prototype/index.html` in a browser. It walks the diner, staff and owner journeys with mock data, shows every Must requirement and some unhappy paths, and labels each screen with the SRS IDs it covers (`prototype/README.md`).
 
 ## Run it in 2 minutes
 
