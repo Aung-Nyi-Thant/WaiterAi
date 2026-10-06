@@ -26,6 +26,27 @@ A clickable prototype of Shop AI. No install, no server and no account needed: o
 | `docs/` | SRS, feature plan, project explanation, team work plan, measured results (`NFR_RESULTS.md`), and the product worksheet answers (`PRODUCT_IDEA_WORKSHEET.md`) |
 | `design/` | UI design generators (Art Deco and Glass mock-ups) |
 
+## Run it on Windows (no programming needed)
+
+For laptops with **Windows 10 or 11**. You only double-click a few files; the scripts do the installing.
+
+1. **Get the project:** on GitHub press the green **Code** button, then **Download ZIP**, then right-click the ZIP and **Extract All** (for example to `C:\ShopAI`).
+2. Open the **`windows`** folder and double-click **`setup-windows.bat`**. It checks your computer, installs **Node.js**, and asks whether to install the **AI** (Ollama and a model of about 9 GB). If Windows says *"Windows protected your PC"*, click **More info**, then **Run anyway**; the scripts are plain text you can read first.
+3. Double-click **`start.bat`**. After about a minute your browser opens the app (diner page for table 5). **Close the black window to stop the app.**
+
+| File in `windows/` | What it does |
+|---|---|
+| `setup-windows.bat` | One-time setup (safe to run again) |
+| `start.bat` / `stop.bat` | Start the app and open the browser / stop it |
+| `check-windows.bat` | **Check my computer**: green and red lines in plain words; send a screenshot of it when you ask for help |
+| `reset-data.bat` | Delete the local database and start again with the sample restaurant (asks you to type YES) |
+| `prepare-offline-pack.bat`, `install-from-offline-pack.bat` | Download the Node.js installer, the Ollama installer and the 9 GB model **once**, then set up the other laptops from a USB stick |
+
+- **Only the demo laptop needs the AI** (about 9 GB of disk and 16 GB of memory). On the other laptops the app works without it: allergen, price and order answers are rule-based, and open questions show "AI unavailable".
+- **Demo logins** (development mode, on your own laptop only): owner `demo@shop.ai` / `demo1234`; staff at `/staff`, restaurant `golden-lotus`, PIN `1111` (waiter) or `2222` (chef).
+- **How it is checked:** GitHub Actions runs the app's build and tests on a real Windows machine, parses every script in PowerShell 5.1 and 7, and really starts, stops and resets the app with them. Not tested there: the actual downloads (`winget`, the model), so please try `setup-windows.bat` once on a real laptop.
+- More detail, a troubleshooting table and the offline pack: [`windows/README-WINDOWS.md`](windows/README-WINDOWS.md).
+
 ## Run it in 2 minutes
 
 **With Docker** (nothing else to install except Docker):
@@ -36,7 +57,7 @@ docker compose logs app        # the sign-in details are printed here once
 Open <http://localhost:3000/r/golden-lotus?t=5> (the diner page for table 5). Owners sign in at `/login`, staff at `/staff`.
 The password and PINs are **random, generated on first start** and shown only in that log; set `SEED_OWNER_PASSWORD`, `SEED_WAITER_PIN`, `SEED_CHEF_PIN` in a `.env` file (copy `.env.example`) to choose your own.
 
-**On Windows, step by step (for beginners):** download the project as a ZIP, open the `windows` folder and double-click `setup-windows.bat`, then `start.bat`. It installs Node.js (and, if you want it, the AI) for you, and there are scripts to check your computer, stop the app and set up laptops from a USB stick. See [`windows/README-WINDOWS.md`](windows/README-WINDOWS.md).
+**On Windows:** use the beginner-friendly scripts in the section above (`windows/setup-windows.bat`, then `windows/start.bat`).
 
 **Without Docker** (Node 22.13+):
 ```
@@ -65,13 +86,13 @@ The first start creates the sample restaurant `golden-lotus` with **public devel
 
 ```
 cd app
-npm test              # 200+ unit/integration tests + the offline AI eval gate (no model needed)
+npm test              # 540 unit/integration tests + the offline AI eval gate (no model needed)
 npm run lint          # Biome
 npm run typecheck
 npm run build && npm run test:e2e     # end-to-end: starts the real server on a fresh seeded database
 npm run eval:live     # the 30 AI questions against a real model (server + Ollama running)
 ```
-GitHub Actions (`.github/workflows/ci.yml`) runs install, lint, type-check, tests, build, the end-to-end tests and a Docker build on every push and pull request. Requirement → code → test mapping: [`docs/TRACEABILITY.md`](docs/TRACEABILITY.md).
+GitHub Actions (`.github/workflows/ci.yml`) runs install, lint, type-check, tests, build, the end-to-end tests and a Docker build on every push and pull request, and the same build and tests again on a **Windows** machine together with the Windows scripts. Requirement → code → test mapping: [`docs/TRACEABILITY.md`](docs/TRACEABILITY.md).
 
 ## How well does the AI answer? (`eval/questions.json`, 30 questions)
 
@@ -97,8 +118,10 @@ Shop AI answers it with a QR menu and a menu-aware AI waiter (Thai, Burmese, Eng
 | `app/` | The web app (Next.js + SQLite + Ollama). Details: [`app/README.md`](app/README.md) |
 | `app/src/modules/` | The code, split into 5 modules: `diner`, `ai`, `owner`, `staff`, `platform`. Each has its own README |
 | `app/tests/` | Automated tests (`tests/e2e/` = against a real server) |
+| `prototype/` | The clickable prototype (no server; also published by GitHub Pages, see above) |
+| `windows/` | Double-click setup, start, stop, check and offline-pack scripts for Windows laptops, with their own guide |
 | `eval/` | The 30 test questions, sample menu, pass thresholds, model comparison scripts and results |
-| (course PDFs, kept by the team and not committed) | `M1-Charter_ MFU888.pdf` and `Team18_M2_SRS.pdf.pdf`: the charter and SRS (FR-1 … FR-10, AI usage log). Their FR numbers map to the IDs in `docs/TRACEABILITY.md`; what to correct in them: `docs/PDF_CORRECTIONS.md` |
+| `docs/deliverables/` | The course PDFs: the M1 charter, the M2 SRS as submitted and the corrected v1.1. Their FR numbers map to the IDs in `docs/TRACEABILITY.md` |
 | `docs/` | [SRS](docs/SRS_Shop_AI.md), [traceability](docs/TRACEABILITY.md), [AI safety](docs/AI_SAFETY.md), [AI usage log](docs/AI_USAGE_LOG.md), [performance](docs/PERFORMANCE.md), feature plan, project explanation, team work plan |
 | `design/` | UI design generators (Art Deco and Glass mock-ups) |
 | `Dockerfile`, `docker-compose.yml`, `.env.example` | One-command start (see above) |
