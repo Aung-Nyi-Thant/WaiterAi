@@ -4,8 +4,9 @@
 #   - the AI model files (the model must already be downloaded on this computer: setup-windows.bat, or "ollama pull gemma4:12b")
 #   - optionally the app packages (node_modules) from this computer (-IncludeNodeModules; same Windows type only)
 # Then copy the WHOLE project folder (with offline-pack inside) to the USB stick.
+#   -SkipInstallers   do not download the Node.js and Ollama installers (used by the tests)
 #   -DryRun   only check that the downloads exist and the model is found (downloads nothing, copies nothing)
-param([string]$Out, [switch]$IncludeNodeModules, [switch]$DryRun, [switch]$NoPause)
+param([string]$Out, [switch]$IncludeNodeModules, [switch]$SkipInstallers, [switch]$DryRun, [switch]$NoPause)
 . (Join-Path $PSScriptRoot 'common.ps1')
 if (-not $Out) { $Out = Join-Path $script:RepoRoot 'offline-pack' }
 $code = 0
@@ -16,29 +17,33 @@ try {
     if ($DryRun) { Warn 'Dry run: nothing is downloaded or copied.' }
     Say ('  Output folder: ' + $Out)
 
-    # ---- Node.js installer (the newest 22.x for 64-bit Windows)
-    Step 'Step 1 of 4: the Node.js installer'
-    $sums = (Invoke-WebRequest -Uri 'https://nodejs.org/dist/latest-v22.x/SHASUMS256.txt' -UseBasicParsing).Content
-    $m = [regex]::Match($sums, 'node-v22\.\d+\.\d+-x64\.msi')
-    if (-not $m.Success) { throw 'Could not find the Node.js 22 installer name on nodejs.org.' }
-    $nodeName = $m.Value
-    $nodeUrl = 'https://nodejs.org/dist/latest-v22.x/' + $nodeName
-    Ok ('Found ' + $nodeName)
-    if (-not $DryRun) {
-        New-Item -ItemType Directory -Force -Path $Out | Out-Null
-        if (Test-Path (Join-Path $Out $nodeName)) { Info 'Already downloaded.' } else { Invoke-WebRequest -Uri $nodeUrl -OutFile (Join-Path $Out $nodeName) -UseBasicParsing }
-    }
+    if ($SkipInstallers) { Step 'Steps 1 and 2 of 4: the installers'; Info 'Skipped (-SkipInstallers).' }
+    else {
+        # ---- Node.js installer (the newest 22.x for 64-bit Windows)
+        Step 'Step 1 of 4: the Node.js installer'
+        $sums = (Invoke-WebRequest -Uri 'https://nodejs.org/dist/latest-v22.x/SHASUMS256.txt' -UseBasicParsing).Content
+        $m = [regex]::Match($sums, 'node-v22\.\d+\.\d+-x64\.msi')
+        if (-not $m.Success) { throw 'Could not find the Node.js 22 installer name on nodejs.org.' }
+        $nodeName = $m.Value
+        $nodeUrl = 'https://nodejs.org/dist/latest-v22.x/' + $nodeName
+        Ok ('Found ' + $nodeName)
+        if (-not $DryRun) {
+            New-Item -ItemType Directory -Force -Path $Out | Out-Null
+            if (Test-Path (Join-Path $Out $nodeName)) { Info 'Already downloaded.' } else { Invoke-WebRequest -Uri $nodeUrl -OutFile (Join-Path $Out $nodeName) -UseBasicParsing }
+        }
 
-    # ---- Ollama installer
-    Step 'Step 2 of 4: the Ollama installer'
-    $ollamaUrl = 'https://ollama.com/download/OllamaSetup.exe'
-    if ($DryRun) {
-        $head = Invoke-WebRequest -Uri $ollamaUrl -Method Head -UseBasicParsing
-        Ok ('OllamaSetup.exe is available (HTTP ' + $head.StatusCode + ')')
-    } else {
-        if (Test-Path (Join-Path $Out 'OllamaSetup.exe')) { Info 'Already downloaded.' }
-        else { Say '  Downloading (this is a large file)...'; Invoke-WebRequest -Uri $ollamaUrl -OutFile (Join-Path $Out 'OllamaSetup.exe') -UseBasicParsing }
-        Ok 'OllamaSetup.exe is in the pack'
+        # ---- Ollama installer
+        Step 'Step 2 of 4: the Ollama installer'
+        $ollamaUrl = 'https://ollama.com/download/OllamaSetup.exe'
+        if ($DryRun) {
+            $head = Invoke-WebRequest -Uri $ollamaUrl -Method Head -UseBasicParsing
+            Ok ('OllamaSetup.exe is available (HTTP ' + $head.StatusCode + ')')
+        } else {
+            if (Test-Path (Join-Path $Out 'OllamaSetup.exe')) { Info 'Already downloaded.' }
+            else { Say '  Downloading (this is a large file)...'; Invoke-WebRequest -Uri $ollamaUrl -OutFile (Join-Path $Out 'OllamaSetup.exe') -UseBasicParsing }
+            Ok 'OllamaSetup.exe is in the pack'
+        }
+
     }
 
     # ---- model files
