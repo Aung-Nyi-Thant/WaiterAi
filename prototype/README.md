@@ -1,6 +1,6 @@
 # Shop AI clickable prototype (Milestone 4)
 
-**Open `index.html` in a browser** (double-click it). No server, no database, no install. Reloading the page resets everything.
+**Open `index.html` in a browser** (double-click it), or use the published copy: <https://aung-nyi-thant.github.io/WaiterAi/> (GitHub Pages deploys this folder on every change to `main`). No server, no database, no install. Reloading the page resets everything.
 The only thing loaded from the internet is the font stylesheet; without a connection the page falls back to system fonts.
 
 It meets the M3 minimum bar:

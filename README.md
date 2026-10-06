@@ -14,7 +14,7 @@ The AI never decides anything safety-critical: allergens, prices, opening hours,
 
 ## Clickable prototype (no server needed)
 
-Open `prototype/index.html` in a browser. It walks the diner, staff and owner journeys with mock data, shows every Must requirement and some unhappy paths, and labels each screen with the SRS IDs it covers (`prototype/README.md`).
+Open <https://aung-nyi-thant.github.io/WaiterAi/> (published by GitHub Pages from `prototype/`), or open `prototype/index.html` in a browser. It walks the diner, staff and owner journeys with mock data, shows every Must requirement and some unhappy paths, and labels each screen with the SRS IDs it covers (`prototype/README.md`).
 
 ## Run it in 2 minutes
 
