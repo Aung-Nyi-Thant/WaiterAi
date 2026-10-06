@@ -27,3 +27,6 @@ app/.env.local
 
 # personal study notes, kept out of the repository
 docs/ORAL_EXAM_PREP.md
+
+# the offline pack for Windows laptops (installers and the AI model: several GB, built by windows/prepare-offline-pack.bat)
+/offline-pack/

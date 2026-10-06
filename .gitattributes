@@ -1,0 +1,4 @@
+# Windows scripts keep Windows line endings, so double-clicking a downloaded copy works
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
