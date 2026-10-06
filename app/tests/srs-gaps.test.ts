@@ -19,7 +19,7 @@ describe("NFR-5: no customer data goes to a cloud AI service (checked in the sou
   const files = walk(path.join(process.cwd(), "src")).filter((f) => /\.(ts|tsx)$/.test(f));
   it("the only server-side network call is the one to Ollama, whose address defaults to this computer", () => {
     const callers = files.filter((f) => /\bfetch\(/.test(fs.readFileSync(f, "utf8")) && !/"use client"/.test(fs.readFileSync(f, "utf8")));
-    expect(callers.map((f) => path.relative(process.cwd(), f))).toEqual(["src/modules/ai/provider.ts"]);
+    expect(callers.map((f) => path.relative(process.cwd(), f).split(path.sep).join("/"))).toEqual(["src/modules/ai/provider.ts"]);   // "/" on every system, Windows too
     expect(fs.readFileSync(callers[0], "utf8")).toContain('process.env.OLLAMA_URL || "http://localhost:11434"');
   });
   it("the only external web address in the whole app is the font stylesheet loaded by the browser", () => {
