@@ -96,7 +96,13 @@ export default function Diner({ slug }: { slug: string }) {
   // first load: language, table, cached menu, picks
   useEffect(() => {
     const sp = new URLSearchParams(location.search);
-    setTable(sp.get("t") || "");
+    const paramTable = sp.get("t");
+    if (paramTable) {
+      setTable(paramTable);
+      try { sessionStorage.setItem(`table:${slug}`, paramTable); } catch {}
+    } else {
+      try { setTable(sessionStorage.getItem(`table:${slug}`) || ""); } catch { setTable(""); }
+    }
     const saved = localStorage.getItem("lang") as Lang | null;
     const nav = navigator.language.toLowerCase();
     setLang(saved && ["en", "th", "my"].includes(saved) ? saved : nav.startsWith("th") ? "th" : nav.startsWith("my") ? "my" : "en");
