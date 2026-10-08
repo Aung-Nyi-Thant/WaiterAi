@@ -50,9 +50,11 @@ export default function Diner({ slug }: { slug: string }) {
   const [ringing, setRinging] = useState(false);
   const [bill, setBill] = useState<Bill | null>(null);
   const [billOpen, setBillOpen] = useState(false);
+  const [confirmedOrder, setConfirmedOrder] = useState<{ table: string; items: { name: string; qty: number; price: number }[]; total: number } | null>(null);
   useEscape(() => setPicksOpen(false), picksOpen);
   useEscape(() => setBillOpen(false), billOpen);
   useEscape(() => setProfileOpen(false), profileOpen);
+  useEscape(() => setConfirmedOrder(null), !!confirmedOrder);
   const [sessionId] = useState(() => uid());
   // The chat's messages live here, not in Chat: closing the chat unmounts Chat, and the conversation must still be there when it is reopened.
   const [msgs, setMsgs] = useState<Msg[]>([]);
@@ -167,9 +169,14 @@ export default function Diner({ slug }: { slug: string }) {
   };
   async function sendPicks() {
     try {
+      const itemsSent = valid.map((p) => { const it = byId.get(p.id)!; return { name: nm(it), qty: p.qty, price: it.price * p.qty }; });
+      const orderTotal = itemsSent.reduce((s, i) => s + i.price, 0);
       const sent = await api<{ receipt?: string }>(`/api/public/${slug}/orders`, { body: { table, lang, sessionId, receipt: getReceipt(slug, table), profile, items: valid } });
       if (sent.receipt) saveReceipt(slug, table, sent.receipt);
-      setPicks([]); say(t("sent")); loadBill();
+      setPicks([]);
+      setPicksOpen(false);
+      setConfirmedOrder({ table: table || "-", items: itemsSent, total: orderTotal });
+      say(t("sent")); loadBill();
     } catch (e: any) { say(e.message); }
   }
 
@@ -374,6 +381,37 @@ export default function Diner({ slug }: { slug: string }) {
             {bill.lines.length > 0 && (bill.asked
               ? <button type="button" className="sa-btn sa-btn--block" disabled><Icon name="check" />{t("billRequested")}</button>
               : <button type="button" className="sa-btn sa-btn--staff sa-btn--block" onClick={() => { setBillOpen(false); askForBill(); }}><BellSvg />{t("askBill")}</button>)}
+          </section>
+        </div>
+      )}
+      {confirmedOrder && (
+        // biome-ignore lint/a11y/noStaticElementInteractions: clicking outside is a mouse shortcut; keyboard users close this with Escape (useEscape)
+        <div className="sheet-back" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) setConfirmedOrder(null); }}>
+          <section className="sa-picks" role="dialog" aria-label={t("sent")}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span className="sa-tag sa-tag--veg" style={{ fontSize: 14 }}><Icon name="check" size={16} />{t("sent")}</span>
+              </div>
+              <button type="button" className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" onClick={() => setConfirmedOrder(null)} aria-label={t("close")}><Icon name="close" size={18} /></button>
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <span className="sa-ticket-font" style={{ fontSize: 16, fontWeight: 700 }}>{t("table")} {confirmedOrder.table}</span>
+            </div>
+            <div className="sa-picks__slip" style={{ marginBottom: 16 }}>
+              {confirmedOrder.items.map((i, idx) => (
+                <div key={`${i.name}-${idx}`} className="sa-picks__row">
+                  <span>{i.qty}× {i.name}</span>
+                  <span>{priceLabel(lang, i.price)}</span>
+                </div>
+              ))}
+              <div className="sa-picks__row bill-total">
+                <span>{t("billTotal")}</span>
+                <span>{priceLabel(lang, confirmedOrder.total)}</span>
+              </div>
+            </div>
+            <button type="button" className="sa-btn sa-btn--staff sa-btn--block" onClick={() => setConfirmedOrder(null)}>
+              <Icon name="check" />{t("done")}
+            </button>
           </section>
         </div>
       )}
