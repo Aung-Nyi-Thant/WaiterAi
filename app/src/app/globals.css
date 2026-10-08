@@ -579,6 +579,7 @@ html:lang(th) .sa-btn, html:lang(my) .sa-btn { white-space: normal; text-align: 
 .sa-picks__row + .sa-picks__row { margin-top: var(--space-2); }
 .sa-picks__row > span:first-child { flex: 1; min-width: 0; }
 .sa-qty button.sa-qty__del { border-color: var(--cherry-text); color: var(--cherry-text); }
+.sa-qty button:disabled { opacity: 0.4; cursor: not-allowed; border-color: var(--line); color: var(--ink-muted); }
 
 /* AI cursor (the AI visibly pressing Add) */
 .aiCursor { position: fixed; top: 0; left: 0; z-index: 71; pointer-events: none; transition: transform .55s cubic-bezier(.4,0,.2,1); filter: drop-shadow(0 2px 0 var(--teal-deep)); }

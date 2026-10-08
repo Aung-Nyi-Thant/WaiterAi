@@ -297,7 +297,7 @@ export default function Diner({ slug }: { slug: string }) {
         </div>
       </div>
 
-      {detail && <Detail item={detail} lang={lang} profile={profile} t={t} onClose={() => setDetail(null)} onAdd={() => { addPick(detail.id); say(addMsg(detail)); setDetail(null); }} onAsk={() => { setDetail(null); setChatOpen(true); setTimeout(() => window.dispatchEvent(new CustomEvent("ask", { detail: `${nm(detail)}?` })), 50); }} />}
+      {detail && <Detail item={detail} lang={lang} profile={profile} t={t} onClose={() => setDetail(null)} onAdd={(qty = 1) => { addPick(detail.id, qty); say(addMsg(detail)); setDetail(null); }} onAsk={() => { setDetail(null); setChatOpen(true); setTimeout(() => window.dispatchEvent(new CustomEvent("ask", { detail: `${nm(detail)}?` })), 50); }} />}
       {picksOpen && (
         // biome-ignore lint/a11y/noStaticElementInteractions: clicking outside is a mouse shortcut; keyboard users close this with Escape (useEscape)
         <div className="sheet-back" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) setPicksOpen(false); }}>
@@ -448,8 +448,9 @@ function DishCard({ item, lang, profile, onOpen, onAdd, t }: { item: Item; lang:
   );
 }
 
-function Detail({ item, lang, profile, t, onClose, onAdd, onAsk }: { item: Item; lang: Lang; profile: string[]; t: (k: string) => string; onClose: () => void; onAdd: () => void; onAsk: () => void }) {
+function Detail({ item, lang, profile, t, onClose, onAdd, onAsk }: { item: Item; lang: Lang; profile: string[]; t: (k: string) => string; onClose: () => void; onAdd: (qty: number) => void; onAsk: () => void }) {
   useEscape(onClose);
+  const [qty, setQty] = useState(1);
   const nm = item.name[lang] || item.name.en;
   const other = (["th", "my", "en"] as Lang[]).filter((l) => l !== lang).map((l) => item.name[l]).filter((n) => n && n !== nm);
   return (
@@ -465,9 +466,24 @@ function Detail({ item, lang, profile, t, onClose, onAdd, onAsk }: { item: Item;
         <p className="sa-sheet__label">{t("allergens")}</p>
         <div className="sa-dish__tags">{item.allergens && item.allergens.length === 0 ? <span className="sa-tag">{t("allergenNone")}</span> : <AllergenTags item={item} t={t} profile={profile} max={20} />}</div>
         {item.ingredients && <><p className="sa-sheet__label">{t("ingredients")}</p><p className="muted" style={{ margin: 0 }}>{item.ingredients}</p></>}
+        {item.available && (
+          <div className="detail-qty" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, margin: "16px 0 8px" }}>
+            <span className="sa-qty" style={{ scale: "1.1" }}>
+              <button type="button" aria-label="Decrease quantity" disabled={qty <= 1} onClick={() => setQty((q) => Math.max(1, q - 1))}>−</button>
+              <span style={{ minWidth: 28, textAlign: "center", fontWeight: 700 }}>{qty}</span>
+              <button type="button" aria-label="Increase quantity" disabled={qty >= 20} onClick={() => setQty((q) => Math.min(20, q + 1))}>+</button>
+            </span>
+          </div>
+        )}
         <div className="sa-sheet__actions">
           <button type="button" className="sa-btn sa-btn--ai" onClick={onAsk}><Icon name="sparkles" />{t("askWaiter")}</button>
-          {item.available ? <button type="button" className="sa-btn sa-btn--special" onClick={onAdd}><Icon name="plus" />{t("add")}</button> : <button type="button" className="sa-btn" disabled>{t("soldOut")}</button>}
+          {item.available ? (
+            <button type="button" className="sa-btn sa-btn--special" onClick={() => onAdd(qty)}>
+              <Icon name="plus" />{t("add")}{qty > 1 ? ` · ${priceLabel(lang, item.price * qty)}` : ""}
+            </button>
+          ) : (
+            <button type="button" className="sa-btn" disabled>{t("soldOut")}</button>
+          )}
         </div>
       </section>
     </div>
