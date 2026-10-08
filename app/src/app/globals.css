@@ -514,7 +514,7 @@ label.lbl, span.lbl { display: block; font: 700 13px/16px var(--font-sans); colo
 .table-row:nth-child(odd) { background: var(--surface-page); }
 
 /* ---------- Diner ---------- */
-.diner { max-width: 480px; margin: 0 auto; padding: 0 0 176px; }
+.diner { max-width: 480px; margin: 0 auto; padding: 0 0 220px; }
 .diner-pad { padding: 0 var(--space-4); }
 .diner-sticky { position: sticky; top: 0; z-index: 5; background: var(--surface-page); border-bottom: 1px solid var(--line); }
 .diner-sticky .sa-tabs { padding-bottom: var(--space-2); }
@@ -563,7 +563,7 @@ html:lang(th) .sa-btn, html:lang(my) .sa-btn { white-space: normal; text-align: 
 
 /* bottom dock: picks bar + the bell */
 .diner-dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; justify-content: center; pointer-events: none; }
-.diner-dock__inner { width: 100%; max-width: 480px; padding: 0 var(--space-4) var(--space-4); display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-3); }
+.diner-dock__inner { width: 100%; max-width: 480px; padding: 0 var(--space-4) max(var(--space-4), env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-3); }
 .diner-dock__inner > * { pointer-events: auto; }
 .diner-dock__row { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-3); width: 100%; }
 .diner-bill-btn { flex-direction: column; gap: 0; min-height: var(--tap-lg); padding: 6px var(--space-5); line-height: 20px; }
@@ -573,7 +573,7 @@ html:lang(th) .sa-btn, html:lang(my) .sa-btn { white-space: normal; text-align: 
 .picks-bar__line { font: 700 14px/20px var(--font-ticket); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sheet-back { position: fixed; inset: 0; z-index: 50; background: rgba(34,26,22,.55); display: flex; align-items: flex-end; justify-content: center; }
 .sheet-back > .sa-sheet, .sheet-back > .sa-picks { width: 100%; max-width: 480px; max-height: calc(100dvh - 56px); overflow-y: auto; }
-.sheet-back > .sa-sheet.has-hero { overflow: visible; margin-top: var(--space-12); }
+.sheet-back > .sa-sheet.has-hero { overflow-y: auto; margin-top: var(--space-12); max-height: calc(100dvh - 72px); }
 .sheet-close { position: absolute; top: var(--space-3); right: var(--space-3); }
 .sa-sheet { position: relative; }
 .sa-picks__row + .sa-picks__row { margin-top: var(--space-2); }
