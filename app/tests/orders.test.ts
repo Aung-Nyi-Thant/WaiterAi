@@ -30,6 +30,16 @@ describe("PC-2 the diner sends picks to the staff", () => {
     expect(all("SELECT name, qty, price FROM order_items WHERE order_id = ? ORDER BY id", o.id)).toEqual([
       { name: "Vegetable Tofu Stir-fry", qty: 1, price: 90 }, { name: "Thai Iced Tea", qty: 2, price: 50 }]);
   });
+  it("PC-1 / PC-2 handles ordering multiple quantities of dishes (Task 6)", async () => {
+    const r = await order({ table: "5", lang: "th", items: [{ id: id("Tom Yum Goong"), qty: 3 }, { id: id("Mango Sticky Rice"), qty: 2 }] });
+    expect(r.status).toBe(200);
+    const o = get("SELECT * FROM orders WHERE id = ?", r.data.id)!;
+    const lines = all("SELECT name, qty, price FROM order_items WHERE order_id = ? ORDER BY id", o.id);
+    expect(lines).toEqual([
+      { name: "Tom Yum Goong", qty: 3, price: 180 },
+      { name: "Mango Sticky Rice", qty: 2, price: 100 },
+    ]);
+  });
   it("BR-2 ignores sold-out and unknown dishes, and rejects an order with nothing available", async () => {
     const soldOut = id("Coconut Ice Cream");
     const r = await order({ table: "9", items: [{ id: soldOut, qty: 1 }, { id: 99999, qty: 1 }, { id: id("Papaya Salad"), qty: 1 }] });

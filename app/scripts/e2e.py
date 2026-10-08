@@ -82,7 +82,7 @@ c, r = waiter("POST", "/api/staff/login", {"slug": "golden-lotus", "pin": "0000"
 c, r = waiter("POST", "/api/staff/login", {"slug": "golden-lotus", "pin": "1111"}); check("waiter login", c == 200 and r["role"] == "waiter")
 c, r = chef("POST", "/api/staff/login", {"slug": "golden-lotus", "pin": "2222"}); check("chef login", c == 200 and r["role"] == "chef")
 c, fl = waiter("GET", "/api/staff/floor"); pick = next((o for o in fl["picks"] if o["id"] == oid), None)
-check("waiter sees pick with allergy", pick is not None and "peanut" in pick["allergy"] and len(pick["items"]) == 2, pick)
+check("waiter sees pick with allergy and quantities", pick is not None and "peanut" in pick["allergy"] and len(pick["items"]) == 2 and any(i.get("qty") == 2 for i in pick["items"]), pick)
 check("waiter sees bill call", any(x["table"] == "9" and x["kind"] == "bill" for x in fl["calls"]))
 c, r = chef("POST", f"/api/staff/orders/{oid}", {"action": "take"}); check("chef cannot take order", c == 403)
 c, r = waiter("POST", f"/api/staff/orders/{oid}", {"action": "cooking"}); check("waiter cannot start cooking", c == 403)
