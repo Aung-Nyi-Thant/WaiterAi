@@ -1,10 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Icon from "@/modules/platform/Icon";
 import SwipeCard from "@/modules/staff/SwipeCard";
 import { AllergyBanner, LineFlag, SoldOutList } from "@/modules/staff/WaiterPage";
 import { api, usePoll, minutesAgo } from "@/modules/platform/client";
+import { beep } from "@/modules/staff/beep";
 
 type Kitchen = { me: { name: string; role: string }; tickets: { new: any[]; cooking: any[]; ready: any[] }; dishes: { id: number; name: string; available: number }[] };
 const COL: [keyof Kitchen["tickets"], string, string, string][] = [["new", "New", "cooking", "Start cooking"], ["cooking", "Cooking", "ready", "Mark ready"], ["ready", "Ready", "served", "Served"]];
@@ -25,6 +26,13 @@ export default function Chef() {
     setD(x); setErr(""); setLastUpdated(new Date());
   }).catch((e) => { if (e.status === 401) router.push("/staff"); else setErr(e.message); });
   usePoll(load, 3000);
+    const seen = useRef<Set<number> | null>(null);
+  useEffect(() => {
+    if (!d) return;
+    const ids = d.tickets.new.map((o) => o.id);
+    if (seen.current && ids.some((id) => !seen.current!.has(id))) beep();
+    seen.current = new Set(ids);
+  }, [d]);
   const act = async (id: number, action: string) => { try { await api(`/api/staff/orders/${id}`, { body: { action } }); } catch (e: any) { setErr(e.message); } load(); };
   const toggle = async (id: number, available: boolean) => { await api(`/api/staff/items/${id}`, { body: { available } }); load(); };
   const logout = async () => { await api("/api/auth/logout", { body: {} }); router.push("/staff"); };

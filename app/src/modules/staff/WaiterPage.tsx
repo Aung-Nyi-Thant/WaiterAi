@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Icon from "@/modules/platform/Icon";
 import SwipeCard from "@/modules/staff/SwipeCard";
+import { beep } from "@/modules/staff/beep";
 import { api, usePoll, minutesAgo } from "@/modules/platform/client";
 import { ALLERGEN_LABEL } from "@/modules/platform/constants";
 
@@ -26,6 +27,13 @@ export default function Waiter() {
     setD(x); setErr(""); setLastUpdated(new Date());
   }).catch((e) => { if (e.status === 401) router.push("/staff"); else setErr(e.message); });
   usePoll(load, 3000);
+    const seen = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    if (!d) return;
+    const ids = [...d.calls.map((c) => `call-${c.id}`), ...d.picks.map((o) => `pick-${o.id}`)];
+    if (seen.current && ids.some((id) => !seen.current!.has(id))) beep();
+    seen.current = new Set(ids);
+  }, [d]);
   const act = async (path: string, body?: any) => { try { await api(path, { body: body ?? {} }); } catch (e: any) { setErr(e.message); } load(); };
   const logout = async () => { await api("/api/auth/logout", { body: {} }); router.push("/staff"); };
   if (!d) return <div className="sa-app" data-theme="night" style={{ padding: 40 }}>{err || "Loading…"}</div>;
