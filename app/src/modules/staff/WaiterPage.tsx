@@ -43,6 +43,8 @@ export default function Waiter() {
   // Call slips hang in longest-wait-first order, and turn urgent (cherry band + flag) after 5 minutes.
   const waited = (at: string) => Math.round((Date.now() - new Date(at).getTime()) / 60000);
   const calls = [...d.calls].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    // waiting-time colour for a pick: green under 5 min, yellow from 5 min, red from 10 min
+  const waitColor = (at: string) => { const m = (Date.now() - new Date(at).getTime()) / 60000; return m >= 10 ? "#ff6b6b" : m >= 5 ? "#ffd98a" : "#3ddc97"; };
 
   return (
     <div className="sa-app" data-theme="night">
@@ -83,7 +85,7 @@ export default function Waiter() {
         )}
         {tab === "feed" && d.picks.map((o) => (
           <SwipeCard key={`pick-${o.id}`} onSwipeRight={() => act(`/api/staff/orders/${o.id}`, { action: "take" })} onSwipeLeft={() => act(`/api/staff/orders/${o.id}`, { action: "later" })} rightLabel="Take order" leftLabel="Dismiss">
-            <article className="sa-ticket">
+            <article className="sa-ticket" style={{ borderLeft: `4px solid ${waitColor(o.createdAt)}` }}>
               <div className="sa-ticket__head"><div className="sa-ticket__table">T{o.table || "?"}</div><div className="sa-ticket__meta">{{ en: "English", th: "Thai", my: "Burmese" }[o.lang as string]} · {minutesAgo(o.createdAt)}<br /><span className="sa-status sa-status--new">Picks</span></div></div>
               <ul className="sa-ticket__lines">{o.items.map((i: any, k: number) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: read-only list of order lines (the same dish can appear twice), never reordered
