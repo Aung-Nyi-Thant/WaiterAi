@@ -13,6 +13,8 @@ export default function MenuPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [cats, setCats] = useState<(Category & { name_en?: string })[]>([]);
   const [tab, setTab] = useState(0);
+  const [search, setSearch] = useState("");
+  const [missingOnly, setMissingOnly] = useState(false);
   const [edit, setEdit] = useState<any | null>(null);
   const [editingDuplicate, setEditingDuplicate] = useState(false);
   const [catEdit, setCatEdit] = useState<any | null>(null);
@@ -22,7 +24,12 @@ export default function MenuPage() {
   }, []);
   useEffect(() => { load(); }, [load]);
 
-  const shown = items.filter((i) => !tab || i.category_id === tab);
+  const query = search.trim().toLowerCase();
+  const shown = items.filter((i) =>
+    (!tab || i.category_id === tab) &&
+    (!missingOnly || i.allergens === null) &&
+    (!query || [i.name.en, i.name.th, i.name.my, i.ingredients].some((value) => value.toLowerCase().includes(query))),
+  );
   const complete = items.filter((i) => i.allergens !== null).length;
   const toggle = async (i: Item) => { await api(`/api/owner/items/${i.id}`, { method: "PUT", body: { available: !i.available } }); load(); };
   const missing = items.filter((i) => i.allergens === null);
@@ -46,9 +53,28 @@ export default function MenuPage() {
         <div style={{ flex: 1 }} />
         <button type="button" className="btn btn-p" onClick={() => { setEditingDuplicate(false); setEdit(blank(tab || cats[0]?.id || null)); }}><Icon name="plus" size={18} />Add dish</button>
       </div>
+      <div className="row" style={{ gap: 10, flexWrap: "wrap" }}>
+        <input
+          type="search"
+          className="in-l"
+          aria-label="Search menu items"
+          placeholder="Search dishes or ingredients…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ flex: "1 1 240px" }}
+        />
+        <button
+          type="button"
+          className={`pill pill-l ${missingOnly ? "on" : ""}`}
+          aria-pressed={missingOnly}
+          onClick={() => setMissingOnly((value) => !value)}
+        >
+          Missing allergen data · {missing.length}
+        </button>
+      </div>
       <div className="sa-plate r-xl" style={{ overflow: "hidden" }}>
         <div className="table-head"><div>Dish</div><div>Price</div><div>Allergens</div><div>Tags</div><div>Today</div><div /></div>
-        {shown.length === 0 && <div className="soft-l" style={{ padding: 24 }}>No dishes here yet. Add one, or import a menu photo.</div>}
+        {shown.length === 0 && <div className="soft-l" style={{ padding: 24 }}>{items.length === 0 ? "No dishes here yet. Add one, or import a menu photo." : "No dishes match these filters."}</div>}
         {shown.map((i) => (
           <div className="table-row" key={i.id}>
             <div className="row" style={{ gap: 12 }}>
