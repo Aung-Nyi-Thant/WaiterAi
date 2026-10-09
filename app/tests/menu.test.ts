@@ -1,9 +1,11 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { call, ownerLogin, staffLogin, signOut } from "./helpers";
 import { GET as ownerItems, POST as createItem } from "@/modules/owner/api/items";
+import { PATCH as bulkItems } from "@/modules/owner/api/itemsBulk";
 import { PUT as updateItem, DELETE as deleteItem } from "@/modules/owner/api/itemsById";
 import { GET as listResource, POST as createResource } from "@/modules/owner/api/resource";
 import { PUT as updateResource, DELETE as deleteResource } from "@/modules/owner/api/resourceItem";
+import { POST as register } from "@/modules/platform/api/register";
 import { GET as getSettings, PUT as saveSettings } from "@/modules/owner/api/settings";
 import { GET as publicMenu } from "@/modules/diner/api/menu";
 import { POST as staffSoldOut } from "@/modules/staff/api/items";
@@ -84,6 +86,46 @@ describe("MM-3 categories", () => {
   });
   it("an unknown resource is 404", async () => {
     expect((await call(listResource, { params: { resource: "nothing" } })).status).toBe(404);
+  });
+});
+
+describe("MM-8 bulk category availability", () => {
+  it("updates a restaurant's category and cannot change another restaurant's dishes", async () => {
+    const ownCategory = await call(createResource, {
+      method: "POST",
+      params: { resource: "categories" },
+      body: { name_en: "Bulk own category" },
+    });
+    const ownDish = await create({ name: { en: "Own bulk dish" }, price: 10, category_id: ownCategory.data.id });
+
+    const rival = await call(register, {
+      method: "POST",
+      body: { email: "bulk-rival@example.com", password: "rival-pass-1", restaurantName: "Bulk Rival" },
+    });
+    expect(rival.status).toBe(200);
+    const rivalCategory = await call(createResource, {
+      method: "POST",
+      params: { resource: "categories" },
+      body: { name_en: "Bulk rival category" },
+    });
+    const rivalDish = await create({ name: { en: "Rival bulk dish" }, price: 10, category_id: rivalCategory.data.id });
+
+    await ownerLogin();
+    const updated = await call(bulkItems, {
+      method: "PATCH",
+      body: { category_id: ownCategory.data.id, available: false },
+    });
+    expect(updated.status).toBe(200);
+    expect(updated.data.updated).toBe(1);
+    expect(dish(ownDish.data.id).available).toBe(0);
+    expect(dish(rivalDish.data.id).available).toBe(1);
+
+    const forbidden = await call(bulkItems, {
+      method: "PATCH",
+      body: { category_id: rivalCategory.data.id, available: false },
+    });
+    expect(forbidden.status).toBe(404);
+    expect(dish(rivalDish.data.id).available).toBe(1);
   });
 });
 
