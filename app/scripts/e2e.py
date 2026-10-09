@@ -1,5 +1,6 @@
 """End-to-end API check for Shop AI. Run with the dev server up:  python3 scripts/e2e.py"""
 import json, sys, urllib.request, urllib.error, http.cookiejar, uuid, io, os
+from datetime import datetime, timedelta, timezone
 BASE = "http://localhost:3000"
 fails = []
 def client():
@@ -43,10 +44,33 @@ c, r = owner("DELETE", f"/api/owner/items/{iid}"); check("delete item", c == 200
 # ---- categories, faqs, specials, staff
 c, r = owner("POST", "/api/owner/categories", {"name_en": "Soups", "name_th": "ซุป", "name_my": ""}); check("create category", c == 200); cid = r["id"]
 c, r = owner("PUT", f"/api/owner/categories/{cid}", {"name_en": "Soups & broths"}); check("rename category", c == 200)
+c, categories = owner("GET", "/api/owner/categories")
+check("category list includes updated names", c == 200 and any(x["id"] == cid and x["name_en"] == "Soups & broths" and x["name_th"] == "ซุป" for x in categories), categories)
+c, menu = diner("GET", "/api/public/golden-lotus/menu")
+check("diner menu includes categories", c == 200 and any(x["id"] == cid and x["name"]["en"] == "Soups & broths" and x["name"]["th"] == "ซุป" for x in menu["categories"]), menu.get("categories") if c == 200 else menu)
 c, r = owner("DELETE", f"/api/owner/categories/{cid}"); check("delete category", c == 200)
 c, r = owner("POST", "/api/owner/faqs", {"q": "Do you have a kids menu?", "a": "Yes, ask the staff."}); check("create faq", c == 200); fid = r["id"]
 c, r = owner("POST", "/api/owner/faqs", {"q": "", "a": ""}); check("empty faq rejected", c == 400)
-c, r = owner("POST", "/api/owner/specials", {"title": "Chef special", "text": "Steamed fish", "active": 1}); check("create special", c == 200); sid = r["id"]
+today = datetime.now(timezone.utc).date()
+specials_to_create = [
+    {"title": "Special today", "text": "Steamed fish", "starts_on": today.isoformat(), "ends_on": today.isoformat(), "active": 1},
+    {"title": "Special starts later", "text": "", "starts_on": (today + timedelta(days=1)).isoformat(), "active": 1},
+    {"title": "Special ended earlier", "text": "", "ends_on": (today - timedelta(days=1)).isoformat(), "active": 1},
+    {"title": "Inactive special today", "text": "", "starts_on": today.isoformat(), "ends_on": today.isoformat(), "active": 0},
+]
+special_ids = []
+for special in specials_to_create:
+    c, r = owner("POST", "/api/owner/specials", special)
+    check(f"create special: {special['title']}", c == 200, r)
+    if c == 200: special_ids.append(r["id"])
+c, saved_specials = owner("GET", "/api/owner/specials")
+saved_today = next((s for s in saved_specials if s["title"] == "Special today"), {})
+check("special date range is saved", c == 200 and saved_today.get("starts_on") == today.isoformat() and saved_today.get("ends_on") == today.isoformat(), saved_today)
+c, menu = diner("GET", "/api/public/golden-lotus/menu")
+live_specials = {s["title"] for s in menu.get("specials", [])} if c == 200 else set()
+check("special is live on its start and end dates", "Special today" in live_specials, live_specials)
+check("future, expired and inactive specials are hidden", not ({"Special starts later", "Special ended earlier", "Inactive special today"} & live_specials), live_specials)
+c, r = owner("POST", "/api/owner/specials", {"title": "  "}); check("empty special rejected", c == 400)
 c, r = owner("POST", "/api/owner/staff", {"name": "Test Waiter", "role": "waiter", "pin": "12"}); check("short PIN rejected", c == 400)
 c, r = owner("POST", "/api/owner/staff", {"name": "Test Waiter", "role": "waiter", "pin": "4321"}); check("create staff", c == 200); stid = r["id"]
 c, r = owner("GET", "/api/owner/staff"); check("staff list hides PIN hashes", c == 200 and all("pin_hash" not in x for x in r))
@@ -60,7 +84,9 @@ owner("PUT", "/api/owner/settings", {"hours": {"open": "10:00", "close": "22:00"
 c, r = owner("PUT", "/api/owner/settings", {"persona": {"name": "Lotus", "gender": "female", "tone": "friendly", "greeting": "", "upsell": False, "rules": ""}}); check("save persona", c == 200)
 c, r = diner("POST", "/api/public/golden-lotus/chat", {"message": "ร้านปิดกี่โมง", "sessionId": "e2e-1", "table": "3"}); check("female voice in Thai", r["reply"].rstrip().endswith("ค่ะ"), r["reply"])
 owner("PUT", "/api/owner/settings", {"persona": {"name": "The Waiter", "gender": "male", "tone": "friendly", "greeting": "", "upsell": True, "rules": ""}})
-owner("DELETE", f"/api/owner/faqs/{fid}"); owner("DELETE", f"/api/owner/specials/{sid}"); owner("DELETE", f"/api/owner/staff/{stid}")
+owner("DELETE", f"/api/owner/faqs/{fid}")
+for special_id in special_ids: owner("DELETE", f"/api/owner/specials/{special_id}")
+owner("DELETE", f"/api/owner/staff/{stid}")
 
 # ---- QR and LAN
 c, svg = owner("GET", "/api/owner/qr?table=4&base=http://192.168.1.5:3000"); check("QR svg", c == 200 and b"<svg" in svg)
