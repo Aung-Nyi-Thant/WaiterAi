@@ -119,6 +119,12 @@ c, r = chef("POST", f"/api/staff/orders/{oid}", {"action": "ready"}); check("can
 c, r = chef("POST", f"/api/staff/orders/{oid}", {"action": "cooking"}); check("chef starts cooking", c == 200)
 c, r = chef("POST", f"/api/staff/orders/{oid}", {"action": "ready"}); check("chef marks ready", c == 200)
 c, fl = waiter("GET", "/api/staff/floor"); check("waiter sees ready order", any(o["id"] == oid and o["status"] == "ready" for o in fl["active"]))
+# ---- recall: the chef can move a Ready ticket back to Cooking
+c, r = waiter("POST", f"/api/staff/orders/{oid}", {"action": "recall"}); check("waiter cannot recall", c == 403)
+c, r = chef("POST", f"/api/staff/orders/{oid}", {"action": "recall"}); check("chef recalls a ready ticket", c == 200 and r.get("status") == "cooking", r)
+c, k = chef("GET", "/api/staff/kitchen"); check("recalled ticket is back in Cooking", any(o["id"] == oid for o in k["tickets"]["cooking"]) and not any(o["id"] == oid for o in k["tickets"]["ready"]))
+c, r = chef("POST", f"/api/staff/orders/{oid}", {"action": "recall"}); check("cannot recall a ticket that is not Ready", c == 409)
+c, r = chef("POST", f"/api/staff/orders/{oid}", {"action": "ready"}); check("recalled ticket can be marked ready again", c == 200)
 c, r = waiter("POST", f"/api/staff/orders/{oid}", {"action": "served"}); check("waiter serves", c == 200)
 call = next(x for x in fl["calls"] if x["table"] == "9"); c, r = waiter("POST", f"/api/staff/calls/{call['id']}"); check("close call", c == 200)
 c, r = chef("POST", "/api/staff/items/10", {"available": False}); check("chef marks sold out", c == 200)
@@ -138,6 +144,7 @@ c, fl = waiter("GET", "/api/staff/floor"); pk = next((o for o in fl["picks"] if 
 check("waiter sees the profile and the flagged dish", pk is not None and pk["allergy"] == "peanut" and {i["name"]: i["flag"] for i in pk["items"]} == {"Beef Massaman Curry": "peanut", "Thai Iced Tea": ""}, pk)
 waiter("POST", f"/api/staff/orders/{poid}", {"action": "take"}); c, k = chef("GET", "/api/staff/kitchen"); kt = next((o for o in k["tickets"]["new"] if o["id"] == poid), None)
 check("chef ticket shows the profile and the flagged dish", kt is not None and kt["allergy"] == "peanut" and {i["name"]: i["flag"] for i in kt["items"]} == {"Beef Massaman Curry": "peanut", "Thai Iced Tea": ""}, kt)
+c, r = chef("POST", f"/api/staff/orders/{poid}", {"action": "recall"}); check("cannot recall a new ticket", c == 409)
 c, r = owner("GET", "/api/owner/insights?days=7"); check("owner sees allergy profiles, popular dishes", c == 200 and any(a["allergen"] == "peanut" for a in r["allergyProfiles"]) and len(r["topDishes"]) > 0 and "noAllergenData" in r, r.get("allergyProfiles"))
 
 # ---- insights
@@ -176,6 +183,7 @@ try:
             if i["name"]["en"] in [x["name"] for x in r["items"]] and i["id"] > 13: owner("DELETE", f"/api/owner/items/{i['id']}")
 except ImportError:
     print("SKIP import test (Pillow missing)")
-
+# ---- recall: a ticket that is still New cannot be recalled
+c, r = chef("POST", f"/api/staff/orders/{poid}", {"action": "recall"}); check("cannot recall a new ticket", c == 409)
 print(f"\n{'ALL PASSED' if not fails else str(len(fails)) + ' FAILED: ' + ', '.join(fails)}")
 sys.exit(1 if fails else 0)
