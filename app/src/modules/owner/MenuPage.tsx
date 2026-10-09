@@ -147,6 +147,8 @@ function ItemForm({ item, cats, isDuplicate, onClose, onSaved }: { item: any; ca
     }
   };
   const toggleIn = (k: "allergens" | "tags", v: string) => set(k, (f[k] || []).includes(v) ? f[k].filter((x: string) => x !== v) : [...(f[k] || []), v]);
+  const previewName = f.name?.en || "Dish name";
+  const previewAlt = [f.name?.th && f.name.th !== f.name.en && f.name.th, f.name?.my && f.name.my !== f.name.en && f.name.my].filter(Boolean);
   async function upload(file?: File) {
     if (!file) return;
     const fd = new FormData(); fd.append("file", file);
@@ -196,6 +198,26 @@ function ItemForm({ item, cats, isDuplicate, onClose, onSaved }: { item: any; ca
           </div>
           <div><label className="lbl" htmlFor="n-th">Name (Thai)</label><input id="n-th" className="in-l" value={f.name.th} onChange={(e) => set("name", { ...f.name, th: e.target.value })} /></div>
           <div><label className="lbl" htmlFor="n-my">Name (Burmese)</label><input id="n-my" className="in-l" value={f.name.my} onChange={(e) => set("name", { ...f.name, my: e.target.value })} /></div>
+        </div>
+        <div>
+          <div className="lbl" style={{ marginBottom: 8 }}>Diner card preview</div>
+          <article className="sa-plate sa-dish" style={{ maxWidth: 420, padding: 10 }}>
+            <div className={`sa-dish__plate${f.photo_url ? "" : " sa-dish__plate--empty"}`} aria-hidden="true" style={{ width: 92, height: 92 }}>
+              {f.photo_url && <img src={f.photo_url} alt="" />}
+            </div>
+            <div className="sa-dish__body">
+              <h3 className="sa-dish__name" style={{ fontSize: 18 }}><button type="button" disabled style={{ cursor: "default" }}>{previewName}</button></h3>
+              {previewAlt.length > 0 && <p className="sa-dish__alt">{previewAlt.join(" · ")}</p>}
+              <div className="sa-dish__tags" style={{ minHeight: 18 }}>
+                {(f.tags || []).slice(0, 2).map((tag: string) => <span key={tag} className="sa-tag" style={{ fontSize: 11 }}>{TAG_LABEL[tag] || tag}</span>)}
+                {(f.allergens || []).slice(0, 2).map((allergen: string) => <span key={allergen} className="sa-tag" style={{ fontSize: 11 }}>{ALLERGEN_LABEL[allergen] || allergen}</span>)}
+              </div>
+              <div className="sa-dish__foot">
+                <span className="sa-price" style={{ fontSize: 18, lineHeight: "24px" }}>฿{Number(f.price) || 0}</span>
+                <button type="button" className="sa-btn sa-btn--special sa-btn--sm" disabled style={{ opacity: 0.8 }}>Add</button>
+              </div>
+            </div>
+          </article>
         </div>
         <div className="grid2" style={{ gap: 12 }}>
           <div>
