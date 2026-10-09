@@ -18,6 +18,8 @@ export default function MenuPage() {
   const [edit, setEdit] = useState<any | null>(null);
   const [editingDuplicate, setEditingDuplicate] = useState(false);
   const [catEdit, setCatEdit] = useState<any | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkError, setBulkError] = useState("");
   const load = useCallback(async () => {
     const [i, c] = await Promise.all([api<Item[]>("/api/owner/items"), api<any[]>("/api/owner/categories")]);
     setItems(i); setCats(c.map((x) => ({ id: x.id, sort: x.sort, name: { en: x.name_en, th: x.name_th, my: x.name_my } })));
@@ -33,6 +35,27 @@ export default function MenuPage() {
   const complete = items.filter((i) => i.allergens !== null).length;
   const toggle = async (i: Item) => { await api(`/api/owner/items/${i.id}`, { method: "PUT", body: { available: !i.available } }); load(); };
   const missing = items.filter((i) => i.allergens === null);
+  const categoryItems = items.filter((i) => i.category_id === tab);
+  async function setCategoryAvailability(available: boolean) {
+    const category = cats.find((c) => c.id === tab);
+    if (!category) return;
+    const state = available ? "on sale" : "sold out";
+    if (!confirm(`Mark all dishes in "${category.name.en}" ${state}?`)) return;
+    setBulkBusy(true);
+    setBulkError("");
+    try {
+      const result = await api<{ updated: number }>("/api/owner/items/bulk", {
+        method: "PATCH",
+        body: { category_id: tab, available },
+      });
+      setItems((current) => current.map((item) => item.category_id === tab ? { ...item, available } : item));
+      toast(available ? `Put ${result.updated} dishes on sale.` : `Marked ${result.updated} dishes sold out.`);
+    } catch (error: any) {
+      setBulkError(error.message);
+    } finally {
+      setBulkBusy(false);
+    }
+  }
 
   return (
     <>
@@ -50,9 +73,15 @@ export default function MenuPage() {
         {cats.map((c) => <button type="button" key={c.id} className={`pill pill-l ${tab === c.id ? "on" : ""}`} onClick={() => setTab(c.id)}>{c.name.en}</button>)}
         <button type="button" className="pill pill-l" onClick={() => setCatEdit({ name_en: "", name_th: "", name_my: "" })}><Icon name="plus" size={16} />Category</button>
         {tab > 0 && <button type="button" className="pill pill-l" onClick={() => { const c = cats.find((x) => x.id === tab)!; setCatEdit({ id: c.id, name_en: c.name.en, name_th: c.name.th === c.name.en ? "" : c.name.th, name_my: c.name.my === c.name.en ? "" : c.name.my }); }}><Icon name="edit" size={16} />Edit category</button>}
+        {tab > 0 && <>
+          <button type="button" className="btn btn-ol btn-sm" onClick={() => setCategoryAvailability(false)} disabled={bulkBusy || categoryItems.length === 0}>Mark all sold out</button>
+          <button type="button" className="btn btn-ol btn-sm" onClick={() => setCategoryAvailability(true)} disabled={bulkBusy || categoryItems.length === 0}>Put all on sale</button>
+        </>}
         <div style={{ flex: 1 }} />
         <button type="button" className="btn btn-p" onClick={() => { setEditingDuplicate(false); setEdit(blank(tab || cats[0]?.id || null)); }}><Icon name="plus" size={18} />Add dish</button>
       </div>
+      {bulkBusy && <div className="soft-l" role="status">Updating category availability…</div>}
+      {bulkError && <div className="err" role="alert">{bulkError}</div>}
       <div className="row" style={{ gap: 10, flexWrap: "wrap" }}>
         <input
           type="search"
