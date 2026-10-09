@@ -48,6 +48,8 @@ export default function Waiter() {
   const billOf = (n: string) => d.bills.find((b) => b.table === n);
   const tableState = (n: string) => d.calls.some((c) => c.table === n) ? "calling" : d.picks.some((o) => o.table === n) ? "picks" : d.active.some((o) => o.table === n) ? "kitchen" : "free";
   const STATE_WORD: Record<string, string> = { calling: "Calling", picks: "Picks", kitchen: "Kitchen", free: "Free" };
+    const callsAt = (n: string) => d.calls.filter((c) => c.table === n).length;
+  const dishesAt = (n: string) => d.active.filter((o) => o.table === n).reduce((s, o) => s + o.items.reduce((t: number, i: any) => t + i.qty, 0), 0);
   // Call slips hang in longest-wait-first order, and turn urgent (cherry band + flag) after 5 minutes.
   const waited = (at: string) => Math.round((Date.now() - new Date(at).getTime()) / 60000);
   const calls = [...d.calls].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
@@ -137,7 +139,7 @@ export default function Waiter() {
         {tab === "tables" && (
           <div className="sa-floor">
             {Array.from({ length: 12 }, (_, i) => String(i + 1)).map((n) => { const s = tableState(n); return (
-              <div key={n} className={`sa-table sa-table--${s} sa-table-static`} role="img" aria-label={`Table ${n}, ${STATE_WORD[s]}${billOf(n) ? `, owes ฿${billOf(n)!.total}` : ""}`}>{n}<small>{STATE_WORD[s]}</small>{billOf(n) && <small>฿{billOf(n)!.total}</small>}</div>); })}
+             <div key={n} className={`sa-table sa-table--${s} sa-table-static`} role="img" aria-label={`Table ${n}, ${STATE_WORD[s]}, ${callsAt(n)} open calls, ${dishesAt(n)} dishes${billOf(n) ? `, owes ฿${billOf(n)!.total}` : ""}`}>{n}<small>{STATE_WORD[s]}</small>{callsAt(n) > 0 && <small>{callsAt(n)} {callsAt(n) === 1 ? "call" : "calls"}</small>}{dishesAt(n) > 0 && <small>{dishesAt(n)} {dishesAt(n) === 1 ? "dish" : "dishes"}</small>}{billOf(n) && <small>฿{billOf(n)!.total}</small>}</div>); })}
           </div>)}
       </div>
 
