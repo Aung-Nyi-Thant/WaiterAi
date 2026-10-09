@@ -66,7 +66,7 @@ npm run typecheck
 npm run build && npm run test:e2e     # end-to-end against a real server
 npm run eval:live     # the 30 AI questions against a running server and a real model; fails below eval/thresholds.json
 ```
-The older Python scripts still work against a running dev server (and Ollama, for the live parts): `python3 scripts/e2e.py` (75 API checks; run it once per fresh database), `python3 scripts/chat_smoke.py` (the 30 eval questions) and `python3 scripts/nfr_check.py nfr1|nfr2|nfr4|nfr7` (speed, fallback and load checks, see `docs/NFR_RESULTS.md`).
+The older Python scripts still work against a running dev server (and Ollama, for the live parts): `python3 scripts/e2e.py` (API checks; run it once per fresh database), `python3 scripts/chat_smoke.py` (the 30 eval questions) and `python3 scripts/nfr_check.py nfr1|nfr2|nfr4|nfr7` (speed, fallback and load checks, see `docs/NFR_RESULTS.md`).
 
 ## How the AI stays safe
 1. **Facts come from the database, in fixed sentences:** allergens, vegetarian lists, prices, opening hours, sold-out dishes, orders, the bill, recommendations, and anything that depends on the allergy profile. The language model never decides these.
