@@ -9,6 +9,7 @@ const FLOW: Record<string, { from: string[]; to: string; roles: string[] }> = {
   cooking: { from: ["new"], to: "cooking", roles: ["chef"] },
   ready: { from: ["cooking"], to: "ready", roles: ["chef"] },
   served: { from: ["ready"], to: "served", roles: ["waiter", "chef"] },
+    recall: { from: ["ready"], to: "cooking", roles: ["chef"] },
 };
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const s = await staffSession(); if (!s) return unauthorized();

@@ -63,8 +63,9 @@ export default function Chef() {
                     // biome-ignore lint/suspicious/noArrayIndexKey: read-only list of order lines (the same dish can appear twice), never reordered
                     <li key={k}><b>{i.qty}×</b><span>{i.name} <LineFlag flag={i.flag} /></span></li>
                   ))}</ul>
-                  {o.allergy && <AllergyBanner allergen={o.allergy} note="Staff confirmed with the diner. Check before cooking." />}
+                                   {o.allergy && <AllergyBanner allergen={o.allergy} note="Staff confirmed with the diner. Check before cooking." />}
                   <button type="button" className={`sa-btn sa-btn--lg sa-btn--block ${key === "new" ? "sa-btn--staff" : "sa-btn--ok"}`} onClick={() => act(o.id, next)}>{key !== "new" && <Icon name="check" />}{btn}</button>
+                  {key === "ready" && <button type="button" className="sa-btn sa-btn--quiet sa-btn--block" onClick={() => act(o.id, "recall")}>Recall to Cooking</button>}
                 </article>
               </SwipeCard>); })}
           </div>
