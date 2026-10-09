@@ -20,4 +20,10 @@ What it does: PIN sign-in for waiters and chefs (unique PIN per restaurant, 5 wr
 Tests: the staff and order parts of `app/scripts/e2e.py`.
 
 ## What I did (each member fills this in)
-- 
+- Added a short sound alert on the waiter and chef screens when a new call or ticket arrives (`beep.ts`, `WaiterPage.tsx`, `ChefPage.tsx`).
+- Added a "recall" action so the chef can move a Ready ticket back to Cooking (`api/orders.ts`, `ChefPage.tsx`).
+- Added waiting-time colours on waiter Picks cards in the Feed (green under 5 min, yellow from 5 min, red from 10 min).
+- Made the Tables tab show open calls and dishes per table.
+- Added tests for the new order rules to `app/scripts/e2e.py`.
+- Ran the NFR-7 load test (3 diners + 2 staff screens, 10 minutes) with `npm run load-test -- --diners 3 --staff 2 --minutes 10 --ai`. Results are in `docs/PERFORMANCE.md`: 0 errors in about 1,500 requests; 93 AI answers, median 9.8 s, slowest 17.4 s (target: under 30 s); waiter and chef screens polled every 3 s, median 2-4 ms. NFR-7 met.
+- Limits: simulated diners on one laptop; page load on a real phone over Wi-Fi was not measured.
