@@ -136,10 +136,16 @@ export default function MenuPage() {
 function ItemForm({ item, cats, isDuplicate, onClose, onSaved }: { item: any; cats: any[]; isDuplicate: boolean; onClose: () => void; onSaved: () => void }) {
   useEscape(onClose);
   const [f, setF] = useState<any>(item);
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<"name" | "price" | "category_id", string>>>({});
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const isNew = !f.id;
-  const set = (k: string, v: any) => setF((x: any) => ({ ...x, [k]: v }));
+  const set = (k: string, v: any) => {
+    setF((x: any) => ({ ...x, [k]: v }));
+    if (k === "name" || k === "price" || k === "category_id") {
+      setFieldErrors((current) => ({ ...current, [k]: undefined }));
+    }
+  };
   const toggleIn = (k: "allergens" | "tags", v: string) => set(k, (f[k] || []).includes(v) ? f[k].filter((x: string) => x !== v) : [...(f[k] || []), v]);
   async function upload(file?: File) {
     if (!file) return;
@@ -147,12 +153,26 @@ function ItemForm({ item, cats, isDuplicate, onClose, onSaved }: { item: any; ca
     try { set("photo_url", (await api<{ url: string }>("/api/owner/upload", { form: fd })).url); } catch (e: any) { setErr(e.message); }
   }
   async function save() {
-    setErr(""); setBusy(true);
+    setErr("");
+    const errors: typeof fieldErrors = {};
+    const price = Number(f.price);
+    if (!f.name.en.trim()) errors.name = "Please enter the dish name.";
+    if (f.price === "" || !Number.isFinite(price) || price < 0 || price >= 100000) errors.price = "Please enter a valid price.";
+    if (f.category_id && !cats.some((category) => category.id === Number(f.category_id))) errors.category_id = "Unknown category.";
+    setFieldErrors(errors);
+    if (Object.keys(errors).length) return;
+    setBusy(true);
     try {
       const body = { category_id: f.category_id, name: f.name, desc: f.desc, price: f.price, ingredients: f.ingredients, allergens: f.allergens, tags: f.tags, spice: f.spice, available: f.available, photo_url: f.photo_url };
       if (isNew) await api("/api/owner/items", { body }); else await api(`/api/owner/items/${f.id}`, { method: "PUT", body });
       onSaved();
-    } catch (e: any) { setErr(e.message); setBusy(false); }
+    } catch (e: any) {
+      if (e.message === "Please enter the dish name.") setFieldErrors((current) => ({ ...current, name: e.message }));
+      else if (e.message === "Please enter a valid price.") setFieldErrors((current) => ({ ...current, price: e.message }));
+      else if (e.message === "Unknown category.") setFieldErrors((current) => ({ ...current, category_id: e.message }));
+      else setErr(e.message);
+      setBusy(false);
+    }
   }
   async function del() {
     if (!confirm(`Delete "${f.name.en}"? This cannot be undone.`)) return;
@@ -164,13 +184,25 @@ function ItemForm({ item, cats, isDuplicate, onClose, onSaved }: { item: any; ca
       <div className="modal" role="dialog" aria-label={isDuplicate ? "Duplicate dish" : isNew ? "Add dish" : "Edit dish"} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         <div className="row" style={{ justifyContent: "space-between" }}><h2 style={{ fontSize: 26 }}>{isDuplicate ? "Duplicate dish" : isNew ? "Add a dish" : "Edit dish"}</h2><button type="button" className="btn btn-ol btn-icon" onClick={onClose} aria-label="Close"><Icon name="close" /></button></div>
         <div className="grid2" style={{ gap: 12 }}>
-          <div><label className="lbl" htmlFor="n-en">Name (English)</label><input id="n-en" className="in-l" value={f.name.en} onChange={(e) => set("name", { ...f.name, en: e.target.value })} /></div>
-          <div><label className="lbl" htmlFor="pr">Price (฿)</label><input id="pr" type="number" min={0} className="in-l" value={f.price} onChange={(e) => set("price", e.target.value)} /></div>
+          <div>
+            <label className="lbl" htmlFor="n-en">Name (English)</label>
+            <input id="n-en" className="in-l" value={f.name.en} onChange={(e) => set("name", { ...f.name, en: e.target.value })} aria-invalid={!!fieldErrors.name} aria-describedby={fieldErrors.name ? "n-en-error" : undefined} />
+            {fieldErrors.name && <div id="n-en-error" className="err-d" role="alert">{fieldErrors.name}</div>}
+          </div>
+          <div>
+            <label className="lbl" htmlFor="pr">Price (฿)</label>
+            <input id="pr" type="number" min={0} className="in-l" value={f.price} onChange={(e) => set("price", e.target.value)} aria-invalid={!!fieldErrors.price} aria-describedby={fieldErrors.price ? "pr-error" : undefined} />
+            {fieldErrors.price && <div id="pr-error" className="err-d" role="alert">{fieldErrors.price}</div>}
+          </div>
           <div><label className="lbl" htmlFor="n-th">Name (Thai)</label><input id="n-th" className="in-l" value={f.name.th} onChange={(e) => set("name", { ...f.name, th: e.target.value })} /></div>
           <div><label className="lbl" htmlFor="n-my">Name (Burmese)</label><input id="n-my" className="in-l" value={f.name.my} onChange={(e) => set("name", { ...f.name, my: e.target.value })} /></div>
         </div>
         <div className="grid2" style={{ gap: 12 }}>
-          <div><label className="lbl" htmlFor="cat">Category</label><select id="cat" className="in-l" value={f.category_id ?? ""} onChange={(e) => set("category_id", e.target.value || null)}><option value="">None</option>{cats.map((c) => <option key={c.id} value={c.id}>{c.name.en}</option>)}</select></div>
+          <div>
+            <label className="lbl" htmlFor="cat">Category</label>
+            <select id="cat" className="in-l" value={f.category_id ?? ""} onChange={(e) => set("category_id", e.target.value || null)} aria-invalid={!!fieldErrors.category_id} aria-describedby={fieldErrors.category_id ? "cat-error" : undefined}><option value="">None</option>{cats.map((c) => <option key={c.id} value={c.id}>{c.name.en}</option>)}</select>
+            {fieldErrors.category_id && <div id="cat-error" className="err-d" role="alert">{fieldErrors.category_id}</div>}
+          </div>
           <div><label className="lbl" htmlFor="sp">Spice level</label><select id="sp" className="in-l" value={f.spice} onChange={(e) => set("spice", Number(e.target.value))}>{["Not spicy", "Mild", "Medium", "Hot"].map((s, i) => <option key={s} value={i}>{s}</option>)}</select></div>
         </div>
         <div><label className="lbl" htmlFor="ds">Description (English)</label><textarea id="ds" className="in-l" value={f.desc.en} onChange={(e) => set("desc", { ...f.desc, en: e.target.value })} style={{ minHeight: 60 }} /></div>
