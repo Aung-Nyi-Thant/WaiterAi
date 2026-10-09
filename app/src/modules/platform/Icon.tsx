@@ -15,6 +15,7 @@ const P: Record<string, React.ReactNode> = {
   thumbDown: <path d="M7 13V4H4v9h3zM7 13l4 7c1.5 0 2.5-1 2.2-2.6L12.8 15H19a2 2 0 0 0 2-2.4L19.7 6.2A2 2 0 0 0 17.8 5H7" />,
   logout: <path d="M10 5H5v14h5M14 8l4 4-4 4M18 12H9" />, eye: <><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></>,
   filter: <><path d="M4 6h16" /><path d="M7 12h10" /><path d="M10 18h4" /></>,
+  copy: <><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" /></>,
   sparkles: <><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z" /><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z" /></>,
   wifiOff: <><path d="M2 2l20 20" /><path d="M8.5 16.5a5 5 0 0 1 7 0" /><path d="M5 12.9a10 10 0 0 1 5.2-2.8M19 12.9a10 10 0 0 0-2-1.5" /><path d="M2 8.8a15 15 0 0 1 4.2-2.6M22 8.8A15 15 0 0 0 10.7 5" /><path d="M12 20h.01" /></>,
   serviceBell: <><path d="M4 17h16" /><path d="M6 17a6 6 0 0 1 12 0" /><path d="M12 11V8" /><circle cx="12" cy="6.5" r="1.3" /></>,

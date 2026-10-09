@@ -14,6 +14,7 @@ export default function MenuPage() {
   const [cats, setCats] = useState<(Category & { name_en?: string })[]>([]);
   const [tab, setTab] = useState(0);
   const [edit, setEdit] = useState<any | null>(null);
+  const [editingDuplicate, setEditingDuplicate] = useState(false);
   const [catEdit, setCatEdit] = useState<any | null>(null);
   const load = useCallback(async () => {
     const [i, c] = await Promise.all([api<Item[]>("/api/owner/items"), api<any[]>("/api/owner/categories")]);
@@ -43,7 +44,7 @@ export default function MenuPage() {
         <button type="button" className="pill pill-l" onClick={() => setCatEdit({ name_en: "", name_th: "", name_my: "" })}><Icon name="plus" size={16} />Category</button>
         {tab > 0 && <button type="button" className="pill pill-l" onClick={() => { const c = cats.find((x) => x.id === tab)!; setCatEdit({ id: c.id, name_en: c.name.en, name_th: c.name.th === c.name.en ? "" : c.name.th, name_my: c.name.my === c.name.en ? "" : c.name.my }); }}><Icon name="edit" size={16} />Edit category</button>}
         <div style={{ flex: 1 }} />
-        <button type="button" className="btn btn-p" onClick={() => setEdit(blank(tab || cats[0]?.id || null))}><Icon name="plus" size={18} />Add dish</button>
+        <button type="button" className="btn btn-p" onClick={() => { setEditingDuplicate(false); setEdit(blank(tab || cats[0]?.id || null)); }}><Icon name="plus" size={18} />Add dish</button>
       </div>
       <div className="sa-plate r-xl" style={{ overflow: "hidden" }}>
         <div className="table-head"><div>Dish</div><div>Price</div><div>Allergens</div><div>Tags</div><div>Today</div><div /></div>
@@ -60,16 +61,24 @@ export default function MenuPage() {
             <div className="row" style={{ gap: 8, fontWeight: 700, fontSize: 13, color: i.available ? "var(--ok)" : "var(--cherry-text)" }}>
               <button type="button" className={`switch ${i.available ? "on" : ""}`} role="switch" aria-checked={i.available} aria-label={`${i.name.en} on sale`} onClick={() => toggle(i)} />{i.available ? "On sale" : "Sold out"}
             </div>
-            <button type="button" className="btn btn-ol btn-icon" style={{ borderRadius: 14 }} aria-label={`Edit ${i.name.en}`} onClick={() => setEdit(JSON.parse(JSON.stringify(i)))}><Icon name="edit" size={18} /></button>
+            <div className="row" style={{ gap: 6 }}>
+              <button type="button" className="btn btn-ol btn-icon" style={{ borderRadius: 14 }} aria-label={`Duplicate ${i.name.en}`} title="Duplicate dish" onClick={() => {
+                const copy = JSON.parse(JSON.stringify(i));
+                delete copy.id;
+                setEditingDuplicate(true);
+                setEdit(copy);
+              }}><Icon name="copy" size={18} /></button>
+              <button type="button" className="btn btn-ol btn-icon" style={{ borderRadius: 14 }} aria-label={`Edit ${i.name.en}`} onClick={() => { setEditingDuplicate(false); setEdit(JSON.parse(JSON.stringify(i))); }}><Icon name="edit" size={18} /></button>
+            </div>
           </div>))}
       </div>
-      {edit && <ItemForm item={edit} cats={cats} onClose={() => setEdit(null)} onSaved={() => { setEdit(null); load(); toast("Saved."); }} />}
+      {edit && <ItemForm item={edit} cats={cats} isDuplicate={editingDuplicate} onClose={() => { setEdit(null); setEditingDuplicate(false); }} onSaved={() => { setEdit(null); setEditingDuplicate(false); load(); toast(editingDuplicate ? "Dish duplicated." : "Saved."); }} />}
       {catEdit && <CatForm cat={catEdit} onClose={() => setCatEdit(null)} onSaved={(deleted) => { setCatEdit(null); if (deleted) setTab(0); load(); toast(deleted ? "Category deleted." : "Saved."); }} />}
     </>
   );
 }
 
-function ItemForm({ item, cats, onClose, onSaved }: { item: any; cats: any[]; onClose: () => void; onSaved: () => void }) {
+function ItemForm({ item, cats, isDuplicate, onClose, onSaved }: { item: any; cats: any[]; isDuplicate: boolean; onClose: () => void; onSaved: () => void }) {
   useEscape(onClose);
   const [f, setF] = useState<any>(item);
   const [err, setErr] = useState("");
@@ -97,8 +106,8 @@ function ItemForm({ item, cats, onClose, onSaved }: { item: any; cats: any[]; on
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: clicking outside is a mouse shortcut; keyboard users close this with Escape (useEscape)
     <div className="modal-back" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="modal" role="dialog" aria-label={isNew ? "Add dish" : "Edit dish"} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        <div className="row" style={{ justifyContent: "space-between" }}><h2 style={{ fontSize: 26 }}>{isNew ? "Add a dish" : "Edit dish"}</h2><button type="button" className="btn btn-ol btn-icon" onClick={onClose} aria-label="Close"><Icon name="close" /></button></div>
+      <div className="modal" role="dialog" aria-label={isDuplicate ? "Duplicate dish" : isNew ? "Add dish" : "Edit dish"} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <div className="row" style={{ justifyContent: "space-between" }}><h2 style={{ fontSize: 26 }}>{isDuplicate ? "Duplicate dish" : isNew ? "Add a dish" : "Edit dish"}</h2><button type="button" className="btn btn-ol btn-icon" onClick={onClose} aria-label="Close"><Icon name="close" /></button></div>
         <div className="grid2" style={{ gap: 12 }}>
           <div><label className="lbl" htmlFor="n-en">Name (English)</label><input id="n-en" className="in-l" value={f.name.en} onChange={(e) => set("name", { ...f.name, en: e.target.value })} /></div>
           <div><label className="lbl" htmlFor="pr">Price (฿)</label><input id="pr" type="number" min={0} className="in-l" value={f.price} onChange={(e) => set("price", e.target.value)} /></div>
@@ -132,7 +141,7 @@ function ItemForm({ item, cats, onClose, onSaved }: { item: any; cats: any[]; on
         <div className="row" style={{ gap: 10, justifyContent: "flex-end" }}>
           {!isNew && <button type="button" className="btn btn-ol" style={{ marginRight: "auto" }} onClick={del}><Icon name="trash" size={16} />Delete</button>}
           <button type="button" className="btn btn-ol" onClick={onClose}>Cancel</button>
-          <button type="button" className="btn btn-p" onClick={save} disabled={busy}>{busy ? "Saving…" : "Save dish"}</button>
+          <button type="button" className="btn btn-p" onClick={save} disabled={busy}>{busy ? "Saving…" : isDuplicate ? "Duplicate dish" : "Save dish"}</button>
         </div>
       </div>
     </div>
