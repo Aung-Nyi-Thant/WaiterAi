@@ -89,8 +89,33 @@ for special_id in special_ids: owner("DELETE", f"/api/owner/specials/{special_id
 owner("DELETE", f"/api/owner/staff/{stid}")
 
 # ---- QR and LAN
-c, svg = owner("GET", "/api/owner/qr?table=4&base=http://192.168.1.5:3000"); check("QR svg", c == 200 and b"<svg" in svg)
-c, r = owner("GET", "/api/owner/lan"); check("LAN urls", c == 200 and "urls" in r)
+c, svg = owner(
+    "GET",
+    "/api/owner/qr?table=4&base=http%3A%2F%2F192.168.1.5%3A3000",
+)
+check(
+    "QR endpoint returns SVG",
+    c == 200 and isinstance(svg, bytes) and b"<svg" in svg,
+)
+c, svg = owner("GET", "/api/owner/qr?table=1&base=http%3A%2F%2Fexample.com")
+check(
+    "QR endpoint supports another table",
+    c == 200 and isinstance(svg, bytes) and b"<svg" in svg,
+)
+c, r = owner("GET", "/api/owner/lan")
+check("LAN urls", c == 200 and "urls" in r)
+# ---- insights periods: 1, 7, and 30 days
+for days in (1, 7, 30):
+    c, r = owner("GET", f"/api/owner/insights?days={days}")
+    check(
+        f"insights period {days} days",
+        c == 200
+        and isinstance(r, dict)
+        and "questions" in r
+        and "topics" in r
+        and "opens" in r,
+        r if c != 200 else "",
+    )
 
 # ---- diner flow
 c, r = diner("GET", "/api/public/golden-lotus/menu?open=1"); check("public menu", c == 200 and len(r["items"]) >= 13)
