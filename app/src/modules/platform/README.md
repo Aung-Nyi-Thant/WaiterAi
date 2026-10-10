@@ -23,3 +23,4 @@ Member 5 also owns `app/scripts/` (test scripts), `app/README.md` and the docume
 
 ## What I did (each member fills this in)
 - 
+* Added `docs/INSTALLATION_GUIDE.md` with initial step-by-step setup instructions for macOS and Windows. Clean-computer testing has not yet been completed.
