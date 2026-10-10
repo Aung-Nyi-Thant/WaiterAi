@@ -5,7 +5,63 @@ import { api } from "@/modules/platform/client";
 
 export default function InsightsPage() {
   const [days, setDays] = useState(7);
-  const [d, setD] = useState<any>(null);
+  const [d, setD] = useState<any>(null);  
+  const exportCSV = () => {
+    if (!d) return;
+    const rows: string[][] = [
+      ["Section", "Name", "Value"],
+      ["Summary", "Period (days)", String(days)],
+      ["Summary", "Chats", String(d.sessions)],
+      ["Summary", "Tables", String(d.tables)],
+      ["Summary", "Questions", String(d.questions)],
+      ["Summary", "Answered (%)", String(d.answeredPct ?? "")],
+      ["Summary", "Unanswered", String(d.unanswered)],
+      ["Summary", "Menu Opens", String(d.opens)],
+      ...d.topics.map((t: any) => [
+        "Most Asked",
+        t.label,
+        String(t.n),
+      ]),
+      ...d.langs.map((l: any) => [
+        "Languages",
+        l.lang,
+        String(l.n),
+      ]),
+      ...d.topDishes.map((t: any) => [
+        "Most Ordered Dishes",
+        t.name,
+        String(t.n),
+      ]),
+      ...d.topQuestions.map((q: any) => [
+        "Repeated Questions",
+        q.text,
+        String(q.n),
+      ]),
+      ...d.cannot.map((c: any) => [
+        "Could Not Answer",
+        c.text,
+        String(c.n),
+      ]),
+    ];
+    const escapeCSV = (value: string) =>
+      `"${value.replace(/"/g, '""')}"`;
+    const csv =
+      "\uFEFF" +
+      rows
+        .map((row) => row.map(escapeCSV).join(","))
+        .join("\r\n");
+    const blob = new Blob([csv], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `shop-ai-insights-${days}-days.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
   useEffect(() => { api(`/api/owner/insights?days=${days}`).then(setD); }, [days]);
   if (!d) return <div className="soft-l">Loading…</div>;
   const max = Math.max(1, ...d.topics.map((t: any) => t.n));
@@ -16,7 +72,26 @@ export default function InsightsPage() {
     <>
       <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
         <div><h1 style={{ fontSize: 40 }}>What diners asked</h1><p className="soft-l" style={{ margin: "6px 0 0" }}>What people wanted, and what you could not answer.</p></div>
-        <div className="row" style={{ gap: 6 }}>{[1, 7, 30].map((n) => <button type="button" key={n} className={`pill pill-l ${days === n ? "on" : ""}`} onClick={() => setDays(n)}>{n === 1 ? "Today" : `${n} days`}</button>)}</div>
+        
+        <div className="row" style={{ gap: 6 }}>
+          {[1, 7, 30].map((n) => (
+            <button
+              type="button"
+              key={n}
+              className={`pill pill-l ${days === n ? "on" : ""}`}
+              onClick={() => setDays(n)}
+            >
+              {n === 1 ? "Today" : `${n} days`}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="pill pill-l"
+            onClick={exportCSV}
+          >
+            Export CSV
+          </button>
+        </div>
       </div>
       <div className="grid4">
         <Tile label="CHATS" value={d.sessions} sub={`${d.tables} tables · ${d.questions} questions`} />
@@ -86,4 +161,4 @@ export default function InsightsPage() {
       </div>
     </>
   );
-}
+  
