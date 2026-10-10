@@ -22,4 +22,7 @@ What it does: the database and its demo data, login and sessions, the shared hel
 Member 5 also owns `app/scripts/` (test scripts), `app/README.md` and the documents in `docs/`, except the SRS which Member 2 keeps in sync.
 
 ## What I did (each member fills this in)
-- 
+* Added tests for the QR endpoint.
+* Added tests for Insights periods of 1, 7, and 30 days.
+* Updated the end-to-end API test script in `app/scripts/e2e.py`.
+
