@@ -22,4 +22,5 @@ What it does: the database and its demo data, login and sessions, the shared hel
 Member 5 also owns `app/scripts/` (test scripts), `app/README.md` and the documents in `docs/`, except the SRS which Member 2 keeps in sync.
 
 ## What I did (each member fills this in)
-- 
+- Added an Export CSV button to the InsightsPage so owners can download insights data as a CSV file.
+
