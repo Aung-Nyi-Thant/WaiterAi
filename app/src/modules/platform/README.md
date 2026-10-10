@@ -22,4 +22,8 @@ What it does: the database and its demo data, login and sessions, the shared hel
 Member 5 also owns `app/scripts/` (test scripts), `app/README.md` and the documents in `docs/`, except the SRS which Member 2 keeps in sync.
 
 ## What I did (each member fills this in)
-- 
+* Added a Table Tent printing option to `QrPage.tsx`.
+* Added print-specific styling for restaurant name, QR code, and table number.
+* Kept the existing print-all-codes and SVG download options.
+* Testing: Not yet performed manually; automated CI results will be recorded in the Pull Request.
+
