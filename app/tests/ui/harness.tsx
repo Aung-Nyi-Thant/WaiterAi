@@ -3,9 +3,12 @@
 // production: no mocks of our own API. Only the AI model and the browser are replaced.
 import fs from "node:fs";
 import path from "node:path";
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
 import { afterEach, beforeEach, vi } from "vitest";
 import { signOut } from "../helpers";
+
+// Waiting for the page: 1 s is too short when the machine is busy (a PIN change hashes with bcrypt, a slow CI runner takes seconds).
+configure({ asyncUtilTimeout: 6000 });
 
 const apiRoot = path.resolve(__dirname, "../../src/app/api");
 type Route = { segments: string[]; file: string };
@@ -45,7 +48,21 @@ export const failNext = (pathname: string, status = 500) => forced.set(pathname,
 let modelSays: string | Error = new Error("the model is not running");
 export const setModel = (reply: string | Error) => { modelSays = reply; };
 
-async function apiFetch(input: any, init: any = {}): Promise<Response> {
+/** Requests still running. A screen may start one just before a test ends; if the next test signed out meanwhile, that request would be
+ *  answered "Please sign in" after nobody is listening, and the unhandled error would fail an unrelated test (it did, on slow CI machines). */
+const inflight = new Set<Promise<unknown>>();
+function apiFetch(input: any, init: any = {}): Promise<Response> {
+  const p = apiFetchNow(input, init);
+  inflight.add(p);
+  const done = () => inflight.delete(p);
+  p.then(done, done);
+  return p;
+}
+async function settle() {
+  for (let i = 0; i < 10 && inflight.size; i++) { await Promise.allSettled([...inflight]); await new Promise<void>((r) => setTimeout(r, 0)); }
+}
+
+async function apiFetchNow(input: any, init: any = {}): Promise<Response> {
   const url = String(typeof input === "string" ? input : input.url);
   const u = new URL(url, "http://localhost");
   if (/^https?:/i.test(url) && !/^https?:\/\/(localhost|test\.local)/i.test(url)) {      // the language model (Ollama)
@@ -107,7 +124,7 @@ export function withRealApi() {
     Element.prototype.scrollTo = (() => {}) as any;
     vi.stubGlobal("fetch", apiFetch);
   });
-  afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.useRealTimers(); setPhoneLanguage("en-US"); });
+  afterEach(async () => { cleanup(); await settle(); vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.useRealTimers(); setPhoneLanguage("en-US"); });
 }
 
 /** The language the phone reports (navigator.language). */
