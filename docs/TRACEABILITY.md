@@ -6,9 +6,9 @@ Every requirement ID of `docs/SRS_Shop_AI.md` is listed here with the code that 
 
 Run the tests with `cd app && npm test` (unit + integration + offline AI eval) and `npm run test:e2e` (real server, after `npm run build`). `npm run eval:live` scores the AI against a real model.
 
-**Summary:** 108 IDs · 76 Tested · 21 Partly · 10 Manual · 1 Not measured.
+**Summary:** 108 IDs · 93 Tested · 12 Partly · 2 Manual · 1 Not measured.
 
-Test files: `ai-rules` (rule-based answers), `ai-guard` (model output checks), `chat-api`, `auth`, `menu`, `orders`, `import`, `provider`, `eval` (the 30 questions of `eval/questions.json`), `diner-flow`, `seed`, `platform`, `e2e/diner-flow.e2e`.
+Test files: `ai-rules` (rule-based answers), `ai-guard` (model output checks), `chat-api`, `auth`, `menu`, `orders`, `import`, `provider`, `eval` (the 30 questions of `eval/questions.json`), `diner-flow`, `seed`, `platform`, `e2e/diner-flow.e2e`. **Component tests** (`app/tests/ui/*.test.tsx`, run by `npm test`): the diner, owner and staff screens are rendered in a simulated browser (jsdom) and driven like a person, against the real API routes and a temporary database; only the AI model is replaced. Also `owner-bulk` (bulk sold-out API), `staff-calls`, `lan`, `i18n` (dictionaries).
 
 ## How the course's FR-1 … FR-10 map to these IDs
 
@@ -31,17 +31,17 @@ The M2 SRS (`Team18_M2_SRS.pdf.pdf`) uses the ten functional requirements of the
 
 | ID | Requirement | Code | Tests | Status |
 |---|---|---|---|---|
-| DM-1 | show the restaurant's menu at a public address containing the restaurant code and optional table number (… | `app/src/modules/diner/api/menu.ts`<br>`app/src/modules/diner/Diner.tsx`<br>`app/src/app/r/[slug]/page.tsx` | `app/tests/menu.test.ts`<br>`app/tests/e2e/diner-flow.e2e.test.ts` | **Partly** · API and page load tested; layout manual |
-| DM-2 | group dishes by category and show name, price, photo (or placeholder), tags and up to three allergens per… | `app/src/modules/diner/Diner.tsx` | none | **Manual** · rendering only |
-| DM-3 | let the diner search dish names in any language. | `app/src/modules/diner/Diner.tsx` | `app/tests/diner-filters.test.ts` | **Partly** · search logic tested (`filters.ts`); the search box UI is manual |
-| DM-4 | offer filters: vegetarian, no peanuts, under ฿100, spicy. The "no peanuts" filter shall exclude dishes wi… | `app/src/modules/diner/Diner.tsx` | `app/tests/diner-filters.test.ts` | **Partly** · the four filters are tested, including 'No peanuts hides dishes with missing allergen data'; the filter chips UI is manual |
-| DM-5 | let the diner switch between Thai, Burmese and English; labels and dish names change accordingly. | `app/src/modules/diner/Diner.tsx`<br>`app/src/modules/diner/i18n.ts` | none | **Manual** · labels need native review |
-| DM-6 | show dishes that are not available as "sold out today" and refresh availability at least every 20 seconds. | `app/src/modules/diner/api/menu.ts`<br>`app/src/modules/diner/Diner.tsx` | `app/tests/menu.test.ts` | **Partly** · sold-out reaches the public menu (tested); the 20 s refresh is manual |
-| DM-7 | show a detail view with description, all allergens (or "allergen info not provided"), ingredients, an Add… | `app/src/modules/diner/Diner.tsx` | none | **Manual** |
-| DM-8 | show active specials. | `app/src/modules/diner/api/menu.ts`<br>`app/src/modules/platform/menu.ts` | `app/tests/menu.test.ts` | **Partly** · live/expired/future specials tested; display manual |
-| DM-9 | show a saved copy of the menu with a notice if the server cannot be reached. | `app/src/modules/diner/Diner.tsx` | none | **Manual** · offline copy |
+| DM-1 | show the restaurant's menu at a public address containing the restaurant code and optional table number (… | `app/src/modules/diner/api/menu.ts`<br>`app/src/modules/diner/Diner.tsx`<br>`app/src/app/r/[slug]/page.tsx` | `app/tests/menu.test.ts`<br>`app/tests/e2e/diner-flow.e2e.test.ts`<br>`app/tests/ui/diner.test.tsx` | **Partly** · API, page load and the menu screen tested in a simulated browser (`tests/ui`); layout on a real phone is manual |
+| DM-2 | group dishes by category and show name, price, photo (or placeholder), tags and up to three allergens per… | `app/src/modules/diner/Diner.tsx` | `app/tests/ui/diner.test.tsx` | **Partly** · rendering (name, price, tags, up to three allergens, sold-out stamp) tested in a simulated browser; the look is manual |
+| DM-3 | let the diner search dish names in any language. | `app/src/modules/diner/Diner.tsx` | `app/tests/diner-filters.test.ts`<br>`app/tests/ui/diner.test.tsx` | **Tested** · search logic (`filters.ts`) and the search box |
+| DM-4 | offer filters: vegetarian, no peanuts, under ฿100, spicy. The "no peanuts" filter shall exclude dishes wi… | `app/src/modules/diner/Diner.tsx` | `app/tests/diner-filters.test.ts`<br>`app/tests/ui/diner.test.tsx` | **Tested** · the four filters and the category tabs, including 'No peanuts hides dishes with missing allergen data' |
+| DM-5 | let the diner switch between Thai, Burmese and English; labels and dish names change accordingly. | `app/src/modules/diner/Diner.tsx`<br>`app/src/modules/diner/i18n.ts` | `app/tests/ui/diner.test.tsx`<br>`app/tests/i18n.test.ts` | **Partly** · switching, saving and the starting language tested; every label exists in Thai and Burmese except the five hero-card labels (`tests/i18n.test.ts`, known gap); labels still need native review |
+| DM-6 | show dishes that are not available as "sold out today" and refresh availability at least every 20 seconds. | `app/src/modules/diner/api/menu.ts`<br>`app/src/modules/diner/Diner.tsx` | `app/tests/menu.test.ts`<br>`app/tests/ui/diner.test.tsx` | **Tested** · sold-out reaches the public menu, and the page asks again every 10 s |
+| DM-7 | show a detail view with description, all allergens (or "allergen info not provided"), ingredients, an Add… | `app/src/modules/diner/Diner.tsx` | `app/tests/ui/diner.test.tsx` | **Tested** · detail view: ingredients, all allergens, quantity stepper 1 to 20, add |
+| DM-8 | show active specials. | `app/src/modules/diner/api/menu.ts`<br>`app/src/modules/platform/menu.ts` | `app/tests/menu.test.ts`<br>`app/tests/ui/diner.test.tsx` | **Tested** · live, expired and future specials, and the special shown on the menu page |
+| DM-9 | show a saved copy of the menu with a notice if the server cannot be reached. | `app/src/modules/diner/Diner.tsx` | `app/tests/ui/diner.test.tsx` | **Tested** · saved copy with an 'offline' notice; 'menu not found' with no copy |
 | DM-10 | record each menu open for insights. | `app/src/modules/diner/api/menu.ts` | `app/tests/menu.test.ts` | **Tested** |
-| DM-11 | choose their allergies once (the 14 allergens), kept only on the phone; dishes that list one are marked, and a "fits my allergies" filter hides them and dishes with no data. | `app/src/modules/diner/Diner.tsx`<br>`app/src/modules/diner/filters.ts`<br>`app/src/modules/platform/constants.ts` | `app/tests/allergy-profile.test.ts`<br>`app/tests/diner-filters.test.ts` | **Partly** · profile rules and filter tested; the dialog and red marks are manual |
+| DM-11 | choose their allergies once (the 14 allergens), kept only on the phone; dishes that list one are marked, and a "fits my allergies" filter hides them and dishes with no data. | `app/src/modules/diner/Diner.tsx`<br>`app/src/modules/diner/filters.ts`<br>`app/src/modules/platform/constants.ts` | `app/tests/allergy-profile.test.ts`<br>`app/tests/diner-filters.test.ts`<br>`app/tests/ui/diner.test.tsx` | **Tested** · profile rules and filter, and the dialog, the red marks, the warning on adding, the profile sent with the order |
 
 ## AI chat (AI)
 
@@ -59,7 +59,7 @@ The M2 SRS (`Team18_M2_SRS.pdf.pdf`) uses the ten functional requirements of the
 | AI-10 | A model reply shall be replaced by a "please ask the staff" message if it claims safety, contains a price… | `app/src/modules/ai/ai.ts` | `app/tests/ai-guard.test.ts`<br>`app/tests/chat-api.test.ts` | **Tested** · unsafe wording, wrong price, empty reply, dish cards |
 | AI-11 | If the model is unavailable, the system shall show a fallback message, the menu and the call-staff option. | `app/src/modules/ai/ai.ts` | `app/tests/ai-guard.test.ts`<br>`app/tests/e2e/diner-flow.e2e.test.ts` | **Tested** |
 | AI-12 | The assistant shall use the owner's voice setting (male/female particles in Thai and Burmese) and Burmese… | `app/src/modules/ai/ai.ts` | `app/tests/ai-rules.test.ts` | **Tested** · male/female particles, Burmese style rules |
-| AI-13 | show dish cards with an Add button under replies that discuss dishes. | `app/src/modules/diner/Diner.tsx`<br>`app/src/modules/ai/api/chat.ts` | `app/tests/chat-api.test.ts` | **Partly** · API returns the cards (tested); card rendering manual |
+| AI-13 | show dish cards with an Add button under replies that discuss dishes. | `app/src/modules/diner/Diner.tsx`<br>`app/src/modules/ai/api/chat.ts` | `app/tests/chat-api.test.ts`<br>`app/tests/ui/diner.test.tsx` | **Tested** · the API returns the cards, and the page shows them with an Add button |
 | AI-14 | Diner: be able to rate each reply; a negative rating flags it for the owner. | `app/src/modules/diner/api/feedback.ts` | `app/tests/chat-api.test.ts` | **Tested** |
 | AI-15 | Each restaurant shall have a monthly chat limit (default 300); when reached, a fixed message and the plai… | `app/src/modules/ai/api/chat.ts` | `app/tests/chat-api.test.ts`<br>`app/tests/ratelimit.test.ts`<br>`app/tests/security-round2.test.ts` | **Tested** · also a per-minute chat rate limit |
 | AI-16 | store for each question: text, language, topic, allergens mentioned and whether it was answered, without … | `app/src/modules/ai/api/chat.ts`<br>`app/src/modules/platform/db.ts` | `app/tests/chat-api.test.ts` | **Tested** |
@@ -72,7 +72,7 @@ The M2 SRS (`Team18_M2_SRS.pdf.pdf`) uses the ten functional requirements of the
 
 | ID | Requirement | Code | Tests | Status |
 |---|---|---|---|---|
-| PC-1 | Diner: add, change quantity, remove dishes in "My picks" (kept in the browser). | `app/src/modules/diner/Diner.tsx` | none | **Manual** · picks are kept in the browser |
+| PC-1 | Diner: add, change quantity, remove dishes in "My picks" (kept in the browser). | `app/src/modules/diner/Diner.tsx` | `app/tests/ui/diner.test.tsx` | **Tested** · add, change quantity, remove, kept in the browser, sold-out dishes dropped |
 | PC-2 | "Send to staff" shall create an order in status *picked*, with table, language, items and the allergens … | `app/src/modules/diner/api/orders.ts` | `app/tests/orders.test.ts`<br>`app/tests/diner-flow.test.ts`<br>`app/tests/e2e/diner-flow.e2e.test.ts` | **Tested** |
 | PC-3 | The call-staff button shall create a call for the table; a second open call of the same type for the same… | `app/src/modules/diner/api/calls.ts` | `app/tests/orders.test.ts` | **Tested** |
 | PC-4 | Waiter: running bill per table (taken orders; picks listed as pending); mark a table paid, which clears its bill and its open "bill" call; waiter role only (403) | `app/src/modules/staff/orders.ts`<br>`app/src/modules/staff/api/bills.ts`<br>`app/src/modules/staff/WaiterPage.tsx` | `app/tests/orders.test.ts` | **Tested** · the Bills tab UI is manual |
@@ -96,7 +96,7 @@ The M2 SRS (`Team18_M2_SRS.pdf.pdf`) uses the ten functional requirements of the
 | MM-2 | Owner: set allergens from the 14 categories or mark "allergen info not provided" (stored as unknown, not … | `app/src/modules/owner/api/items.ts`<br>`app/src/modules/platform/db.ts` | `app/tests/menu.test.ts` | **Tested** · NULL vs [] |
 | MM-3 | Owner: create, rename and delete categories with three-language names; deleting a category keeps its dish… | `app/src/modules/owner/crud.ts` | `app/tests/menu.test.ts` | **Tested** |
 | MM-4 | Owner: switch a dish on/off sale with one action; the change shall apply to the diner menu and AI at once. | `app/src/modules/owner/api/itemsById.ts`<br>`app/src/modules/staff/api/items.ts` | `app/tests/menu.test.ts` | **Tested** · owner and staff switches |
-| MM-5 | show how many dishes have complete allergen data. | `app/src/modules/owner/MenuPage.tsx` | none | **Manual** · the allergen-completeness meter |
+| MM-5 | show how many dishes have complete allergen data. | `app/src/modules/owner/MenuPage.tsx` | `app/tests/ui/owner-menu.test.tsx` | **Tested** · the allergen-completeness meter and the names of dishes with no data |
 | MM-6 | Photo upload shall accept JPG, PNG, WebP up to 8 MB. | `app/src/modules/platform/api/upload.ts`<br>`app/src/modules/platform/api/uploadsServe.ts` | `app/tests/menu.test.ts` | **Tested** |
 | MM-7 | reject a dish with no name or an invalid price. | `app/src/modules/owner/api/items.ts` | `app/tests/menu.test.ts` | **Tested** |
 
@@ -105,7 +105,7 @@ The M2 SRS (`Team18_M2_SRS.pdf.pdf`) uses the ten functional requirements of the
 | ID | Requirement | Code | Tests | Status |
 |---|---|---|---|---|
 | MI-1 | Owner: upload a photo of a menu; the system shall extract dish names, prices and categories with the visi… | `app/src/modules/platform/api/import.ts`<br>`app/src/modules/ai/provider.ts` | `app/tests/import.test.ts` | **Partly** · model mocked; **extraction accuracy on real photos is not measured** (SRS target 90%) |
-| MI-2 | Owner: review and edit every extracted row before publishing; rows with a missing price or suspicious nam… | `app/src/modules/platform/ImportPage.tsx`<br>`app/src/modules/platform/api/importConfirm.ts` | `app/tests/import.test.ts` | **Partly** · confirm tested; row-flagging in the review screen is manual |
+| MI-2 | Owner: review and edit every extracted row before publishing; rows with a missing price or suspicious nam… | `app/src/modules/platform/ImportPage.tsx`<br>`app/src/modules/platform/api/importConfirm.ts` | `app/tests/import.test.ts`<br>`app/tests/ui/import.test.tsx` | **Tested** · confirm, and the review screen: flags, editing, removing, adding a row |
 | MI-3 | Nothing shall be added to the live menu until the owner confirms. | `app/src/modules/platform/api/import.ts`<br>`app/src/modules/platform/api/importConfirm.ts` | `app/tests/import.test.ts` | **Tested** |
 | MI-4 | Imported dishes shall have unknown allergens. | `app/src/modules/platform/api/importConfirm.ts` | `app/tests/import.test.ts` | **Tested** |
 | MI-5 | The owner may request Thai and Burmese name suggestions, marked for review. | `app/src/modules/platform/api/importTranslate.ts` | `app/tests/import.test.ts` | **Tested** · model mocked |
@@ -118,25 +118,25 @@ The M2 SRS (`Team18_M2_SRS.pdf.pdf`) uses the ten functional requirements of the
 | ST-2 | Owner: manage specials with optional start/end dates and an active switch. | `app/src/modules/owner/crud.ts`<br>`app/src/modules/platform/menu.ts` | `app/tests/menu.test.ts` | **Tested** |
 | ST-3 | Owner: manage FAQ question/answer pairs and free-text shop rules used by the AI. | `app/src/modules/owner/crud.ts`<br>`app/src/modules/ai/ai.ts` | `app/tests/menu.test.ts`<br>`app/tests/ai-guard.test.ts` | **Tested** |
 | ST-4 | Owner: set assistant name, voice (male/female), tone, greeting and upselling on/off. | `app/src/modules/owner/api/settings.ts` | `app/tests/menu.test.ts`<br>`app/tests/ai-rules.test.ts` | **Tested** |
-| ST-5 | Owner: try the assistant from any owner page; test chats shall not be saved or counted. | `app/src/modules/ai/api/chat.ts`<br>`app/src/modules/owner/TestChat.tsx` | `app/tests/chat-api.test.ts` | **Partly** · preview mode is not stored (tested); the popup is manual |
+| ST-5 | Owner: try the assistant from any owner page; test chats shall not be saved or counted. | `app/src/modules/ai/api/chat.ts`<br>`app/src/modules/owner/TestChat.tsx` | `app/tests/chat-api.test.ts`<br>`app/tests/ui/owner-shell.test.tsx` | **Tested** · preview mode is not stored (API), and the test-chat window |
 
 ## QR codes (QR)
 
 | ID | Requirement | Code | Tests | Status |
 |---|---|---|---|---|
 | QR-1 | generate a QR code (SVG) per table and for the restaurant, pointing to the menu address. | `app/src/modules/platform/api/qr.ts` | `app/tests/menu.test.ts` | **Tested** |
-| QR-2 | Owner: choose the base address (including the server's Wi-Fi address), set the number of tables (1–60), p… | `app/src/modules/platform/api/qr.ts`<br>`app/src/modules/platform/QrPage.tsx` | `app/tests/menu.test.ts` | **Partly** · base address tested; table count and print layout manual |
+| QR-2 | Owner: choose the base address (including the server's Wi-Fi address), set the number of tables (1–60), p… | `app/src/modules/platform/api/qr.ts`<br>`app/src/modules/platform/QrPage.tsx` | `app/tests/menu.test.ts`<br>`app/tests/ui/owner-pages.test.tsx` | **Partly** · base address, table count 1 to 60 and the QR image address tested; the print layout is manual |
 
 ## Staff (SF)
 
 | ID | Requirement | Code | Tests | Status |
 |---|---|---|---|---|
 | SF-1 | Owner: create staff with a name, role (waiter or chef) and a 4–8 digit PIN, change PINs and remove staff.… | `app/src/modules/owner/crud.ts` | `app/tests/auth.test.ts` | **Tested** · PIN rules, hashed, hidden in lists |
-| SF-2 | Staff shall sign in with restaurant code and PIN and be taken to the screen of their role. | `app/src/modules/staff/api/login.ts`<br>`app/src/modules/staff/StaffLogin.tsx` | `app/tests/auth.test.ts`<br>`app/tests/srs-gaps.test.ts`<br>`app/tests/e2e/diner-flow.e2e.test.ts`<br>`app/tests/security-round2.test.ts` | **Partly** · API tested (PIN sign-in; 5 wrong PINs per address and 20 per restaurant lock sign-in for 10 minutes, forged address headers do not help); redirect to the role's screen manual |
-| SF-3 | Waiter screen: list open calls (table, reason, waiting time) with "Done"; list picks with items, language… | `app/src/modules/staff/WaiterPage.tsx`<br>`app/src/modules/staff/api/floor.ts` | `app/tests/orders.test.ts`<br>`app/tests/diner-flow.test.ts` | **Partly** · data tested; screen manual |
-| SF-4 | Chef screen: show tickets in New, Cooking, Ready with items, quantities, waiting time (highlight after 10… | `app/src/modules/staff/ChefPage.tsx`<br>`app/src/modules/staff/api/kitchen.ts` | `app/tests/orders.test.ts`<br>`app/tests/diner-flow.test.ts` | **Partly** · data tested; screen and 10-minute highlight manual |
+| SF-2 | Staff shall sign in with restaurant code and PIN and be taken to the screen of their role. | `app/src/modules/staff/api/login.ts`<br>`app/src/modules/staff/StaffLogin.tsx` | `app/tests/auth.test.ts`<br>`app/tests/srs-gaps.test.ts`<br>`app/tests/e2e/diner-flow.e2e.test.ts`<br>`app/tests/security-round2.test.ts`<br>`app/tests/ui/staff.test.tsx` | **Tested** · PIN sign-in on the screen and the API (5 wrong PINs per address and 20 per restaurant lock sign-in for 10 minutes, forged address headers do not help); each role lands on its own screen |
+| SF-3 | Waiter screen: list open calls (table, reason, waiting time) with "Done"; list picks with items, language… | `app/src/modules/staff/WaiterPage.tsx`<br>`app/src/modules/staff/api/floor.ts` | `app/tests/orders.test.ts`<br>`app/tests/diner-flow.test.ts`<br>`app/tests/ui/staff.test.tsx` | **Tested** · calls (longest wait first, urgent after 5 min, Done), picks (take, dismiss, waiting-time colours), bills, tables |
+| SF-4 | Chef screen: show tickets in New, Cooking, Ready with items, quantities, waiting time (highlight after 10… | `app/src/modules/staff/ChefPage.tsx`<br>`app/src/modules/staff/api/kitchen.ts` | `app/tests/orders.test.ts`<br>`app/tests/diner-flow.test.ts`<br>`app/tests/ui/staff.test.tsx` | **Tested** · three columns, one-button moves, recall, the 10-minute late highlight, the allergy banner |
 | SF-5 | Order status changes shall follow *picked → new → cooking → ready → served* (or *picked → cancelled*); th… | `app/src/modules/staff/api/orders.ts` | `app/tests/orders.test.ts`<br>`app/tests/e2e/diner-flow.e2e.test.ts` | **Tested** · 403 wrong role, 409 wrong state, 404 other restaurant |
-| SF-6 | Staff screens shall refresh at least every 3 seconds and show LIVE/OFFLINE. | `app/src/modules/staff/WaiterPage.tsx`<br>`app/src/modules/platform/client.ts` | none | **Manual** · 3 s polling and LIVE/OFFLINE |
+| SF-6 | Staff screens shall refresh at least every 3 seconds and show LIVE/OFFLINE. | `app/src/modules/staff/WaiterPage.tsx`<br>`app/src/modules/platform/client.ts` | `app/tests/ui/staff.test.tsx` | **Tested** · 3 s polling, LIVE / Reconnecting, and the sound alert on a new call or ticket |
 
 ## Insights (IN)
 
@@ -151,7 +151,7 @@ The M2 SRS (`Team18_M2_SRS.pdf.pdf`) uses the ten functional requirements of the
 
 | ID | Requirement | Code | Tests | Status |
 |---|---|---|---|---|
-| UC-1 | Browse the menu | `app/src/modules/diner/Diner.tsx` | `app/tests/diner-flow.test.ts`<br>`app/tests/e2e/diner-flow.e2e.test.ts` | **Partly** · API journey tested; browsing UI manual |
+| UC-1 | Browse the menu | `app/src/modules/diner/Diner.tsx` | `app/tests/diner-flow.test.ts`<br>`app/tests/e2e/diner-flow.e2e.test.ts`<br>`app/tests/ui/diner.test.tsx` | **Tested** · API journey and the browsing screen |
 | UC-2 | Ask about allergens | `app/src/modules/ai/ai.ts` | `app/tests/diner-flow.test.ts`<br>`app/tests/e2e/diner-flow.e2e.test.ts`<br>`app/tests/ai-rules.test.ts` | **Tested** |
 | UC-3 | Place picks | `app/src/modules/diner/api/orders.ts` | `app/tests/diner-flow.test.ts`<br>`app/tests/e2e/diner-flow.e2e.test.ts` | **Tested** |
 | UC-4 | Call staff | `app/src/modules/diner/api/calls.ts` | `app/tests/orders.test.ts` | **Tested** |
@@ -183,7 +183,7 @@ The M2 SRS (`Team18_M2_SRS.pdf.pdf`) uses the ten functional requirements of the
 | NFR-R1 | If the AI is unavailable the menu, picks and staff calls still work. | `app/src/modules/ai/ai.ts` | `app/tests/ai-guard.test.ts`<br>`app/tests/e2e/diner-flow.e2e.test.ts` | **Tested** |
 | NFR-R2 | Database uses write-ahead logging; the file can be backed up by copying it. | `app/src/modules/platform/db.ts` | `app/tests/platform.test.ts`<br>`app/tests/db-concurrency.test.ts` | **Partly** · WAL and the retry on 'database is locked' tested; 'back up by copying' is not tested |
 | NFR-U1 | A diner can order without instructions and without an account. | `app/src/modules/diner/Diner.tsx` | none | **Manual** |
-| NFR-U2 | Burmese text uses Unicode (Noto Sans Myanmar) and correct line spacing. | `app/src/modules/diner/Diner.tsx` | none | **Manual** · fonts and line height |
+| NFR-U2 | Burmese text uses Unicode (Noto Sans Myanmar) and correct line spacing. | `app/src/modules/diner/Diner.tsx` | `app/tests/i18n.test.ts` | **Partly** · Burmese line height and digits tested; the font itself is manual |
 | NFR-U3 | Owner can get a first menu online in under 30 minutes using photo import (target, not yet measured with r… | `app/src/modules/platform/ImportPage.tsx` | none | **Not measured** · target, not measured with real owners |
 | NFR-M1 | Runs on macOS, Linux or Windows with Node.js 22.13+ and Ollama. | `.github/workflows/ci.yml` | none | **Manual** · CI runs Linux, Node 22 and 24; macOS and Windows not tested |
 | NFR-M2 | The model name and server address are configuration values (`OLLAMA_MODEL`, `OLLAMA_URL`). | `app/src/modules/ai/provider.ts` | `app/tests/provider.test.ts` | **Tested** · local-only (also DATA_DIR) |
