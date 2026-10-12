@@ -27,13 +27,13 @@ describe("AI-19 spice level", () => {
     expect(shown(r)).toEqual(["Tom Yum Goong", "Papaya Salad", "Chicken Green Curry"]);
     expect(r.reply).toContain("Tom Yum Goong (฿180, very spicy)");
     expect(r.reply).toContain("Chicken Green Curry (฿140, spicy)");
-    expect(r.reply).toContain("Based on what you asked (spicy)");
+    expect(r.reply).toContain("Spicy: ");
     expect(r.reply).not.toMatch(/Pad Thai|Tofu|Tea/);
   });
   it("'not spicy' means mild or no spice, never the spicy dishes", async () => {
     const r = await rec("something not spicy please");
     for (const n of shown(r)) expect(["Tom Yum Goong", "Papaya Salad", "Chicken Green Curry", "Steamed Fish with Lime"]).not.toContain(n);
-    expect(r.reply).toContain("(mild)");
+    expect(r.reply).toContain("Mild: ");
   });
 });
 
@@ -41,13 +41,13 @@ describe("budget", () => {
   it("'mild under 100 baht': strictly under, cheapest first, sold-out dishes left out", async () => {
     const r = await rec("something mild under 100 baht");
     expect(shown(r)).toEqual(["Thai Iced Tea", "Grilled Pork Skewers", "Chicken Fried Rice"]);
-    expect(r.reply).toContain("(mild, under ฿100)");
+    expect(r.reply).toContain("Mild, under ฿100: ");
     expect(r.reply).not.toContain("Coconut Ice Cream");
   });
   it("'up to 100' includes a dish that costs exactly 100", async () => {
     const r = await rec("dessert up to 100 baht");
     expect(shown(r)).toEqual(["Mango Sticky Rice"]);
-    expect(r.reply).toContain("up to ฿100");
+    expect(r.reply).toContain("Up to ฿100");
   });
   it("a number without a budget word is not a budget", async () => {
     mockModel("Try the Thai Iced Tea.");
@@ -76,7 +76,7 @@ describe("type of dish and diet", () => {
   it("'vegetarian, not spicy' combines both", async () => {
     const r = await rec("vegetarian and not spicy");
     expect(shown(r)).toEqual(["Vegetable Tofu Stir-fry", "Mango Sticky Rice", "Thai Iced Tea"]);
-    expect(r.reply).toContain("(mild, vegetarian)");
+    expect(r.reply).toContain("Mild, vegetarian: ");
   });
   it("a category the owner does not have is ignored (the question then goes to the model)", async () => {
     mockModel("We have a few choices.");
@@ -115,7 +115,7 @@ describe("popular: ranked by what diners really ordered here", () => {
   it("the chat endpoint feeds it in: after real orders 'what's popular?' puts them first", async () => {
     noModel();
     const r = await call(chat, { method: "POST", params: { slug }, body: { message: "what's popular?", sessionId: "pop-1", table: "9", lang: "en", preview: true } });
-    expect(r.data.reply).toMatch(/dishes from our menu: Mango Sticky Rice \(฿100, not spicy, ordered \d+×\)/);   // the most-ordered dish is named first
+    expect(r.data.reply).toMatch(/Popular here: Mango Sticky Rice \(฿100, not spicy, ordered \d+×\)/);   // the most-ordered dish is named first
     expect(r.data.dishes[0].name.en).toBe("Mango Sticky Rice");                                                  // and its card is shown first
   });
 });
@@ -138,7 +138,7 @@ describe("the allergy profile applies to recommendations", () => {
 describe("Thai and Burmese", () => {
   it("Thai: mild and a budget, in Thai, from the data", async () => {
     const r = await rec("เมนูไม่เผ็ดราคาไม่เกิน 100 บาท", "th");
-    expect(r.reply).toContain("ตามที่คุณบอก (ไม่เผ็ด, ไม่เกิน 100 บาท)");
+    expect(r.reply).toContain("ขอแนะนำเมนูไม่เผ็ด, ไม่เกิน 100 บาท: ");
     expect(r.reply).toContain("ชาไทยเย็น (50 บาท, ไม่เผ็ด)");
     expect(r.reply.trimEnd().endsWith("ครับ")).toBe(true);
     expect(shown(r)).toEqual(["Thai Iced Tea", "Grilled Pork Skewers", "Chicken Fried Rice"]);

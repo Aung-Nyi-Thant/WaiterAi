@@ -72,6 +72,28 @@ The 3 questions missing from the offline column are the `out_of_menu` ones, whic
 - every `npm test` / CI run: at least 27 questions must be answered by the rules, all of them correct, and every safety category (`allergen`, `allergen_unknown`, `allergen_list`, `sold_out`, `injection`, `price`, `hours`) must be answered by the rules, never the model (`app/tests/eval.test.ts`);
 - `npm run eval:live` (needs a running server and a model): overall ≥ 90%, each language ≥ 80%, safety categories 100%; exits with an error otherwise. Run it before a demo and whenever the model, the prompt or `ai.ts` changes.
 
+### Natural wording: a harder question set (added 2026-10-12)
+
+The 30 questions above are phrased the way the rules expect, so 100% on them says little about everyday wording. `eval/questions_natural.json` has 34 more (16 English, 11 Thai, 7 Burmese): "Can I pay by credit card?", "What's the cheapest dish?", "Is the Tom Yum very spicy?", "difference between the green curry and the massaman", halal, seafood, "Tom Yum without shrimp", a kids menu, thanks, a currency check, and questions the data cannot answer (waiting time, portion size). Same scoring (expected words, forbidden patterns). Questions marked `"rules": true` (22 of 34) are answered from the database and are enforced in CI with the model off (`tests/eval-natural.test.ts`); the rest need the model: `EVAL_QUESTIONS=questions_natural.json npm run eval:live -- --write` (report: `eval/results/live-questions_natural.md`).
+
+| | Before (`origin/main` 7e69494) | After (this change) |
+|---|---|---|
+| English (16) | 8 (50%) | 15-16 |
+| Thai (11) | 2 (18%) | 11 |
+| Burmese (7) | 1-2 (14-29%) | 7 |
+| **All (34)** | **11-12 (32-35%)** | **33-34 (97-100%)** |
+
+Read this honestly: the set was written after probing the live model with about 80 everyday questions and finding what went wrong, so it measures the fixes, not general accuracy. The "before" figure is from the one clean run (nothing else using the model); the two later "before" runs were spoiled by 15-second model timeouts and are not used. The "after" range comes from repeated runs: every miss was a 15 s model timeout ("AI unavailable"), none was a wrong answer. What was wrong and is now fixed (each has a test in `tests/ai-natural.test.ts`):
+
+- **A wrong staff call:** "Can I pay by credit card?" called the staff to bring the bill (the rule for "pay" read it as "I want to pay").
+- **Wrong answers from the model:** "cheapest dish" gave the Papaya Salad (70) although the Grilled Pork Skewers cost 60 and the Thai Iced Tea 50; a Burmese "how long will the food take?" was answered "the food is always ready"; the model called dishes "popular" and "famous" with no sales data. Now prices are sorted by code, and the prompt forbids guessing times, portions, payment, halal, taste or popularity.
+- **Wrong rule:** a Thai "ขอบคุณ" (thank you) and "ขอใบกำกับภาษี" (a tax invoice) got "here is our menu" (the word ขอ, "may I have", started both); a Burmese thank-you got "I don't want it"; "Is the Tom Yum spicy?" listed the three hottest dishes instead of answering about the Tom Yum; "difference between A and B" printed one dish's allergens; "Tom Yum without shrimp" listed other dishes.
+- **Recognition:** "Tom Yum", "ต้มยำ" and "มัสมั่น" were not recognised as dish names; "famous" and "signature" did not count as "popular".
+- **Insights:** a Thai or Burmese answer that said "ask the staff for the Wi-Fi password" was counted as a question the AI could not answer.
+- **Wording:** Thai replies wrote "120 THB" (now "120 บาท"); the recommendation sentence ("Based on what you asked (spicy), here are dishes from our menu") is now "Spicy: Tom Yum Goong (...)".
+
+Not changed on purpose: every allergen statement from the model is still replaced by the dish's stored allergen data (R3-R5); only a remark that names no dish ("It contains shellfish.") is dropped when the diner did not ask about allergens. Known limits left: the Burmese sentences added here need a native speaker's review; one open question in about seven can still time out at 15 s on one laptop (L10).
+
 ## When you change the AI
 
 1. Add or change a test first (`ai-rules`, `ai-guard`, `chat-api`) and, for a new kind of question, a row in `eval/questions.json`.
