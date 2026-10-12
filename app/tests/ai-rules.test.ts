@@ -393,7 +393,7 @@ describe("AI-2 all 14 allergens are recognised (EN, TH and, where there is a wor
     expect(th.reply).toContain("ซัลไฟต์");
     expect(th.reply).toMatch(STAFF.th);
     const none = await ask("I'm allergic to lupin");                       // no dish lists lupin in the demo menu
-    expect(none.reply).toContain("No dish on the menu lists lupin.");
+    expect(none.reply).toContain("No dish has lupin in its allergen data");
     expect(none.reply).toMatch(/not provided for: Fresh Spring Rolls/);    // ... but one dish has no data, so it is never called safe
     expect(none.reply).toMatch(STAFF.en);
     expect(modelCalls.length).toBe(0);

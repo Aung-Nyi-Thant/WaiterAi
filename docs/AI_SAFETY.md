@@ -94,6 +94,30 @@ Read this honestly: the set was written after probing the live model with about 
 
 Not changed on purpose: every allergen statement from the model is still replaced by the dish's stored allergen data (R3-R5); only a remark that names no dish ("It contains shellfish.") is dropped when the diner did not ask about allergens. Known limits left: the Burmese sentences added here need a native speaker's review; one open question in about seven can still time out at 15 s on one laptop (L10).
 
+### Open questions: 126 questions, every answer read (added 2026-10-12)
+
+The two sets above are keyword-scored and small, and they say little about how the language model itself does. `eval/open_questions.json` has 126 questions (42 each in English, Thai and Burmese): recommendations, "what is X?", comparisons, diets, FAQs, things not on the menu, small talk, complaints, vague questions, prices and indirect allergy questions. Run it with `EVAL_QUESTIONS=open_questions.json npm run eval:live -- --write` (report: `eval/results/live-open_questions.md`); the questions the rules answer are also enforced in CI with the model off (`tests/eval-open.test.ts`).
+
+| `gemma4:12b`, 13-dish menu | Before | After |
+|---|---|---|
+| English (42) | 93% (39) | **100%** (42) |
+| Thai (42) | 86% (36) | **98%** (41) |
+| Burmese (42) | 76% (32) | **93%** (39) |
+| **All (126)** | **85% (107)** | **97% (122)** |
+
+Keyword scoring is not enough, so **every reply was read by a person** (a project member's AI assistant, in the three languages as far as it reads them; the Burmese still needs a native speaker). Reading found wrong answers that the keywords had passed. What was wrong, all fixed and each with a test in `tests/ai-open.test.ts`:
+
+- **Safety:** a Burmese reply said the Fresh Spring Rolls have "no allergens" when their allergen data is "not provided". A Thai or Burmese "no allergens" claim by the model is now replaced by the stored data, like the English one.
+- **Honesty:** "Are you a real person?" in Burmese was answered "I am a staff member" (Thai: "host staff"). The AI now says it is the AI waiter, a computer program, and points to the Call staff button.
+- **A vegetarian asking "without meat or fish"** was shown the dishes without fish: chicken, beef and pork. It is now a vegetarian request.
+- **The word "order" or "have" showed the menu:** "What should we order for two people?" and "I don't eat beef, what can I have?" got "Here is our menu". A Thai "tell me about the Massaman, please" put the Massaman in the picks (หน่อย was read as "order it"). A Burmese "can I reserve a table?" and "how big is the Pad Thai?" were read as "order" and "how much".
+- **The model never saw dish descriptions:** "What is Tom Yum Goong?" got "a spicy dish priced at ฿180". Now answered from the owner's description. "What's in the spring rolls?", "is X vegan?", "is there pork in X?" and "which is spicier / cheaper?" are answered from the data instead of "I don't have that information" or a wrong guess (Thai: the Green Curry was called the spicier one).
+- **A complaint** ("my food is cold") was answered with a dish recommendation. It now gets an apology and a staff call.
+- **A recommendation with one wrong allergen remark** was replaced by a different dish's allergen list; the useful part is now kept and the stored data added.
+- **"Gluten-free" questions** listed dishes under "No dish lists gluten", which can read as "all are gluten-free". The wording now says the data can be incomplete, and "free of / -free / ปลอด" ask for dishes without the allergen.
+
+What is still weak (measured, not fixed): **Burmese speed.** The model's median Burmese answer takes 6.6 s against 3.0 s in English (Burmese text is several times more tokens), and 2-3 of about 23 model-answered Burmese questions still hit the 15 s limit and show "AI unavailable" (before the changes: 7). One Thai reply was rejected because the model misspelled a dish name (the guard does what it should, the diner gets "I don't have that information"). The question set was written by the team's AI assistant, so it shares its blind spots, and it covers one 13-dish menu.
+
 ## When you change the AI
 
 1. Add or change a test first (`ai-rules`, `ai-guard`, `chat-api`) and, for a new kind of question, a row in `eval/questions.json`.
