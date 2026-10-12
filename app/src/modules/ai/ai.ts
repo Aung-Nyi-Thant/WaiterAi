@@ -4,6 +4,7 @@
 import type { Item, Lang, Restaurant } from "@/modules/platform/menu";
 import { allergenName } from "@/modules/platform/constants";
 import { complete, type Msg } from "@/modules/ai/provider";
+import { tr } from "@/modules/diner/i18n";                  // the label of the Call-staff button, so the AI names it exactly as the screen does
 
 export type Action = { type: "none" | "show_menu" | "show_dishes" | "add_to_picks" | "call_staff"; ids?: number[]; kind?: string; qty?: Record<number, number> };
 export type ChatResult = { reply: string; action: Action; topic: string; allergens: string[]; answered: boolean; usedModel: boolean };
@@ -174,15 +175,15 @@ const A = (keys: string[]) => keys.join(" / ");
 
 function allergenListReply(l: Lang, p: string, keys: string[], containing: Item[], unknown: Item[]): string {
   const a = A(alNames(keys, l)), c = join(l, containing.map((i) => nm(i, l))), u = join(l, unknown.map((i) => nm(i, l)));
-  if (l === "en") return [containing.length ? `Dishes that list ${a}: ${c}.` : `No dish on the menu lists ${a}.`, unknown.length ? `Allergen information is not provided for: ${u}.` : "", STAFF(l, p)].filter(Boolean).join(" ");
-  if (l === "th") return [containing.length ? `เมนูที่มี ${a} ได้แก่ ${c}${p}` : `ไม่มีเมนูที่ระบุว่ามี ${a}${p}`, unknown.length ? `ยังไม่มีข้อมูลสารก่อภูมิแพ้ของ: ${u}${p}` : "", STAFF(l, p)].filter(Boolean).join(" ");
-  return [containing.length ? `${a} ပါဝင်တဲ့ ဟင်းလျာတွေကတော့ ${c} ဖြစ်ပါတယ်${p}။` : `${a} ပါဝင်တယ်လို့ ဖော်ပြထားတဲ့ ဟင်းလျာ မရှိပါဘူး${p}။`, unknown.length ? `${u} အတွက် Allergen အချက်အလက် မရှိပါဘူး${p}။` : "", STAFF(l, p)].filter(Boolean).join(" ");
+  if (l === "en") return [containing.length ? `Dishes that list ${a}: ${c}.` : `No dish has ${a} in its allergen data, but that data can be incomplete, so it does not mean a dish contains no ${a}.`, unknown.length ? `Allergen information is not provided for: ${u}.` : "", STAFF(l, p)].filter(Boolean).join(" ");
+  if (l === "th") return [containing.length ? `เมนูที่มี ${a} ได้แก่ ${c}${p}` : `ไม่มีเมนูที่ระบุ ${a} ในข้อมูลสารก่อภูมิแพ้ แต่ข้อมูลอาจไม่ครบ จึงไม่ได้หมายความว่าเมนูใดไม่มี ${a}${p}`, unknown.length ? `ยังไม่มีข้อมูลสารก่อภูมิแพ้ของ: ${u}${p}` : "", STAFF(l, p)].filter(Boolean).join(" ");
+  return [containing.length ? `${a} ပါဝင်တဲ့ ဟင်းလျာတွေကတော့ ${c} ဖြစ်ပါတယ်${p}။` : `${a} ပါဝင်တယ်လို့ ဖော်ပြထားတဲ့ ဟင်းလျာ မရှိပါဘူး${p}။ ဒါပေမဲ့ အချက်အလက် မပြည့်စုံနိုင်လို့ ${a} မပါဘူးလို့ မဆိုလိုပါဘူး${p}။`, unknown.length ? `${u} အတွက် Allergen အချက်အလက် မရှိပါဘူး${p}။` : "", STAFF(l, p)].filter(Boolean).join(" ");
 }
 function allergenFreeReply(l: Lang, p: string, keys: string[], free: Item[], unknown: Item[]): string {
   const a = A(alNames(keys, l)), f = join(l, free.map((i) => nm(i, l))), u = join(l, unknown.map((i) => nm(i, l)));
-  if (l === "en") return [free.length ? `Dishes that do not list ${a}: ${f}.` : `Every dish with allergen data lists ${a}.`, unknown.length ? `Allergen information is not provided for: ${u}.` : "", STAFF(l, p)].filter(Boolean).join(" ");
-  if (l === "th") return [free.length ? `เมนูที่ไม่ได้ระบุว่ามี ${a}: ${f}${p}` : `ทุกเมนูที่มีข้อมูลระบุว่ามี ${a}${p}`, unknown.length ? `ยังไม่มีข้อมูลสารก่อภูมิแพ้ของ: ${u}${p}` : "", STAFF(l, p)].filter(Boolean).join(" ");
-  return [free.length ? `${a} ပါဝင်တယ်လို့ မဖော်ပြထားတဲ့ ဟင်းလျာတွေကတော့ ${f} ဖြစ်ပါတယ်${p}။` : `Allergen အချက်အလက်ရှိတဲ့ ဟင်းလျာအားလုံးမှာ ${a} ပါဝင်ပါတယ်${p}။`, unknown.length ? `${u} အတွက် Allergen အချက်အလက် မရှိပါဘူး${p}။` : "", STAFF(l, p)].filter(Boolean).join(" ");
+  if (l === "en") return [free.length ? `Dishes that do not list ${a}: ${f}. This comes from the allergen data only, which can be incomplete.` : `Every dish with allergen data lists ${a}.`, unknown.length ? `Allergen information is not provided for: ${u}.` : "", STAFF(l, p)].filter(Boolean).join(" ");
+  if (l === "th") return [free.length ? `เมนูที่ไม่ได้ระบุว่ามี ${a}: ${f}${p} ข้อมูลนี้มาจากข้อมูลสารก่อภูมิแพ้เท่านั้น ซึ่งอาจไม่ครบถ้วน` : `ทุกเมนูที่มีข้อมูลระบุว่ามี ${a}${p}`, unknown.length ? `ยังไม่มีข้อมูลสารก่อภูมิแพ้ของ: ${u}${p}` : "", STAFF(l, p)].filter(Boolean).join(" ");
+  return [free.length ? `${a} ပါဝင်တယ်လို့ မဖော်ပြထားတဲ့ ဟင်းလျာတွေကတော့ ${f} ဖြစ်ပါတယ်${p}။ ဒါက Allergen အချက်အလက်အပေါ် အခြေခံတာသာဖြစ်ပြီး မပြည့်စုံနိုင်ပါဘူး${p}။` : `Allergen အချက်အလက်ရှိတဲ့ ဟင်းလျာအားလုံးမှာ ${a} ပါဝင်ပါတယ်${p}။`, unknown.length ? `${u} အတွက် Allergen အချက်အလက် မရှိပါဘူး${p}။` : "", STAFF(l, p)].filter(Boolean).join(" ");
 }
 function dishAllergenReply(l: Lang, p: string, item: Item): string {
   const n = nm(item, l);
@@ -286,6 +287,24 @@ const SEAFOOD = /\bsea ?food\b|อาหารทะเล|ပင်လယ်စ
 const HALAL = /\bhalal\b|ฮาลาล|ဟလာလ်|ဟာလာလ်|ဟလာလ်/;
 const COMPARE = /\b(?:difference|differences|compare|versus|vs)\b|ต่างกัน|แตกต่าง|เปรียบเทียบ|ကွာခြားပုံ|ကွာသလဲ|ကွာတာ/;
 const KIDS = /\b(?:kids?|child(?:ren)?|toddler|baby)\b|เด็ก|ကလေး/;
+// ---- found by the 126-question open evaluation (eval/open_questions.json)
+// A question word: "what should we order?" is a question for the model or the rules, never "show me the menu" just because it has the word "order".
+const INTERROG = /\b(?:what|which|how|why|where|should|any (?:ideas?|suggestions?))\b|อะไร|ไหน|ยังไง|ควร|ဘာ|ဘယ်|\?|？/;
+const RESERVE = /\b(?:reserv\w*|book(?:ing)? a table|booking)\b|จองโต๊ะ|จองที่|ကြိုမှာ|စားပွဲကြို/;
+// "Are you a real person?": the AI says it is the AI (never "a staff member"), and where the staff are
+const IDENTITY = /\b(?:who are you|what are you|are you (?:a |an )?(?:real|human|person|robot|bot|ai|machine|computer)|your name|is this (?:a )?(?:bot|ai|robot|real))\b|คุณคือใคร|คุณเป็นใคร|เป็นคนจริง|คนจริงๆ|หุ่นยนต์|คุณชื่ออะไร|เป็น ?AI|เป็นเอไอ|ဘယ်သူလဲ|လူအစစ်|လူလား|စက်ရုပ်|AI လား|နာမည်ဘာ/i;
+// a complaint is a person who needs a person: apologise and call the staff
+const COMPLAINT = /\b(?:too long|so slow|very slow|waiting (?:for )?(?:too )?long|waited (?:too )?long|(?:food|soup|dish|order|drink) (?:is|was|came|arrived) (?:cold|wrong|late|burnt|raw)|cold food|wrong (?:order|dish)|not what i ordered|still waiting|rude)\b|รอนาน|ช้ามาก|อาหาร.{0,6}เย็น|เย็นแล้ว|สั่งผิด|ผิดจาน|ไม่ใช่ที่สั่ง|ကြာနေ|အေးနေ|မှားနေ|မှားပို့|မရောက်သေး/i;
+// "without meat or fish" is a vegetarian request; "fish" in it must not turn it into an allergy question
+const MEATFREE = /\b(?:without|no|free of|avoid|skip)\s+(?:any\s+)?(?:meat|animal products?)\b|\bmeat[- ]?free\b|ไม่มีเนื้อสัตว์|ไม่กินเนื้อสัตว์|ไม่ทานเนื้อสัตว์|อาหารเจ|အသား(?:ငါး)?\s?မပါ|အသားမစား/;
+const INGR_Q = /ingredient|what'?s in\b|what is in\b|what'?s inside|made (?:of|with|from)|ส่วนผสม|ทำจากอะไร|ใส่อะไร|ပါဝင်ပစ္စည်း|ဘာတွေ ?ပါ|ဘာနဲ့ ?လုပ်/;
+const DESCRIBE = /\b(?:what is|what's|what are|tell me about|describe|explain|about the)\b|คืออะไร|เล่าเรื่อง|เล่าให้ฟัง|อธิบาย|ဆိုတာ ?ဘာလဲ|အကြောင်း ?ပြော/;
+const SPICIER = /spicier|hotter|more spicy|เผ็ดกว่า|เผ็ดมากกว่า|ပိုစပ်/;
+const PRICIER = /pricier|more expensive|higher price|แพงกว่า|ပိုဈေးကြီး|ပိုကြီး/;
+const CHEAPER = /cheaper|less expensive|ถูกกว่า|ပိုပေါ|ပိုသက်သာ/;
+const PORTION = /\bhow (?:big|large)|portion|serving size|size of|จานใหญ่|ขนาด|ปริมาณ|กี่ชิ้น|အရွယ်အစား|ပမာဏ|ဘယ်လောက်ကြီး/;
+// the Burmese "ဘယ်လောက်" is "how much", but "ဘယ်လောက်ကြီး" is "how big" and "ဘယ်လောက်ကြာ" is "how long"
+const notPrice = (t: string) => t.replace(/ဘယ်လောက်(?:ကြီး|ကြာ|များ|ရှည်|ဝေး|နီး|မြင့်|အရွယ်)/g, "");
 // "... without shrimp", "no peanuts please", "ไม่ใส่กุ้ง": a request to change a dish. The staff decide, not the AI.
 const MODIFY = /\b(?:without|no|hold the|skip the|leave out|remove)\b|ไม่ใส่|ไม่เอา|ไม่ต้องใส่|မထည့်|မပါ/;
 const INJ_VERB = ["ignore", "forget", "disregard", "override", "bypass", "ลืม", "ไม่ต้องสนใจ", "ละเว้น", "မေ့", "လျစ်လျူရှု"];
@@ -348,7 +367,7 @@ function recReply(l: Lang, p: string, rec: Rec, vegan: boolean | null, catName: 
   const crit = [
     rec.mild && (l === "en" ? "mild" : l === "th" ? "ไม่เผ็ด" : "မစပ်"), rec.hot && (l === "en" ? "spicy" : l === "th" ? "เผ็ด" : "စပ်"),
     vegan !== null && (vegan ? (l === "en" ? "vegan" : l === "th" ? "วีแกน" : "Vegan") : (l === "en" ? "vegetarian" : l === "th" ? "มังสวิรัติ" : "သက်သတ်လွတ်")),
-    rec.budget !== undefined && (l === "en" ? `${rec.inclusive ? "up to" : "under"} ฿${rec.budget}` : l === "th" ? `ไม่เกิน ${rec.budget} บาท` : `ဘတ် ${bd(rec.budget)} အောက်`),
+    rec.budget !== undefined && (l === "en" ? `${rec.inclusive ? "up to" : "under"} ฿${rec.budget}` : l === "th" ? `${rec.inclusive ? "ไม่เกิน" : "ต่ำกว่า"} ${rec.budget} บาท` : `ဘတ် ${bd(rec.budget)} အောက်`),
     catName, rec.popular && (l === "en" ? "popular here" : l === "th" ? "ยอดนิยม" : "လူကြိုက်များ"),
   ].filter(Boolean).join(l === "my" ? "၊ " : ", ");
   const note = profile.length ? ` ${profileNote(l, p, profile)}` : "";
@@ -397,6 +416,46 @@ function halalReply(l: Lang, p: string, pork: Item[]): string {
     : l === "th" ? `ขออภัย${p} ไม่มีข้อมูลฮาลาลของเมนู${p}${pork.length ? ` เมนูที่ระบุว่ามีหมู: ${names}${p}` : ""} กรุณาสอบถามพนักงาน${p}`
     : `ဟလာလ် အချက်အလက် မရှိပါဘူး${p}။ ${pork.length ? `ဝက်သားပါတဲ့ ဟင်းလျာတွေကတော့ ${names} ဖြစ်ပါတယ်${p}။ ` : ""}ဝန်ထမ်းကို မေးမြန်းပေးပါ${p}။`;
 }
+const identityReply = (l: Lang, p: string, name: string, restaurant: string) => {
+  const call = tr(l, "callStaff"), female = p === "ค่ะ" || p === "ရှင်";
+  return l === "en" ? `I'm ${name}, the AI waiter of ${restaurant}: a computer program, not a person. If you would like a person, tap "${call}".`
+    : l === "th" ? `${female ? "ดิฉัน" : "ผม"}คือ ${name} พนักงาน AI ของร้าน ${restaurant} เป็นโปรแกรมคอมพิวเตอร์ ไม่ใช่คน หากต้องการคุยกับพนักงานตัวจริง กดปุ่ม "${call}" ได้เลย${p}`
+    : `${female ? "ကျွန်မ" : "ကျွန်တော်"}က ${restaurant} ရဲ့ AI စားပွဲထိုး ${name} ဖြစ်ပါတယ်${p}။ ကွန်ပျူတာ ပရိုဂရမ်ဖြစ်ပြီး လူမဟုတ်ပါဘူး${p}။ လူနဲ့ပြောချင်ရင် "${call}" ခလုတ်ကို နှိပ်ပါ${p}။`;
+};
+const complaintReply = (l: Lang, p: string) => (l === "en" ? "I'm sorry about that. I've called the staff to your table."
+  : l === "th" ? `ขออภัยเป็นอย่างยิ่ง${p} เรียกพนักงานมาที่โต๊ะให้แล้ว${p}` : `တောင်းပန်ပါတယ်${p}။ ဝန်ထမ်းကို စားပွဲဆီ ခေါ်ပေးလိုက်ပါတယ်${p}။`);
+// "what is X?": the owner's own description, price and spice level
+function describeReply(l: Lang, p: string, i: Item): string {
+  const n = nm(i, l), desc = (i.desc[l] || i.desc.en || "").trim(), lvl = Math.min(3, Math.max(0, i.spice));
+  return l === "en" ? `${n}: ${desc ? `${desc.replace(/\.?$/, ".")} ` : ""}${money(l, i.price)}, ${SPICE.en[lvl]}. ${HELP(l, p)}`
+    : l === "th" ? `${n}: ${desc ? `${desc.replace(/\.?$/, ".")} ` : ""}ราคา ${money(l, i.price)} ${SPICE.th[lvl]}${p} ${HELP(l, p)}`
+    : `${n}: ${desc ? `${desc.replace(/\.?$/, ".")} ` : ""}ဈေးနှုန်း ${money(l, i.price)} ဖြစ်ပါတယ်${p}။ ${HELP(l, p)}`;
+}
+// "is it vegan / vegetarian?": from the owner's tags, never from the model; the staff line always follows
+function dishDietReply(l: Lang, p: string, i: Item, vegan: boolean): string {
+  const n = nm(i, l), isVegan = i.tags.includes("vegan"), isVeg = isVegan || i.tags.includes("vegetarian");
+  if (l === "en") return `${n} ${isVegan ? "is tagged vegan on our menu." : isVeg ? (vegan ? "is tagged vegetarian, not vegan." : "is tagged vegetarian on our menu.") : `is not tagged ${vegan ? "vegan" : "vegetarian"} on our menu, so it may contain meat or fish.`} ${STAFF(l, p)}`;
+  if (l === "th") return `${n} ${isVegan ? "ในเมนูระบุว่าเป็นวีแกน" : isVeg ? (vegan ? "ในเมนูระบุว่าเป็นมังสวิรัติ ไม่ใช่วีแกน" : "ในเมนูระบุว่าเป็นมังสวิรัติ") : `ในเมนูไม่ได้ระบุว่าเป็น${vegan ? "วีแกน" : "มังสวิรัติ"} อาจมีเนื้อสัตว์หรือปลา`}${p} ${STAFF(l, p)}`;
+  return `${n} ${isVegan ? "က မီနူးမှာ Vegan လို့ ဖော်ပြထားပါတယ်" : isVeg ? (vegan ? "က မီနူးမှာ သက်သတ်လွတ်လို့ ဖော်ပြထားပြီး Vegan မဟုတ်ပါဘူး" : "က မီနူးမှာ သက်သတ်လွတ်လို့ ဖော်ပြထားပါတယ်") : `က မီနူးမှာ ${vegan ? "Vegan" : "သက်သတ်လွတ်"} လို့ မဖော်ပြထားလို့ အသားငါး ပါနိုင်ပါတယ်`}${p}။ ${STAFF(l, p)}`;
+}
+// "is there pork in the X?": the owner's "contains pork" tag; the AI cannot see the kitchen
+function dishPorkReply(l: Lang, p: string, i: Item): string {
+  const n = nm(i, l), has = i.tags.includes("contains_pork");
+  return l === "en" ? `${n} ${has ? "is tagged as containing pork." : "is not tagged as containing pork on our menu. I can't see the kitchen, so please ask the staff if it matters."}`
+    : l === "th" ? `${n} ${has ? "ในเมนูระบุว่ามีหมู" : "ในเมนูไม่ได้ระบุว่ามีหมู แต่ผมดูในครัวไม่ได้ หากสำคัญ กรุณาสอบถามพนักงาน"}${p}`
+    : `${n} ${has ? "မှာ ဝက်သားပါတယ်လို့ ဖော်ပြထားပါတယ်" : "မှာ ဝက်သားပါတယ်လို့ မဖော်ပြထားပါဘူး၊ ဒါပေမဲ့ မီးဖိုချောင်ကို မမြင်ရလို့ အရေးကြီးရင် ဝန်ထမ်းကို မေးပါ"}${p}။`;
+}
+// "which is spicier / cheaper?": compared from the data
+function compareTwoReply(l: Lang, p: string, a: Item, b: Item, by: "spice" | "price", higher: boolean): string {
+  const va = by === "spice" ? a.spice : a.price, vb = by === "spice" ? b.spice : b.price;
+  const first = (higher ? va >= vb : va <= vb) ? a : b, second = first === a ? b : a;
+  const lvl = (i: Item) => SPICE[l][Math.min(3, Math.max(0, i.spice))];
+  if (va === vb) return l === "en" ? `Both are the same: ${by === "spice" ? lvl(a) : money(l, a.price)}.` : l === "th" ? `เท่ากัน: ${by === "spice" ? lvl(a) : money(l, a.price)}${p}` : `နှစ်ခုလုံး တူပါတယ်: ${by === "spice" ? lvl(a) : money(l, a.price)}${p}။`;
+  const fact = (i: Item) => (by === "spice" ? lvl(i) : money(l, i.price));
+  if (l === "en") return `${nm(first, l)} is ${by === "spice" ? "spicier" : higher ? "more expensive" : "cheaper"} (${fact(first)}); ${nm(second, l)} is ${fact(second)}.`;
+  if (l === "th") return `${nm(first, l)}${by === "spice" ? "เผ็ดกว่า" : higher ? "แพงกว่า" : "ถูกกว่า"} (${fact(first)}) ส่วน${nm(second, l)} ${fact(second)}${p}`;
+  return `${nm(first, l)} က ${nm(second, l)} ထက် ${by === "spice" ? "ပိုစပ်" : higher ? "ပိုဈေးကြီး" : "ပိုပေါ"}ပါတယ်${p}။ (${fact(first)} နဲ့ ${fact(second)})`;
+}
 // "... without shrimp": the allergen data of the dish, and the change itself is for the kitchen to confirm
 const changeNote = (l: Lang, p: string) => (l === "en" ? " I can't promise that a dish can be changed, so please ask the staff."
   : l === "th" ? ` การเอาส่วนผสมออกหรือปรับสูตร ต้องให้พนักงานยืนยัน${p}` : ` ဟင်းလျာကို ပြင်ဆင်ပေးလို့ရမရ ဝန်ထမ်းက အတည်ပြုပေးရပါတယ်${p}။`);
@@ -424,10 +483,29 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
   // 00b. a short "thank you" (the Thai and Burmese ones used to be answered with "here is our menu" / "no thanks")
   if (THANKS.test(t) && !dishes.length && !/[?？]/.test(message) && message.trim().length <= 40) return done(thanksReply(lang, p), { type: "none" }, { topic: "other" });
 
-  // 0. ingredients of a named dish
-  if (dishes.length && !mentioned.length && has(t, ["ingredient", "ส่วนผสม", "ပါဝင်ပစ္စည်း"])) {
+  // 00c. "are you a real person?": the AI says it is the AI (never "a staff member") and where the staff are
+  if (IDENTITY.test(t) && !dishes.length) return done(identityReply(lang, p, r.persona.name || tr(lang, "theWaiter"), r.name), { type: "none" }, { topic: "other" });
+  // 00d. a complaint ("my food is cold", "I've waited too long"): apologise and call the staff, do not recommend a dish
+  if (COMPLAINT.test(t)) return done(complaintReply(lang, p), { type: "call_staff", kind: "help" }, { topic: "staff" });
+  const meatFree = MEATFREE.test(t) && !STATES_ALLERGY.test(t);
+
+  // 0. ingredients of a named dish ("what's in the spring rolls?")
+  if (dishes.length && !mentioned.length && (INGR_Q.test(t) || /มีอะไรบ้าง/.test(t))) {
     const it = dishes[0].item, n = nm(it, lang);
     return done(lang === "en" ? `${n} is made with: ${it.ingredients}.` : lang === "th" ? `ส่วนผสมของ${n}: ${it.ingredients}${p}` : `${n} ပါဝင်ပစ္စည်းများ: ${it.ingredients} ဖြစ်ပါတယ်${p}။`, { type: "show_dishes", ids: [it.id] });
+  }
+
+  // 0a. "what is X?" / "tell me about X": the owner's description, price and spice level (the model never sees descriptions)
+  if (dishes.length === 1 && !mentioned.length && DESCRIBE.test(t) && !has(t, W.order)) {
+    const it = dishes[0].item;
+    return done(it.available ? describeReply(lang, p, it) : soldOutReply(lang, p, it), { type: "show_dishes", ids: [it.id] }, { topic: "other" });
+  }
+  // 0a2. "how big is X?": there is no portion data, so say so instead of letting the model guess
+  if (dishes.length === 1 && !mentioned.length && PORTION.test(t)) return done(dontKnow(lang, p), { type: "show_dishes", ids: [dishes[0].item.id] }, { answered: false });
+  // 0a3. "which is spicier / cheaper, A or B?": compared from the data
+  if (dishes.length >= 2 && !mentioned.length && (SPICIER.test(t) || PRICIER.test(t) || CHEAPER.test(t))) {
+    const by = SPICIER.test(t) ? "spice" : "price";
+    return done(compareTwoReply(lang, p, dishes[0].item, dishes[1].item, by, by === "spice" || PRICIER.test(t)), { type: "show_dishes", ids: [dishes[0].item.id, dishes[1].item.id] });
   }
 
   // 0b. "what's the difference between A and B" (two named dishes): price and spice level, from the data
@@ -457,14 +535,17 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
 
   // 1. allergens: always from the database
   const intent = has(t, ALLERGY_INTENT);
-  if (mentioned.length || (intent && dishes.length)) {
-    if (!mentioned.length || (dishes.length === 1 && (intent || has(t, ["can i", "eat", "กิน", "စား"])))) {
+  // "gluten-free", "peanut free dishes", "ปลอดกลูเตน" ask for dishes WITHOUT it, not for the dishes that list it
+  const asksFree = /\b(without|free of|free from|no|not contain|don'?t contain|doesn'?t contain)\b|[a-z]-free\b|\bfree\b/.test(t) || /ปลอด(?!ภัย)/.test(t) || has(t, ["ไม่ใส่", "ไม่มี", "မပါ"]);
+  if (!meatFree && (mentioned.length || (intent && dishes.length))) {
+    // a question about ONE named dish ("does the Tom Yum have dairy?") is answered about that dish, not with a list of other dishes
+    if (!mentioned.length || dishes.length === 1) {
       const it = dishes[0].item;
       return done(dishAllergenReply(lang, p, it), { type: "show_dishes", ids: [it.id] });
     }
     const containing = items.filter((i) => i.allergens && mentioned.some((k) => i.allergens!.includes(k)));
     const unknown = items.filter((i) => i.allergens === null);
-    if (/\b(without|free of|free from|no|not contain|don'?t contain|doesn'?t contain)\b/.test(t) || has(t, ["ไม่ใส่", "ไม่มี", "မပါ"])) {
+    if (asksFree) {
       const free = items.filter((i) => i.available && i.allergens !== null && !mentioned.some((k) => i.allergens!.includes(k)));
       return done(allergenFreeReply(lang, p, mentioned, free, unknown), { type: "show_dishes", ids: free.slice(0, 4).map((i) => i.id) });
     }
@@ -512,7 +593,7 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
   }
 
   // 3. vegetarian / vegan lists with an optional budget
-  if (has(t, W.veg) && !dishes.length) {
+  if ((has(t, W.veg) || meatFree) && !dishes.length) {
     const vegan = has(t, W.vegan);
     const budget = budgetOf(t);
     const pool = live.filter((i) => (vegan ? i.tags.includes("vegan") : i.tags.includes("vegetarian") || i.tags.includes("vegan")));
@@ -528,8 +609,11 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
       const fallback = alt.length ? alt : live.slice(0, 3);
       return done(soldOutReply(lang, p, soldOut.item), { type: "show_dishes", ids: fallback.map((i) => i.id) });
     }
+    // "is the X vegan?" / "is there pork in the X?": from the owner's tags
+    if (has(tAllergy, W.veg) && !has(t, W.order)) return done(dishDietReply(lang, p, dishes[0].item, has(tAllergy, W.vegan)), { type: "show_dishes", ids: [dishes[0].item.id] });
+    if (has(tAllergy, W.pork) && !has(t, W.order) && dishes.length === 1) return done(dishPorkReply(lang, p, dishes[0].item), { type: "show_dishes", ids: [dishes[0].item.id] });
     if (has(t, W.spicy) && !has(t, MILD) && !has(t, W.order) && !has(t, W.price)) return done(dishSpiceReply(lang, p, dishes[0].item), { type: "show_dishes", ids: [dishes[0].item.id] }, { topic: "spicy" });
-    if (has(t, W.price)) return done(priceReply(lang, p, dishes[0].item), { type: "show_dishes", ids: [dishes[0].item.id] });
+    if (has(notPrice(t), W.price)) return done(priceReply(lang, p, dishes[0].item), { type: "show_dishes", ids: [dishes[0].item.id] });
     if (has(t, W.order) || has(t, ["please", "หน่อย"]) || /\d+\s*[x×]|[x×]\s*\d+/.test(t)) {
       const qty: Record<number, number> = {};
       dishes.forEach((d) => { qty[d.item.id] = d.qty; });
@@ -555,7 +639,7 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
   if (has(t, W.hours) && !dishes.length) return done(hoursReply(lang, p, r), { type: "none" });
 
   // 6. show the menu / start ordering
-  if ((has(t, W.menu) || (has(t, MENU_INTENT) && !dishes.length)) && !has(t, W.recommend) && !KIDS.test(t) && t.trim().length < 60) {
+  if ((has(t, W.menu) || (has(t, MENU_INTENT) && !dishes.length && !INTERROG.test(t) && !RESERVE.test(t))) && !has(t, W.recommend) && !KIDS.test(t) && t.trim().length < 60) {
     return done(lang === "en" ? "Here is our menu." : lang === "th" ? `นี่คือเมนูของเรา${p}` : `မီနူးကို ပြပေးထားပါတယ်${p}။`, { type: "show_menu" });
   }
 
@@ -590,7 +674,7 @@ function systemPrompt(ctx: Ctx): string {
 ${pr.greeting ? `Greeting to use when the customer says hello: ${pr.greeting}\n` : ""}
 RULES
 1. Answer only from the data. Never invent dishes, prices, ingredients, allergens or opening hours. If the data does not contain the answer, say you don't have that information and ask the customer to check with the staff.
-2. Reply in the SAME language as the customer's last message (English, Thai or Burmese). Keep replies short (max 4 sentences). Do not add information that was not asked for. Do not greet or welcome the customer unless they greeted you first.
+2. Reply in the SAME language as the customer's last message (English, Thai or Burmese). Keep replies short (max 4 sentences). Do not add information that was not asked for. Do not greet or welcome the customer unless they greeted you first. In Burmese answer in at most two short sentences and write each dish name only once, in Burmese, without the English name in brackets (Burmese text is slow to generate).
 3. Never say a dish is "safe", "allergy-free" or guaranteed. Only state allergens listed in the data. For any allergy question, tell the customer to confirm with the staff.
 4. Dishes with "available": false are sold out today; say so and suggest an alternative.
 5. Prices are in ${r.currency}. Copy prices and opening hours exactly from the data.
@@ -714,6 +798,7 @@ function misPricedClause(text: string, items: Item[], question: string): boolean
 const OPENERS = new Set("a an and are as at but can certainly could do does for from great hello hey hi how i if in is it its let me my no not of ok okay on or our please sorry sure thank thanks that the their there these they this today we welcome what when where which while will with would yes you your absolutely actually also here unfortunately however".split(" "));
 const COMMON = new Set("monday tuesday wednesday thursday friday saturday sunday january february march april may june july august september october november december thai burmese english myanmar thailand wi fi wifi allergen allergens ai thb baht staff chef waiter menu ok".split(" "));
 const CUE = /\b(?:try|recommend|suggest|enjoy|order|get|have|choose|like|serve|serving|offer|pick|special)\s+(?:[a-z'’-]+\s+){0,2}$/i;
+const NO_ALLERGEN_CLAIM = [/ไม่มี(?:สาร)?ก่อภูมิแพ้/, /Allergens?\s*(?:မရှိ|မပါ)/i, /ဓာတ်မတည့်(?:စရာ|တဲ့အရာ)?\s*(?:မရှိ|မပါ)/];
 const words = (s: string) => (s.toLowerCase().match(/[a-z]+/g) || []);
 function unknownDish(text: string, ctx: Ctx, question: string): string | null {
   const r = ctx.restaurant;
@@ -760,7 +845,16 @@ function checkModelReply(raw: string, lang: Lang, p: string, ctx: Ctx, topic: st
       } catch {}
     }
   }
-  const bad = !text || UNSAFE.some((re) => re.test(text)) || wrongPrice(text, ctx.items) || unknownAmount(text, ctx.items, question) || misPricedClause(text, ctx.items, question) || unknownDish(text, ctx, question) !== null;
+  // "no allergens" in Thai or Burmese is an allergen statement too ("Allergens မရှိပါဘူး" was shown for a dish whose allergen data is "not provided")
+  if (NO_ALLERGEN_CLAIM.some((re) => re.test(text))) {
+    const dish = matchDishes(text, ctx.items)[0]?.item ?? matchDishes(question, ctx.items)[0]?.item;
+    return dish ? { reply: dishAllergenReply(lang, p, dish), action: { type: "show_dishes", ids: [dish.id] }, topic: "allergens", allergens, answered: true, usedModel: true }
+      : { reply: cantConfirmReply(lang, p), action: { type: "none" }, topic: "allergens", allergens, answered: false, usedModel: true };
+  }
+  // a reply that is only "how can I help you?" to a real question answers nothing (greetings and thanks are fine)
+  const justHelp = text.length < 60 && /^(?:how can i (?:help|assist)[^.?]*\??|anything else i can help with\??|มีอะไรให้(?:ช่วย|ผม)[^.]*|ဘာ(?:များ)?\s?ကူညီပေးရမလဲ[^။]*။?)$/i.test(text.replace(/\s+/g, " ").trim());
+  const greeting = /^\s*(?:hi|hello|hey|good (?:morning|afternoon|evening))\b|สวัสดี|หวัดดี|มีใคร|မင်္ဂလာ|ဟယ်လို/i.test(question);
+  const bad = !text || (justHelp && !greeting) || UNSAFE.some((re) => re.test(text)) || wrongPrice(text, ctx.items) || unknownAmount(text, ctx.items, question) || misPricedClause(text, ctx.items, question) || unknownDish(text, ctx, question) !== null;
   if (bad) return { reply: dontKnow(lang, p), action: { type: "none" }, topic, allergens, answered: false, usedModel: true };
   // The model may not say anything about allergens, in either direction ("contains peanuts", "nut-free", "no dairy"):
   // it only sees the data it was given and has been wrong about it. Allergen facts come from the database only, so such
@@ -788,8 +882,11 @@ function checkModelReply(raw: string, lang: Lang, p: string, ctx: Ctx, topic: st
   if (allergensOutsideDishNames(text, ctx.items).length) {
     // the dish named in the sentence that made the claim ("Tom Yum Goong is a hot and sour shrimp soup"), not just the first dish in the reply
     const claimed = sentences.filter((x) => !cleanSentence(x)).map((x) => matchDishes(x, ctx.items)[0]?.item).find(Boolean) ?? named;
+    // When the diner did not ask about allergens ("what should we order for two?"), the part of the answer that makes no allergen claim is kept and
+    // the dish's stored allergen data is added after it. Replacing everything answered a different question ("Chicken Green Curry lists these allergens").
+    const keep = topic !== "allergens" ? sentences.filter(cleanSentence).join(" ") : "";
     return claimed
-      ? { reply: dishAllergenReply(lang, p, claimed), action: { type: "show_dishes", ids: [claimed.id] }, topic: "allergens", allergens, answered: true, usedModel: true }
+      ? { reply: `${keep.length >= 20 ? `${keep} ` : ""}${dishAllergenReply(lang, p, claimed)}`, action: { type: "show_dishes", ids: [claimed.id] }, topic: "allergens", allergens, answered: true, usedModel: true }
       : { reply: cantConfirmReply(lang, p), action: { type: "none" }, topic: "allergens", allergens, answered: false, usedModel: true };
   }
   // "answered" feeds the owner's insights ("questions the AI could not answer": add an FAQ). A reply that only sends the diner to the staff

@@ -1,13 +1,13 @@
 # Live AI eval
 
-Model: gemma4:12b via Ollama · 2026-10-12 · 34 questions · average 2913 ms per answer
+Model: gemma4:12b via Ollama · 2026-10-12 · 34 questions · average 1846 ms per answer
 
 | Language | Passed |
 |---|---|
-| English | 94% (15/16) |
+| English | 100% (16/16) |
 | Thai | 100% (11/11) |
 | Burmese | 100% (7/7) |
-| **All** | **97% (33/34)** |
+| **All** | **100% (34/34)** |
 
 | Category | Passed |
 |---|---|
@@ -20,7 +20,7 @@ Model: gemma4:12b via Ollama · 2026-10-12 · 34 questions · average 2913 ms pe
 | modification | 100% (2/2) |
 | named_dish | 100% (4/4) |
 | no_data | 100% (4/4) |
-| open | 50% (1/2) |
+| open | 100% (2/2) |
 | payment | 100% (1/1) |
 | popular | 100% (2/2) |
 | seafood | 100% (3/3) |
