@@ -1,7 +1,7 @@
 // Scores an AI reply against one question from eval/questions.json.
 // Same rule as scripts/chat_smoke.py: every "expect" group needs at least one of its words in the
 // reply (case-insensitive), and no "forbid" pattern may match.
-export type EvalQuestion = { id: string; lang: "en" | "th" | "my"; category: string; question: string; expect: string[][]; forbid: string[] };
+export type EvalQuestion = { id: string; lang: "en" | "th" | "my"; category: string; question: string; expect: string[][]; forbid: string[]; rules?: boolean };
 export type Scored = { q: EvalQuestion; reply: string; pass: boolean; missing: string[][]; forbidden: string[] };
 
 export function scoreReply(q: EvalQuestion, reply: string): Scored {

@@ -1,0 +1,571 @@
+[
+ {
+  "id": "ne1",
+  "lang": "en",
+  "category": "payment",
+  "question": "Can I pay by credit card?",
+  "expect": [
+   [
+    "staff",
+    "don't have",
+    "do not have"
+   ]
+  ],
+  "forbid": [
+   "called the staff",
+   "bring your bill"
+  ]
+ },
+ {
+  "id": "ne2",
+  "lang": "en",
+  "category": "cheapest",
+  "question": "What's the cheapest dish?",
+  "expect": [
+   [
+    "50",
+    "60"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "ne3",
+  "lang": "en",
+  "category": "cheapest",
+  "question": "Which dish is the most expensive?",
+  "expect": [
+   [
+    "steamed fish"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "ne4",
+  "lang": "en",
+  "category": "named_dish",
+  "question": "Is the Tom Yum very spicy?",
+  "expect": [
+   [
+    "tom yum"
+   ],
+   [
+    "very spicy"
+   ]
+  ],
+  "forbid": [
+   "papaya"
+  ],
+  "rules": true
+ },
+ {
+  "id": "ne5",
+  "lang": "en",
+  "category": "popular",
+  "question": "What's your most famous dish?",
+  "expect": [
+   [
+    "tom yum",
+    "pad thai",
+    "green curry",
+    "ordered"
+   ]
+  ],
+  "forbid": [
+   "don't have information"
+  ],
+  "rules": true
+ },
+ {
+  "id": "ne6",
+  "lang": "en",
+  "category": "social",
+  "question": "Thank you!",
+  "expect": [
+   [
+    "welcome",
+    "pleasure"
+   ]
+  ],
+  "forbid": [
+   "menu"
+  ],
+  "rules": true
+ },
+ {
+  "id": "ne7",
+  "lang": "en",
+  "category": "no_data",
+  "question": "How long does the food take?",
+  "expect": [
+   [
+    "staff"
+   ]
+  ],
+  "forbid": [
+   "minutes",
+   "\\bmins?\\b",
+   "always ready",
+   "right away",
+   "immediately"
+  ]
+ },
+ {
+  "id": "ne8",
+  "lang": "en",
+  "category": "open",
+  "question": "What soup do you have?",
+  "expect": [
+   [
+    "tom yum"
+   ]
+  ],
+  "forbid": [
+   "mango sticky rice"
+  ]
+ },
+ {
+  "id": "ne9",
+  "lang": "en",
+  "category": "seafood",
+  "question": "Do you have seafood?",
+  "expect": [
+   [
+    "tom yum",
+    "steamed fish"
+   ],
+   [
+    "staff"
+   ]
+  ],
+  "forbid": [
+   "green curry is seafood"
+  ],
+  "rules": true
+ },
+ {
+  "id": "ne10",
+  "lang": "en",
+  "category": "modification",
+  "question": "Can I have the Tom Yum without shrimp?",
+  "expect": [
+   [
+    "tom yum"
+   ],
+   [
+    "staff"
+   ]
+  ],
+  "forbid": [
+   "no problem",
+   "yes, we can",
+   "yes you can",
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bguarantee"
+  ],
+  "rules": true
+ },
+ {
+  "id": "ne11",
+  "lang": "en",
+  "category": "no_data",
+  "question": "How big is the portion of the Papaya Salad?",
+  "expect": [
+   [
+    "staff",
+    "don't have",
+    "do not have"
+   ]
+  ],
+  "forbid": [
+   "grams",
+   "large portion",
+   "small portion"
+  ]
+ },
+ {
+  "id": "ne12",
+  "lang": "en",
+  "category": "compare",
+  "question": "What's the difference between the green curry and the massaman?",
+  "expect": [
+   [
+    "green curry"
+   ],
+   [
+    "massaman"
+   ]
+  ],
+  "forbid": [
+   "lists these allergens"
+  ],
+  "rules": true
+ },
+ {
+  "id": "ne13",
+  "lang": "en",
+  "category": "halal",
+  "question": "Is the pork skewer halal?",
+  "expect": [
+   [
+    "pork"
+   ],
+   [
+    "staff"
+   ]
+  ],
+  "forbid": [
+   "is halal",
+   "yes"
+  ],
+  "rules": true
+ },
+ {
+  "id": "ne14",
+  "lang": "en",
+  "category": "kids",
+  "question": "Do you have a kids menu?",
+  "expect": [
+   [
+    "kid",
+    "child",
+    "staff",
+    "don't",
+    "do not"
+   ]
+  ],
+  "forbid": [
+   "here is our menu"
+  ]
+ },
+ {
+  "id": "ne15",
+  "lang": "en",
+  "category": "open",
+  "question": "I want something light, not heavy",
+  "expect": [
+   [
+    "spring roll",
+    "tofu",
+    "salad"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bguarantee"
+  ]
+ },
+ {
+  "id": "ne16",
+  "lang": "en",
+  "category": "named_dish",
+  "question": "Is the Pad Thai vegetarian?",
+  "expect": [
+   [
+    "pad thai"
+   ],
+   [
+    "staff",
+    "not"
+   ]
+  ],
+  "forbid": [
+   "yes, it is vegetarian"
+  ]
+ },
+ {
+  "id": "nt1",
+  "lang": "th",
+  "category": "social",
+  "question": "ขอบคุณครับ",
+  "expect": [
+   [
+    "ยินดี",
+    "ไม่เป็นไร"
+   ]
+  ],
+  "forbid": [
+   "เมนูของเรา"
+  ],
+  "rules": true
+ },
+ {
+  "id": "nt2",
+  "lang": "th",
+  "category": "faq",
+  "question": "ขอใบกำกับภาษี",
+  "expect": [
+   [
+    "พนักงาน",
+    "ใบกำกับภาษี",
+    "ภาษี"
+   ]
+  ],
+  "forbid": [
+   "เมนูของเรา"
+  ]
+ },
+ {
+  "id": "nt3",
+  "lang": "th",
+  "category": "named_dish",
+  "question": "ต้มยำเผ็ดมากไหม",
+  "expect": [
+   [
+    "ต้มยำกุ้ง"
+   ],
+   [
+    "เผ็ดมาก"
+   ]
+  ],
+  "forbid": [
+   "ส้มตำ"
+  ],
+  "rules": true
+ },
+ {
+  "id": "nt4",
+  "lang": "th",
+  "category": "compare",
+  "question": "แกงเขียวหวานกับมัสมั่นต่างกันยังไง",
+  "expect": [
+   [
+    "เขียวหวาน"
+   ],
+   [
+    "มัสมั่น"
+   ]
+  ],
+  "forbid": [
+   "ต้มยำ"
+  ],
+  "rules": true
+ },
+ {
+  "id": "nt5",
+  "lang": "th",
+  "category": "cheapest",
+  "question": "อาหารที่ถูกที่สุดคืออะไร",
+  "expect": [
+   [
+    "50",
+    "60"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "nt6",
+  "lang": "th",
+  "category": "currency",
+  "question": "แนะนำเมนูสำหรับสองคนหน่อย",
+  "expect": [],
+  "forbid": [
+   "THB",
+   "฿"
+  ]
+ },
+ {
+  "id": "nt7",
+  "lang": "th",
+  "category": "halal",
+  "question": "มีอาหารฮาลาลไหม",
+  "expect": [
+   [
+    "หมู"
+   ],
+   [
+    "พนักงาน"
+   ]
+  ],
+  "forbid": [
+   "เป็นอาหารฮาลาล"
+  ],
+  "rules": true
+ },
+ {
+  "id": "nt8",
+  "lang": "th",
+  "category": "seafood",
+  "question": "มีอาหารทะเลไหม",
+  "expect": [
+   [
+    "ต้มยำ",
+    "ปลานึ่ง"
+   ],
+   [
+    "พนักงาน"
+   ]
+  ],
+  "forbid": [
+   "THB"
+  ],
+  "rules": true
+ },
+ {
+  "id": "nt9",
+  "lang": "th",
+  "category": "no_data",
+  "question": "รอนานไหม",
+  "expect": [
+   [
+    "พนักงาน"
+   ]
+  ],
+  "forbid": [
+   "นาที"
+  ]
+ },
+ {
+  "id": "nt10",
+  "lang": "th",
+  "category": "modification",
+  "question": "ขอต้มยำไม่ใส่กุ้งได้ไหม",
+  "expect": [
+   [
+    "ต้มยำ"
+   ],
+   [
+    "พนักงาน"
+   ]
+  ],
+  "forbid": [
+   "ได้เลย",
+   "ไม่มีปัญหา"
+  ],
+  "rules": true
+ },
+ {
+  "id": "nt11",
+  "lang": "th",
+  "category": "popular",
+  "question": "เมนูขายดีของร้านคืออะไร",
+  "expect": [
+   [
+    "ต้มยำ",
+    "ผัดไทย",
+    "เขียวหวาน"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "nm1",
+  "lang": "my",
+  "category": "social",
+  "question": "ကျေးဇူးတင်ပါတယ်",
+  "expect": [
+   [
+    "ရပါတယ်"
+   ]
+  ],
+  "forbid": [
+   "မလိုလားပါဘူး"
+  ],
+  "rules": true
+ },
+ {
+  "id": "nm2",
+  "lang": "my",
+  "category": "no_data",
+  "question": "အစားအစာ ဘယ်လောက်ကြာမလဲ",
+  "expect": [
+   [
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [
+   "အမြဲတမ်း အသင့်",
+   "မိနစ်"
+  ]
+ },
+ {
+  "id": "nm3",
+  "lang": "my",
+  "category": "cheapest",
+  "question": "အပေါဆုံး ဟင်း ဘာလဲ",
+  "expect": [
+   [
+    "၅၀",
+    "၆၀",
+    "50",
+    "60"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "nm4",
+  "lang": "my",
+  "category": "seafood",
+  "question": "ပင်လယ်စာ ရှိလား",
+  "expect": [
+   [
+    "တွမ်ယမ်",
+    "ပုစွန်",
+    "ငါး"
+   ]
+  ],
+  "forbid": [
+   "AI စားပွဲထိုး ခဏမရ"
+  ],
+  "rules": true
+ },
+ {
+  "id": "nm5",
+  "lang": "my",
+  "category": "halal",
+  "question": "ဟလာလ် စားလို့ရလား",
+  "expect": [
+   [
+    "ဝက်သား"
+   ],
+   [
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [
+   "ဟလာလ်ဖြစ်ပါတယ်"
+  ],
+  "rules": true
+ },
+ {
+  "id": "nm6",
+  "lang": "my",
+  "category": "currency",
+  "question": "နှစ်ယောက်စားအတွက် ဘာညွှန်းမလဲ",
+  "expect": [],
+  "forbid": [
+   "THB",
+   "฿"
+  ]
+ },
+ {
+  "id": "nm7",
+  "lang": "my",
+  "category": "named_dish",
+  "question": "တွမ်ယမ်ကွန်း စပ်လား",
+  "expect": [
+   [
+    "တွမ်ယမ်ကွန်း"
+   ],
+   [
+    "အရမ်းစပ်"
+   ]
+  ],
+  "forbid": [
+   "သင်္ဘောသီးသုပ်"
+  ],
+  "rules": true
+ }
+]

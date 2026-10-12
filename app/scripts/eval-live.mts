@@ -4,7 +4,8 @@
 //   npm run eval:live                 (server on http://localhost:3000, restaurant golden-lotus)
 //   npm run eval:live -- --write      also saves eval/results/live-latest.{md,json}
 //
-// Env: EVAL_BASE_URL, EVAL_SLUG, EVAL_LABEL (text printed in the report, e.g. the model name).
+// Env: EVAL_BASE_URL, EVAL_SLUG, EVAL_LABEL (text printed in the report, e.g. the model name),
+//      EVAL_QUESTIONS (file in eval/, default questions.json; questions_natural.json = the harder, natural-wording set).
 // Questions are sent with preview:true, so nothing is stored or counted in the restaurant's insights.
 import fs from "node:fs";
 import path from "node:path";
@@ -16,7 +17,7 @@ const evalDir = path.join(here, "..", "..", "eval");
 const base = (process.env.EVAL_BASE_URL || "http://localhost:3000").replace(/\/+$/, "");
 const slug = process.env.EVAL_SLUG || "golden-lotus";
 const label = process.env.EVAL_LABEL || process.env.OLLAMA_MODEL || "gemma4:12b (Ollama default)";
-const questions: EvalQuestion[] = JSON.parse(fs.readFileSync(path.join(evalDir, "questions.json"), "utf8"));
+const questions: EvalQuestion[] = JSON.parse(fs.readFileSync(path.join(evalDir, process.env.EVAL_QUESTIONS || "questions.json"), "utf8"));
 const T = JSON.parse(fs.readFileSync(path.join(evalDir, "thresholds.json"), "utf8"));
 
 const rows = [];
@@ -44,10 +45,12 @@ const report = [`# Live AI eval`, ``, `Model: ${label} · ${new Date().toISOStri
   `Thresholds (eval/thresholds.json): overall >= ${T.live.overall_min * 100}%, each language >= ${T.live.per_language_min * 100}%, safety categories ${T.live.safety_categories_min * 100}%.`,
   problems.length ? `\n**FAILED:** ${problems.join("; ")}` : `\n**Met all thresholds.**`, ``].join("\n");
 console.log("\n" + report);
+// the default 30 questions keep writing live-latest; another question set writes live-<its name>, so one never overwrites the other
+const stem = process.env.EVAL_QUESTIONS ? `live-${path.basename(process.env.EVAL_QUESTIONS, ".json")}` : "live-latest";
 if (process.argv.includes("--write")) {
   fs.mkdirSync(path.join(evalDir, "results"), { recursive: true });
-  fs.writeFileSync(path.join(evalDir, "results", "live-latest.md"), report);
-  fs.writeFileSync(path.join(evalDir, "results", "live-latest.json"), JSON.stringify({ label, date: new Date().toISOString(), summary: sum, rows: rows.map((r) => ({ id: r.q.id, lang: r.q.lang, category: r.q.category, pass: r.pass, ms: r.ms, reply: r.reply })) }, null, 1));
-  console.log("Saved eval/results/live-latest.md and .json");
+  fs.writeFileSync(path.join(evalDir, "results", `${stem}.md`), report);
+  fs.writeFileSync(path.join(evalDir, "results", `${stem}.json`), JSON.stringify({ label, date: new Date().toISOString(), summary: sum, rows: rows.map((r) => ({ id: r.q.id, lang: r.q.lang, category: r.q.category, pass: r.pass, ms: r.ms, reply: r.reply })) }, null, 1));
+  console.log(`Saved eval/results/${stem}.md and .json`);
 }
 process.exit(problems.length ? 1 : 0);
