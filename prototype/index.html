@@ -1,28 +1,30 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="th">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Shop AI Prototype</title>
-<meta name="description" content="Clickable prototype of Shop AI (team MFU 888): diner, staff and owner journeys, with mock data and no server.">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;800&family=Courier+Prime:wght@400;700&family=Noto+Sans+Myanmar:wght@400;700&family=Noto+Sans+Thai:wght@400;600;700&family=Righteous&display=swap">
-<link rel="stylesheet" href="proto.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>ShopAI – HaChi Kyu</title>
+  <!-- Thai/Burmese fonts (requires internet; if offline, the system font will be used instead) -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;800&family=Noto+Sans+Myanmar:wght@400;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="proto.css">
 </head>
+
 <body>
-<header class="top">
-  <div class="top__brand"><b>Shop AI</b> <span>clickable prototype · mock data, no server, no database</span></div>
-  <nav class="top__tabs" id="tabs" aria-label="Journeys"></nav>
-  <button type="button" class="btn btn--quiet" data-act="reset">Reset demo</button>
-</header>
-<main id="stage" class="stage"></main>
-<footer class="foot">
-  Intro to Software Engineering 2569 · Milestone 4 · Team MFU 888. Every screen carries a <b>Covers:</b> bar naming the requirements it demonstrates (IDs as in
-  <code>docs/SRS_Shop_AI.md</code> and <code>docs/TRACEABILITY.md</code>). Buttons that would save to a server only change this page's memory.
-</footer>
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="i18n.js"></script>
-<script src="data.js"></script>
-<script src="app.js"></script>
-<script src="owner.js"></script>
+  <!-- The whole app is drawn into #app by the scripts below -->
+  <div id="app"></div>
+  <!-- Which screen to show:  index.html = customer · index.html?view=staff = waiter / chef · index.html?view=owner = owner dashboard -->
+  <script>
+    window.APP_VIEW = new URLSearchParams(location.search).get('view') || 'customer';
+    window.STAFF_MODE = window.APP_VIEW !== 'customer';   // staff / owner: app.js loads only the menu data and does not draw the customer screen
+  </script>
+  <script src="i18n.js"></script> <!-- 3-language text -->
+  <script src="data.js"></script> <!-- Store + allergens / ingredients / categories + menu -->
+  <script src="app.js"></script> <!-- customer app + staff app + AI service -->
+  <script src="owner.js"></script> <!-- owner dashboard -->
+  <script src="switcher.js"></script> <!-- prototype toolbar: Diner / Staff / Owner / Reset (demo only) -->
 </body>
+
 </html>
