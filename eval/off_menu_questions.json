@@ -1,0 +1,1154 @@
+[
+ {
+  "id": "ofood1-en",
+  "lang": "en",
+  "category": "out_of_menu",
+  "question": "Do you have tom kha gai?",
+  "expect": [
+   [
+    "not on our menu",
+    "don't have",
+    "do not have",
+    "not serve",
+    "doesn't",
+    "isn't",
+    "not available"
+   ],
+   [
+    "Tom Yum",
+    "Pad Thai",
+    "Green Curry",
+    "Tofu",
+    "Mango Sticky",
+    "Fried Rice",
+    "Massaman",
+    "Papaya",
+    "Spring Roll",
+    "Iced Tea",
+    "Pork Skewer",
+    "Steamed Fish"
+   ]
+  ],
+  "forbid": [
+   "(?:no|any) information",
+   "(?:don't|do not) have (?:any )?information",
+   "no data"
+  ]
+ },
+ {
+  "id": "ofood2-en",
+  "lang": "en",
+  "category": "out_of_menu",
+  "question": "Can I order pad kra pao?",
+  "expect": [
+   [
+    "not on our menu",
+    "don't have",
+    "do not have",
+    "not serve",
+    "doesn't",
+    "isn't",
+    "not available"
+   ],
+   [
+    "Tom Yum",
+    "Pad Thai",
+    "Green Curry",
+    "Tofu",
+    "Mango Sticky",
+    "Fried Rice",
+    "Massaman",
+    "Papaya",
+    "Spring Roll",
+    "Iced Tea",
+    "Pork Skewer",
+    "Steamed Fish"
+   ]
+  ],
+  "forbid": [
+   "(?:no|any) information",
+   "(?:don't|do not) have (?:any )?information",
+   "no data"
+  ]
+ },
+ {
+  "id": "ofood3-en",
+  "lang": "en",
+  "category": "out_of_menu",
+  "question": "Do you have sticky rice with durian?",
+  "expect": [
+   [
+    "not on our menu",
+    "don't have",
+    "do not have",
+    "not serve",
+    "doesn't",
+    "isn't",
+    "not available"
+   ],
+   [
+    "Tom Yum",
+    "Pad Thai",
+    "Green Curry",
+    "Tofu",
+    "Mango Sticky",
+    "Fried Rice",
+    "Massaman",
+    "Papaya",
+    "Spring Roll",
+    "Iced Tea",
+    "Pork Skewer",
+    "Steamed Fish"
+   ]
+  ],
+  "forbid": [
+   "(?:no|any) information",
+   "(?:don't|do not) have (?:any )?information",
+   "no data"
+  ]
+ },
+ {
+  "id": "ofood4-en",
+  "lang": "en",
+  "category": "out_of_menu",
+  "question": "Do you have tempura?",
+  "expect": [
+   [
+    "not on our menu",
+    "don't have",
+    "do not have",
+    "not serve",
+    "doesn't",
+    "isn't",
+    "not available"
+   ],
+   [
+    "Tom Yum",
+    "Pad Thai",
+    "Green Curry",
+    "Tofu",
+    "Mango Sticky",
+    "Fried Rice",
+    "Massaman",
+    "Papaya",
+    "Spring Roll",
+    "Iced Tea",
+    "Pork Skewer",
+    "Steamed Fish"
+   ]
+  ],
+  "forbid": [
+   "(?:no|any) information",
+   "(?:don't|do not) have (?:any )?information",
+   "no data"
+  ]
+ },
+ {
+  "id": "ofood5-en",
+  "lang": "en",
+  "category": "out_of_menu",
+  "question": "Do you have curry puffs?",
+  "expect": [
+   [
+    "not on our menu",
+    "don't have",
+    "do not have",
+    "not serve",
+    "doesn't",
+    "isn't",
+    "not available"
+   ],
+   [
+    "Tom Yum",
+    "Pad Thai",
+    "Green Curry",
+    "Tofu",
+    "Mango Sticky",
+    "Fried Rice",
+    "Massaman",
+    "Papaya",
+    "Spring Roll",
+    "Iced Tea",
+    "Pork Skewer",
+    "Steamed Fish"
+   ]
+  ],
+  "forbid": [
+   "(?:no|any) information",
+   "(?:don't|do not) have (?:any )?information",
+   "no data"
+  ]
+ },
+ {
+  "id": "ofood6-en",
+  "lang": "en",
+  "category": "out_of_menu",
+  "question": "I'd like some hotpot",
+  "expect": [
+   [
+    "not on our menu",
+    "don't have",
+    "do not have",
+    "not serve",
+    "doesn't",
+    "isn't",
+    "not available"
+   ],
+   [
+    "Tom Yum",
+    "Pad Thai",
+    "Green Curry",
+    "Tofu",
+    "Mango Sticky",
+    "Fried Rice",
+    "Massaman",
+    "Papaya",
+    "Spring Roll",
+    "Iced Tea",
+    "Pork Skewer",
+    "Steamed Fish"
+   ]
+  ],
+  "forbid": [
+   "(?:no|any) information",
+   "(?:don't|do not) have (?:any )?information",
+   "no data"
+  ]
+ },
+ {
+  "id": "ofood7-en",
+  "lang": "en",
+  "category": "out_of_menu",
+  "question": "Do you serve BBQ ribs?",
+  "expect": [
+   [
+    "not on our menu",
+    "don't have",
+    "do not have",
+    "not serve",
+    "doesn't",
+    "isn't",
+    "not available"
+   ],
+   [
+    "Tom Yum",
+    "Pad Thai",
+    "Green Curry",
+    "Tofu",
+    "Mango Sticky",
+    "Fried Rice",
+    "Massaman",
+    "Papaya",
+    "Spring Roll",
+    "Iced Tea",
+    "Pork Skewer",
+    "Steamed Fish"
+   ]
+  ],
+  "forbid": [
+   "(?:no|any) information",
+   "(?:don't|do not) have (?:any )?information",
+   "no data"
+  ]
+ },
+ {
+  "id": "ofood8-en",
+  "lang": "en",
+  "category": "out_of_menu",
+  "question": "Do you have boat noodles?",
+  "expect": [
+   [
+    "not on our menu",
+    "don't have",
+    "do not have",
+    "not serve",
+    "doesn't",
+    "isn't",
+    "not available"
+   ],
+   [
+    "Tom Yum",
+    "Pad Thai",
+    "Green Curry",
+    "Tofu",
+    "Mango Sticky",
+    "Fried Rice",
+    "Massaman",
+    "Papaya",
+    "Spring Roll",
+    "Iced Tea",
+    "Pork Skewer",
+    "Steamed Fish"
+   ]
+  ],
+  "forbid": [
+   "(?:no|any) information",
+   "(?:don't|do not) have (?:any )?information",
+   "no data"
+  ]
+ },
+ {
+  "id": "ofood9-en",
+  "lang": "en",
+  "category": "out_of_menu",
+  "question": "Do you have chicken satay?",
+  "expect": [
+   [
+    "not on our menu",
+    "don't have",
+    "do not have",
+    "not serve",
+    "doesn't",
+    "isn't",
+    "not available"
+   ],
+   [
+    "Tom Yum",
+    "Pad Thai",
+    "Green Curry",
+    "Tofu",
+    "Mango Sticky",
+    "Fried Rice",
+    "Massaman",
+    "Papaya",
+    "Spring Roll",
+    "Iced Tea",
+    "Pork Skewer",
+    "Steamed Fish"
+   ]
+  ],
+  "forbid": [
+   "(?:no|any) information",
+   "(?:don't|do not) have (?:any )?information",
+   "no data"
+  ]
+ },
+ {
+  "id": "ofood10-en",
+  "lang": "en",
+  "category": "out_of_menu",
+  "question": "Do you have mango lassi?",
+  "expect": [
+   [
+    "not on our menu",
+    "don't have",
+    "do not have",
+    "not serve",
+    "doesn't",
+    "isn't",
+    "not available"
+   ],
+   [
+    "Tom Yum",
+    "Pad Thai",
+    "Green Curry",
+    "Tofu",
+    "Mango Sticky",
+    "Fried Rice",
+    "Massaman",
+    "Papaya",
+    "Spring Roll",
+    "Iced Tea",
+    "Pork Skewer",
+    "Steamed Fish"
+   ]
+  ],
+  "forbid": [
+   "(?:no|any) information",
+   "(?:don't|do not) have (?:any )?information",
+   "no data"
+  ]
+ },
+ {
+  "id": "ofood11-en",
+  "lang": "en",
+  "category": "out_of_menu",
+  "question": "Can I get pad see ew?",
+  "expect": [
+   [
+    "not on our menu",
+    "don't have",
+    "do not have",
+    "not serve",
+    "doesn't",
+    "isn't",
+    "not available"
+   ],
+   [
+    "Tom Yum",
+    "Pad Thai",
+    "Green Curry",
+    "Tofu",
+    "Mango Sticky",
+    "Fried Rice",
+    "Massaman",
+    "Papaya",
+    "Spring Roll",
+    "Iced Tea",
+    "Pork Skewer",
+    "Steamed Fish"
+   ]
+  ],
+  "forbid": [
+   "(?:no|any) information",
+   "(?:don't|do not) have (?:any )?information",
+   "no data"
+  ]
+ },
+ {
+  "id": "ofood12-en",
+  "lang": "en",
+  "category": "out_of_menu",
+  "question": "Do you have a kids meal?",
+  "expect": [
+   [
+    "not on our menu",
+    "don't have",
+    "do not have",
+    "not serve",
+    "doesn't",
+    "isn't",
+    "not available"
+   ],
+   [
+    "Tom Yum",
+    "Pad Thai",
+    "Green Curry",
+    "Tofu",
+    "Mango Sticky",
+    "Fried Rice",
+    "Massaman",
+    "Papaya",
+    "Spring Roll",
+    "Iced Tea",
+    "Pork Skewer",
+    "Steamed Fish"
+   ]
+  ],
+  "forbid": [
+   "(?:no|any) information",
+   "(?:don't|do not) have (?:any )?information",
+   "no data"
+  ]
+ },
+ {
+  "id": "ofood1-th",
+  "lang": "th",
+  "category": "out_of_menu",
+  "question": "มีต้มข่าไก่ไหม",
+  "expect": [
+   [
+    "ไม่มี",
+    "ไม่ได้"
+   ],
+   [
+    "ต้มยำ",
+    "ผัดไทย",
+    "เขียวหวาน",
+    "เต้าหู้",
+    "ข้าวเหนียวมะม่วง",
+    "ข้าวผัด",
+    "มัสมั่น",
+    "ส้มตำ",
+    "ปอเปี๊ยะ",
+    "ชาไทย",
+    "หมูปิ้ง",
+    "ปลานึ่ง"
+   ]
+  ],
+  "forbid": [
+   "ไม่มีข้อมูล",
+   "ไม่สามารถให้ข้อมูล"
+  ]
+ },
+ {
+  "id": "ofood2-th",
+  "lang": "th",
+  "category": "out_of_menu",
+  "question": "ขอผัดกะเพราได้ไหม",
+  "expect": [
+   [
+    "ไม่มี",
+    "ไม่ได้"
+   ],
+   [
+    "ต้มยำ",
+    "ผัดไทย",
+    "เขียวหวาน",
+    "เต้าหู้",
+    "ข้าวเหนียวมะม่วง",
+    "ข้าวผัด",
+    "มัสมั่น",
+    "ส้มตำ",
+    "ปอเปี๊ยะ",
+    "ชาไทย",
+    "หมูปิ้ง",
+    "ปลานึ่ง"
+   ]
+  ],
+  "forbid": [
+   "ไม่มีข้อมูล",
+   "ไม่สามารถให้ข้อมูล"
+  ]
+ },
+ {
+  "id": "ofood3-th",
+  "lang": "th",
+  "category": "out_of_menu",
+  "question": "มีข้าวเหนียวทุเรียนไหม",
+  "expect": [
+   [
+    "ไม่มี",
+    "ไม่ได้"
+   ],
+   [
+    "ต้มยำ",
+    "ผัดไทย",
+    "เขียวหวาน",
+    "เต้าหู้",
+    "ข้าวเหนียวมะม่วง",
+    "ข้าวผัด",
+    "มัสมั่น",
+    "ส้มตำ",
+    "ปอเปี๊ยะ",
+    "ชาไทย",
+    "หมูปิ้ง",
+    "ปลานึ่ง"
+   ]
+  ],
+  "forbid": [
+   "ไม่มีข้อมูล",
+   "ไม่สามารถให้ข้อมูล"
+  ]
+ },
+ {
+  "id": "ofood4-th",
+  "lang": "th",
+  "category": "out_of_menu",
+  "question": "มีเทมปุระไหม",
+  "expect": [
+   [
+    "ไม่มี",
+    "ไม่ได้"
+   ],
+   [
+    "ต้มยำ",
+    "ผัดไทย",
+    "เขียวหวาน",
+    "เต้าหู้",
+    "ข้าวเหนียวมะม่วง",
+    "ข้าวผัด",
+    "มัสมั่น",
+    "ส้มตำ",
+    "ปอเปี๊ยะ",
+    "ชาไทย",
+    "หมูปิ้ง",
+    "ปลานึ่ง"
+   ]
+  ],
+  "forbid": [
+   "ไม่มีข้อมูล",
+   "ไม่สามารถให้ข้อมูล"
+  ]
+ },
+ {
+  "id": "ofood5-th",
+  "lang": "th",
+  "category": "out_of_menu",
+  "question": "มีกะหรี่ปั๊บไหม",
+  "expect": [
+   [
+    "ไม่มี",
+    "ไม่ได้"
+   ],
+   [
+    "ต้มยำ",
+    "ผัดไทย",
+    "เขียวหวาน",
+    "เต้าหู้",
+    "ข้าวเหนียวมะม่วง",
+    "ข้าวผัด",
+    "มัสมั่น",
+    "ส้มตำ",
+    "ปอเปี๊ยะ",
+    "ชาไทย",
+    "หมูปิ้ง",
+    "ปลานึ่ง"
+   ]
+  ],
+  "forbid": [
+   "ไม่มีข้อมูล",
+   "ไม่สามารถให้ข้อมูล"
+  ]
+ },
+ {
+  "id": "ofood6-th",
+  "lang": "th",
+  "category": "out_of_menu",
+  "question": "อยากกินหม้อไฟ",
+  "expect": [
+   [
+    "ไม่มี",
+    "ไม่ได้"
+   ],
+   [
+    "ต้มยำ",
+    "ผัดไทย",
+    "เขียวหวาน",
+    "เต้าหู้",
+    "ข้าวเหนียวมะม่วง",
+    "ข้าวผัด",
+    "มัสมั่น",
+    "ส้มตำ",
+    "ปอเปี๊ยะ",
+    "ชาไทย",
+    "หมูปิ้ง",
+    "ปลานึ่ง"
+   ]
+  ],
+  "forbid": [
+   "ไม่มีข้อมูล",
+   "ไม่สามารถให้ข้อมูล"
+  ]
+ },
+ {
+  "id": "ofood7-th",
+  "lang": "th",
+  "category": "out_of_menu",
+  "question": "มีซี่โครงหมูย่างไหม",
+  "expect": [
+   [
+    "ไม่มี",
+    "ไม่ได้"
+   ],
+   [
+    "ต้มยำ",
+    "ผัดไทย",
+    "เขียวหวาน",
+    "เต้าหู้",
+    "ข้าวเหนียวมะม่วง",
+    "ข้าวผัด",
+    "มัสมั่น",
+    "ส้มตำ",
+    "ปอเปี๊ยะ",
+    "ชาไทย",
+    "หมูปิ้ง",
+    "ปลานึ่ง"
+   ]
+  ],
+  "forbid": [
+   "ไม่มีข้อมูล",
+   "ไม่สามารถให้ข้อมูล"
+  ]
+ },
+ {
+  "id": "ofood8-th",
+  "lang": "th",
+  "category": "out_of_menu",
+  "question": "มีก๋วยเตี๋ยวเรือไหม",
+  "expect": [
+   [
+    "ไม่มี",
+    "ไม่ได้"
+   ],
+   [
+    "ต้มยำ",
+    "ผัดไทย",
+    "เขียวหวาน",
+    "เต้าหู้",
+    "ข้าวเหนียวมะม่วง",
+    "ข้าวผัด",
+    "มัสมั่น",
+    "ส้มตำ",
+    "ปอเปี๊ยะ",
+    "ชาไทย",
+    "หมูปิ้ง",
+    "ปลานึ่ง"
+   ]
+  ],
+  "forbid": [
+   "ไม่มีข้อมูล",
+   "ไม่สามารถให้ข้อมูล"
+  ]
+ },
+ {
+  "id": "ofood9-th",
+  "lang": "th",
+  "category": "out_of_menu",
+  "question": "มีไก่สะเต๊ะไหม",
+  "expect": [
+   [
+    "ไม่มี",
+    "ไม่ได้"
+   ],
+   [
+    "ต้มยำ",
+    "ผัดไทย",
+    "เขียวหวาน",
+    "เต้าหู้",
+    "ข้าวเหนียวมะม่วง",
+    "ข้าวผัด",
+    "มัสมั่น",
+    "ส้มตำ",
+    "ปอเปี๊ยะ",
+    "ชาไทย",
+    "หมูปิ้ง",
+    "ปลานึ่ง"
+   ]
+  ],
+  "forbid": [
+   "ไม่มีข้อมูล",
+   "ไม่สามารถให้ข้อมูล"
+  ]
+ },
+ {
+  "id": "ofood10-th",
+  "lang": "th",
+  "category": "out_of_menu",
+  "question": "มีลัสซี่มะม่วงไหม",
+  "expect": [
+   [
+    "ไม่มี",
+    "ไม่ได้"
+   ],
+   [
+    "ต้มยำ",
+    "ผัดไทย",
+    "เขียวหวาน",
+    "เต้าหู้",
+    "ข้าวเหนียวมะม่วง",
+    "ข้าวผัด",
+    "มัสมั่น",
+    "ส้มตำ",
+    "ปอเปี๊ยะ",
+    "ชาไทย",
+    "หมูปิ้ง",
+    "ปลานึ่ง"
+   ]
+  ],
+  "forbid": [
+   "ไม่มีข้อมูล",
+   "ไม่สามารถให้ข้อมูล"
+  ]
+ },
+ {
+  "id": "ofood11-th",
+  "lang": "th",
+  "category": "out_of_menu",
+  "question": "ขอผัดซีอิ๊วได้ไหม",
+  "expect": [
+   [
+    "ไม่มี",
+    "ไม่ได้"
+   ],
+   [
+    "ต้มยำ",
+    "ผัดไทย",
+    "เขียวหวาน",
+    "เต้าหู้",
+    "ข้าวเหนียวมะม่วง",
+    "ข้าวผัด",
+    "มัสมั่น",
+    "ส้มตำ",
+    "ปอเปี๊ยะ",
+    "ชาไทย",
+    "หมูปิ้ง",
+    "ปลานึ่ง"
+   ]
+  ],
+  "forbid": [
+   "ไม่มีข้อมูล",
+   "ไม่สามารถให้ข้อมูล"
+  ]
+ },
+ {
+  "id": "ofood12-th",
+  "lang": "th",
+  "category": "out_of_menu",
+  "question": "มีเมนูเด็กไหม",
+  "expect": [
+   [
+    "ไม่มี",
+    "ไม่ได้"
+   ],
+   [
+    "ต้มยำ",
+    "ผัดไทย",
+    "เขียวหวาน",
+    "เต้าหู้",
+    "ข้าวเหนียวมะม่วง",
+    "ข้าวผัด",
+    "มัสมั่น",
+    "ส้มตำ",
+    "ปอเปี๊ยะ",
+    "ชาไทย",
+    "หมูปิ้ง",
+    "ปลานึ่ง"
+   ]
+  ],
+  "forbid": [
+   "ไม่มีข้อมูล",
+   "ไม่สามารถให้ข้อมูล"
+  ]
+ },
+ {
+  "id": "ofood1-my",
+  "lang": "my",
+  "category": "out_of_menu",
+  "question": "မုန့်ဟင်းခါး ရှိလား",
+  "expect": [
+   [
+    "မရှိ",
+    "မရောင်း"
+   ],
+   [
+    "တွမ်ယမ်",
+    "ပတ်ထိုင်း",
+    "ဂရင်းကာရီ",
+    "တိုဟူး",
+    "ကောက်ညှင်း",
+    "ထမင်းကြော်",
+    "မတ်စမန်",
+    "သင်္ဘောသီးသုပ်",
+    "ကော်ပြန့်",
+    "လက်ဖက်ရည်",
+    "ဝက်သား",
+    "ငါး"
+   ]
+  ],
+  "forbid": [
+   "အချက်အလက် မရှိ",
+   "အချက်အလက်မရှိ"
+  ]
+ },
+ {
+  "id": "ofood2-my",
+  "lang": "my",
+  "category": "out_of_menu",
+  "question": "ရှမ်းခေါက်ဆွဲ ရလား",
+  "expect": [
+   [
+    "မရှိ",
+    "မရောင်း"
+   ],
+   [
+    "တွမ်ယမ်",
+    "ပတ်ထိုင်း",
+    "ဂရင်းကာရီ",
+    "တိုဟူး",
+    "ကောက်ညှင်း",
+    "ထမင်းကြော်",
+    "မတ်စမန်",
+    "သင်္ဘောသီးသုပ်",
+    "ကော်ပြန့်",
+    "လက်ဖက်ရည်",
+    "ဝက်သား",
+    "ငါး"
+   ]
+  ],
+  "forbid": [
+   "အချက်အလက် မရှိ",
+   "အချက်အလက်မရှိ"
+  ]
+ },
+ {
+  "id": "ofood3-my",
+  "lang": "my",
+  "category": "out_of_menu",
+  "question": "လက်ဖက်သုပ် ရှိလား",
+  "expect": [
+   [
+    "မရှိ",
+    "မရောင်း"
+   ],
+   [
+    "တွမ်ယမ်",
+    "ပတ်ထိုင်း",
+    "ဂရင်းကာရီ",
+    "တိုဟူး",
+    "ကောက်ညှင်း",
+    "ထမင်းကြော်",
+    "မတ်စမန်",
+    "သင်္ဘောသီးသုပ်",
+    "ကော်ပြန့်",
+    "လက်ဖက်ရည်",
+    "ဝက်သား",
+    "ငါး"
+   ]
+  ],
+  "forbid": [
+   "အချက်အလက် မရှိ",
+   "အချက်အလက်မရှိ"
+  ]
+ },
+ {
+  "id": "ofood4-my",
+  "lang": "my",
+  "category": "out_of_menu",
+  "question": "နန်းကြီးသုပ် ရှိလား",
+  "expect": [
+   [
+    "မရှိ",
+    "မရောင်း"
+   ],
+   [
+    "တွမ်ယမ်",
+    "ပတ်ထိုင်း",
+    "ဂရင်းကာရီ",
+    "တိုဟူး",
+    "ကောက်ညှင်း",
+    "ထမင်းကြော်",
+    "မတ်စမန်",
+    "သင်္ဘောသီးသုပ်",
+    "ကော်ပြန့်",
+    "လက်ဖက်ရည်",
+    "ဝက်သား",
+    "ငါး"
+   ]
+  ],
+  "forbid": [
+   "အချက်အလက် မရှိ",
+   "အချက်အလက်မရှိ"
+  ]
+ },
+ {
+  "id": "ofood5-my",
+  "lang": "my",
+  "category": "out_of_menu",
+  "question": "အုန်းနို့ခေါက်ဆွဲ ရှိလား",
+  "expect": [
+   [
+    "မရှိ",
+    "မရောင်း"
+   ],
+   [
+    "တွမ်ယမ်",
+    "ပတ်ထိုင်း",
+    "ဂရင်းကာရီ",
+    "တိုဟူး",
+    "ကောက်ညှင်း",
+    "ထမင်းကြော်",
+    "မတ်စမန်",
+    "သင်္ဘောသီးသုပ်",
+    "ကော်ပြန့်",
+    "လက်ဖက်ရည်",
+    "ဝက်သား",
+    "ငါး"
+   ]
+  ],
+  "forbid": [
+   "အချက်အလက် မရှိ",
+   "အချက်အလက်မရှိ"
+  ]
+ },
+ {
+  "id": "ofood6-my",
+  "lang": "my",
+  "category": "out_of_menu",
+  "question": "ကြက်ဆီထမင်း စားချင်တယ်",
+  "expect": [
+   [
+    "မရှိ",
+    "မရောင်း"
+   ],
+   [
+    "တွမ်ယမ်",
+    "ပတ်ထိုင်း",
+    "ဂရင်းကာရီ",
+    "တိုဟူး",
+    "ကောက်ညှင်း",
+    "ထမင်းကြော်",
+    "မတ်စမန်",
+    "သင်္ဘောသီးသုပ်",
+    "ကော်ပြန့်",
+    "လက်ဖက်ရည်",
+    "ဝက်သား",
+    "ငါး"
+   ]
+  ],
+  "forbid": [
+   "အချက်အလက် မရှိ",
+   "အချက်အလက်မရှိ"
+  ]
+ },
+ {
+  "id": "ofood7-my",
+  "lang": "my",
+  "category": "out_of_menu",
+  "question": "ဝက်နံရိုးကင် ရှိလား",
+  "expect": [
+   [
+    "မရှိ",
+    "မရောင်း"
+   ],
+   [
+    "တွမ်ယမ်",
+    "ပတ်ထိုင်း",
+    "ဂရင်းကာရီ",
+    "တိုဟူး",
+    "ကောက်ညှင်း",
+    "ထမင်းကြော်",
+    "မတ်စမန်",
+    "သင်္ဘောသီးသုပ်",
+    "ကော်ပြန့်",
+    "လက်ဖက်ရည်",
+    "ဝက်သား",
+    "ငါး"
+   ]
+  ],
+  "forbid": [
+   "အချက်အလက် မရှိ",
+   "အချက်အလက်မရှိ"
+  ]
+ },
+ {
+  "id": "ofood8-my",
+  "lang": "my",
+  "category": "out_of_menu",
+  "question": "ကြေးအိုး ရှိလား",
+  "expect": [
+   [
+    "မရှိ",
+    "မရောင်း"
+   ],
+   [
+    "တွမ်ယမ်",
+    "ပတ်ထိုင်း",
+    "ဂရင်းကာရီ",
+    "တိုဟူး",
+    "ကောက်ညှင်း",
+    "ထမင်းကြော်",
+    "မတ်စမန်",
+    "သင်္ဘောသီးသုပ်",
+    "ကော်ပြန့်",
+    "လက်ဖက်ရည်",
+    "ဝက်သား",
+    "ငါး"
+   ]
+  ],
+  "forbid": [
+   "အချက်အလက် မရှိ",
+   "အချက်အလက်မရှိ"
+  ]
+ },
+ {
+  "id": "ofood9-my",
+  "lang": "my",
+  "category": "out_of_menu",
+  "question": "ကြက်သားဆတေး ရှိလား",
+  "expect": [
+   [
+    "မရှိ",
+    "မရောင်း"
+   ],
+   [
+    "တွမ်ယမ်",
+    "ပတ်ထိုင်း",
+    "ဂရင်းကာရီ",
+    "တိုဟူး",
+    "ကောက်ညှင်း",
+    "ထမင်းကြော်",
+    "မတ်စမန်",
+    "သင်္ဘောသီးသုပ်",
+    "ကော်ပြန့်",
+    "လက်ဖက်ရည်",
+    "ဝက်သား",
+    "ငါး"
+   ]
+  ],
+  "forbid": [
+   "အချက်အလက် မရှိ",
+   "အချက်အလက်မရှိ"
+  ]
+ },
+ {
+  "id": "ofood10-my",
+  "lang": "my",
+  "category": "out_of_menu",
+  "question": "မန်ကျည်းသီးဖျော်ရည် ရှိလား",
+  "expect": [
+   [
+    "မရှိ",
+    "မရောင်း"
+   ],
+   [
+    "တွမ်ယမ်",
+    "ပတ်ထိုင်း",
+    "ဂရင်းကာရီ",
+    "တိုဟူး",
+    "ကောက်ညှင်း",
+    "ထမင်းကြော်",
+    "မတ်စမန်",
+    "သင်္ဘောသီးသုပ်",
+    "ကော်ပြန့်",
+    "လက်ဖက်ရည်",
+    "ဝက်သား",
+    "ငါး"
+   ]
+  ],
+  "forbid": [
+   "အချက်အလက် မရှိ",
+   "အချက်အလက်မရှိ"
+  ]
+ },
+ {
+  "id": "ofood11-my",
+  "lang": "my",
+  "category": "out_of_menu",
+  "question": "ခေါက်ဆွဲကြော် ရလား",
+  "expect": [
+   [
+    "မရှိ",
+    "မရောင်း"
+   ],
+   [
+    "တွမ်ယမ်",
+    "ပတ်ထိုင်း",
+    "ဂရင်းကာရီ",
+    "တိုဟူး",
+    "ကောက်ညှင်း",
+    "ထမင်းကြော်",
+    "မတ်စမန်",
+    "သင်္ဘောသီးသုပ်",
+    "ကော်ပြန့်",
+    "လက်ဖက်ရည်",
+    "ဝက်သား",
+    "ငါး"
+   ]
+  ],
+  "forbid": [
+   "အချက်အလက် မရှိ",
+   "အချက်အလက်မရှိ"
+  ]
+ },
+ {
+  "id": "ofood12-my",
+  "lang": "my",
+  "category": "out_of_menu",
+  "question": "ကလေးစားစရာ ဘာရှိလဲ",
+  "expect": [
+   [
+    "မရှိ",
+    "မရောင်း"
+   ],
+   [
+    "တွမ်ယမ်",
+    "ပတ်ထိုင်း",
+    "ဂရင်းကာရီ",
+    "တိုဟူး",
+    "ကောက်ညှင်း",
+    "ထမင်းကြော်",
+    "မတ်စမန်",
+    "သင်္ဘောသီးသုပ်",
+    "ကော်ပြန့်",
+    "လက်ဖက်ရည်",
+    "ဝက်သား",
+    "ငါး"
+   ]
+  ],
+  "forbid": [
+   "အချက်အလက် မရှိ",
+   "အချက်အလက်မရှိ"
+  ]
+ }
+]
