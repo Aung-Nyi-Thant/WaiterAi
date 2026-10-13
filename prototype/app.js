@@ -40,7 +40,7 @@ const aiCtx = () => ({ lang: S.lang, restaurant: REST, table: TABLE, allergies: 
 const AIService = {
   async send(message, ctx) {
     // TODO: call your AI backend here, e.g.
-    // const res=await fetch('/api/ai/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,ctx})});
+    // const res=await apiCall('/api/ai/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,ctx})});
     // if(!res.ok)throw new Error('AI request failed');
     // return await res.json();   // -> { t, items, qa }
     await new Promise(r => setTimeout(r, 400));
