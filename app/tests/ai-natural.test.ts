@@ -156,9 +156,18 @@ describe("'... without shrimp' is a change for the kitchen, not a list of other 
 });
 
 describe("other everyday questions", () => {
-  it("'Do you have a kids menu?' is not answered with 'Here is our menu.'", async () => {
-    const r = await viaModel("Do you have a kids menu?", "I don't have a separate kids menu. Please ask the staff.");
-    expect(r.action.type).not.toBe("show_menu");
+  it("'Do you have a kids menu?' is not answered with 'Here is our menu.': no kids menu exists, the dishes that are not spicy are offered, the staff for allergies", async () => {
+    const r = await rules("Do you have a kids menu?");
+    expect(r.reply).toBe("We don't have a separate kids menu, but these dishes are not spicy: Grilled Pork Skewers (฿60), Chicken Fried Rice (฿80), Fresh Spring Rolls (฿85). If your child has an allergy, please tell the staff.");
+    expect(r.action.type).toBe("show_dishes");
+    expect((await rules("มีเมนูเด็กไหม", "th")).reply).toMatch(/^ทางร้านไม่มีเมนูเด็กโดยเฉพาะ แต่เมนูเหล่านี้ไม่เผ็ด: /);
+    expect((await rules("ကလေးစားစရာ ဘာရှိလဲ", "my")).reply).toMatch(/^ကလေးအတွက် သီးသန့်မီနူး မရှိပါဘူး/);
+  });
+  it("the kids answer applies the allergy profile and never lists a dessert or a drink as a meal", async () => {
+    const r = await rules("Do you have a kids meal?", "en", { profile: ["shellfish"] });
+    expect(r.reply).not.toContain("Shrimp Pad Thai");
+    expect(r.reply).toContain("allergy profile");
+    expect(r.reply).not.toMatch(/Mango|Thai Iced Tea/);
   });
   it.each(["What's your most famous dish?", "What's your signature dish?", "Which dish is a must try?"])("'%s' uses the real orders (popular)", async (q) => {
     const r = await rules(q);

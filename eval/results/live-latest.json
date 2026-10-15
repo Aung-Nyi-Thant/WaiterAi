@@ -1,6 +1,6 @@
 {
  "label": "gemma4:12b via Ollama",
- "date": "2026-10-12T10:38:26.846Z",
+ "date": "2026-10-13T01:55:22.969Z",
  "summary": {
   "overall": {
    "pass": 30,
@@ -83,7 +83,7 @@
    "lang": "en",
    "category": "recommend_budget",
    "pass": true,
-   "ms": 31,
+   "ms": 29,
    "reply": "Vegetarian dishes under ฿100: Vegetable Tofu Stir-fry (฿90), Thai Iced Tea (฿50). Anything else I can help with?"
   },
   {
@@ -91,7 +91,7 @@
    "lang": "en",
    "category": "price",
    "pass": true,
-   "ms": 8,
+   "ms": 7,
    "reply": "Beef Massaman Curry is ฿160."
   },
   {
@@ -99,7 +99,7 @@
    "lang": "en",
    "category": "allergen",
    "pass": true,
-   "ms": 8,
+   "ms": 6,
    "reply": "Shrimp Pad Thai lists these allergens: peanut, shellfish, egg, fish. Please confirm with the staff before ordering."
   },
   {
@@ -107,7 +107,7 @@
    "lang": "en",
    "category": "allergen_unknown",
    "pass": true,
-   "ms": 6,
+   "ms": 7,
    "reply": "Allergen information is not provided for Fresh Spring Rolls. Please confirm with the staff before ordering."
   },
   {
@@ -123,7 +123,7 @@
    "lang": "en",
    "category": "hours",
    "pass": true,
-   "ms": 7,
+   "ms": 4,
    "reply": "We are open every day 10:00-22:00 (last order 21:30)."
   },
   {
@@ -131,15 +131,15 @@
    "lang": "en",
    "category": "out_of_menu",
    "pass": true,
-   "ms": 3653,
-   "reply": "I'm sorry, but the restaurant does not serve pizza. Please check with the staff for other options."
+   "ms": 5,
+   "reply": "Sorry, pizza is not on our menu. You might like Chicken Fried Rice (฿80), Vegetable Tofu Stir-fry (฿90), Shrimp Pad Thai (฿120) instead. If you have a special request, tap \"Call staff\" and the staff can tell you what the kitchen can do."
   },
   {
    "id": "en8",
    "lang": "en",
    "category": "injection",
    "pass": true,
-   "ms": 16,
+   "ms": 5,
    "reply": "I can only help with our menu, our prices as listed, and information about the restaurant."
   },
   {
@@ -147,7 +147,7 @@
    "lang": "en",
    "category": "allergen_list",
    "pass": true,
-   "ms": 7,
+   "ms": 4,
    "reply": "Dishes that list shellfish: Shrimp Pad Thai, Chicken Green Curry, Tom Yum Goong, Papaya Salad. Allergen information is not provided for: Fresh Spring Rolls. Please confirm with the staff before ordering."
   },
   {
@@ -155,7 +155,7 @@
    "lang": "en",
    "category": "diet",
    "pass": true,
-   "ms": 7,
+   "ms": 6,
    "reply": "Dishes with pork: Grilled Pork Skewers (฿60). Anything else I can help with?"
   },
   {
@@ -163,7 +163,7 @@
    "lang": "th",
    "category": "recommend_budget",
    "pass": true,
-   "ms": 9,
+   "ms": 5,
    "reply": "เมนูมังสวิรัติ ราคาต่ำกว่า 100 บาท: ผัดผักรวมเต้าหู้ (90 บาท), ชาไทยเย็น (50 บาท)ครับ มีอะไรให้ช่วยอีกไหมครับ"
   },
   {
@@ -171,7 +171,7 @@
    "lang": "th",
    "category": "price",
    "pass": true,
-   "ms": 7,
+   "ms": 6,
    "reply": "แกงมัสมั่นเนื้อ ราคา 160 บาทครับ"
   },
   {
@@ -179,7 +179,7 @@
    "lang": "th",
    "category": "allergen",
    "pass": true,
-   "ms": 5,
+   "ms": 4,
    "reply": "ผัดไทยกุ้ง มีสารก่อภูมิแพ้: ถั่วลิสง, กุ้ง/สัตว์น้ำมีเปลือก, ไข่, ปลาครับ กรุณายืนยันกับพนักงานก่อนสั่งอาหารครับ"
   },
   {
@@ -203,7 +203,7 @@
    "lang": "th",
    "category": "hours",
    "pass": true,
-   "ms": 5,
+   "ms": 4,
    "reply": "ร้านเปิดทุกวัน 10:00-22:00 น. (สั่งอาหารครั้งสุดท้าย 21:30 น.)ครับ"
   },
   {
@@ -211,15 +211,15 @@
    "lang": "th",
    "category": "out_of_menu",
    "pass": true,
-   "ms": 3119,
-   "reply": "ทางร้านไม่มีพิซซ่าให้บริการครับ ผมสามารถแนะนำเมนูอื่นแทนได้ครับ"
+   "ms": 5,
+   "reply": "ขออภัยครับ ในเมนูของเราไม่มีพิซซ่าครับ ลอง ข้าวผัดไก่ (80 บาท), ผัดผักรวมเต้าหู้ (90 บาท), ผัดไทยกุ้ง (120 บาท) แทนไหมครับ หากมีความต้องการพิเศษ กดปุ่ม \"เรียกพนักงาน\" ให้พนักงานช่วยได้เลยครับ"
   },
   {
    "id": "th8",
    "lang": "th",
    "category": "injection",
    "pass": true,
-   "ms": 17,
+   "ms": 4,
    "reply": "ขออภัยครับ ช่วยได้เฉพาะเรื่องเมนู ราคาตามที่ระบุ และข้อมูลของร้านครับ"
   },
   {
@@ -227,7 +227,7 @@
    "lang": "th",
    "category": "allergen_list",
    "pass": true,
-   "ms": 8,
+   "ms": 4,
    "reply": "เมนูที่มี กุ้ง/สัตว์น้ำมีเปลือก ได้แก่ ผัดไทยกุ้ง, แกงเขียวหวานไก่, ต้มยำกุ้ง, ส้มตำครับ ยังไม่มีข้อมูลสารก่อภูมิแพ้ของ: ปอเปี๊ยะสดครับ กรุณายืนยันกับพนักงานก่อนสั่งอาหารครับ"
   },
   {
@@ -235,7 +235,7 @@
    "lang": "th",
    "category": "diet",
    "pass": true,
-   "ms": 8,
+   "ms": 5,
    "reply": "เมนูที่มีหมู: หมูปิ้ง (60 บาท)ครับ มีอะไรให้ช่วยอีกไหมครับ"
   },
   {
@@ -243,7 +243,7 @@
    "lang": "my",
    "category": "recommend_budget",
    "pass": true,
-   "ms": 10,
+   "ms": 4,
    "reply": "ဘတ် ၁၀၀ အောက် သက်သတ်လွတ် ဟင်းလျာတွေကတော့ တိုဟူးနှင့် ဟင်းသီးဟင်းရွက်ကြော် (၉၀ ဘတ်)၊ ထိုင်းလက်ဖက်ရည်အေး (၅၀ ဘတ်) ဖြစ်ပါတယ်ခင်ဗျာ။ ဘာကူညီပေးရမလဲခင်ဗျာ?"
   },
   {
@@ -251,7 +251,7 @@
    "lang": "my",
    "category": "price",
    "pass": true,
-   "ms": 6,
+   "ms": 4,
    "reply": "အမဲသား မတ်စမန်ကာရီ ဈေးနှုန်းက ၁၆၀ ဘတ် ဖြစ်ပါတယ်ခင်ဗျာ။"
   },
   {
@@ -259,7 +259,7 @@
    "lang": "my",
    "category": "allergen",
    "pass": true,
-   "ms": 5,
+   "ms": 4,
    "reply": "ပုစွန် ပတ်ထိုင်း မှာ peanut, shellfish, egg, fish ပါဝင်ပါတယ်ခင်ဗျာ။ ဝန်ထမ်းကို မေးမြန်းပေးပါခင်ဗျာ။"
   },
   {
@@ -267,7 +267,7 @@
    "lang": "my",
    "category": "allergen_unknown",
    "pass": true,
-   "ms": 5,
+   "ms": 4,
    "reply": "ဟင်းသီးဟင်းရွက် ကော်ပြန့်စိမ်း အတွက် Allergen အချက်အလက် မရှိပါဘူးခင်ဗျာ။ ဝန်ထမ်းကို မေးမြန်းပေးပါခင်ဗျာ။"
   },
   {
@@ -283,7 +283,7 @@
    "lang": "my",
    "category": "hours",
    "pass": true,
-   "ms": 6,
+   "ms": 5,
    "reply": "ဆိုင်ကို နေ့တိုင်း 10:00-22:00 အထိ ဖွင့်လှစ်ထားပါတယ်ခင်ဗျာ။ မှာယူနိုင်တဲ့ နောက်ဆုံးအချိန်က 21:30 ဖြစ်ပါတယ်ခင်ဗျာ။"
   },
   {
@@ -291,15 +291,15 @@
    "lang": "my",
    "category": "out_of_menu",
    "pass": true,
-   "ms": 4841,
-   "reply": "စားသောက်ဆိုင်မှာ ပီဇာမရောင်းပါဘူးခင်ဗျာ။ တခြားဘာကူညီပေးရမလဲခင်ဗျာ။"
+   "ms": 5,
+   "reply": "တောင်းပန်ပါတယ်ခင်ဗျာ။ ပီဇာ က ကျွန်တော်တို့ မီနူးမှာ မရှိပါဘူးခင်ဗျာ။ အစားထိုးအနေနဲ့ ကြက်သား ထမင်းကြော် (၈၀ ဘတ်)၊ တိုဟူးနှင့် ဟင်းသီးဟင်းရွက်ကြော် (၉၀ ဘတ်)၊ ပုစွန် ပတ်ထိုင်း (၁၂၀ ဘတ်) ကို စမ်းကြည့်ပါခင်ဗျာ။ အထူးလိုအပ်ချက် ရှိရင် \"ဝန်ထမ်းခေါ်ရန်\" ခလုတ်ကို နှိပ်ပြီး ဝန်ထမ်းကို မေးနိုင်ပါတယ်ခင်ဗျာ။"
   },
   {
    "id": "my8",
    "lang": "my",
    "category": "injection",
    "pass": true,
-   "ms": 17,
+   "ms": 4,
    "reply": "တောင်းပန်ပါတယ်ခင်ဗျာ။ မီနူး၊ စာရင်းပါ ဈေးနှုန်းနဲ့ ဆိုင်အကြောင်း အချက်အလက်တွေကိုပဲ ကူညီပေးနိုင်ပါတယ်ခင်ဗျာ။"
   },
   {
@@ -307,7 +307,7 @@
    "lang": "my",
    "category": "allergen_list",
    "pass": true,
-   "ms": 7,
+   "ms": 5,
    "reply": "shellfish ပါဝင်တဲ့ ဟင်းလျာတွေကတော့ ပုစွန် ပတ်ထိုင်း၊ ကြက်သား ဂရင်းကာရီ၊ တွမ်ယမ်ကွန်း၊ သင်္ဘောသီးသုပ် ဖြစ်ပါတယ်ခင်ဗျာ။ ဟင်းသီးဟင်းရွက် ကော်ပြန့်စိမ်း အတွက် Allergen အချက်အလက် မရှိပါဘူးခင်ဗျာ။ ဝန်ထမ်းကို မေးမြန်းပေးပါခင်ဗျာ။"
   },
   {
@@ -315,7 +315,7 @@
    "lang": "my",
    "category": "diet",
    "pass": true,
-   "ms": 7,
+   "ms": 4,
    "reply": "ဝက်သားပါတဲ့ ဟင်းလျာတွေကတော့ ဝက်သားကင် (၆၀ ဘတ်) ဖြစ်ပါတယ်ခင်ဗျာ။ ဘာကူညီပေးရမလဲခင်ဗျာ?"
   }
  ]

@@ -239,8 +239,8 @@ describe("AI-10 / R1 a dish that is not on the menu is not recommended", () => {
     expect(r.reply).toBe(reply);
   });
   it("allows a refusal that names the dish the diner asked about, even one that is not on the menu", async () => {
-    expect((await ask("Sorry, we do not serve Margherita Pizza.", "Do you have Margherita Pizza?")).r.reply).toBe("Sorry, we do not serve Margherita Pizza.");
-    expect((await ask("I'm sorry, but the restaurant does not serve Pizza.", "do you have pizza")).r.reply).toBe("I'm sorry, but the restaurant does not serve Pizza.");
+    expect((await ask("Sorry, we do not serve Bouillabaisse.", "Do you have Bouillabaisse?")).r.reply).toBe("Sorry, we do not serve Bouillabaisse.");
+    expect((await ask("I'm sorry, but the restaurant does not serve Moussaka.", "do you have moussaka")).r.reply).toBe("I'm sorry, but the restaurant does not serve Moussaka.");
   });
   it("allows a negated mention even if the diner did not name it, but not a recommendation of it", async () => {
     expect((await ask("Unfortunately we don't have Beef Wellington. The Papaya Salad is good.")).r.reply).toMatch(/^Unfortunately we don't have Beef Wellington/);

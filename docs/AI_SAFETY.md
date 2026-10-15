@@ -118,6 +118,22 @@ Keyword scoring is not enough, so **every reply was read by a person** (a projec
 
 What is still weak (measured, not fixed): **Burmese speed.** The model's median Burmese answer takes 6.6 s against 3.0 s in English (Burmese text is several times more tokens), and 2-3 of about 23 model-answered Burmese questions still hit the 15 s limit and show "AI unavailable" (before the changes: 7). One Thai reply was rejected because the model misspelled a dish name (the guard does what it should, the diner gets "I don't have that information"). The question set was written by the team's AI assistant, so it shares its blind spots, and it covers one 13-dish menu.
 
+### Food that is not on the menu (added 2026-10-13)
+
+A diner asks for pizza, beer, tom kha gai or a kids meal. The old answer was "I'm sorry, but the restaurant does not serve pizza. I don't have any information regarding that item." (the owner's own rule says never to say "no information" for a missing dish) or just "please check with the staff", with no dish to try. Measured on `eval/off_menu_questions.json` (12 foods a Thai menu might have, in English, Thai and Burmese; pass = says it is not on the menu, names a real dish, never says "no information"): **5 of 36 (14%) before, 36 of 36 (100%) after**.
+
+What the answer is now (`offMenuFoods()` and `notOnMenuReply()` in `ai.ts`, a word list of about 200 foods and drinks in the three languages, checked against this restaurant's own data):
+1. **Plainly:** "Sorry, pizza is not on our menu." The food is named the way the diner typed it ("BBQ ribs", "curry puffs").
+2. **A closer alternative, with prices:** the same kind of thing from the menu: mains for a pizza, a drink for a beer, a dessert for a cake, a soup for tom kha gai, a fish dish for sushi, a starter for tempura. Sold-out dishes and, with an allergy profile, dishes that do not fit it are left out (and the profile note is added).
+3. **The staff for a special request:** "If you have a special request, tap Call staff and the staff can tell you what the kitchen can do." It never says the kitchen can make it.
+4. It is a rule, not the model: it takes milliseconds and works when the AI is off, and Burmese no longer has to wait for the model for these questions.
+
+It does not say "not on our menu" when the restaurant does have the word anywhere (a dish, an ingredient, a category, an FAQ, a special), when the diner names a dish that is on the menu, or when the diner says "I don't like pizza". A food that is not in the word list still goes to the model, whose prompt now asks for the same shape of answer (not on our menu, the closest dishes with prices, the staff). The owner sees these questions in Insights as "Food that is not on your menu", which tells them what to add.
+
+"Do you have a kids menu?" is answered the same way: there is none, these dishes are not spicy, tell the staff about any allergy.
+
+Limit: the word list is finite. A food it does not know (and the model then answers) is the weak case; Burmese model answers can still time out (see above).
+
 ## When you change the AI
 
 1. Add or change a test first (`ai-rules`, `ai-guard`, `chat-api`) and, for a new kind of question, a row in `eval/questions.json`.

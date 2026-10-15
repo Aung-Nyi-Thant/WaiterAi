@@ -4,7 +4,7 @@ import { itemsOf } from "@/modules/platform/menu";
 import { ALLERGEN_LABEL } from "@/modules/platform/constants";
 import { json, unauthorized } from "@/modules/platform/http";
 
-const LABEL: Record<string, string> = { allergens: "Allergens", vegetarian: "Vegetarian options", prices: "Prices", hours: "Opening hours", spicy: "How spicy is it?", recommend: "Recommendations", staff: "Calling the staff", other: "Other questions" };
+const LABEL: Record<string, string> = { allergens: "Allergens", vegetarian: "Vegetarian options", prices: "Prices", hours: "Opening hours", spicy: "How spicy is it?", recommend: "Recommendations", not_on_menu: "Food that is not on your menu", staff: "Calling the staff", other: "Other questions" };
 
 export async function GET(req: Request) {
   const s = await ownerSession(); if (!s) return unauthorized();

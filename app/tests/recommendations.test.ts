@@ -80,7 +80,7 @@ describe("type of dish and diet", () => {
   });
   it("a category the owner does not have is ignored (the question then goes to the model)", async () => {
     mockModel("We have a few choices.");
-    const r = await answer("any pizza?", "en", await aiCtx({ categories: categoriesOf(1) }));
+    const r = await answer("any salad?", "en", await aiCtx({ categories: categoriesOf(1) }));
     expect(r.usedModel).toBe(true);
   });
 });

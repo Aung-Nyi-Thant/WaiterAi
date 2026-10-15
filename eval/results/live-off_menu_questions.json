@@ -1,0 +1,325 @@
+{
+ "label": "gemma4:12b via Ollama",
+ "date": "2026-10-13T01:55:22.670Z",
+ "summary": {
+  "overall": {
+   "pass": 36,
+   "total": 36,
+   "pct": 1
+  },
+  "byLang": {
+   "en": {
+    "pass": 12,
+    "total": 12,
+    "pct": 1
+   },
+   "my": {
+    "pass": 12,
+    "total": 12,
+    "pct": 1
+   },
+   "th": {
+    "pass": 12,
+    "total": 12,
+    "pct": 1
+   }
+  },
+  "byCategory": {
+   "out_of_menu": {
+    "pass": 36,
+    "total": 36,
+    "pct": 1
+   }
+  }
+ },
+ "rows": [
+  {
+   "id": "ofood1-en",
+   "lang": "en",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 30,
+   "reply": "Sorry, tom kha gai is not on our menu. You might like Tom Yum Goong (฿180) instead. If you have a special request, tap \"Call staff\" and the staff can tell you what the kitchen can do."
+  },
+  {
+   "id": "ofood2-en",
+   "lang": "en",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 8,
+   "reply": "Sorry, pad kra pao is not on our menu. You might like Chicken Fried Rice (฿80), Vegetable Tofu Stir-fry (฿90), Shrimp Pad Thai (฿120) instead. If you have a special request, tap \"Call staff\" and the staff can tell you what the kitchen can do."
+  },
+  {
+   "id": "ofood3-en",
+   "lang": "en",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 8,
+   "reply": "Sorry, sticky rice with durian is not on our menu. You might like Mango Sticky Rice (฿100) instead. If you have a special request, tap \"Call staff\" and the staff can tell you what the kitchen can do."
+  },
+  {
+   "id": "ofood4-en",
+   "lang": "en",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 7,
+   "reply": "Sorry, tempura is not on our menu. You might like Grilled Pork Skewers (฿60), Fresh Spring Rolls (฿85) instead. If you have a special request, tap \"Call staff\" and the staff can tell you what the kitchen can do."
+  },
+  {
+   "id": "ofood5-en",
+   "lang": "en",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 7,
+   "reply": "Sorry, curry puffs is not on our menu. You might like Grilled Pork Skewers (฿60), Fresh Spring Rolls (฿85) instead. If you have a special request, tap \"Call staff\" and the staff can tell you what the kitchen can do."
+  },
+  {
+   "id": "ofood6-en",
+   "lang": "en",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 6,
+   "reply": "Sorry, hotpot is not on our menu. You might like Tom Yum Goong (฿180) instead. If you have a special request, tap \"Call staff\" and the staff can tell you what the kitchen can do."
+  },
+  {
+   "id": "ofood7-en",
+   "lang": "en",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 6,
+   "reply": "Sorry, bbq ribs is not on our menu. You might like Chicken Fried Rice (฿80), Vegetable Tofu Stir-fry (฿90), Shrimp Pad Thai (฿120) instead. If you have a special request, tap \"Call staff\" and the staff can tell you what the kitchen can do."
+  },
+  {
+   "id": "ofood8-en",
+   "lang": "en",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 6,
+   "reply": "Sorry, boat noodles is not on our menu. You might like Tom Yum Goong (฿180) instead. If you have a special request, tap \"Call staff\" and the staff can tell you what the kitchen can do."
+  },
+  {
+   "id": "ofood9-en",
+   "lang": "en",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 5,
+   "reply": "Sorry, satay is not on our menu. You might like Grilled Pork Skewers (฿60), Fresh Spring Rolls (฿85) instead. If you have a special request, tap \"Call staff\" and the staff can tell you what the kitchen can do."
+  },
+  {
+   "id": "ofood10-en",
+   "lang": "en",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 6,
+   "reply": "Sorry, mango lassi is not on our menu. You might like Thai Iced Tea (฿50) instead. If you have a special request, tap \"Call staff\" and the staff can tell you what the kitchen can do."
+  },
+  {
+   "id": "ofood11-en",
+   "lang": "en",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 5,
+   "reply": "Sorry, pad see ew is not on our menu. You might like Chicken Fried Rice (฿80), Vegetable Tofu Stir-fry (฿90), Shrimp Pad Thai (฿120) instead. If you have a special request, tap \"Call staff\" and the staff can tell you what the kitchen can do."
+  },
+  {
+   "id": "ofood12-en",
+   "lang": "en",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 5,
+   "reply": "We don't have a separate kids menu, but these dishes are not spicy: Grilled Pork Skewers (฿60), Chicken Fried Rice (฿80), Fresh Spring Rolls (฿85). If your child has an allergy, please tell the staff."
+  },
+  {
+   "id": "ofood1-th",
+   "lang": "th",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 8,
+   "reply": "ขออภัยครับ ในเมนูของเราไม่มีต้มข่าไก่ครับ ลอง ต้มยำกุ้ง (180 บาท) แทนไหมครับ หากมีความต้องการพิเศษ กดปุ่ม \"เรียกพนักงาน\" ให้พนักงานช่วยได้เลยครับ"
+  },
+  {
+   "id": "ofood2-th",
+   "lang": "th",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 5,
+   "reply": "ขออภัยครับ ในเมนูของเราไม่มีผัดกะเพราครับ ลอง ข้าวผัดไก่ (80 บาท), ผัดผักรวมเต้าหู้ (90 บาท), ผัดไทยกุ้ง (120 บาท) แทนไหมครับ หากมีความต้องการพิเศษ กดปุ่ม \"เรียกพนักงาน\" ให้พนักงานช่วยได้เลยครับ"
+  },
+  {
+   "id": "ofood3-th",
+   "lang": "th",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 4,
+   "reply": "ขออภัยครับ ในเมนูของเราไม่มีทุเรียนครับ ลอง ข้าวเหนียวมะม่วง (100 บาท) แทนไหมครับ หากมีความต้องการพิเศษ กดปุ่ม \"เรียกพนักงาน\" ให้พนักงานช่วยได้เลยครับ"
+  },
+  {
+   "id": "ofood4-th",
+   "lang": "th",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 5,
+   "reply": "ขออภัยครับ ในเมนูของเราไม่มีเทมปุระครับ ลอง หมูปิ้ง (60 บาท), ปอเปี๊ยะสด (85 บาท) แทนไหมครับ หากมีความต้องการพิเศษ กดปุ่ม \"เรียกพนักงาน\" ให้พนักงานช่วยได้เลยครับ"
+  },
+  {
+   "id": "ofood5-th",
+   "lang": "th",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 4,
+   "reply": "ขออภัยครับ ในเมนูของเราไม่มีกะหรี่ปั๊บครับ ลอง หมูปิ้ง (60 บาท), ปอเปี๊ยะสด (85 บาท) แทนไหมครับ หากมีความต้องการพิเศษ กดปุ่ม \"เรียกพนักงาน\" ให้พนักงานช่วยได้เลยครับ"
+  },
+  {
+   "id": "ofood6-th",
+   "lang": "th",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 5,
+   "reply": "ขออภัยครับ ในเมนูของเราไม่มีหม้อไฟครับ ลอง ต้มยำกุ้ง (180 บาท) แทนไหมครับ หากมีความต้องการพิเศษ กดปุ่ม \"เรียกพนักงาน\" ให้พนักงานช่วยได้เลยครับ"
+  },
+  {
+   "id": "ofood7-th",
+   "lang": "th",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 5,
+   "reply": "ขออภัยครับ ในเมนูของเราไม่มีซี่โครงครับ ลอง ข้าวผัดไก่ (80 บาท), ผัดผักรวมเต้าหู้ (90 บาท), ผัดไทยกุ้ง (120 บาท) แทนไหมครับ หากมีความต้องการพิเศษ กดปุ่ม \"เรียกพนักงาน\" ให้พนักงานช่วยได้เลยครับ"
+  },
+  {
+   "id": "ofood8-th",
+   "lang": "th",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 5,
+   "reply": "ขออภัยครับ ในเมนูของเราไม่มีก๋วยเตี๋ยวครับ ลอง ต้มยำกุ้ง (180 บาท) แทนไหมครับ หากมีความต้องการพิเศษ กดปุ่ม \"เรียกพนักงาน\" ให้พนักงานช่วยได้เลยครับ"
+  },
+  {
+   "id": "ofood9-th",
+   "lang": "th",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 4,
+   "reply": "ขออภัยครับ ในเมนูของเราไม่มีสะเต๊ะครับ ลอง หมูปิ้ง (60 บาท), ปอเปี๊ยะสด (85 บาท) แทนไหมครับ หากมีความต้องการพิเศษ กดปุ่ม \"เรียกพนักงาน\" ให้พนักงานช่วยได้เลยครับ"
+  },
+  {
+   "id": "ofood10-th",
+   "lang": "th",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 4,
+   "reply": "ขออภัยครับ ในเมนูของเราไม่มีลัสซี่ครับ ลอง ชาไทยเย็น (50 บาท) แทนไหมครับ หากมีความต้องการพิเศษ กดปุ่ม \"เรียกพนักงาน\" ให้พนักงานช่วยได้เลยครับ"
+  },
+  {
+   "id": "ofood11-th",
+   "lang": "th",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 5,
+   "reply": "ขออภัยครับ ในเมนูของเราไม่มีผัดซีอิ๊วครับ ลอง ข้าวผัดไก่ (80 บาท), ผัดผักรวมเต้าหู้ (90 บาท), ผัดไทยกุ้ง (120 บาท) แทนไหมครับ หากมีความต้องการพิเศษ กดปุ่ม \"เรียกพนักงาน\" ให้พนักงานช่วยได้เลยครับ"
+  },
+  {
+   "id": "ofood12-th",
+   "lang": "th",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 4,
+   "reply": "ทางร้านไม่มีเมนูเด็กโดยเฉพาะ แต่เมนูเหล่านี้ไม่เผ็ด: หมูปิ้ง (60 บาท), ข้าวผัดไก่ (80 บาท), ปอเปี๊ยะสด (85 บาท)ครับ หากเด็กมีอาการแพ้อาหาร กรุณาแจ้งพนักงานครับ"
+  },
+  {
+   "id": "ofood1-my",
+   "lang": "my",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 5,
+   "reply": "တောင်းပန်ပါတယ်ခင်ဗျာ။ မုန့်ဟင်းခါး က ကျွန်တော်တို့ မီနူးမှာ မရှိပါဘူးခင်ဗျာ။ အစားထိုးအနေနဲ့ တွမ်ယမ်ကွန်း (၁၈၀ ဘတ်) ကို စမ်းကြည့်ပါခင်ဗျာ။ အထူးလိုအပ်ချက် ရှိရင် \"ဝန်ထမ်းခေါ်ရန်\" ခလုတ်ကို နှိပ်ပြီး ဝန်ထမ်းကို မေးနိုင်ပါတယ်ခင်ဗျာ။"
+  },
+  {
+   "id": "ofood2-my",
+   "lang": "my",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 4,
+   "reply": "တောင်းပန်ပါတယ်ခင်ဗျာ။ ရှမ်းခေါက်ဆွဲ က ကျွန်တော်တို့ မီနူးမှာ မရှိပါဘူးခင်ဗျာ။ အစားထိုးအနေနဲ့ ကြက်သား ထမင်းကြော် (၈၀ ဘတ်)၊ တိုဟူးနှင့် ဟင်းသီးဟင်းရွက်ကြော် (၉၀ ဘတ်)၊ ပုစွန် ပတ်ထိုင်း (၁၂၀ ဘတ်) ကို စမ်းကြည့်ပါခင်ဗျာ။ အထူးလိုအပ်ချက် ရှိရင် \"ဝန်ထမ်းခေါ်ရန်\" ခလုတ်ကို နှိပ်ပြီး ဝန်ထမ်းကို မေးနိုင်ပါတယ်ခင်ဗျာ။"
+  },
+  {
+   "id": "ofood3-my",
+   "lang": "my",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 9,
+   "reply": "တောင်းပန်ပါတယ်ခင်ဗျာ။ လက်ဖက်သုပ် က ကျွန်တော်တို့ မီနူးမှာ မရှိပါဘူးခင်ဗျာ။ အစားထိုးအနေနဲ့ ဝက်သားကင် (၆၀ ဘတ်)၊ ဟင်းသီးဟင်းရွက် ကော်ပြန့်စိမ်း (၈၅ ဘတ်) ကို စမ်းကြည့်ပါခင်ဗျာ။ အထူးလိုအပ်ချက် ရှိရင် \"ဝန်ထမ်းခေါ်ရန်\" ခလုတ်ကို နှိပ်ပြီး ဝန်ထမ်းကို မေးနိုင်ပါတယ်ခင်ဗျာ။"
+  },
+  {
+   "id": "ofood4-my",
+   "lang": "my",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 11,
+   "reply": "တောင်းပန်ပါတယ်ခင်ဗျာ။ နန်းကြီးသုပ် က ကျွန်တော်တို့ မီနူးမှာ မရှိပါဘူးခင်ဗျာ။ အစားထိုးအနေနဲ့ ကြက်သား ထမင်းကြော် (၈၀ ဘတ်)၊ တိုဟူးနှင့် ဟင်းသီးဟင်းရွက်ကြော် (၉၀ ဘတ်)၊ ပုစွန် ပတ်ထိုင်း (၁၂၀ ဘတ်) ကို စမ်းကြည့်ပါခင်ဗျာ။ အထူးလိုအပ်ချက် ရှိရင် \"ဝန်ထမ်းခေါ်ရန်\" ခလုတ်ကို နှိပ်ပြီး ဝန်ထမ်းကို မေးနိုင်ပါတယ်ခင်ဗျာ။"
+  },
+  {
+   "id": "ofood5-my",
+   "lang": "my",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 6,
+   "reply": "တောင်းပန်ပါတယ်ခင်ဗျာ။ အုန်းနို့ခေါက်ဆွဲ က ကျွန်တော်တို့ မီနူးမှာ မရှိပါဘူးခင်ဗျာ။ အစားထိုးအနေနဲ့ တွမ်ယမ်ကွန်း (၁၈၀ ဘတ်) ကို စမ်းကြည့်ပါခင်ဗျာ။ အထူးလိုအပ်ချက် ရှိရင် \"ဝန်ထမ်းခေါ်ရန်\" ခလုတ်ကို နှိပ်ပြီး ဝန်ထမ်းကို မေးနိုင်ပါတယ်ခင်ဗျာ။"
+  },
+  {
+   "id": "ofood6-my",
+   "lang": "my",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 5,
+   "reply": "တောင်းပန်ပါတယ်ခင်ဗျာ။ ကြက်ဆီထမင်း က ကျွန်တော်တို့ မီနူးမှာ မရှိပါဘူးခင်ဗျာ။ အစားထိုးအနေနဲ့ ကြက်သား ထမင်းကြော် (၈၀ ဘတ်)၊ တိုဟူးနှင့် ဟင်းသီးဟင်းရွက်ကြော် (၉၀ ဘတ်)၊ ပုစွန် ပတ်ထိုင်း (၁၂၀ ဘတ်) ကို စမ်းကြည့်ပါခင်ဗျာ။ အထူးလိုအပ်ချက် ရှိရင် \"ဝန်ထမ်းခေါ်ရန်\" ခလုတ်ကို နှိပ်ပြီး ဝန်ထမ်းကို မေးနိုင်ပါတယ်ခင်ဗျာ။"
+  },
+  {
+   "id": "ofood7-my",
+   "lang": "my",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 4,
+   "reply": "တောင်းပန်ပါတယ်ခင်ဗျာ။ ဝက်နံရိုး က ကျွန်တော်တို့ မီနူးမှာ မရှိပါဘူးခင်ဗျာ။ အစားထိုးအနေနဲ့ ကြက်သား ထမင်းကြော် (၈၀ ဘတ်)၊ တိုဟူးနှင့် ဟင်းသီးဟင်းရွက်ကြော် (၉၀ ဘတ်)၊ ပုစွန် ပတ်ထိုင်း (၁၂၀ ဘတ်) ကို စမ်းကြည့်ပါခင်ဗျာ။ အထူးလိုအပ်ချက် ရှိရင် \"ဝန်ထမ်းခေါ်ရန်\" ခလုတ်ကို နှိပ်ပြီး ဝန်ထမ်းကို မေးနိုင်ပါတယ်ခင်ဗျာ။"
+  },
+  {
+   "id": "ofood8-my",
+   "lang": "my",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 5,
+   "reply": "တောင်းပန်ပါတယ်ခင်ဗျာ။ ကြေးအိုး က ကျွန်တော်တို့ မီနူးမှာ မရှိပါဘူးခင်ဗျာ။ အစားထိုးအနေနဲ့ တွမ်ယမ်ကွန်း (၁၈၀ ဘတ်) ကို စမ်းကြည့်ပါခင်ဗျာ။ အထူးလိုအပ်ချက် ရှိရင် \"ဝန်ထမ်းခေါ်ရန်\" ခလုတ်ကို နှိပ်ပြီး ဝန်ထမ်းကို မေးနိုင်ပါတယ်ခင်ဗျာ။"
+  },
+  {
+   "id": "ofood9-my",
+   "lang": "my",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 5,
+   "reply": "တောင်းပန်ပါတယ်ခင်ဗျာ။ ဆတေး က ကျွန်တော်တို့ မီနူးမှာ မရှိပါဘူးခင်ဗျာ။ အစားထိုးအနေနဲ့ ဝက်သားကင် (၆၀ ဘတ်)၊ ဟင်းသီးဟင်းရွက် ကော်ပြန့်စိမ်း (၈၅ ဘတ်) ကို စမ်းကြည့်ပါခင်ဗျာ။ အထူးလိုအပ်ချက် ရှိရင် \"ဝန်ထမ်းခေါ်ရန်\" ခလုတ်ကို နှိပ်ပြီး ဝန်ထမ်းကို မေးနိုင်ပါတယ်ခင်ဗျာ။"
+  },
+  {
+   "id": "ofood10-my",
+   "lang": "my",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 4,
+   "reply": "တောင်းပန်ပါတယ်ခင်ဗျာ။ မန်ကျည်းသီးဖျော်ရည် က ကျွန်တော်တို့ မီနူးမှာ မရှိပါဘူးခင်ဗျာ။ အစားထိုးအနေနဲ့ ထိုင်းလက်ဖက်ရည်အေး (၅၀ ဘတ်) ကို စမ်းကြည့်ပါခင်ဗျာ။ အထူးလိုအပ်ချက် ရှိရင် \"ဝန်ထမ်းခေါ်ရန်\" ခလုတ်ကို နှိပ်ပြီး ဝန်ထမ်းကို မေးနိုင်ပါတယ်ခင်ဗျာ။"
+  },
+  {
+   "id": "ofood11-my",
+   "lang": "my",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 4,
+   "reply": "တောင်းပန်ပါတယ်ခင်ဗျာ။ ခေါက်ဆွဲကြော် က ကျွန်တော်တို့ မီနူးမှာ မရှိပါဘူးခင်ဗျာ။ အစားထိုးအနေနဲ့ ကြက်သား ထမင်းကြော် (၈၀ ဘတ်)၊ တိုဟူးနှင့် ဟင်းသီးဟင်းရွက်ကြော် (၉၀ ဘတ်)၊ ပုစွန် ပတ်ထိုင်း (၁၂၀ ဘတ်) ကို စမ်းကြည့်ပါခင်ဗျာ။ အထူးလိုအပ်ချက် ရှိရင် \"ဝန်ထမ်းခေါ်ရန်\" ခလုတ်ကို နှိပ်ပြီး ဝန်ထမ်းကို မေးနိုင်ပါတယ်ခင်ဗျာ။"
+  },
+  {
+   "id": "ofood12-my",
+   "lang": "my",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 5,
+   "reply": "ကလေးအတွက် သီးသန့်မီနူး မရှိပါဘူးခင်ဗျာ။ ဒါပေမဲ့ ဒီဟင်းလျာတွေက မစပ်ပါဘူး: ဝက်သားကင် (၆၀ ဘတ်)၊ ကြက်သား ထမင်းကြော် (၈၀ ဘတ်)၊ ဟင်းသီးဟင်းရွက် ကော်ပြန့်စိမ်း (၈၅ ဘတ်)ခင်ဗျာ။ ကလေးမှာ ဓာတ်မတည့်တာရှိရင် ဝန်ထမ်းကို ပြောပါခင်ဗျာ။"
+  }
+ ]
+}
