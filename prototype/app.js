@@ -157,7 +157,7 @@ const listH = () => { const L = filtered(); return L.length ? L.map(card).join('
 
 // header() = top bar: ShopAI logo · shop name · table · staff call button 🛎️ · cart 🛒 · language switch
 function header() {
-  return `<header><div class="top"><div class="logo">ShopAI</div><div class="tt"><b>${REST}</b><small>${t('table')} ${TABLE}</small></div><button class="ib" data-a="modal" data-m="staff" aria-label="${t('staff')}">🛎️</button><button class="ib" data-a="nav" data-v="cart" aria-label="${t('cart')}">🛒${cnt() ? `<span class="bd">${cnt()}</span>` : ''}</button></div>
+  return `<header><div class="top"><div class="logo">ShopAI</div><div class="tt"><b>${REST}</b><small>${t('table')} ${TABLE}</small></div><button class="ib txt" data-a="modal" data-m="staff" aria-label="${t('staff')}">${t('staff')}</button><button class="ib" data-a="nav" data-v="cart" aria-label="${t('cart')}">🛒${cnt() ? `<span class="bd">${cnt()}</span>` : ''}</button></div>
 <div class="lang">${['th', 'en', 'my'].map(l => `<button data-a="lang" data-l="${l}" class="${S.lang == l ? 'on' : ''}">${{ th: 'ไทย', en: 'EN', my: 'မြန်မာ' }[l]}</button>`).join('')}</div></header>`
 }
 
@@ -221,7 +221,7 @@ function detail() {
 <p style="margin-top:8px;font-size:13px">🥗 ${t('diet')}: <b>${vegT(m)}</b> · 🚫 ${t('al')}: <b>${m.al.length ? m.al.map(k => tr(AL[k])).join(', ') : t('none')}</b></p>
 <h2>🍽️ ${t('otype')}</h2><div class="opt"><button class="${D.ot == 'dine' ? 'on' : ''}" data-a="dot" data-v="dine">🍽️ ${t('dine')}</button><button class="${D.ot == 'take' ? 'on' : ''}" data-a="dot" data-v="take">🥡 ${t('take')}</button></div>
 ${m.sp ? `<h2>🌶️ ${t('spice')}</h2><div class="opt">${SP.map((s, i) => `<button class="${D.spice == i ? 'on' : ''}" data-a="spice" data-i="${i}">${tr(s)}</button>`).join('')}</div>` : ''}
-${m.cz ? `<h2>${t('mods')}</h2><div class="opt">${Object.keys(MODS).map(k => `<button class="${D.mods.includes(k) ? 'on' : ''}" data-a="mod" data-k="${k}">${tr(MODS[k])}</button>`).join('')}</div><h2>${t('note')}</h2><textarea rows="2" id="note">${D.note}</textarea>` : ''}
+<h2>${t('note')}</h2><textarea rows="2" id="note" placeholder="${t('note')}">${D.note}</textarea>
 <div class="row" style="margin-top:14px"><div class="qt"><button data-a="dq" data-d="-1">−</button>${D.qty}<button data-a="dq" data-d="1">+</button></div><span class="pr" style="text-align:right;font-size:20px">฿${tot}</span></div>
 <button class="btn" data-a="addD">${t('add')} · ฿${tot}</button><button class="btn alt" data-a="closeM">${t('close')}</button></div></div></div>`
 }

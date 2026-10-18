@@ -232,7 +232,21 @@ header {
   border-radius: 50%;
   background: var(--bg);
   font-size: 18px;
-  border: 1px solid #eee
+  border: 1px solid #eee;
+  cursor: pointer;
+}
+
+.ib.txt {
+  width: auto;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 19px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
 }
 
 .bd {
