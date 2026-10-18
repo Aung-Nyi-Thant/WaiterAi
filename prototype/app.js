@@ -69,6 +69,7 @@ async function ask(x) {
 // $ = shorthand for document.querySelector, I = language index in the translation array [Thai, English, Myanmar]
 // P = URL parameters (used for shop/table from QR such as ?restaurant=HaChi%20Kyu&table=5)
 const $ = s => document.querySelector(s), I = { th: 0, en: 1, my: 2 }, P = new URLSearchParams(location.search);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 // Shop name and table number (default values: HaChi Kyu / Table 5)
 const REST = P.get('restaurant') || 'HaChi Kyu', TABLE = P.get('table') || '5';
 
@@ -147,7 +148,7 @@ const defL = id => ({ id: +id, qty: 1, spice: null, mods: [], note: '', ot: 'din
 
 // card(menu) = menu card: image (emoji) → name → description (category) → warning → price/rating/button +
 //   click card = open details (action 'open'), click + button = add to cart immediately (action 'quick')
-const card = m => `<div class="card${m.s ? ' so' : ''}" data-a="open" data-id="${m.id}"><div class="img" style="background:${m.bg}">${m.e}</div><div class="cb"><b>${tr(m.n)}</b><small>${tr(m.d)}</small>${m.s ? `<span class="tag so-b">${t('soldT')}</span>` : ''}${warn(m)}<div class="row"><span class="pr">฿${m.p}</span><span>${m.r ? '⭐' + m.r : ''}</span><button class="add" aria-label="${t('add')}" data-a="quick" data-id="${m.id}">+</button></div></div></div>`;
+const card = m => `<div class="card${m.s ? ' so' : ''}" data-a="open" data-id="${m.id}"><div class="img">${m.img ? `<img src="${m.img}" alt="${esc(tr(m.n))}" loading="lazy">` : ''}</div><div class="cb"><b>${tr(m.n)}</b><small>${tr(m.d)}</small>${m.s ? `<span class="tag so-b">${t('soldT')}</span>` : ''}${warn(m)}<div class="row"><span class="pr">฿${m.p}</span><span>${m.r ? '⭐' + m.r : ''}</span><button class="add" aria-label="${t('add')}" data-a="quick" data-id="${m.id}">+</button></div></div></div>`;
 
 // filtered() = items matching the selected category + search term (searches across all 3 languages: name, category, ingredients)
 function filtered() { const q = S.q.trim().toLowerCase(); return MENU.filter(m => (S.cat == 'all' || m.c.includes(S.cat)) && (!q || [...m.n, ...m.d, ...m.ing.flatMap(i => ingA(i)), ...m.c.flatMap(c => CATS.find(x => x[0] == c) ? CATS.find(x => x[0] == c)[2] : [])].some(x => x.toLowerCase().includes(q)))) }
@@ -156,7 +157,7 @@ const listH = () => { const L = filtered(); return L.length ? L.map(card).join('
 
 // header() = top bar: ShopAI logo · shop name · table · staff call button 🛎️ · cart 🛒 · language switch
 function header() {
-  return `<header><div class="top"><div class="logo">ShopAI</div><div class="tt"><b>${REST}</b><small>${t('table')} ${TABLE}</small></div><button class="ib" data-a="modal" data-m="staff" aria-label="${t('staff')}">🛎️</button><button class="ib" data-a="nav" data-v="cart" aria-label="${t('cart')}">🛒${cnt() ? `<span class="bd">${cnt()}</span>` : ''}</button></div>
+  return `<header><div class="top"><div class="logo">ShopAI</div><div class="tt"><b>${REST}</b><small>${t('table')} ${TABLE}</small></div><button class="ib txt" data-a="modal" data-m="staff" aria-label="${t('staff')}">${t('staff')}</button><button class="ib" data-a="nav" data-v="cart" aria-label="${t('cart')}">🛒${cnt() ? `<span class="bd">${cnt()}</span>` : ''}</button></div>
 <div class="lang">${['th', 'en', 'my'].map(l => `<button data-a="lang" data-l="${l}" class="${S.lang == l ? 'on' : ''}">${{ th: 'ไทย', en: 'EN', my: 'မြန်မာ' }[l]}</button>`).join('')}</div></header>`
 }
 
@@ -178,7 +179,7 @@ ${feat ? `<div class="hero"><div><small>${t('hello')}</small><b>${REST}</b><smal
 //   Input box and suggested questions are in render() (RENDER section)
 function chatV() {
   return `<div class="aih"><i>✨</i><div><b>${aiS().name || t('aiN')}</b><br><small>${t('aiH')}</small></div></div><div class="chat">
-<div class="m a">${aiS().greet ? aiS().greet.replace(/</g, '&lt;') : t('hi')}</div>${S.chat.map((c, ix) => c.typing ? `<div class="m a dots"><span></span><span></span><span></span></div>` : `<div class="m ${c.r}">${c.t}${c.r == 'a' && c.q && !c.retry ? `<div class="qa"><button data-a="wrong" data-i="${ix}" aria-label="wrong answer">👎</button></div>` : ''}${(c.items || []).map(id => { const m = byId(id); return `<div class="mc"><div class="r2"><span class="e">${m.e}</span><div style="flex:1"><b>${tr(m.n)}</b><br>฿${m.p}${m.r ? ' · ⭐' + m.r : ''}</div></div>${warn(m)}<div class="r2"><button class="l" data-a="open" data-id="${id}">${t('det')}</button><button data-a="aiadd" data-id="${id}">+ ${t('add')}</button></div></div>` }).join('')}${(c.qa || []).length ? `<div class="qa">${c.qa.map(q => `<button data-a="${q[0]}" data-v="${q[1]}" data-m="${q[1]}">${q[2]}</button>`).join('')}</div>` : ''}${c.retry ? `<div class="qa"><button data-a="ask" data-t="${c.retry}">${t('retry')}</button></div>` : ''}</div>`).join('')}</div>`
+<div class="m a">${aiS().greet ? aiS().greet.replace(/</g, '&lt;') : t('hi')}</div>${S.chat.map((c, ix) => c.typing ? `<div class="m a dots"><span></span><span></span><span></span></div>` : `<div class="m ${c.r}">${c.t}${c.r == 'a' && c.q && !c.retry ? `<div class="qa"><button data-a="wrong" data-i="${ix}" aria-label="wrong answer">👎</button></div>` : ''}${(c.items || []).map(id => { const m = byId(id); return `<div class="mc"><div class="r2">${m.img ? `<img src="${m.img}" alt="" style="width:44px;height:44px;object-fit:cover;border-radius:8px">` : ''}<div style="flex:1"><b>${tr(m.n)}</b><br>฿${m.p}${m.r ? ' · ⭐' + m.r : ''}</div></div>${warn(m)}<div class="r2"><button class="l" data-a="open" data-id="${id}">${t('det')}</button><button data-a="aiadd" data-id="${id}">+ ${t('add')}</button></div></div>` }).join('')}${(c.qa || []).length ? `<div class="qa">${c.qa.map(q => `<button data-a="${q[0]}" data-v="${q[1]}" data-m="${q[1]}">${q[2]}</button>`).join('')}</div>` : ''}${c.retry ? `<div class="qa"><button data-a="ask" data-t="${c.retry}">${t('retry')}</button></div>` : ''}</div>`).join('')}</div>`
 }
 
 /* =====================================================================
@@ -192,7 +193,7 @@ function chatV() {
 const stOf = o => { const r = Store.get().orders.find(x => x.id == o.no); return t({ new: 'sNew', accepted: 'sAcc', cooking: 'sCook', ready: 'sReady', served: 'sServed', paid: 'sPaid' }[r ? r.status : 'new']) };
 function cartV() {
   if (!S.cart.length) return `<div class="empty"><i>🛒</i>${t('cartE')}<button class="btn" data-a="nav" data-v="menu">${t('back')}</button></div>`;
-  return `<div class="opt"><span style="align-self:center;font-weight:700">${t('setAll')}:</span><button data-a="allot" data-v="dine">🍽️ ${t('dine')}</button><button data-a="allot" data-v="take">🥡 ${t('take')}</button></div>` + S.cart.map((l, i) => { const m = byId(l.id); return `<div class="ci"><div class="img" style="background:${m.bg}">${m.e}</div><div style="flex:1"><b>${tr(m.n)}</b>${warn(m)}<div style="font-size:12px;color:var(--sub)">${[l.spice != null ? tr(SP[l.spice]) : '', ...l.mods.map(k => tr(MODS[k]))].filter(Boolean).join(' · ')}${l.note ? '<br>📝 ' + l.note.replace(/</g, '&lt;') : ''}</div><button class="tag" data-a="lt" data-i="${i}">${l.ot == 'take' ? '🥡 ' + t('take') : '🍽️ ' + t('dine')} ⇄</button><div class="row" style="margin-top:6px"><div class="qt"><button data-a="cq" data-i="${i}" data-d="-1">−</button>${l.qty}<button data-a="cq" data-i="${i}" data-d="1">+</button></div><span class="pr" style="text-align:right">฿${price(l)}</span><button data-a="rm" data-i="${i}" aria-label="remove">🗑️</button></div></div></div>` }).join('') +
+  return `<div class="opt"><span style="align-self:center;font-weight:700">${t('setAll')}:</span><button data-a="allot" data-v="dine">🍽️ ${t('dine')}</button><button data-a="allot" data-v="take">🥡 ${t('take')}</button></div>` + S.cart.map((l, i) => { const m = byId(l.id); return `<div class="ci"><div class="img">${m.img ? `<img src="${m.img}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:14px">` : ''}</div><div style="flex:1"><b>${tr(m.n)}</b>${warn(m)}<div style="font-size:12px;color:var(--sub)">${[l.spice != null ? tr(SP[l.spice]) : '', ...l.mods.map(k => tr(MODS[k]))].filter(Boolean).join(' · ')}${l.note ? '<br>📝 ' + l.note.replace(/</g, '&lt;') : ''}</div><button class="tag" data-a="lt" data-i="${i}">${l.ot == 'take' ? '🥡 ' + t('take') : '🍽️ ' + t('dine')} ⇄</button><div class="row" style="margin-top:6px"><div class="qt"><button data-a="cq" data-i="${i}" data-d="-1">−</button>${l.qty}<button data-a="cq" data-i="${i}" data-d="1">+</button></div><span class="pr" style="text-align:right">฿${price(l)}</span><button data-a="rm" data-i="${i}" aria-label="remove">🗑️</button></div></div></div>` }).join('') +
     `<div class="tot"><span>${t('sub')}</span><span>฿${sum()}</span></div><div class="tot"><span>${t('svc')}</span><span>฿0</span></div><div class="tot b"><span>${t('total')}</span><span>฿${sum()}</span></div><button class="btn" data-a="modal" data-m="review">${t('place')}</button><button class="btn alt" data-a="nav" data-v="menu">+ ${t('back')}</button>`
 }
 
@@ -215,12 +216,12 @@ function confirmV() { const o = S.orders[S.orders.length - 1]; return `<div clas
 //   dine-in/takeaway → spice (only for m.sp) → customization options + special requests (only for m.cz) →
 //   quantity + total → add-to-cart button
 function detail() {
-  const D = S.D, m = byId(D.id), tot = m.p * D.qty; return `<div class="ov" data-a="closeM"><div class="sh"><div class="big" style="background:${m.bg}">${m.e}</div><div class="pad"><div class="row"><h2 style="margin:0;flex:1">${tr(m.n)}</h2><span class="pr" style="flex:none">฿${m.p}</span></div><p style="color:var(--sub);font-size:14px;margin:6px 0">${tr(m.d)}</p>${warn(m)}
+  const D = S.D, m = byId(D.id), tot = m.p * D.qty; return `<div class="ov" data-a="closeM"><div class="sh"><div class="big">${m.img ? `<img src="${m.img}" alt="${esc(tr(m.n))}">` : ''}</div><div class="pad"><div class="row"><h2 style="margin:0;flex:1">${tr(m.n)}</h2><span class="pr" style="flex:none">฿${m.p}</span></div><p style="color:var(--sub);font-size:14px;margin:6px 0">${tr(m.d)}</p>${warn(m)}
 <h2>${t('ing')}</h2>${m.ing.length ? m.ing.map(i => `<span class="tag">${tr(ingA(i))}</span>`).join('') : `<span class="tag">${t('noIng')}</span>`}
 <p style="margin-top:8px;font-size:13px">🥗 ${t('diet')}: <b>${vegT(m)}</b> · 🚫 ${t('al')}: <b>${m.al.length ? m.al.map(k => tr(AL[k])).join(', ') : t('none')}</b></p>
 <h2>🍽️ ${t('otype')}</h2><div class="opt"><button class="${D.ot == 'dine' ? 'on' : ''}" data-a="dot" data-v="dine">🍽️ ${t('dine')}</button><button class="${D.ot == 'take' ? 'on' : ''}" data-a="dot" data-v="take">🥡 ${t('take')}</button></div>
 ${m.sp ? `<h2>🌶️ ${t('spice')}</h2><div class="opt">${SP.map((s, i) => `<button class="${D.spice == i ? 'on' : ''}" data-a="spice" data-i="${i}">${tr(s)}</button>`).join('')}</div>` : ''}
-${m.cz ? `<h2>${t('mods')}</h2><div class="opt">${Object.keys(MODS).map(k => `<button class="${D.mods.includes(k) ? 'on' : ''}" data-a="mod" data-k="${k}">${tr(MODS[k])}</button>`).join('')}</div><h2>${t('note')}</h2><textarea rows="2" id="note">${D.note}</textarea>` : ''}
+<h2>${t('note')}</h2><textarea rows="2" id="note" placeholder="${t('note')}">${D.note}</textarea>
 <div class="row" style="margin-top:14px"><div class="qt"><button data-a="dq" data-d="-1">−</button>${D.qty}<button data-a="dq" data-d="1">+</button></div><span class="pr" style="text-align:right;font-size:20px">฿${tot}</span></div>
 <button class="btn" data-a="addD">${t('add')} · ฿${tot}</button><button class="btn alt" data-a="closeM">${t('close')}</button></div></div></div>`
 }
@@ -335,12 +336,12 @@ if (!window.STAFF_MODE) {
 
   /* ---- components ---- */
   const tags = l => [l.spice != null ? '🌶️ ' + SP[l.spice][1] : '', ...(l.mods || []).map(k => MODS[k][1]), l.ot == 'take' ? '🥡 Takeaway' : '🍽️ Dine in'].filter(Boolean).map(x => `<span class="tag">${x}</span>`).join('');
-  const line = l => { const m = byId(l.id) || { e: '❓', n: ['', '(removed dish)'] }; return `<div class="ln"><b>${m.e} ${esc(m.n[1])}</b> <span class="q">×${l.qty}</span><div>${tags(l)}</div>${l.note ? `<div class="nt">📝 ${esc(l.note)}</div>` : ''}</div>` };
+  const line = l => { const m = byId(l.id) || { img: '', n: ['', '(removed dish)'] }; return `<div class="ln"><b>${m.img ? `<img src="${m.img}" alt="" style="width:20px;height:20px;object-fit:cover;border-radius:4px;vertical-align:middle;margin-right:6px">` : ''}${esc(m.n[1])}</b> <span class="q">×${l.qty}</span><div>${tags(l)}</div>${l.note ? `<div class="nt">📝 ${esc(l.note)}</div>` : ''}</div>` };
   const btn = (a, id, txt, c = '') => `<button class="btn ${c}" data-s="${a}" data-id="${id}">${txt}</button>`;
   const oc = (o, act, showSt) => `<div class="ci os ${o.status}"><div style="flex:1;min-width:0"><div class="top"><b style="font-size:18px">Table ${esc(o.table)}</b><span class="tag">#${esc(o.no)}</span>${showSt ? `<span class="tag st">${ST[o.status]}</span>` : ''}<small class="ago">${ago(o.t)}</small></div>${o.al && o.al.length ? `<div class="warn" style="margin:6px 0">⚠️ Customer allergy: ${o.al.map(esc).join(', ')}</div>` : ''}${o.items.map(line).join('')}<div class="tot b"><span>Total</span><span>฿${o.total}</span></div>${act || ''}</div></div>`;
   const list = (a, f, em) => a.length ? a.map(f).join('') : `<div class="empty"><i>${em[0]}</i>${em[1]}</div>`;
 
-  const ml = () => { const q = U.q.trim().toLowerCase(); return MENU.filter(m => (U.cat == 'all' || m.c.includes(U.cat)) && (!q || m.n.some(x => x.toLowerCase().includes(q)))).map(m => { const x = D.soldout.includes(m.id); return `<div class="ci mr ${x ? 'x' : ''}"><span class="em">${m.e}</span><div style="flex:1;min-width:0"><b>${esc(m.n[1])}</b><br><small>฿${m.p}</small></div><button class="swt ${x ? 'x' : ''}" data-s="sold" data-id="${m.id}">${x ? '❌ Sold out' : '✅ In stock'}</button></div>` }).join('') || '<div class="empty"><i>🔍</i>No dishes found</div>' };
+  const ml = () => { const q = U.q.trim().toLowerCase(); return MENU.filter(m => (U.cat == 'all' || m.c.includes(U.cat)) && (!q || m.n.some(x => x.toLowerCase().includes(q)))).map(m => { const x = D.soldout.includes(m.id); return `<div class="ci mr ${x ? 'x' : ''}">${m.img ? `<img src="${m.img}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:8px;margin-right:10px">` : ''}<div style="flex:1;min-width:0"><b>${esc(m.n[1])}</b><br><small>฿${m.p}</small></div><button class="swt ${x ? 'x' : ''}" data-s="sold" data-id="${m.id}">${x ? '❌ Sold out' : '✅ In stock'}</button></div>` }).join('') || '<div class="empty"><i>🔍</i>No dishes found</div>' };
 
   /* ---- screens (tab key → HTML) ---- */
   const V = {

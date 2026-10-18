@@ -232,7 +232,21 @@ header {
   border-radius: 50%;
   background: var(--bg);
   font-size: 18px;
-  border: 1px solid #eee
+  border: 1px solid #eee;
+  cursor: pointer;
+}
+
+.ib.txt {
+  width: auto;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 19px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
 }
 
 .bd {
@@ -398,10 +412,27 @@ header {
 }
 
 .img {
-  height: 100px;
-  display: grid;
-  place-items: center;
-  font-size: 56px
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #f8f6ee;
+  position: relative;
+}
+
+.img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform .25s ease;
+}
+
+.card:hover .img img {
+  transform: scale(1.03);
 }
 
 .cb {
@@ -565,10 +596,23 @@ nav .aib.on span {
 }
 
 .big {
-  height: 200px;
-  display: grid;
-  place-items: center;
-  font-size: 110px
+  width: 100%;
+  height: 260px;
+  max-height: 40vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #f5f2e9;
+  position: relative;
+}
+
+.big img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
 }
 
 .pad {
@@ -589,9 +633,17 @@ nav .aib.on span {
 .ci .img {
   width: 64px;
   height: 64px;
-  font-size: 34px;
   border-radius: 14px;
-  flex: none
+  overflow: hidden;
+  flex: none;
+  background: #f8f6ee;
+}
+
+.ci .img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .li {
@@ -668,7 +720,17 @@ nav .aib.on span {
 }
 
 .mc .e {
-  font-size: 30px
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mc .e img {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
 }
 
 .mc button {
