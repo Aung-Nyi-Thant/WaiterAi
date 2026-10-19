@@ -1,13 +1,13 @@
 # Live AI eval
 
-Model: gemma4:12b via Ollama (run 3, final) · 2026-10-12 · 126 questions · average 3331 ms per answer
+Model: gemma4:12b via Ollama · 2026-10-13 · 126 questions · average 2864 ms per answer
 
 | Language | Passed |
 |---|---|
 | English | 100% (42/42) |
-| Thai | 98% (41/42) |
-| Burmese | 93% (39/42) |
-| **All** | **97% (122/126)** |
+| Thai | 100% (42/42) |
+| Burmese | 95% (40/42) |
+| **All** | **98% (124/126)** |
 
 | Category | Passed |
 |---|---|
@@ -15,12 +15,12 @@ Model: gemma4:12b via Ollama (run 3, final) · 2026-10-12 · 126 questions · av
 | compare | 100% (6/6) |
 | complaint | 100% (6/6) |
 | describe | 100% (12/12) |
-| dietary | 92% (11/12) |
+| dietary | 100% (12/12) |
 | faq | 100% (9/9) |
-| no_data | 100% (18/18) |
+| no_data | 94% (17/18) |
 | out_of_menu | 100% (9/9) |
 | price | 100% (9/9) |
-| recommend | 83% (15/18) |
+| recommend | 94% (17/18) |
 | smalltalk | 100% (12/12) |
 | vague | 100% (6/6) |
 

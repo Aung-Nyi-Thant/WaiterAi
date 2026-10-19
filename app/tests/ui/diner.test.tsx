@@ -400,10 +400,10 @@ describe("FR-2 / AI-13: the AI waiter chat on the phone", () => {
     expect(document.body.textContent).not.toMatch(/\bis safe\b|safe to eat/i);
   });
   it("a question for the model shows the model's checked answer; the AI being off shows the unavailable notice and the menu stays usable", async () => {
-    setModel("We do not make birthday cakes, but the Mango Sticky Rice is a lovely dessert.");
+    setModel("We do not host karaoke nights, but the Mango Sticky Rice is a lovely dessert.");
     await open();
     fireEvent.click(screen.getByRole("button", { name: T("askWaiter") }));
-    await ask("do you do birthday cakes?");
+    await ask("do you do karaoke nights?");
     expect(await screen.findByText(/lovely dessert/)).toBeTruthy();
     setModel(new Error("down"));
     await ask("anything good for a hot day?");
