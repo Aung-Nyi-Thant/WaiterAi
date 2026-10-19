@@ -1,5 +1,8 @@
 import crypto from "node:crypto";
-import { describe, it, expect, beforeAll } from "vitest";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { call, jar, signOut, ownerLogin, staffLogin } from "./helpers";
 import { POST as register } from "@/modules/platform/api/register";
 import { POST as login } from "@/modules/platform/api/login";
@@ -240,5 +243,27 @@ describe("SF-1 PINs are unique within a restaurant", () => {
     signOut();
     await call(login, { method: "POST", body: { email: "owner1@example.com", password: "password-one" } });
     expect((await add("Other Place", "1111")).status).toBe(200);
+  });
+});
+
+describe("the session secret file", () => {
+  it("is readable by its owner only, so another user of the machine cannot forge a session cookie", async () => {
+    const saved = { dir: process.env.DATA_DIR, secret: process.env.SESSION_SECRET };
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "shopai-secret-"));
+    try {
+      // no SESSION_SECRET: auth.ts must create its own file in a fresh data folder
+      delete process.env.SESSION_SECRET; process.env.DATA_DIR = dir; vi.resetModules();
+      await import("@/modules/platform/auth");
+      const file = path.join(dir, "secret");
+      expect(fs.readFileSync(file, "utf8")).toMatch(/^[0-9a-f]{64}$/);
+      if (process.platform === "win32") return;
+      expect(fs.statSync(file).mode & 0o077).toBe(0);
+      // a file left world-readable by an older version is tightened on the next start
+      fs.chmodSync(file, 0o644); vi.resetModules();
+      await import("@/modules/platform/auth");
+      expect(fs.statSync(file).mode & 0o077).toBe(0);
+    } finally {
+      process.env.DATA_DIR = saved.dir; process.env.SESSION_SECRET = saved.secret; vi.resetModules();
+    }
   });
 });
