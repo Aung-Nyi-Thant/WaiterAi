@@ -23,7 +23,7 @@ export function detectLang(text: string, fallback: Lang = "en"): Lang {
 }
 const BD = "၀၁၂၃၄၅၆၇၈၉";
 const bd = (n: number | string) => String(n).replace(/\d/g, (d) => BD[+d]);
-const norm = (s: string) => s.toLowerCase().replace(/[၀-၉]/g, (d) => String(BD.indexOf(d)));
+const norm = (s: string) => s.toLowerCase().replace(/[’‘]/g, "'").replace(/[၀-၉]/g, (d) => String(BD.indexOf(d)));
 // English keywords must start a word ("pay" is not found in "papaya"); Thai and Burmese have no spaces, so they match anywhere.
 const has = (t: string, words: string[]) => words.some((w) => wordIn(t, w));
 
@@ -257,8 +257,8 @@ export const limitReply = (l: Lang, p: string) =>
 // ------------------------------------------------------------------ intents
 const W = {
   price: ["how much", "price", "cost", "ราคา", "เท่าไหร่", "เท่าไร", "กี่บาท", "ဘယ်လောက်", "ဈေး", "စျေး"],
-  veg: ["vegetarian", "vegan", "meatless", "มังสวิรัติ", "วีแกน", "เจ", "သက်သတ်လွတ်"],
-  vegan: ["vegan", "วีแกน"],
+  veg: ["vegetarian", "vegan", "meatless", "มังสวิรัติ", "วีแกน", "เจ", "သက်သတ်လွတ်", "ဗီဂန်"],
+  vegan: ["vegan", "วีแกน", "ဗီဂန်"],
   hours: ["what time", "opening", "open until", "opening hours", "close", "closing", "hours", "กี่โมง", "เวลาเปิด", "เปิดกี่", "ปิดกี่", "နာရီ", "ဖွင့်", "ပိတ်"],
   menu: ["menu", "เมนู", "မီနူး", "what do you have", "what's available", "มีอะไรบ้าง"],
   order: ["i'll have", "i will have", "i want", "i'd like", "can i have", "could i have", "may i have", "give me", "order", "ขอสั่ง", "สั่ง", "เอา", "ขอ", "မှာမယ်", "မှာချင်", "စားမယ်", "ယူမယ်", "မှာလို့ရ"],
@@ -342,7 +342,10 @@ const budgetOf = (t: string): number | null => {
 // price, category, tags), ranked by what diners really ordered here in the last 30 days, and filtered by the allergy profile.
 // Only a question without such details ("what's good on a hot day?") goes to the language model.
 type Rec = { mild?: boolean; hot?: boolean; budget?: number; inclusive?: boolean; category?: string; popular?: boolean };
-const MILD = ["not spicy", "no spice", "not too spicy", "less spicy", "mild", "ไม่เผ็ด", "เผ็ดน้อย", "ไม่เอาเผ็ด", "မစပ်"];
+// "doesn't like spicy food" / "can't eat spicy" must mean mild too: read as "what's spicy?" it would list the hottest dishes.
+const MILD = ["not spicy", "no spice", "no spicy", "not too spicy", "less spicy", "mild", "doesn't like spicy", "don't like spicy", "do not like spicy", "does not like spicy", "not a fan of spicy", "doesnt like spicy", "dont like spicy",
+  "can't eat spicy", "cannot eat spicy", "can't handle spicy", "cant eat spicy", "hate spicy", "avoid spicy", "isn't into spicy", "not into spicy",
+  "ไม่เผ็ด", "เผ็ดน้อย", "ไม่เอาเผ็ด", "ไม่กินเผ็ด", "ไม่ชอบเผ็ด", "กินเผ็ดไม่ได้", "ทานเผ็ดไม่ได้", "မစပ်", "စပ်တာမစား", "စပ်တာ မစား", "စပ်စပ်မစား", "စပ်တာမကြိုက်", "စပ်တာ မကြိုက်"];
 const HOT = ["spicy", "เผ็ด", "စပ်"];
 const POPULAR = ["popular", "best seller", "bestseller", "best-seller", "most ordered", "famous", "signature", "must try", "must-try", "surprise me", "chef's pick", "chefs pick", "ยอดนิยม", "ขายดี", "ชื่อดัง", "เมนูเด็ด", "เมนูเด่น", "สุ่ม", "เซอร์ไพรส์", "လူကြိုက်များ", "လူကြိုက်အများဆုံး", "နာမည်ကြီး", "နာမည်ကျော်", "ရောင်းအား"];
 // [the word in the category's English name, words a diner uses for it]
@@ -829,6 +832,24 @@ function unknownDish(text: string, ctx: Ctx, question: string): string | null {
   return null;
 }
 
+// A model reply must not contradict the database about availability. Per sentence: if it says "sold out / unavailable" and
+// names only dishes that are on sale, the model made it up (seen in the live eval: "Thai Iced Tea ... is sold out" while it
+// was on sale). The reverse: a sentence that recommends a dish that is sold out. A sentence naming both an available and
+// a sold-out dish ("X is sold out, try Y") is ambiguous and allowed: a false alarm would only annoy the diner.
+const SOLD_OUT_CUE = /sold out|sold-out|out of stock|unavailable|not available|ran out|run out|หมด|ไม่มีจำหน่าย|ไม่พร้อมเสิร์ฟ|ကုန်သွား|ကုန်နေ|ကုန်ပါ|မရနိုင်/i;
+const RECOMMEND_CUE = /\b(?:recommend|suggest|try|enjoy|how about|you might like|you may like|go for)\b|แนะนำ|ลอง|ယူကြည့်|အကြံပြု|စားကြည့်/i;
+function availabilityLie(text: string, items: Item[]): boolean {
+  for (const sentence of text.split(/[.!?;\n।၊။]+/)) {
+    if (!sentence.trim()) continue;
+    const named = matchDishes(sentence, items).map((d) => d.item);
+    if (!named.length) continue;
+    const onSale = named.filter((i) => i.available), soldOut = named.filter((i) => !i.available);
+    if (SOLD_OUT_CUE.test(sentence) && onSale.length && !soldOut.length) return true;
+    if (!SOLD_OUT_CUE.test(sentence) && RECOMMEND_CUE.test(sentence) && soldOut.length && !onSale.length) return true;
+  }
+  return false;
+}
+
 function checkModelReply(raw: string, lang: Lang, p: string, ctx: Ctx, topic: string, allergens: string[], question: string): ChatResult {
   const m = raw.match(/\n?\s*ACTION:\s*(.*)$/s);
   let text = raw.replace(/\n?\s*ACTION:.*$/s, "").trim();
@@ -854,7 +875,7 @@ function checkModelReply(raw: string, lang: Lang, p: string, ctx: Ctx, topic: st
   // a reply that is only "how can I help you?" to a real question answers nothing (greetings and thanks are fine)
   const justHelp = text.length < 60 && /^(?:how can i (?:help|assist)[^.?]*\??|anything else i can help with\??|มีอะไรให้(?:ช่วย|ผม)[^.]*|ဘာ(?:များ)?\s?ကူညီပေးရမလဲ[^။]*။?)$/i.test(text.replace(/\s+/g, " ").trim());
   const greeting = /^\s*(?:hi|hello|hey|good (?:morning|afternoon|evening))\b|สวัสดี|หวัดดี|มีใคร|မင်္ဂလာ|ဟယ်လို/i.test(question);
-  const bad = !text || (justHelp && !greeting) || UNSAFE.some((re) => re.test(text)) || wrongPrice(text, ctx.items) || unknownAmount(text, ctx.items, question) || misPricedClause(text, ctx.items, question) || unknownDish(text, ctx, question) !== null;
+  const bad = !text || (justHelp && !greeting) || UNSAFE.some((re) => re.test(text)) || wrongPrice(text, ctx.items) || unknownAmount(text, ctx.items, question) || misPricedClause(text, ctx.items, question) || unknownDish(text, ctx, question) !== null || availabilityLie(text, ctx.items);
   if (bad) return { reply: dontKnow(lang, p), action: { type: "none" }, topic, allergens, answered: false, usedModel: true };
   // The model may not say anything about allergens, in either direction ("contains peanuts", "nut-free", "no dairy"):
   // it only sees the data it was given and has been wrong about it. Allergen facts come from the database only, so such

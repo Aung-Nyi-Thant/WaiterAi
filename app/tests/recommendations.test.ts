@@ -37,6 +37,19 @@ describe("AI-19 spice level", () => {
   });
 });
 
+describe("a negated 'spicy' means mild (found by the extended live eval: 'my kid doesn't like spicy food' listed the hottest dishes)", () => {
+  const HOTTEST = ["Tom Yum Goong", "Papaya Salad", "Chicken Green Curry", "Steamed Fish with Lime"];
+  it.each([
+    ["My kid doesn't like spicy food. What can he have?", "en"], ["my son doesn’t like spicy food, what do you suggest", "en"], ["I can't eat spicy. Any ideas?", "en"], ["My daughter does not like spicy dishes", "en"],
+    ["ลูกไม่กินเผ็ด มีอะไรให้กินบ้าง", "th"], ["ผมกินเผ็ดไม่ได้ แนะนำหน่อย", "th"], ["ကျွန်တော့်သားက စပ်တာမစားဘူး၊ ဘာစားလို့ရမလဲ", "my"],
+  ] as const)("%s", async (msg, lang) => {
+    const r = await rec(msg, lang);
+    expect(r.topic).toBe("recommend");
+    expect(shown(r).length).toBeGreaterThan(0);
+    for (const n of shown(r)) expect(HOTTEST).not.toContain(n);
+  });
+});
+
 describe("budget", () => {
   it("'mild under 100 baht': strictly under, cheapest first, sold-out dishes left out", async () => {
     const r = await rec("something mild under 100 baht");

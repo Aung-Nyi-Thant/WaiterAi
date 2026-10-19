@@ -282,3 +282,32 @@ describe("a model reply that refers to the staff counts as 'unanswered' for the 
     expect(r.reply).toContain("ask the staff");
   });
 });
+
+describe("R6 a model reply must not contradict the database about availability (found by the extended live eval, limit L11)", () => {
+  // demo data: Coconut Ice Cream is sold out, everything else is on sale
+  it.each([
+    "I recommend the Thai Iced Tea for 50 THB, but unfortunately it is sold out today.",
+    "Thai Iced Tea is currently unavailable.",
+    "Sorry, the Shrimp Pad Thai is out of stock right now. Please ask the staff.",
+  ])("replaces a claim that a dish on sale is sold out: %s", async (lie) => {
+    const { r } = await ask(`${lie}\nACTION: none`);
+    expect(r.reply).toBe(REFUSAL);
+    expect(r.answered).toBe(false);
+  });
+  it("replaces a recommendation of a dish that is sold out", async () => {
+    const { r } = await ask("On a hot day I recommend the Coconut Ice Cream for 60 THB.\nACTION: none");
+    expect(r.reply).toBe(REFUSAL);
+  });
+  it("keeps a true statement that a sold-out dish is sold out", async () => {
+    const { r } = await ask("The Coconut Ice Cream is sold out today, sorry.\nACTION: none");
+    expect(r.reply).toContain("Coconut Ice Cream is sold out");
+  });
+  it("keeps 'X is sold out, try Y' (names both, ambiguous on purpose)", async () => {
+    const { r } = await ask("Coconut Ice Cream is sold out, but you could try the Thai Iced Tea for 50 THB.\nACTION: none");
+    expect(r.reply).toContain("Thai Iced Tea");
+  });
+  it("keeps an ordinary recommendation of dishes on sale", async () => {
+    const { r } = await ask("I recommend the Thai Iced Tea for 50 THB. It is refreshing.\nACTION: none");
+    expect(r.reply).toContain("Thai Iced Tea");
+  });
+});
