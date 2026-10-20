@@ -2,6 +2,9 @@
 // with its own owner account and two staff PINs. The first restaurant (Golden Lotus) is left alone and stays the default.
 //
 //   npm run db:seed:hachi
+//   npm run db:seed:hachi -- --into golden-lotus      adds the same dishes to an existing restaurant's own menu instead (no new restaurant,
+//                                                     owner or staff): categories with the same English name are shared, dishes the
+//                                                     restaurant already has (same English name) are skipped, so it is safe to run twice
 //
 // Safe to run twice: it does nothing when /r/hachi-kyu already exists.
 // Credentials: SEED_HACHI_OWNER_EMAIL, SEED_HACHI_OWNER_PASSWORD, SEED_HACHI_WAITER_PIN, SEED_HACHI_CHEF_PIN.
@@ -21,6 +24,45 @@ const DEMO = { email: "hachi@shop.ai", password: "demo1234", waiterPin: "1111", 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const data = JSON.parse(fs.readFileSync(path.join(here, "seed-data", "hachi-kyu.json"), "utf8"));
 const photos = process.env.SEED_HACHI_PHOTOS === "1";
+
+// ---- --into <slug>: put these dishes on an existing restaurant's menu ----
+const intoAt = process.argv.indexOf("--into");
+if (intoAt >= 0) {
+  const target = process.argv[intoAt + 1];
+  const shop = target && !target.startsWith("--") ? (db.prepare("SELECT id, name FROM restaurants WHERE slug = ?").get(target) as any) : undefined;
+  if (!shop) { console.error(`--into needs the code of an existing restaurant (for example golden-lotus); "${target || ""}" is not one.`); process.exit(1); }
+  db.exec("BEGIN IMMEDIATE");
+  try {
+    const sameName = db.prepare("SELECT id FROM categories WHERE restaurant_id = ? AND lower(name_en) = lower(?)");
+    let sort = Number((db.prepare("SELECT COALESCE(MAX(sort), -1) + 1 AS n FROM categories WHERE restaurant_id = ?").get(shop.id) as any).n);
+    const cat: Record<string, number> = {};
+    let newCats = 0;
+    for (const c of data.categories) {
+      const found = sameName.get(shop.id, c.en) as any;
+      if (found) { cat[c.key] = found.id; continue; }
+      cat[c.key] = Number(db.prepare("INSERT INTO categories (restaurant_id, name_en, name_th, name_my, sort) VALUES (?,?,?,?,?)").run(shop.id, c.en, c.th, c.my, sort++).lastInsertRowid);
+      newCats++;
+    }
+    const has = db.prepare("SELECT id FROM menu_items WHERE restaurant_id = ? AND name_en = ?");
+    let itemSort = Number((db.prepare("SELECT COALESCE(MAX(sort), -1) + 1 AS n FROM menu_items WHERE restaurant_id = ?").get(shop.id) as any).n);
+    let added = 0;
+    for (const it of data.items) {
+      if (has.get(shop.id, it.name.en)) continue;
+      db.prepare(`INSERT INTO menu_items (restaurant_id, category_id, name_en, name_th, name_my, price, ingredients, ingredients_th, ingredients_my, allergens_json, tags_json, spice, available, photo_url, sort) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(
+        shop.id, cat[it.category], it.name.en, it.name.th || "", "", it.price, it.ingredients, it.ingredients_tr?.th || "", it.ingredients_tr?.my || "", it.allergens === null ? null : JSON.stringify(it.allergens), JSON.stringify(it.tags), it.spice, 1, photos ? it.photo : "", itemSort++);
+      added++;
+    }
+    // These dishes' allergens are estimates, so the AI is told (the FAQ answer is what it quotes) without calling the restaurant's own dishes estimated.
+    const FAQ_Q = "Are the allergen details of the sushi and grill dishes confirmed by the kitchen?";
+    if (added && !db.prepare("SELECT id FROM faqs WHERE restaurant_id = ? AND q = ?").get(shop.id, FAQ_Q)) {
+      const next = Number((db.prepare("SELECT COALESCE(MAX(sort), -1) + 1 AS n FROM faqs WHERE restaurant_id = ?").get(shop.id) as any).n);
+      db.prepare("INSERT INTO faqs (restaurant_id, q, a, sort) VALUES (?,?,?,?)").run(shop.id, FAQ_Q, "Not yet. For the sushi, sashimi, grill, rice, noodle and soup dishes the allergens are estimated from the dish names, so please confirm any allergy with the staff before ordering.", next);
+    }
+    db.exec("COMMIT");
+    console.log(added ? `Added ${added} dishes and ${newCats} categories to "${shop.name}" (/r/${target}).` : `"${shop.name}" (/r/${target}) already has these dishes: nothing to add.`);
+  } catch (e) { db.exec("ROLLBACK"); throw e; }
+  process.exit(0);
+}
 
 const given = (k: string) => (process.env[k] || "").trim();
 const generated: string[] = [];

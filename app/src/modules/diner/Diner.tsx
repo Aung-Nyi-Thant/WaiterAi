@@ -47,6 +47,7 @@ export default function Diner({ slug }: { slug: string }) {
   const activeFilterCount = Object.values(f).filter(Boolean).length;
   const [picks, setPicks] = useState<Pick[]>([]);
   const [detail, setDetail] = useState<Item | null>(null);
+  const linkedDish = useRef(false);                       // an address with ?dish=<id> (the home page's dish strip) opens that dish once the menu is here
   const [picksOpen, setPicksOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [toast, setToast] = useState<{ m: string; warn: boolean } | null>(null);
@@ -122,6 +123,14 @@ export default function Diner({ slug }: { slug: string }) {
   useEffect(() => { localStorage.setItem(`picks:${slug}`, JSON.stringify(picks)); }, [picks, slug]);
   // WCAG 3.1.1: the page's language attribute must match what is actually on screen, not just React state.
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
+
+  useEffect(() => {
+    if (!menu || linkedDish.current) return;
+    linkedDish.current = true;
+    const id = Number(new URLSearchParams(location.search).get("dish"));
+    const it = id ? menu.items.find((x) => x.id === id) : undefined;
+    if (it) setDetail(it);
+  }, [menu]);
 
   // keep sold-out state fresh
   useEffect(() => {

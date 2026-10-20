@@ -26,14 +26,14 @@ describe("NFR-P1 the warm-up sends the same system prompt as a real question", (
 });
 
 describe("NFR-P1 warming every restaurant when the server starts", () => {
-  it("warms each restaurant once, in order, up to the limit", async () => {
+  it("warms each restaurant once, up to the limit, the first one last (the model holds the prompt it read last)", async () => {
     const calls = mockModel("ok");
     run("INSERT INTO users (email, password_hash) VALUES ('w1@x.co','h'), ('w2@x.co','h')");
     run("INSERT INTO restaurants (owner_id, slug, name) SELECT id, 'warm-' || id, 'Warm ' || id FROM users WHERE email IN ('w1@x.co','w2@x.co')");
     expect(await warmUpAll(2)).toBe(2);
     expect(calls).toHaveLength(2);
-    expect(calls[0].body.messages[0].content).toContain("Golden Lotus Kitchen");  // the first restaurant (the demo) comes first
-    expect(calls[1].body.messages[0].content).toContain("Warm ");
+    expect(calls[0].body.messages[0].content).toContain("Warm ");
+    expect(calls[1].body.messages[0].content).toContain("Golden Lotus Kitchen");  // the first restaurant (the demo) is read last, so it stays warm
   });
   it("does nothing when AI_WARMUP=0", async () => {
     const calls = mockModel("ok");

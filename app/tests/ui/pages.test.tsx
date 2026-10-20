@@ -3,7 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, it, expect } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import Home from "@/app/page";
 import OwnerHome from "@/app/owner/page";
 import OwnerLayout from "@/app/owner/layout";
@@ -47,9 +47,23 @@ describe("home page with more than one restaurant", () => {
       render(<Home />);
       const hrefs = screen.getAllByRole("link").map((a) => a.getAttribute("href"));
       expect(hrefs).toEqual(expect.arrayContaining(["/r/golden-lotus?t=5", "/r/hachi-kyu?t=5"]));
-      const door = screen.getByRole("link", { name: /HaChi Kyu/ });
-      expect(door.textContent).toContain("3 dishes");
-      expect(screen.getByRole("link", { name: /Golden Lotus Kitchen/ }).textContent).toContain("13 dishes");
+      expect(screen.getByRole("link", { name: /Open the menu · 3 dishes/ }).getAttribute("href")).toBe("/r/hachi-kyu?t=5");
+      expect(screen.getByRole("link", { name: /Open the menu · 13 dishes/ }).getAttribute("href")).toBe("/r/golden-lotus?t=5");
+    } finally { removeShop(hachi); }
+  });
+  it("shows a strip of real dishes for each restaurant, each linking to that dish's sheet", () => {
+    const hachi = addShop("hachi-kyu", "HaChi Kyu", 3);
+    try {
+      render(<Home />);
+      const golden = screen.getByRole("region", { name: "Golden Lotus Kitchen" });
+      const cards = within(golden).getAllByRole("link").filter((a) => /dish=\d+/.test(a.getAttribute("href") || ""));
+      expect(cards).toHaveLength(12);                                                        // 13 dishes, one sold out
+      const tom = within(golden).getByRole("link", { name: /Tom Yum Goong/ });
+      expect(tom.getAttribute("href")).toMatch(/^\/r\/golden-lotus\?t=5&dish=\d+$/);
+      expect(tom.textContent).toContain("ต้มยำกุ้ง");
+      expect(tom.textContent).toContain("฿\u2009180");
+      const small = screen.getByRole("region", { name: "HaChi Kyu" });
+      expect(within(small).getAllByRole("link").filter((a) => /dish=/.test(a.getAttribute("href") || ""))).toHaveLength(3);
     } finally { removeShop(hachi); }
   });
   it("lists the demo logins of each demo restaurant", () => {
@@ -64,7 +78,7 @@ describe("home page with more than one restaurant", () => {
   });
   it("says '1 dish' for one dish", () => {
     const hachi = addShop("hachi-kyu", "HaChi Kyu", 1);
-    try { render(<Home />); expect(screen.getByRole("link", { name: /HaChi Kyu/ }).textContent).toContain("1 dish.") } finally { removeShop(hachi); }
+    try { render(<Home />); expect(screen.getByRole("link", { name: "Open the menu · 1 dish" })).toBeTruthy(); } finally { removeShop(hachi); }
   });
   it("does not advertise another owner's restaurant: without demo restaurants it shows the first one only", () => {
     const demo = get("SELECT slug FROM restaurants WHERE id = 1")!.slug;

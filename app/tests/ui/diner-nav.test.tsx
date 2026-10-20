@@ -398,3 +398,31 @@ describe("a dish's names in the other languages", () => {
     run("UPDATE menu_items SET name_my = 'သရက်သီး ကောက်ညှင်းပေါင်း' WHERE name_en = 'Mango Sticky Rice'");
   });
 });
+
+describe("an address with ?dish= (the home page's dish strip)", () => {
+  it("opens that dish's sheet once the menu has loaded, and the page behind it is the normal menu", async () => {
+    const id = (all("SELECT id FROM menu_items WHERE name_en = 'Tom Yum Goong'")[0] as any).id;
+    await open(`/?t=5&dish=${id}`);
+    const dlg = await screen.findByRole("dialog", { name: "Tom Yum Goong" });
+    expect(within(dlg).getAllByText(B(180)).length).toBeGreaterThan(0);
+    expect(dishNames()).toHaveLength(13);
+    fireEvent.click(within(dlg).getByRole("button", { name: T("close") }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await flush();
+    expect(screen.queryByRole("dialog")).toBeNull();                                      // it does not open again by itself
+  });
+  it("ignores a dish number that does not exist, or is not a number", async () => {
+    await open("/?t=5&dish=99999");
+    expect(screen.queryByRole("dialog")).toBeNull();
+    cleanup();
+    await open("/?t=5&dish=abc");
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+  it("opens the dish with its photo area, price and an add button that adds it", async () => {
+    const id = (all("SELECT id FROM menu_items WHERE name_en = 'Papaya Salad'")[0] as any).id;
+    await open(`/?t=5&dish=${id}`);
+    const dlg = await screen.findByRole("dialog", { name: "Papaya Salad" });
+    fireEvent.click(within(dlg).getByRole("button", { name: new RegExp(`^${T("add")}`) }));
+    await waitFor(() => expect(document.querySelector(".picks-bar__line")?.textContent).toBe("Papaya Salad"));
+  });
+});
