@@ -16,7 +16,7 @@ describe("NFR-M2 ollama: the model and address are settings (OLLAMA_URL, OLLAMA_
     const calls = mockModel("hello");
     expect(await complete(MSG, O)).toBe("hello");
     expect(calls[0].url).toBe("http://localhost:11434/api/chat");
-    expect(calls[0].body).toMatchObject({ model: "my-model", stream: false, think: false, keep_alive: "12h", options: { temperature: 0.2, num_ctx: 8192, num_predict: 100 } });
+    expect(calls[0].body).toMatchObject({ model: "my-model", stream: false, think: false, keep_alive: "12h", options: { temperature: 0.2, num_ctx: 16384, num_predict: 100 } });
     expect(calls[0].body.format).toBeUndefined();
   });
   it("keeps the model loaded for 12 hours by default so the first diner after a quiet period is not sent to the fallback; OLLAMA_KEEP_ALIVE overrides it", async () => {
