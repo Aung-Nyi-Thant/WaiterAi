@@ -178,7 +178,7 @@ const QTY_BEFORE = /(\d+)\s*(?:x|×)?\s*$/;
 const QTY_AFTER = /^(?:[\s,]*[x×]\s*(\d+)|\s*(\d+)\s*(?:x|×|จาน|ที่|ชุด|ခွက်|ပွဲ|plates?|portions?|pcs|pieces))/;
 export function matchDishes(text: string, items: Item[]): { item: Item; qty: number; amb?: boolean }[] {
   const t = norm(text);
-  const found: { item: Item; len: number; at: number; exact: boolean }[] = [];
+  const found: { item: Item; len: number; at: number; exact: boolean; v: string }[] = [];
   for (const it of items) {
     let best = 0, at = -1, bestV = "";
     const full = fullNames(it);
@@ -186,7 +186,7 @@ export function matchDishes(text: string, items: Item[]): { item: Item; qty: num
       const i = t.indexOf(v);
       if (i >= 0 && v.length > best && (full.has(v) || !namesAnotherDish(t, i, v))) { best = v.length; at = i; bestV = v; }
     }
-    if (best) found.push({ item: it, len: best, at, exact: fullNames(it).has(bestV) });
+    if (best) found.push({ item: it, len: best, at, exact: fullNames(it).has(bestV), v: bestV });
   }
   // The diner typed ONE dish: its full name also contains the short nicknames of other dishes ("Squid Sushi" holds "sushi", "Miso Soup"
   // holds "soup"), which on a big menu would add nine dishes to the picks. A match that lies inside a longer match of another dish is
@@ -195,7 +195,12 @@ export function matchDishes(text: string, items: Item[]): { item: Item; qty: num
     const a = found[k];
     // ... and when two dishes match the very same words, the one whose FULL name that is wins over one that only uses it as a nickname
     // ("Salmon Sushi" is a dish, and also what "Seared Salmon Sushi" is shortened to)
-    if (found.some((b) => b !== a && b.at <= a.at && b.at + b.len >= a.at + a.len && (b.len > a.len || (b.len === a.len && b.at === a.at && b.exact && !a.exact)))) found.splice(k, 1);
+    const dominated = (j: number) => found.some((b) => b !== a && b.at <= j && b.at + b.len >= j + a.len && (b.len > a.len || (b.len === a.len && b.at === j && b.exact && !a.exact)));
+    if (!dominated(a.at)) continue;
+    // the same words may stand again outside every longer name ("Yakisoba with Onsen Egg or just Yakisoba"): then that dish was named on its own too
+    let alt = -1;
+    for (let j = t.indexOf(a.v, a.at + 1); j >= 0 && alt < 0; j = t.indexOf(a.v, j + 1)) if (!dominated(j)) alt = j;
+    if (alt >= 0) a.at = alt; else found.splice(k, 1);
   }
   // A generic word ("sashimi", "sushi", "soup") that three or more dishes share and that is nobody's full name is not a choice of dish:
   // "I'll have the sashimi" must not add all fourteen. Nothing is matched, so the diner is asked / shown the menu instead.
@@ -348,6 +353,7 @@ const THANKS = /\b(?:thanks?|thank you|thx|many thanks|appreciate it)\b|ขอ�
 const PAY_METHOD = /\b(?:credit|debit|visa|master ?card|amex|cash|cards?|promptpay|qr|alipay|wechat|apple pay|grab ?pay|payment (?:method|option)s?|accept(?:s|ed)? (?:payment|cards?)|by card|with card)\b|บัตรเครดิต|บัตรเดบิต|เงินสด|พร้อมเพย์|สแกนจ่าย|ကရက်ဒစ်|ကတ်|ငွေသား/;
 const CHEAPEST = /\b(?:cheapest|least expensive|lowest[- ]priced?|most affordable|cheapest)\b|ถูกที่สุด|ถูกสุด|ราคาถูกที่สุด|အပေါဆုံး|အသက်သာဆုံး|ဈေးအနည်းဆုံး|ဈေးအသက်သာဆုံး/;
 const PRICIEST = /\b(?:most expensive|priciest|highest[- ]priced?|costliest)\b|แพงที่สุด|แพงสุด|ราคาแพงที่สุด|ဈေးအကြီးဆုံး|ဈေးအများဆုံး|အဈေးအကြီးဆုံး|အဈေးအမြင့်ဆုံး/;
+const BETTER_Q = /\bwhich (?:one )?(?:is|are|would be) (?:better|best|tastier|nicer)\b|\b(?:better|tastier)\b[^.?]*\bor\b|ดีกว่า|อร่อยกว่า|ပိုကောင်း|ပိုကြိုက်/;
 const LIKES = /\b(?:i|we) (?:really )?(?:like|love|prefer|enjoy|crave)\b|\bin the mood for\b|\bcraving\b|\bfan of\b|ชอบกิน|ชอบทาน|อยากกิน|อยากทาน|ကြိုက်တယ်|စားချင်/;
 const SEAFOOD = /\bsea ?food\b|อาหารทะเล|ပင်လယ်စာ/;
 const HALAL = /\bhalal\b|ฮาลาล|ဟလာလ်|ဟာလာလ်|ဟလာလ်/;
@@ -724,8 +730,10 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
   // 1. allergens: always from the database
   const intent = has(t, ALLERGY_INTENT);
   // "gluten-free", "peanut free dishes", "ปลอดกลูเตน" ask for dishes WITHOUT it, not for the dishes that list it
-  const asksFree = /\b(without|free of|free from|no|not contain|don'?t contain|doesn'?t contain)\b|[a-z]-free\b|\bfree\b/.test(t) || /ปลอด(?!ภัย)/.test(t) || has(t, ["ไม่ใส่", "ไม่มี", "မပါ"]);
-  if (!meatFree && (mentioned.length || (intent && dishes.length))) {
+  const asksFree = /\b(without|free of|free from|no|not contain|don'?t contain|doesn'?t contain|(?:don'?t|do not|can'?t|cannot|never|won'?t) (?:eat|have|take))\b|ไม่กิน|ไม่ทาน|กินไม่ได้|ทานไม่ได้|မစားဘူး|မစားပါဘူး|မစားနိုင်|[a-z]-free\b|\bfree\b/.test(t) || /ปลอด(?!ภัย)/.test(t) || has(t, ["ไม่ใส่", "ไม่มี", "မပါ"]);
+  // "which is better, the salmon or the tuna?" names food words but asks about taste, which is not an allergy question (the data has no taste: the model says so)
+  const tasteOnly = BETTER_Q.test(t) && !intent && !STATES_ALLERGY.test(t);
+  if (!meatFree && !tasteOnly && (mentioned.length || (intent && dishes.length))) {
     // "I like salmon": a liking, not an allergy. The dishes that carry the word in their name, if there are any (else the allergen answer below)
     if (!dishes.length && LIKES.test(t) && !intent && !STATES_ALLERGY.test(t) && !asksFree) {
       const words = Object.values(ALLERGEN_WORDS).flat().filter((w) => /^[a-z' ]+$/.test(w) && wordIn(t, w));
@@ -999,6 +1007,18 @@ export function inLocalCurrency(text: string, lang: Lang): string {
   const unit = lang === "th" ? "บาท" : "ဘတ်";
   return text.replace(/฿\s*(\d[\d,]*)/g, `$1 ${unit}`).replace(/(\d[\d,]*)\s*(?:THB|baht)\b/gi, `$1 ${unit}`);
 }
+// The data holds no popularity, so the model may not call a dish popular, famous or a best seller (rule 10b): it does anyway ("the popular Gyoza", Thai
+// "เมนูยอดนิยมอย่าง ..."). The claim is cut out and the rest of the sentence stays. An honest "I don't have information on which dish is popular"
+// has no dish after the word, so it is left alone.
+export function withoutPopularityClaims(text: string): string {
+  return text
+    .replace(/\b(?:(?:our|the|a) )?(?:(?:most|very|really) )?(?:popular|famous|favou?rite|signature|best[- ]?selling) (?=[A-Z])/g, "")
+    .replace(/\b(?:(?:our|the|a|an) )?(?:(?:most|very|really) )?(?:popular|famous|favou?rite|signature|best[- ]?selling) (dishes|dish|items|item|choices|choice|picks|pick|options|option)\b/gi, "$1")
+    .replace(/\b(?:best[- ]?sellers?|bestsellers?|crowd[- ]pleasers?|(?:fan|customer|crowd) favou?rites?)\b/gi, "dish")
+    .replace(/เมนู(?:ยอดนิยม|ขายดี|ขึ้นชื่อ|เด็ด)/g, "เมนู").replace(/ยอดนิยม|ขายดี|ขึ้นชื่อ/g, "")
+    .replace(/လူကြိုက်(?:အများဆုံး|များ)(?:သော|တဲ့)?\s?|နာမည်(?:ကြီး|ကျော်)(?:သော|တဲ့)?\s?/g, "")
+    .replace(/ {2,}/g, " ");
+}
 export function withVoiceEnding(text: string, lang: Lang, gender: string): string {
   if (lang === "en") return text;
   const g = gender === "female" ? "female" : "male", other = g === "female" ? "male" : "female";
@@ -1010,6 +1030,7 @@ export function withVoiceEnding(text: string, lang: Lang, gender: string): strin
 const UNSAFE = [/\b(is safe|safe to eat|safe for you|allergy-free|allergen-free|no allergens|guarantee[sd]?)\b/i, /(?<!ไม่)ปลอดภัย/, /ဘေးကင်း|အန္တရာယ်ကင်း/];
 function wrongPrice(text: string, items: Item[]): boolean {
   const s = text.replace(/[၀-၉]/g, (d) => String(BD.indexOf(d)));
+  const longer = [...new Set(items.flatMap((i) => Object.values(i.name)))].filter((n) => n.length >= 4);
   for (const it of items) {
     const names = new Set<string>();
     for (const n of Object.values(it.name)) { names.add(n); for (const x of n.split("(")) { const part = x.trim().replace(/\)$/, ""); if (part) names.add(part); } }
@@ -1018,10 +1039,12 @@ function wrongPrice(text: string, items: Item[]): boolean {
       for (;;) {
         const i = s.indexOf(n, from);
         if (i < 0) break;
+        from = i + n.length;
+        // "Yakisoba" inside "Yakisoba with Onsen Egg" is the other dish's name, and the number after it is that dish's price
+        if (longer.some((l) => l.length > n.length && l.includes(n) && [...l.matchAll(new RegExp(n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"))].some((x) => s.startsWith(l, i - x.index!)))) continue;
         const rest = s.slice(i + n.length);
         const m = rest.match(/\d+/);
         if (m && m.index! <= 30 && +m[0] !== it.price) return true;
-        from = i + n.length;
       }
     }
   }
@@ -1142,8 +1165,11 @@ function checkModelReply(raw: string, lang: Lang, p: string, ctx: Ctx, topic: st
   // a reply that is only "how can I help you?" to a real question answers nothing (greetings and thanks are fine)
   const justHelp = text.length < 60 && /^(?:how can i (?:help|assist)[^.?]*\??|anything else i can help with\??|มีอะไรให้(?:ช่วย|ผม)[^.]*|ဘာ(?:များ)?\s?ကူညီပေးရမလဲ[^။]*။?)$/i.test(text.replace(/\s+/g, " ").trim());
   const greeting = /^\s*(?:hi|hello|hey|good (?:morning|afternoon|evening))\b|สวัสดี|หวัดดี|มีใคร|မင်္ဂလာ|ဟယ်လို/i.test(question);
-  const bad = !text || (justHelp && !greeting) || UNSAFE.some((re) => re.test(text)) || wrongPrice(text, ctx.items) || unknownAmount(text, ctx.items, question) || misPricedClause(text, ctx.items, question) || unknownDish(text, ctx, question) !== null || availabilityLie(text, ctx.items);
-  if (bad) return { reply: dontKnow(lang, p), action: { type: "none" }, topic, allergens, answered: false, usedModel: true };
+  const why = [!text && "empty", justHelp && !greeting && "only-offers-help", UNSAFE.some((re) => re.test(text)) && "unsafe-wording", wrongPrice(text, ctx.items) && "wrong-price", unknownAmount(text, ctx.items, question) && "unknown-amount",
+    misPricedClause(text, ctx.items, question) && "mispriced-dish", unknownDish(text, ctx, question) !== null && "unknown-dish", availabilityLie(text, ctx.items) && "availability"].filter(Boolean);
+  // AI_DEBUG=1 prints what the model said and why it was replaced, to the server console (never to the diner)
+  if (why.length && process.env.AI_DEBUG) console.warn(`[ai] model reply replaced (${why.join(", ")}) for "${question}": ${raw.replace(/\s+/g, " ")}`);
+  if (why.length) return { reply: dontKnow(lang, p), action: { type: "none" }, topic, allergens, answered: false, usedModel: true };
   // The model may not say anything about allergens, in either direction ("contains peanuts", "nut-free", "no dairy"):
   // it only sees the data it was given and has been wrong about it. Allergen facts come from the database only, so such
   // a reply is replaced by the stored allergen data of the dish it names (or by a request to name the dish).
@@ -1180,5 +1206,5 @@ function checkModelReply(raw: string, lang: Lang, p: string, ctx: Ctx, topic: st
   // "answered" feeds the owner's insights ("questions the AI could not answer": add an FAQ). A reply that only sends the diner to the staff
   // for a detail ("ask the staff for the Wi-Fi password") did answer; one that says the information is missing did not.
   const noInfo = /don't have|do not have|no information|not sure|unsure|can'?t (?:confirm|say|tell)|cannot|i'?m sorry|i am sorry|ไม่มีข้อมูล|ไม่ทราบ|ไม่แน่ใจ|ขออภัย|ขอโทษ|အချက်အလက်\s*မရှိ|မသိ|မရှိပါဘူး|တောင်းပန်/i.test(text);
-  return { reply: withVoiceEnding(inLocalCurrency(text, lang), lang, ctx.restaurant.persona.gender), action, topic, allergens, answered: !noInfo, usedModel: true };
+  return { reply: withVoiceEnding(inLocalCurrency(withoutPopularityClaims(text), lang), lang, ctx.restaurant.persona.gender), action, topic, allergens, answered: !noInfo, usedModel: true };
 }

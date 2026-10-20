@@ -2,7 +2,7 @@
 // Soup, Drinks), with the language model switched off: everything here is answered from the data by the rules, so it is fast and exact.
 // Every dish is asked about by name in English, Thai and Burmese; then the combos and sets, the categories, and the dishes that list allergens.
 import { beforeAll, describe, expect, it } from "vitest";
-import { aiCtx, noModel } from "./helpers";
+import { aiCtx, mockModel, noModel } from "./helpers";
 import { answer } from "@/modules/ai/ai";
 import { allergenName } from "@/modules/platform/constants";
 import { seedSushiMenu } from "./sushiMenu";
@@ -215,5 +215,34 @@ describe("everyday questions about the menu", () => {
     expect(shown(like).every((n: string) => /salmon/i.test(n))).toBe(true);
     const allergic = await ask("I'm allergic to salmon");
     expect(allergic.reply).toMatch(/^Dishes that list fish/);
+  });
+});
+
+describe("a dish whose name is the start of another dish's name", () => {
+  it("both are found when a reply names them together, in either order", async () => {
+    const { matchDishes } = await import("@/modules/ai/ai");
+    for (const text of ["Yakisoba (฿128) or Yakisoba with Onsen Egg (฿99)", "Yakisoba with Onsen Egg (฿99) or Yakisoba (฿128)"]) {
+      expect(matchDishes(text, ctx.items).map((d: any) => d.item.name.en).sort(), text).toEqual(["Yakisoba", "Yakisoba with Onsen Egg"]);
+    }
+  });
+  it("the price guard does not read the other dish's price as the price of the shorter name", async () => {
+    const calls = mockModel("You could try Yakisoba (128 THB) or Yakisoba with Onsen Egg (99 THB). Would you like to see more?\nACTION: none");
+    const r = await ask("I want something warm on a rainy day.");
+    expect(calls.length).toBe(1);
+    expect(r.usedModel).toBe(true);
+    expect(r.reply).toContain("Yakisoba (128 THB)");
+    expect(r.reply).not.toMatch(/don't have that information/);
+    // a real mismatch is still caught
+    mockModel("You could try Yakisoba (99 THB) or Yakisoba with Onsen Egg (128 THB).\nACTION: none");
+    expect((await ask("I want something warm on a rainy day.")).reply).toMatch(/don't have that information/);
+  });
+  it("'I don't eat raw fish' asks for dishes without fish, and 'which is better, the salmon or the tuna?' is not an allergen list", async () => {
+    noModel();
+    expect((await ask("I don't eat raw fish. What can I have?")).reply).toMatch(/^Dishes that do not list fish/);
+    expect((await ask("ไม่กินปลาดิบ มีอะไรแนะนำบ้าง", "th")).reply).toMatch(/^เมนูที่ไม่ได้ระบุว่ามี/);
+    const calls = mockModel("I don't have information on taste, so I can't say which is better.\nACTION: none");
+    const r = await ask("Which is better, the salmon or the tuna?");
+    expect(calls).toHaveLength(1);                                          // it went to the model, not to the allergen rule
+    expect(r.reply).not.toMatch(/^Dishes that list fish/);
   });
 });

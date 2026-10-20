@@ -1,0 +1,512 @@
+[
+ {
+  "id": "so-en1",
+  "lang": "en",
+  "category": "open_recommend",
+  "question": "I'm new to Japanese food. What should I try first?",
+  "expect": [
+   [
+    "฿",
+    "THB",
+    "บาท",
+    "ဘတ်",
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bguarantee",
+   "\\bbest[- ]?sell",
+   "\\bmost popular dish",
+   "\\bpopular (?:choice|dish|pick)",
+   "\\bour (?:famous|signature)\\b",
+   "unavailable right now",
+   "ใช้งานไม่ได้ในขณะนี้",
+   "ခဏမရနိုင်ပါဘူး"
+  ]
+ },
+ {
+  "id": "so-en2",
+  "lang": "en",
+  "category": "open_recommend",
+  "question": "What's good for two people sharing?",
+  "expect": [
+   [
+    "฿",
+    "THB",
+    "บาท",
+    "ဘတ်",
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bguarantee",
+   "\\bbest[- ]?sell",
+   "\\bmost popular dish",
+   "\\bpopular (?:choice|dish|pick)",
+   "\\bour (?:famous|signature)\\b",
+   "unavailable right now",
+   "ใช้งานไม่ได้ในขณะนี้",
+   "ခဏမရနိုင်ပါဘူး"
+  ]
+ },
+ {
+  "id": "so-en3",
+  "lang": "en",
+  "category": "open_recommend",
+  "question": "Something light and not fried, please.",
+  "expect": [
+   [
+    "฿",
+    "THB",
+    "บาท",
+    "ဘတ်",
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bguarantee",
+   "\\bbest[- ]?sell",
+   "\\bmost popular dish",
+   "\\bpopular (?:choice|dish|pick)",
+   "\\bour (?:famous|signature)\\b",
+   "unavailable right now",
+   "ใช้งานไม่ได้ในขณะนี้",
+   "ခဏမရနိုင်ပါဘူး"
+  ]
+ },
+ {
+  "id": "so-en4",
+  "lang": "en",
+  "category": "open_recommend",
+  "question": "What goes well with rice for lunch?",
+  "expect": [
+   [
+    "฿",
+    "THB",
+    "บาท",
+    "ဘတ်",
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bguarantee",
+   "\\bbest[- ]?sell",
+   "\\bmost popular dish",
+   "\\bpopular (?:choice|dish|pick)",
+   "\\bour (?:famous|signature)\\b",
+   "unavailable right now",
+   "ใช้งานไม่ได้ในขณะนี้",
+   "ခဏမရနိုင်ပါဘူး"
+  ]
+ },
+ {
+  "id": "so-en5",
+  "lang": "en",
+  "category": "open_recommend",
+  "question": "I want something warm on a rainy day.",
+  "expect": [
+   [
+    "฿",
+    "THB",
+    "บาท",
+    "ဘတ်",
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bguarantee",
+   "\\bbest[- ]?sell",
+   "\\bmost popular dish",
+   "\\bpopular (?:choice|dish|pick)",
+   "\\bour (?:famous|signature)\\b",
+   "unavailable right now",
+   "ใช้งานไม่ได้ในขณะนี้",
+   "ခဏမရနိုင်ပါဘူး"
+  ]
+ },
+ {
+  "id": "so-en6",
+  "lang": "en",
+  "category": "open_recommend",
+  "question": "I don't eat raw fish. What can I have?",
+  "expect": [
+   [
+    "฿",
+    "THB",
+    "บาท",
+    "ဘတ်",
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bguarantee",
+   "\\bbest[- ]?sell",
+   "\\bmost popular dish",
+   "\\bpopular (?:choice|dish|pick)",
+   "\\bour (?:famous|signature)\\b",
+   "unavailable right now",
+   "ใช้งานไม่ได้ในขณะนี้",
+   "ခဏမရနိုင်ပါဘူး"
+  ]
+ },
+ {
+  "id": "so-en7",
+  "lang": "en",
+  "category": "open_recommend",
+  "question": "What would you suggest for a quick lunch under 150 baht?",
+  "expect": [
+   [
+    "฿",
+    "THB",
+    "บาท",
+    "ဘတ်",
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bguarantee",
+   "\\bbest[- ]?sell",
+   "\\bmost popular dish",
+   "\\bpopular (?:choice|dish|pick)",
+   "\\bour (?:famous|signature)\\b",
+   "unavailable right now",
+   "ใช้งานไม่ได้ในขณะนี้",
+   "ခဏမရနိုင်ပါဘူး"
+  ]
+ },
+ {
+  "id": "so-en8",
+  "lang": "en",
+  "category": "open_recommend",
+  "question": "Which is better, the salmon or the tuna?",
+  "expect": [
+   [
+    "฿",
+    "THB",
+    "บาท",
+    "ဘတ်",
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bguarantee",
+   "\\bbest[- ]?sell",
+   "\\bmost popular dish",
+   "\\bpopular (?:choice|dish|pick)",
+   "\\bour (?:famous|signature)\\b",
+   "unavailable right now",
+   "ใช้งานไม่ได้ในขณะนี้",
+   "ခဏမရနိုင်ပါဘူး"
+  ]
+ },
+ {
+  "id": "so-en9",
+  "lang": "en",
+  "category": "open_recommend",
+  "question": "I'm hungry and have a big appetite. What should I order?",
+  "expect": [
+   [
+    "฿",
+    "THB",
+    "บาท",
+    "ဘတ်",
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bguarantee",
+   "\\bbest[- ]?sell",
+   "\\bmost popular dish",
+   "\\bpopular (?:choice|dish|pick)",
+   "\\bour (?:famous|signature)\\b",
+   "unavailable right now",
+   "ใช้งานไม่ได้ในขณะนี้",
+   "ခဏမရနိုင်ပါဘူး"
+  ]
+ },
+ {
+  "id": "so-en10",
+  "lang": "en",
+  "category": "open_recommend",
+  "question": "Can you build me a meal for three people?",
+  "expect": [
+   [
+    "฿",
+    "THB",
+    "บาท",
+    "ဘတ်",
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bguarantee",
+   "\\bbest[- ]?sell",
+   "\\bmost popular dish",
+   "\\bpopular (?:choice|dish|pick)",
+   "\\bour (?:famous|signature)\\b",
+   "unavailable right now",
+   "ใช้งานไม่ได้ในขณะนี้",
+   "ခဏမရနိုင်ပါဘူး"
+  ]
+ },
+ {
+  "id": "so-th1",
+  "lang": "th",
+  "category": "open_recommend",
+  "question": "ไม่กินปลาดิบ มีอะไรแนะนำบ้าง",
+  "expect": [
+   [
+    "฿",
+    "THB",
+    "บาท",
+    "ဘတ်",
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bguarantee",
+   "\\bbest[- ]?sell",
+   "\\bmost popular dish",
+   "\\bpopular (?:choice|dish|pick)",
+   "\\bour (?:famous|signature)\\b",
+   "unavailable right now",
+   "ใช้งานไม่ได้ในขณะนี้",
+   "ခဏမရနိုင်ပါဘူး"
+  ]
+ },
+ {
+  "id": "so-th2",
+  "lang": "th",
+  "category": "open_recommend",
+  "question": "อยากกินอะไรเบาๆ ไม่ทอด",
+  "expect": [
+   [
+    "฿",
+    "THB",
+    "บาท",
+    "ဘတ်",
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bguarantee",
+   "\\bbest[- ]?sell",
+   "\\bmost popular dish",
+   "\\bpopular (?:choice|dish|pick)",
+   "\\bour (?:famous|signature)\\b",
+   "unavailable right now",
+   "ใช้งานไม่ได้ในขณะนี้",
+   "ခဏမရနိုင်ပါဘူး"
+  ]
+ },
+ {
+  "id": "so-th3",
+  "lang": "th",
+  "category": "open_recommend",
+  "question": "มื้อกลางวันกินอะไรดี งบไม่เกิน 150 บาท",
+  "expect": [
+   [
+    "฿",
+    "THB",
+    "บาท",
+    "ဘတ်",
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bguarantee",
+   "\\bbest[- ]?sell",
+   "\\bmost popular dish",
+   "\\bpopular (?:choice|dish|pick)",
+   "\\bour (?:famous|signature)\\b",
+   "unavailable right now",
+   "ใช้งานไม่ได้ในขณะนี้",
+   "ခဏမရနိုင်ပါဘူး"
+  ]
+ },
+ {
+  "id": "so-th4",
+  "lang": "th",
+  "category": "open_recommend",
+  "question": "ไปกันสองคน ควรสั่งอะไรดี",
+  "expect": [
+   [
+    "฿",
+    "THB",
+    "บาท",
+    "ဘတ်",
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bguarantee",
+   "\\bbest[- ]?sell",
+   "\\bmost popular dish",
+   "\\bpopular (?:choice|dish|pick)",
+   "\\bour (?:famous|signature)\\b",
+   "unavailable right now",
+   "ใช้งานไม่ได้ในขณะนี้",
+   "ခဏမရနိုင်ပါဘူး"
+  ]
+ },
+ {
+  "id": "so-my1",
+  "lang": "my",
+  "category": "open_recommend",
+  "question": "ငါးအစိမ်း မစားဘူး ဘာစားသင့်လဲ",
+  "expect": [
+   [
+    "฿",
+    "THB",
+    "บาท",
+    "ဘတ်",
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bguarantee",
+   "\\bbest[- ]?sell",
+   "\\bmost popular dish",
+   "\\bpopular (?:choice|dish|pick)",
+   "\\bour (?:famous|signature)\\b",
+   "unavailable right now",
+   "ใช้งานไม่ได้ในขณะนี้",
+   "ခဏမရနိုင်ပါဘူး"
+  ]
+ },
+ {
+  "id": "so-my2",
+  "lang": "my",
+  "category": "open_recommend",
+  "question": "နွေးနွေးထွေးထွေး စားစရာ ရှိလား",
+  "expect": [
+   [
+    "฿",
+    "THB",
+    "บาท",
+    "ဘတ်",
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bguarantee",
+   "\\bbest[- ]?sell",
+   "\\bmost popular dish",
+   "\\bpopular (?:choice|dish|pick)",
+   "\\bour (?:famous|signature)\\b",
+   "unavailable right now",
+   "ใช้งานไม่ได้ในขณะนี้",
+   "ခဏမရနိုင်ပါဘူး"
+  ]
+ },
+ {
+  "id": "so-my3",
+  "lang": "my",
+  "category": "open_recommend",
+  "question": "နှစ်ယောက်စားအတွက် ဘာမှာသင့်လဲ",
+  "expect": [
+   [
+    "฿",
+    "THB",
+    "บาท",
+    "ဘတ်",
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bguarantee",
+   "\\bbest[- ]?sell",
+   "\\bmost popular dish",
+   "\\bpopular (?:choice|dish|pick)",
+   "\\bour (?:famous|signature)\\b",
+   "unavailable right now",
+   "ใช้งานไม่ได้ในขณะนี้",
+   "ခဏမရနိုင်ပါဘူး"
+  ]
+ }
+]

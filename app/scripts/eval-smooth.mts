@@ -1,7 +1,7 @@
 // "Smooth response" eval: how long a diner waits for an answer, measured against a RUNNING server with the real model.
 // eval-live.mts checks that answers are right; this checks that they come fast enough and keep coming under load.
 //
-//   npm run eval:smooth                 (server on http://localhost:3000, restaurant golden-lotus, eval/sushi_menu_questions.json)
+//   npm run eval:smooth                 (server on http://localhost:3000, restaurant golden-lotus, eval/sushi_menu_questions.json + sushi_open_questions.json)
 //   npm run eval:smooth -- --write      also saves eval/results/smooth-latest.{md,json}
 //
 // Three parts, all with preview:true as the signed-in owner (nothing is stored or counted, see eval-live.mts):
@@ -20,7 +20,8 @@ const evalDir = path.join(here, "..", "..", "eval");
 const base = (process.env.EVAL_BASE_URL || "http://localhost:3000").replace(/\/+$/, "");
 const slug = process.env.EVAL_SLUG || "golden-lotus";
 const label = process.env.EVAL_LABEL || process.env.OLLAMA_MODEL || "gemma4:12b (Ollama default)";
-const questions: EvalQuestion[] = JSON.parse(fs.readFileSync(path.join(evalDir, process.env.EVAL_QUESTIONS || "sushi_menu_questions.json"), "utf8"));
+// EVAL_QUESTIONS may name several files (comma-separated). The default is the rule questions plus the open ones that reach the model: the model's time is the point.
+const questions: EvalQuestion[] = (process.env.EVAL_QUESTIONS || "sushi_menu_questions.json,sushi_open_questions.json").split(",").flatMap((f) => JSON.parse(fs.readFileSync(path.join(evalDir, f.trim()), "utf8")));
 const T = JSON.parse(fs.readFileSync(path.join(evalDir, "thresholds.json"), "utf8")).smooth;
 const BURST = Number(process.env.BURST_SIZE) || 4;
 const FALLBACK = /unavailable right now|ใช้งานไม่ได้ในขณะนี้|ခဏမရနိုင်ပါဘူး/;
