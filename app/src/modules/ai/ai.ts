@@ -1099,6 +1099,8 @@ function unknownDish(text: string, ctx: Ctx, question: string): string | null {
   const learn = (s: string) => { for (const w of words(s)) known.add(w); };
   learn(question); learn(r.name); learn(r.city || ""); learn(r.persona.name || ""); learn(r.persona.rules || "");
   for (const i of ctx.items) { learn(i.name.en); learn(i.desc.en); learn(i.ingredients); }
+  for (const c of ctx.categories ?? []) learn(c.name.en);                              // "Sets & Combos", "Rice & Don": the owner's own words
+  const isKnown = (w: string) => known.has(w) || known.has(w.replace(/e?s$/, ""));       // "combos" for "combo"
   for (const f of ctx.faqs) { learn(f.q); learn(f.a); }
   for (const s of ctx.specials) { learn(String(s.title || "")); learn(String(s.text || "")); }
   const clean = text.replace(/[*_#`>]/g, " ");
@@ -1116,7 +1118,7 @@ function unknownDish(text: string, ctx: Ctx, question: string): string | null {
     const sentence = prefix.split(/[.!?;\n]/).pop() || "";
     const clause = sentence.split(/\b(?:but|however|instead|alternatively|try|recommend|suggest|enjoy|how about)\b|[,;]/i).pop() || "";
     if (/\b(?:not|never|no|without|cannot)\b|n['’]t/i.test(clause)) continue;
-    const bad = toks.find((t) => !known.has(stem(t).toLowerCase().replace(/[^a-z]/g, "")) && !words(t).every((w) => known.has(w)));
+    const bad = toks.find((t) => !isKnown(stem(t).toLowerCase().replace(/[^a-z]/g, "")) && !words(t).every(isKnown));
     if (bad) return toks.join(" ");
   }
   return null;
@@ -1142,7 +1144,8 @@ function availabilityLie(text: string, items: Item[]): boolean {
 
 function checkModelReply(raw: string, lang: Lang, p: string, ctx: Ctx, topic: string, allergens: string[], question: string): ChatResult {
   const m = raw.match(/\n?\s*ACTION:\s*(.*)$/s);
-  let text = raw.replace(/\n?\s*ACTION:.*$/s, "").trim();
+  // "1,200 THB" is the price 1200, not the numbers 1 and 200 (the checks below read digits)
+  let text = raw.replace(/\n?\s*ACTION:.*$/s, "").trim().replace(/(\d),(?=\d{3}(?!\d))/g, "$1");
   let action: Action = { type: "none" };
   if (m) {
     const line = m[1].trim().split("\n")[0];

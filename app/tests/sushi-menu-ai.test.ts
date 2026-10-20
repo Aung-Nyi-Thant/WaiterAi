@@ -246,3 +246,19 @@ describe("a dish whose name is the start of another dish's name", () => {
     expect(r.reply).not.toMatch(/^Dishes that list fish/);
   });
 });
+
+describe("what the guard lets through from the model on this menu", () => {
+  it("a price written with a thousands comma ('1,200 THB') is the price 1200, and the owner's category names ('Sets & Combos') are known words", async () => {
+    mockModel("For a big appetite I recommend the Omori Set (1,200 THB) or the Buta Set (499 THB). You can also look at our Sets & Combos.\nACTION: none");
+    const r = await ask("I'm hungry and have a big appetite. What should I order?");
+    expect(r.usedModel).toBe(true);
+    expect(r.reply).toContain("Omori Set (1200 THB)");
+    expect(r.reply).not.toMatch(/don't have that information/);
+  });
+  it("a made-up dish is still replaced, and a price on the wrong dish is still caught", async () => {
+    mockModel("You should try the Lobster Thermidor Roll (250 THB).\nACTION: none");
+    expect((await ask("I'm hungry and have a big appetite. What should I order?")).reply).toMatch(/don't have that information/);
+    mockModel("You should try the Omori Set (499 THB).\nACTION: none");
+    expect((await ask("I'm hungry and have a big appetite. What should I order?")).reply).toMatch(/don't have that information/);
+  });
+});
