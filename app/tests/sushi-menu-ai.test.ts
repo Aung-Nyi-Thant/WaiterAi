@@ -162,3 +162,50 @@ describe("categories", () => {
     expect(shown(r)).toEqual(["Salmon Sushi"]);
   });
 });
+
+describe("everyday questions about the menu", () => {
+  it.each([
+    ["Do you have salmon sushi?", "Salmon Sushi", "en"], ["Is the Wagyu Sushi available?", "Wagyu Sushi", "en"], ["ซูชิแซลม่อนมีไหม", "Salmon Sushi", "th"], ["ဆော်လမွန်ဆူရှီ ရှိလား", "Salmon Sushi", "my"],
+  ] as [string, string, Lang][])("'%s' says yes, with the dish and its price, without the model", async (q, name, lang) => {
+    const r = await ask(q, lang);
+    expect(r.usedModel).toBe(false);
+    expect(shown(r)).toEqual([name]);
+    expect(r.reply).toContain(lang === "en" ? `฿${dish(name).price}` : lang === "th" ? `${dish(name).price} บาท` : `${digits(dish(name).price)} ဘတ်`);
+  });
+  it("a question that only starts like 'do you have' stays a different question ('is there a discount', 'does it have milk')", async () => {
+    expect((await ask("Is there a discount on the Buta Set?")).reply).not.toMatch(/^Yes, we have/);
+    expect((await ask("ต้มยำมีนมไหม", "th")).reply).not.toMatch(/^มี/);
+  });
+  it("'I want a coke' fits two dishes, so it asks which one instead of adding both; naming one adds it", async () => {
+    const r = await ask("I want a coke");
+    expect(r.action.type).toBe("show_dishes");
+    expect(r.reply).toMatch(/^Which one would you like: Coca-Cola Original \(฿30\) or Coca-Cola Zero Sugar \(฿30\)\?$/);
+    expect((await ask("do you have cola")).reply).toMatch(/^Yes, we have Coca-Cola Original/);
+    const one = await ask("I want a Sprite");
+    expect(one.action.type).toBe("add_to_picks");
+    expect(shown(one)).toEqual(["Sprite"]);
+  });
+  it("a kind of dish the menu has no section for is said so, with the sections it has (no dessert on a sushi menu)", async () => {
+    const en = await ask("Any dessert?");
+    expect(en.usedModel).toBe(false);
+    expect(en.reply).toMatch(/^I don't see a desserts section on our menu\. Our sections are: Sets & Combos, Sashimi, Sushi/);
+    expect(en.answered).toBe(false);
+    expect((await ask("มีของหวานไหม", "th")).reply).toContain("ในเมนูไม่มีหมวดของหวาน");
+  });
+  it("'any salads?' lists the dishes that carry the word when there is no salad section", async () => {
+    const r = await ask("Any salads?");
+    expect(r.usedModel).toBe(false);
+    expect(shown(r).length).toBeGreaterThan(0);
+    expect(shown(r).every((n: string) => /salad/i.test(n))).toBe(true);
+  });
+  it("'any starters?' finds the Appetizers", async () => {
+    expect((await ask("Any starters?")).reply).toMatch(/^Appetizers \(44\)/);
+  });
+  it("an allergen question that names a category is answered for that category only", async () => {
+    const r = await ask("Which sushi has no fish?");
+    expect(r.usedModel).toBe(false);
+    const sushiId = ctx.categories.find((c: any) => c.name.en === "Sushi").id;
+    expect(shown(r).length).toBeGreaterThan(0);
+    expect(shown(r).every((n: string) => dish(n).category_id === sushiId && !(dish(n).allergens ?? []).includes("fish"))).toBe(true);
+  });
+});

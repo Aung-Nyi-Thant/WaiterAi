@@ -125,6 +125,8 @@ function variants(item: Item, all: Item[]): string[] {
       if (!others.length) v.add(w);
     }
   }
+  // what diners call a brand: "a coke" for Coca-Cola Original
+  if (/coca-?cola/.test(norm(item.name.en))) for (const x of ["coke", "cola", "โค้ก", "โค๊ก"]) v.add(x);
   // single words of Burmese names ("ကော်ပြန့်စိမ်း" from "ဟင်းသီးဟင်းရွက် ကော်ပြန့်စိမ်း")
   for (const tok of item.name.my.replace(/\(.*?\)/g, "").split(/\s+/)) {
     if (tok.length >= 4 && !isAllergenWord(tok) && !all.some((o) => o.id !== item.id && o.name.my.includes(tok))) v.add(tok);
@@ -174,7 +176,7 @@ function variantsOf(item: Item, all: Item[]): string[] {
 // right and a number already used by an earlier dish ("papaya salad x4 thai tea x2": the 4 is the salad's) is skipped.
 const QTY_BEFORE = /(\d+)\s*(?:x|×)?\s*$/;
 const QTY_AFTER = /^(?:[\s,]*[x×]\s*(\d+)|\s*(\d+)\s*(?:x|×|จาน|ที่|ชุด|ခွက်|ပွဲ|plates?|portions?|pcs|pieces))/;
-export function matchDishes(text: string, items: Item[]): { item: Item; qty: number }[] {
+export function matchDishes(text: string, items: Item[]): { item: Item; qty: number; amb?: boolean }[] {
   const t = norm(text);
   const found: { item: Item; len: number; at: number; exact: boolean }[] = [];
   for (const it of items) {
@@ -199,9 +201,11 @@ export function matchDishes(text: string, items: Item[]): { item: Item; qty: num
   // "I'll have the sashimi" must not add all fourteen. Nothing is matched, so the diner is asked / shown the menu instead.
   const generic = found.filter((a) => !a.exact && found.filter((b) => b.at === a.at && b.len === a.len).length >= 3 && !found.some((b) => b.at === a.at && b.len === a.len && b.exact));
   for (const g of generic) found.splice(found.indexOf(g), 1);
+  // two dishes that match the very same words, neither by its full name ("coke" is Coca-Cola Original and Zero Sugar): the diner did not say which
+  const ambiguous = new Set(found.filter((a) => !a.exact && found.some((b) => b !== a && b.at === a.at && b.len === a.len && !b.exact)).map((a) => a.item.id));
   const used: [number, number][] = [];                                    // character ranges of numbers already read as a quantity
   const free = (a: number, b: number) => !used.some(([x, y]) => a < y && b > x);
-  const out: { item: Item; qty: number; len: number }[] = [];
+  const out: { item: Item; qty: number; len: number; amb?: boolean }[] = [];
   for (const { item, len, at } of [...found].sort((a, b) => a.at - b.at)) {
     let q = 1;
     const from = Math.max(0, at - 6), head = t.slice(from, at), before = head.match(QTY_BEFORE);
@@ -213,10 +217,10 @@ export function matchDishes(text: string, items: Item[]): { item: Item; qty: num
       const digits = after[1] ?? after[2], start = tailAt + after[0].indexOf(digits, after[0].search(/[x×\d]/));
       if (free(start, start + digits.length)) { q = +digits; used.push([start, start + digits.length]); }
     }
-    out.push({ item, qty: Math.max(1, Math.min(20, q)), len });
+    out.push({ item, qty: Math.max(1, Math.min(20, q)), len, ...(ambiguous.has(item.id) ? { amb: true } : {}) });
   }
   // a longer match that contains a shorter dish name wins ("Thai Iced Tea" vs another "Tea")
-  return out.sort((a, b) => b.len - a.len).map(({ item, qty }) => ({ item, qty }));
+  return out.sort((a, b) => b.len - a.len).map(({ item, qty, amb }) => ({ item, qty, ...(amb ? { amb } : {}) }));
 }
 
 // Allergen words in a text, ignoring the ones that are part of a dish name ("Shrimp Pad Thai" is not an allergy statement).
@@ -415,6 +419,18 @@ const CATEGORY_WORDS: [string, string[]][] = [
   ["starter", ["starter", "appetizer", "appetiser", "snack", "ของทานเล่น", "အစာစား"]], ["salad", ["salad", "สลัด", "သုပ်"]],
   ["curr", ["curry", "curries", "แกง", "ဟင်းချို"]], ["main", ["main course", "mains", "จานหลัก", "ပင်မဟင်း"]],
 ];
+// the label of each fixed category word, in each language, and whether a menu category is that kind of category ("Appetizers" is the starters)
+const CATEGORY_LABEL: Record<string, Record<Lang, string>> = {
+  drink: { en: "Drinks", th: "เครื่องดื่ม", my: "အဖျော်ယမကာ" }, dessert: { en: "Desserts", th: "ของหวาน", my: "အချိုပွဲ" }, starter: { en: "Starters", th: "ของทานเล่น", my: "အစာငယ်" },
+  salad: { en: "Salads", th: "สลัด", my: "သုပ်" }, curr: { en: "Curries", th: "แกง", my: "ဟင်း" }, main: { en: "Main courses", th: "จานหลัก", my: "ပင်မဟင်း" },
+};
+const categoryIs = (c: { name: Record<Lang, string> }, key: string) => c.name.en.toLowerCase().includes(key) || (key === "starter" && /appetizer/i.test(c.name.en));
+const noSectionReply = (l: Lang, p: string, word: string, sections: string[]) => {
+  const list = join(l, sections);
+  return l === "en" ? `I don't see a ${word.toLowerCase()} section on our menu. Our sections are: ${list}. Tell me which one you would like to see.`
+    : l === "th" ? `ในเมนูไม่มีหมวด${word}${p} หมวดที่มีได้แก่ ${list}${p} บอกได้เลยว่าอยากดูหมวดไหน${p}`
+    : `မီနူးမှာ ${word} အမျိုးအစား မတွေ့ပါဘူး${p}။ ရှိတဲ့ အမျိုးအစားတွေကတော့ ${list} ဖြစ်ပါတယ်${p}။ ဘယ်ဟာကို ကြည့်ချင်လဲ ပြောပေးပါ${p}။`;
+};
 const INCLUSIVE = ["within", "up to", "max", "budget", "ไม่เกิน", "งบ", "or less", "or under"];
 function parseRec(t: string): Rec {
   const rec: Rec = {};
@@ -594,6 +610,23 @@ function compareTwoReply(l: Lang, p: string, a: Item, b: Item, by: "spice" | "pr
 const changeNote = (l: Lang, p: string) => (l === "en" ? " I can't promise that a dish can be changed, so please ask the staff."
   : l === "th" ? ` การเอาส่วนผสมออกหรือปรับสูตร ต้องให้พนักงานยืนยัน${p}` : ` ဟင်းလျာကို ပြင်ဆင်ပေးလို့ရမရ ဝန်ထမ်းက အတည်ပြုပေးရပါတယ်${p}။`);
 
+const HAVE_Q = /\b(?:do you (?:have|serve|sell|offer)|have you (?:got|any)|got any|is there|are there)\b|\b(?:is|are) (?:the |your )?[a-z' -]{2,40} available\b|มี.{0,40}(?:ไหม|มั้ย|หรือเปล่า|รึเปล่า)|ရှိ(?:လား|သလား|ပါသလား|ပါလား)/;
+// Only when nothing is asked beyond whether the dish exists: "is there a discount on the Buta Set?" and "ต้มยำมีนมไหม" (is there milk in the tom yum?) are other questions
+const HAVE_FILLER = /\b(?:do|you|have|serve|sell|offer|got|any|is|are|there|the|a|an|your|some|available|today|here|please|yet|still|in|stock|on|menu|now|and|or)\b|มี|ไหม|มั้ย|หรือเปล่า|รึเปล่า|ครับ|ค่ะ|คะ|นะ|หรอ|เหรอ|บ้าง|ရှိ|လား|သလား|သေးလား|ပါ|တယ်|ခင်ဗျာ|ရှင်/g;
+function asksIfAvailable(t: string, dishes: { item: Item }[], items: Item[]): boolean {
+  if (!HAVE_Q.test(t)) return false;
+  let rest = t;
+  for (const d of dishes) for (const v of [...variantsOf(d.item, items)].sort((a, b) => b.length - a.length)) rest = rest.split(v).join(" ");
+  return rest.replace(HAVE_FILLER, " ").replace(/[\s?？!.,]/g, "") === "";
+}
+const haveReply = (l: Lang, p: string, list: Item[]) => {
+  const names = join(l, list.map((i) => `${nm(i, l)} (${money(l, i.price)})`));
+  return l === "en" ? `Yes, we have ${names}. ${HELP(l, p)}` : l === "th" ? `มี${names}${p} ${HELP(l, p)}` : `${names} ရှိပါတယ်${p}။ ${HELP(l, p)}`;
+};
+const whichOneReply = (l: Lang, p: string, list: Item[]) => {
+  const names = list.map((i) => `${nm(i, l)} (${money(l, i.price)})`);
+  return l === "en" ? `Which one would you like: ${names.join(" or ")}?` : l === "th" ? `ต้องการอันไหน${p}: ${names.join(" หรือ ")}` : `ဘယ်တစ်ခုကို မှာချင်ပါသလဲ${p}။ ${names.join(" ဒါမှမဟုတ် ")}`;
+};
 const noIngredientsReply = (l: Lang, p: string, n: string) => (l === "en" ? `I don't have the ingredients or what comes with ${n} in our menu data. ${STAFF(l, p)}`
   : l === "th" ? `ยังไม่มีข้อมูลส่วนผสมหรือรายการที่มาพร้อมกับ${n}ในข้อมูลเมนู${p} ${STAFF(l, p)}` : `${n} ရဲ့ ပါဝင်ပစ္စည်း ဒါမှမဟုတ် ပါလာတဲ့ အရာတွေကို မီနူးအချက်အလက်မှာ မရှိပါဘူး${p}။ ${STAFF(l, p)}`);
 
@@ -697,10 +730,12 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
       const it = dishes[0].item;
       return done(dishAllergenReply(lang, p, it), { type: "show_dishes", ids: [it.id] });
     }
-    const containing = items.filter((i) => i.allergens && mentioned.some((k) => i.allergens!.includes(k)));
-    const unknown = items.filter((i) => i.allergens === null);
+    // "which sushi has no fish?": only the dishes of the category the diner named
+    const scope = askedCats.length ? items.filter((i) => askedCats.some((c) => c.id === i.category_id)) : items;
+    const containing = scope.filter((i) => i.allergens && mentioned.some((k) => i.allergens!.includes(k)));
+    const unknown = scope.filter((i) => i.allergens === null);
     if (asksFree) {
-      const free = items.filter((i) => i.available && i.allergens !== null && !mentioned.some((k) => i.allergens!.includes(k)));
+      const free = scope.filter((i) => i.available && i.allergens !== null && !mentioned.some((k) => i.allergens!.includes(k)));
       return done(allergenFreeReply(lang, p, mentioned, free, unknown), { type: "show_dishes", ids: free.slice(0, 4).map((i) => i.id) });
     }
     return done(allergenListReply(lang, p, mentioned, containing, unknown), { type: "show_dishes", ids: containing.slice(0, 4).map((i) => i.id) });
@@ -720,7 +755,7 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
   if (!dishes.length && (CHEAPEST.test(t) || PRICIEST.test(t))) {
     const cheap = CHEAPEST.test(t);
     const fixedCat = parseRec(t).category;
-    const catIds = fixedCat ? (ctx.categories ?? []).filter((c) => c.name.en.toLowerCase().includes(fixedCat)).map((c) => c.id) : askedCats.map((c) => c.id);
+    const catIds = fixedCat ? (ctx.categories ?? []).filter((c) => categoryIs(c, fixedCat)).map((c) => c.id) : askedCats.map((c) => c.id);
     const catName = catIds.length ? join(lang, (ctx.categories ?? []).filter((c) => catIds.includes(c.id)).map((c) => c.name[lang] || c.name.en)) : "";
     const pool = live.filter((i) => fitsProfile(i, profile) && (!catIds.length || (i.category_id !== null && catIds.includes(i.category_id))));
     const list = pool.sort((a, b) => (cheap ? a.price - b.price : b.price - a.price) || a.id - b.id).slice(0, 3);
@@ -731,8 +766,9 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
   // A vegetarian question with just a budget stays with the vegetarian rule below.
   if (!dishes.length) {
     const rec = parseRec(t), wantsVeg = has(t, W.veg), vegan = wantsVeg ? has(t, W.vegan) : null;
-    let catIds = rec.category ? (ctx.categories ?? []).filter((c) => c.name.en.toLowerCase().includes(rec.category!)).map((c) => c.id) : [];
-    if (rec.category && !catIds.length) delete rec.category;       // the owner has no such category: ignore the word
+    let catIds = rec.category ? (ctx.categories ?? []).filter((c) => categoryIs(c, rec.category!)).map((c) => c.id) : [];
+    let noSection = "";
+    if (rec.category && !catIds.length) { noSection = rec.category; delete rec.category; }       // the owner has no such category: ignore the word
     // a category the fixed word list does not know (sushi, sashimi, noodles, "sets & combos" ...) is found from the menu's own category names
     let askedNames = "";
     if (!rec.category) {
@@ -747,6 +783,13 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
     else if ((bare || (rec.popular && !rec.mild && !rec.hot && !rec.category && rec.budget === undefined && !wantsVeg)) && !hasOrders) {
       const list = spreadOfMenu(items, profile);
       if (list.length) return done(spreadReply(lang, p, list, profile), { type: "show_dishes", ids: list.map((i) => i.id) }, { topic: "recommend" });
+    }
+    // "any dessert?" on a menu with no dessert section: the dishes that carry the word in their name, else say there is no such section (never invent one)
+    if (noSection && !rec.mild && !rec.hot && !rec.popular && rec.budget === undefined && !wantsVeg && (ctx.categories ?? []).length) {
+      const label = CATEGORY_LABEL[noSection];
+      const named = live.filter((i) => fitsProfile(i, profile) && norm(i.name.en).includes(noSection === "curr" ? "curry" : noSection));
+      if (label && named.length) return done(categoryListReply(lang, p, label[lang], named, profile), { type: "show_dishes", ids: named.slice(0, 6).map((i) => i.id) }, { topic: "recommend" });
+      if (label) return done(noSectionReply(lang, p, label[lang], (ctx.categories ?? []).map((c) => c.name[lang] || c.name.en)), { type: "show_menu" }, { topic: "recommend", answered: false });
     }
     const detail = rec.mild || rec.hot || rec.category || rec.popular || (rec.budget !== undefined && !wantsVeg);
     if (detail && !(wantsVeg && !rec.mild && !rec.hot && !rec.category && !rec.popular)) {
@@ -794,6 +837,9 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
     if (has(t, W.spicy) && !has(t, MILD) && !has(t, W.order) && !has(t, W.price)) return done(dishSpiceReply(lang, p, dishes[0].item), { type: "show_dishes", ids: [dishes[0].item.id] }, { topic: "spicy" });
     if (has(notPrice(t), W.price)) return done(priceReply(lang, p, dishes[0].item), { type: "show_dishes", ids: [dishes[0].item.id] });
     if (has(t, W.order) || has(t, ["please", "หน่อย"]) || /\d+\s*[x×]|[x×]\s*\d+/.test(t) || /\b(?:add|get me|bring me)\b/.test(t)) {
+      // "a coke" fits two dishes: ask which one instead of adding both
+      const which = dishes.filter((d) => d.amb);
+      if (which.length >= 2) return done(whichOneReply(lang, p, which.map((d) => d.item)), { type: "show_dishes", ids: which.map((d) => d.item.id) });
       const qty: Record<number, number> = {};
       dishes.forEach((d) => { qty[d.item.id] = d.qty; });
       const names = join(lang, dishes.map((d) => `${d.qty > 1 ? d.qty + "× " : ""}${nm(d.item, lang)}`));
@@ -801,6 +847,11 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
       const conflict = dishes.find((d) => !fitsProfile(d.item, profile));
       return done((lang === "en" ? `Added to your picks: ${names}. Tap "Send to staff" when you're ready.` : lang === "th" ? `เพิ่มลงในรายการที่เลือกแล้ว: ${names}${p} กด "ให้พนักงานดู" เมื่อพร้อมสั่ง` : `${names} ကို ရွေးထားတာတွေထဲ ထည့်လိုက်ပါတယ်${p}။`)
         + (conflict ? ` ${lang === "en" ? "Warning:" : lang === "th" ? "คำเตือน:" : "သတိပေးချက် -"} ${profileConflictReply(lang, p, conflict.item, profile)}` : ""), { type: "add_to_picks", ids: dishes.map((d) => d.item.id), qty });
+    }
+    // "do you have the salmon sushi?", "is the Wagyu Sushi available?": yes, with the price (a sold-out dish was answered above)
+    if (asksIfAvailable(t, dishes, items) && !mentioned.length) {
+      const list = dishes.slice(0, 4).map((d) => d.item);
+      return done(haveReply(lang, p, list), { type: "show_dishes", ids: list.map((i) => i.id) });
     }
   }
 
