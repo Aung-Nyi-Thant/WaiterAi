@@ -23,3 +23,17 @@ export function markdownTable(s: ReturnType<typeof summarize>): string {
   const L: Record<string, string> = { en: "English", th: "Thai", my: "Burmese" };
   return ["| Language | Passed |", "|---|---|", ...["en", "th", "my"].filter((l) => s.byLang[l]).map((l) => `| ${L[l]} | ${percent(s.byLang[l])} |`), `| **All** | **${percent(s.overall)}** |`].join("\n");
 }
+
+// ---- smooth response (scripts/eval-smooth.mts): how long diners wait, not only whether the answer is right
+/** Nearest-rank percentile of a list of numbers (p in 0..100); 0 for an empty list. */
+export function percentile(values: number[], p: number): number {
+  if (!values.length) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted[Math.min(sorted.length - 1, Math.max(0, Math.ceil((p / 100) * sorted.length) - 1))];
+}
+export type Latency = { n: number; mean: number; p50: number; p90: number; p95: number; max: number };
+export function latencyOf(ms: number[]): Latency {
+  return { n: ms.length, mean: ms.length ? Math.round(ms.reduce((a, b) => a + b, 0) / ms.length) : 0, p50: percentile(ms, 50), p90: percentile(ms, 90), p95: percentile(ms, 95), max: ms.length ? Math.max(...ms) : 0 };
+}
+/** The share of values at or under a limit (1 for an empty list). */
+export const shareWithin = (ms: number[], limit: number) => (ms.length ? ms.filter((x) => x <= limit).length / ms.length : 1);

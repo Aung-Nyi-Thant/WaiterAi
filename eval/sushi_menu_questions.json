@@ -1,0 +1,866 @@
+[
+ {
+  "id": "sm-en1",
+  "lang": "en",
+  "category": "combo_list",
+  "question": "What combos do you have?",
+  "expect": [
+   [
+    "Coke Combo"
+   ],
+   [
+    "Omori Set"
+   ],
+   [
+    "Buta Set"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en2",
+  "lang": "en",
+  "category": "combo_list",
+  "question": "Do you have a set menu?",
+  "expect": [
+   [
+    "Tontoro Happy Set"
+   ],
+   [
+    "Omori Set"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en3",
+  "lang": "en",
+  "category": "combo_list",
+  "question": "Any promotions?",
+  "expect": [
+   [
+    "Sets & Combos"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en4",
+  "lang": "en",
+  "category": "combo_contents",
+  "question": "What is in the Omori Set?",
+  "expect": [
+   [
+    "don't have"
+   ],
+   [
+    "staff"
+   ]
+  ],
+  "forbid": [
+   "made with",
+   "\\b(?:comes|come|includes?|included|contains?) (?:with )?[^.]{0,40}\\b(?:miso soup|salad|dessert|sashimi|sushi|rice|noodles)\\b"
+  ],
+  "rules": true
+ },
+ {
+  "id": "sm-en5",
+  "lang": "en",
+  "category": "combo_contents",
+  "question": "What comes with the Tontoro Happy Set?",
+  "expect": [
+   [
+    "don't have"
+   ],
+   [
+    "staff"
+   ]
+  ],
+  "forbid": [
+   "made with",
+   "\\b(?:comes|come|includes?|included|contains?) (?:with )?[^.]{0,40}\\b(?:miso soup|salad|dessert|sashimi|sushi|rice|noodles)\\b"
+  ],
+  "rules": true
+ },
+ {
+  "id": "sm-en6",
+  "lang": "en",
+  "category": "combo_price",
+  "question": "How much is the Tontoro Happy Set?",
+  "expect": [
+   [
+    "299"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en7",
+  "lang": "en",
+  "category": "combo_price",
+  "question": "What's the price of Yakisoba with Coke?",
+  "expect": [
+   [
+    "99"
+   ],
+   [
+    "Coke"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en8",
+  "lang": "en",
+  "category": "combo_price",
+  "question": "How much is the Fatty Beef Don with Coke?",
+  "expect": [
+   [
+    "159"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en9",
+  "lang": "en",
+  "category": "combo_contents",
+  "question": "What is in the Garlic Fried Rice with Coke?",
+  "expect": [
+   [
+    "Japanese rice"
+   ],
+   [
+    "Garlic"
+   ],
+   [
+    "Cola"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en10",
+  "lang": "en",
+  "category": "combo_order",
+  "question": "I want garlic fried rice with coke",
+  "expect": [
+   [
+    "Added to your picks"
+   ],
+   [
+    "Coke Combo"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en11",
+  "lang": "en",
+  "category": "combo_order",
+  "question": "Add the Buta Set",
+  "expect": [
+   [
+    "Added to your picks"
+   ],
+   [
+    "Buta Set"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en12",
+  "lang": "en",
+  "category": "combo_allergen",
+  "question": "Is the Omori Set allergen free?",
+  "expect": [
+   [
+    "not provided"
+   ],
+   [
+    "confirm with the staff"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bno allergens\\b",
+   "\\bguarantee",
+   "\\byes, you can\\b"
+  ],
+  "rules": true
+ },
+ {
+  "id": "sm-en13",
+  "lang": "en",
+  "category": "combo_allergen",
+  "question": "What allergens are in the Fatty Beef Don with Coke?",
+  "expect": [
+   [
+    "gluten"
+   ],
+   [
+    "soy"
+   ],
+   [
+    "confirm with the staff"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bno allergens\\b",
+   "\\bguarantee",
+   "\\byes, you can\\b"
+  ],
+  "rules": true
+ },
+ {
+  "id": "sm-en14",
+  "lang": "en",
+  "category": "category",
+  "question": "What sushi do you have?",
+  "expect": [
+   [
+    "Sushi (25)"
+   ],
+   [
+    "Salmon Sushi"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en15",
+  "lang": "en",
+  "category": "category",
+  "question": "Show me the sashimi",
+  "expect": [
+   [
+    "Sashimi (14)"
+   ],
+   [
+    "Salmon Sashimi"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en16",
+  "lang": "en",
+  "category": "category",
+  "question": "What drinks do you have?",
+  "expect": [
+   [
+    "Sprite"
+   ],
+   [
+    "Coca-Cola"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en17",
+  "lang": "en",
+  "category": "category",
+  "question": "Any noodles?",
+  "expect": [
+   [
+    "Yakisoba"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en18",
+  "lang": "en",
+  "category": "category",
+  "question": "Do you have soup?",
+  "expect": [
+   [
+    "Miso Soup"
+   ],
+   [
+    "Clear Soup"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en19",
+  "lang": "en",
+  "category": "category",
+  "question": "What skewers do you have?",
+  "expect": [
+   [
+    "Grilled Skewers (15)"
+   ],
+   [
+    "Skewer"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en20",
+  "lang": "en",
+  "category": "category",
+  "question": "Any rice bowls?",
+  "expect": [
+   [
+    "Rice & Don (20)"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en21",
+  "lang": "en",
+  "category": "category",
+  "question": "What appetizers do you have?",
+  "expect": [
+   [
+    "Appetizers (44)"
+   ],
+   [
+    "more"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en22",
+  "lang": "en",
+  "category": "category_rank",
+  "question": "What's the cheapest sushi?",
+  "expect": [
+   [
+    "Crab Stick Sushi",
+    "Tamago"
+   ],
+   [
+    "64"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en23",
+  "lang": "en",
+  "category": "category_rank",
+  "question": "What's the most expensive sashimi?",
+  "expect": [
+   [
+    "Assorted Sashimi"
+   ],
+   [
+    "952"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en24",
+  "lang": "en",
+  "category": "ingredients",
+  "question": "What is in the Salmon Sashimi?",
+  "expect": [
+   [
+    "Salmon"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en25",
+  "lang": "en",
+  "category": "ingredients",
+  "question": "What is in the Garlic Fried Rice?",
+  "expect": [
+   [
+    "Japanese rice"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en26",
+  "lang": "en",
+  "category": "ingredients",
+  "question": "What is in the Edamame?",
+  "expect": [
+   [
+    "Edamame"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en27",
+  "lang": "en",
+  "category": "allergen",
+  "question": "What allergens are in the Salmon Sashimi?",
+  "expect": [
+   [
+    "fish"
+   ],
+   [
+    "confirm with the staff"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bno allergens\\b",
+   "\\bguarantee",
+   "\\byes, you can\\b"
+  ],
+  "rules": true
+ },
+ {
+  "id": "sm-en28",
+  "lang": "en",
+  "category": "allergen",
+  "question": "What allergens are in the Squid Sushi?",
+  "expect": [
+   [
+    "mollus"
+   ],
+   [
+    "confirm with the staff"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bno allergens\\b",
+   "\\bguarantee",
+   "\\byes, you can\\b"
+  ],
+  "rules": true
+ },
+ {
+  "id": "sm-en29",
+  "lang": "en",
+  "category": "allergen",
+  "question": "What allergens are in the Yakisoba?",
+  "expect": [
+   [
+    "gluten"
+   ],
+   [
+    "fish"
+   ],
+   [
+    "soy"
+   ],
+   [
+    "confirm with the staff"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bno allergens\\b",
+   "\\bguarantee",
+   "\\byes, you can\\b"
+  ],
+  "rules": true
+ },
+ {
+  "id": "sm-en30",
+  "lang": "en",
+  "category": "allergen",
+  "question": "What allergens are in the Edamame?",
+  "expect": [
+   [
+    "soy"
+   ],
+   [
+    "confirm with the staff"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bno allergens\\b",
+   "\\bguarantee",
+   "\\byes, you can\\b"
+  ],
+  "rules": true
+ },
+ {
+  "id": "sm-en31",
+  "lang": "en",
+  "category": "allergen_unknown",
+  "question": "Does the Wagyu Sushi contain peanuts?",
+  "expect": [
+   [
+    "not provided"
+   ],
+   [
+    "confirm with the staff"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bno allergens\\b",
+   "\\bguarantee",
+   "\\byes, you can\\b",
+   "\\bno peanuts?\\b"
+  ],
+  "rules": true
+ },
+ {
+  "id": "sm-en32",
+  "lang": "en",
+  "category": "recommend_bare",
+  "question": "What do you recommend?",
+  "expect": [
+   [
+    "฿"
+   ]
+  ],
+  "forbid": [
+   "\\bbest[- ]?sell",
+   "\\bour (?:most )?popular",
+   "\\bpopular (?:choice|dish|pick)"
+  ]
+ },
+ {
+  "id": "sm-en33",
+  "lang": "en",
+  "category": "open_set",
+  "question": "I'm hungry. Which set should I get and what comes with it?",
+  "expect": [
+   [
+    "staff"
+   ]
+  ],
+  "forbid": [
+   "\\b(?:comes|come|includes?|included|contains?) (?:with )?[^.]{0,40}\\b(?:miso soup|salad|dessert|sashimi|sushi|rice|noodles)\\b",
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bno allergens\\b",
+   "\\bguarantee",
+   "\\byes, you can\\b"
+  ]
+ },
+ {
+  "id": "sm-en34",
+  "lang": "en",
+  "category": "open_set",
+  "question": "Does the Omori Set include a free dessert?",
+  "expect": [
+   [
+    "staff",
+    "don't have",
+    "not"
+   ]
+  ],
+  "forbid": [
+   "\\byes\\b[^.]{0,30}\\bdessert",
+   "dessert is included"
+  ]
+ },
+ {
+  "id": "sm-en35",
+  "lang": "en",
+  "category": "open_set",
+  "question": "Is there a discount on the Buta Set?",
+  "expect": [
+   [
+    "staff",
+    "don't have"
+   ]
+  ],
+  "forbid": [
+   "\\byes\\b[^.]{0,20}discount",
+   "% off"
+  ],
+  "rules": true
+ },
+ {
+  "id": "sm-en36",
+  "lang": "en",
+  "category": "open_recommend",
+  "question": "I like salmon. What can I eat?",
+  "expect": [
+   [
+    "Salmon"
+   ]
+  ],
+  "forbid": []
+ },
+ {
+  "id": "sm-en37",
+  "lang": "en",
+  "category": "open_recommend",
+  "question": "What goes well with Salmon Sushi?",
+  "expect": [
+   [
+    "฿",
+    "Sushi",
+    "Sashimi",
+    "Miso",
+    "Edamame",
+    "Sprite",
+    "Coca"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bno allergens\\b",
+   "\\bguarantee",
+   "\\byes, you can\\b"
+  ]
+ },
+ {
+  "id": "sm-en38",
+  "lang": "en",
+  "category": "out_of_menu",
+  "question": "Do you have tempura?",
+  "expect": [
+   [
+    "tempura"
+   ]
+  ],
+  "forbid": [
+   "\\byes, we (?:do|have)\\b"
+  ]
+ },
+ {
+  "id": "sm-th1",
+  "lang": "th",
+  "category": "combo_list",
+  "question": "มีเซ็ตอะไรบ้าง",
+  "expect": [
+   [
+    "Omori Set"
+   ],
+   [
+    "Buta Set"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-th2",
+  "lang": "th",
+  "category": "combo_contents",
+  "question": "Omori Set มีอะไรบ้าง",
+  "expect": [
+   [
+    "ไม่มี",
+    "ยังไม่มี"
+   ],
+   [
+    "พนักงาน"
+   ]
+  ],
+  "forbid": [
+   "ส่วนผสมของ"
+  ],
+  "rules": true
+ },
+ {
+  "id": "sm-th3",
+  "lang": "th",
+  "category": "combo_price",
+  "question": "Buta Set ราคาเท่าไหร่",
+  "expect": [
+   [
+    "499"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-th4",
+  "lang": "th",
+  "category": "category",
+  "question": "มีซูชิอะไรบ้าง",
+  "expect": [
+   [
+    "ซูชิ"
+   ],
+   [
+    "25"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-th5",
+  "lang": "th",
+  "category": "category",
+  "question": "มีเครื่องดื่มอะไรบ้าง",
+  "expect": [
+   [
+    "โค๊ก"
+   ],
+   [
+    "สไปร์ท"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-th6",
+  "lang": "th",
+  "category": "category",
+  "question": "มีซุปอะไรบ้าง",
+  "expect": [
+   [
+    "มิโซะ",
+    "Miso"
+   ],
+   [
+    "ซุป"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-th7",
+  "lang": "th",
+  "category": "recommend_bare",
+  "question": "แนะนำหน่อย",
+  "expect": [
+   [
+    "บาท"
+   ]
+  ],
+  "forbid": [
+   "ขายดีที่สุด"
+  ]
+ },
+ {
+  "id": "sm-th8",
+  "lang": "th",
+  "category": "allergen",
+  "question": "ซูชิหมึกมีสารก่อภูมิแพ้อะไรบ้าง",
+  "expect": [
+   [
+    "พนักงาน"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bno allergens\\b",
+   "\\bguarantee",
+   "\\byes, you can\\b"
+  ]
+ },
+ {
+  "id": "sm-my1",
+  "lang": "my",
+  "category": "combo_list",
+  "question": "ဆက်မီနူး ရှိလား",
+  "expect": [
+   [
+    "Omori Set"
+   ],
+   [
+    "Buta Set"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-my2",
+  "lang": "my",
+  "category": "combo_price",
+  "question": "Omori Set ဘယ်လောက်လဲ",
+  "expect": [
+   [
+    "၁၂၀၀"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-my3",
+  "lang": "my",
+  "category": "category",
+  "question": "အဖျော်ယမကာ ဘာရှိလဲ",
+  "expect": [
+   [
+    "Sprite"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-my4",
+  "lang": "my",
+  "category": "category",
+  "question": "ဆူရှီ ဘာတွေရှိလဲ",
+  "expect": [
+   [
+    "၂၅"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-my5",
+  "lang": "my",
+  "category": "recommend_bare",
+  "question": "ဘာစားသင့်လဲ",
+  "expect": [
+   [
+    "ဘတ်"
+   ]
+  ],
+  "forbid": [
+   "အရောင်းရဆုံး"
+  ]
+ }
+]

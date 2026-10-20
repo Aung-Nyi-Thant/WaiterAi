@@ -65,5 +65,5 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   const ids = result.action.ids || [];       // the dish cards below follow this order: it is the AI's ranking (for example by orders)
   // "answered" lets the diner UI notice two unhelpful replies in a row and offer to call staff
   // proactively, instead of only reacting if the diner happens to spot the bell icon themselves.
-  return json({ sessionId, messageId, reply: result.reply, action: result.action, dishes: ids.map((id) => items.find((i) => i.id === id)).filter(Boolean), lang, answered: result.answered, ...(result.ingredients ? { lead: result.lead, ingredients: result.ingredients } : {}) });
+  return json({ sessionId, messageId, reply: result.reply, action: result.action, dishes: ids.map((id) => items.find((i) => i.id === id)).filter(Boolean), lang, answered: result.answered, ...(preview ? { usedModel: result.usedModel } : {}), ...(result.ingredients ? { lead: result.lead, ingredients: result.ingredients } : {}) });
 }
