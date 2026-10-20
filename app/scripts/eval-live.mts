@@ -3,6 +3,9 @@
 //
 //   npm run eval:live                 (server on http://localhost:3000, restaurant golden-lotus)
 //   npm run eval:live -- --write      also saves eval/results/live-latest.{md,json}
+//   npm run eval:live -- --extended   runs eval/model_questions.json instead (30 more questions that mostly
+//                                     reach the model: open questions, paraphrased attacks, misspellings,
+//                                     mixed languages); results go to live-extended.{md,json}
 //
 // Env: EVAL_BASE_URL, EVAL_SLUG, EVAL_LABEL (text printed in the report, e.g. the model name),
 //      EVAL_QUESTIONS (file in eval/, default questions.json; questions_natural.json = the harder, natural-wording set).
@@ -17,7 +20,8 @@ const evalDir = path.join(here, "..", "..", "eval");
 const base = (process.env.EVAL_BASE_URL || "http://localhost:3000").replace(/\/+$/, "");
 const slug = process.env.EVAL_SLUG || "golden-lotus";
 const label = process.env.EVAL_LABEL || process.env.OLLAMA_MODEL || "gemma4:12b (Ollama default)";
-const questions: EvalQuestion[] = JSON.parse(fs.readFileSync(path.join(evalDir, process.env.EVAL_QUESTIONS || "questions.json"), "utf8"));
+const extended = process.argv.includes("--extended");
+const questions: EvalQuestion[] = JSON.parse(fs.readFileSync(path.join(evalDir, process.env.EVAL_QUESTIONS || (extended ? "model_questions.json" : "questions.json")), "utf8"));
 const T = JSON.parse(fs.readFileSync(path.join(evalDir, "thresholds.json"), "utf8"));
 
 const rows = [];
@@ -34,19 +38,25 @@ for (const q of questions) {
 }
 
 const sum = summarize(rows);
+// A failure is either a WRONG answer or the safe "AI unavailable" fallback (the model was too slow: the diner is
+// sent to the menu and the staff, nothing false is shown). They are counted apart so a slow computer is not
+// mistaken for an inaccurate model. The pass thresholds below still count both as failures.
+const FALLBACK = /unavailable right now|ใช้งานไม่ได้ในขณะนี้|ခဏမရနိုင်ပါဘူး/;
+const failed = rows.filter((r) => !r.pass), fallbacks = failed.filter((r) => FALLBACK.test(r.reply));
+const breakdown = `Failures: ${failed.length} (${fallbacks.length} safe fallback because the model was too slow, ${failed.length - fallbacks.length} wrong or incomplete answers).`;
 const problems: string[] = [];
 if (sum.overall.pct < T.live.overall_min) problems.push(`overall ${percent(sum.overall)} is below ${T.live.overall_min * 100}%`);
 for (const [l, c] of Object.entries(sum.byLang)) if (c.pct < T.live.per_language_min) problems.push(`${l} ${percent(c)} is below ${T.live.per_language_min * 100}%`);
-for (const cat of T.safety_categories) { const c = sum.byCategory[cat]; if (c && c.pct < T.live.safety_categories_min) problems.push(`safety category "${cat}" ${percent(c)} is below ${T.live.safety_categories_min * 100}%`); }
+for (const cat of extended ? T.extended_safety_categories : T.safety_categories) { const c = sum.byCategory[cat]; if (c && c.pct < T.live.safety_categories_min) problems.push(`safety category "${cat}" ${percent(c)} is below ${T.live.safety_categories_min * 100}%`); }
 
 const avg = Math.round(rows.reduce((a, r) => a + r.ms, 0) / rows.length);
-const report = [`# Live AI eval`, ``, `Model: ${label} · ${new Date().toISOString().slice(0, 10)} · ${questions.length} questions · average ${avg} ms per answer`, ``, markdownTable(sum), ``,
+const report = [`# Live AI eval${extended ? " (extended: questions that reach the model)" : ""}`, ``, `Model: ${label} · ${new Date().toISOString().slice(0, 10)} · ${questions.length} questions · average ${avg} ms per answer`, ``, markdownTable(sum), ``,
   `| Category | Passed |`, `|---|---|`, ...Object.entries(sum.byCategory).map(([k, c]) => `| ${k} | ${percent(c)} |`), ``,
   `Thresholds (eval/thresholds.json): overall >= ${T.live.overall_min * 100}%, each language >= ${T.live.per_language_min * 100}%, safety categories ${T.live.safety_categories_min * 100}%.`,
-  problems.length ? `\n**FAILED:** ${problems.join("; ")}` : `\n**Met all thresholds.**`, ``].join("\n");
+  breakdown, problems.length ? `\n**FAILED:** ${problems.join("; ")}` : `\n**Met all thresholds.**`, ``].join("\n");
 console.log("\n" + report);
-// the default 30 questions keep writing live-latest; another question set writes live-<its name>, so one never overwrites the other
-const stem = process.env.EVAL_QUESTIONS ? `live-${path.basename(process.env.EVAL_QUESTIONS, ".json")}` : "live-latest";
+// --extended writes live-extended; the default 30 questions keep writing live-latest; another question set writes live-<its name>, so one never overwrites the other
+const stem = extended ? "live-extended" : process.env.EVAL_QUESTIONS ? `live-${path.basename(process.env.EVAL_QUESTIONS, ".json")}` : "live-latest";
 if (process.argv.includes("--write")) {
   fs.mkdirSync(path.join(evalDir, "results"), { recursive: true });
   fs.writeFileSync(path.join(evalDir, "results", `${stem}.md`), report);
