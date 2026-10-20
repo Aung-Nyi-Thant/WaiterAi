@@ -91,6 +91,7 @@ npm run lint          # Biome
 npm run typecheck
 npm run build && npm run test:e2e     # end-to-end: starts the real server on a fresh seeded database
 npm run eval:live     # the 30 AI questions against a real model (server + Ollama running)
+npm run eval:smooth   # how fast answers come: rules vs model, a burst of questions, rules while the model is busy
 ```
 GitHub Actions (`.github/workflows/ci.yml`) runs install, lint, type-check, tests, build, the end-to-end tests and a Docker build on every push and pull request, and the same build and tests again on a **Windows** machine together with the Windows scripts. Requirement → code → test mapping: [`docs/TRACEABILITY.md`](docs/TRACEABILITY.md).
 
