@@ -12,6 +12,13 @@ describe("splitIngredients", () => {
   it("keeps a slash, and a bracket note, inside one ingredient", () => {
     expect(splitIngredients("Batter / flour coating, and/or oil, rice (jasmine)")).toEqual(["Batter / flour coating", "and/or oil", "rice (jasmine)"]);
   });
+  it("does not cut inside brackets: commas in a note belong to that ingredient", () => {
+    expect(splitIngredients("Sushi rice (vinegar, sugar, salt), Salmon, Kimchi (cabbage, chilli; fish sauce)")).toEqual(["Sushi rice (vinegar, sugar, salt)", "Salmon", "Kimchi (cabbage, chilli; fish sauce)"]);
+    expect(splitIngredients("ข้าวซูชิ (น้ำส้มสายชู น้ำตาล, เกลือ), ปลา")).toEqual(["ข้าวซูชิ (น้ำส้มสายชู น้ำตาล, เกลือ)", "ปลา"]);
+    expect(splitIngredients("rice (a, (b, c)), egg")).toEqual(["rice (a, (b, c))", "egg"]);                   // nested
+    expect(splitIngredients("rice (a, b")).toEqual(["rice (a, b"]);                                           // an unclosed bracket keeps the rest in one piece
+    expect(splitIngredients("a), b")).toEqual(["a)", "b"]);                                                  // a stray closing bracket is just a character
+  });
   it("drops blanks and repeats (ignoring case), keeping the first spelling and the order", () => {
     expect(splitIngredients("Egg, , egg,  EGG , rice,")).toEqual(["Egg", "rice"]);
   });
@@ -59,6 +66,9 @@ describe("translationParts keeps every position", () => {
   it("keeps an empty part as an empty part, and repeats", () => {
     expect(translationParts("ข้าว, , กุ้ง")).toEqual(["ข้าว", "", "กุ้ง"]);
     expect(translationParts("ไข่, ไข่")).toEqual(["ไข่", "ไข่"]);
+  });
+  it("does not cut inside brackets either", () => {
+    expect(translationParts("ข้าวซูชิ (น้ำส้มสายชู น้ำตาล, เกลือ), , ปลา")).toEqual(["ข้าวซูชิ (น้ำส้มสายชู น้ำตาล, เกลือ)", "", "ปลา"]);
   });
   it("cuts at the same separators as the English line, and trims", () => {
     expect(translationParts(" a ，b、c;d·e\nf ")).toEqual(["a", "b", "c", "d", "e", "f"]);

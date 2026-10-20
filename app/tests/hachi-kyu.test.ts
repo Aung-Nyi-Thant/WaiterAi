@@ -8,6 +8,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { call, noModel, ownerLogin, signOut, staffLogin } from "./helpers";
 import { answer } from "@/modules/ai/ai";
 import { ALLERGENS, allergenName } from "@/modules/platform/constants";
+import { splitIngredients, translationParts } from "@/modules/platform/ingredients";
 import { GET as publicMenu } from "@/modules/diner/api/menu";
 import { POST as placeOrder } from "@/modules/diner/api/orders";
 import { POST as chat } from "@/modules/ai/api/chat";
@@ -37,14 +38,48 @@ describe("the HaChi Kyu data", () => {
     const names = data.items.map((i: any) => i.name.en);
     expect(new Set(names).size).toBe(names.length);
   });
-  it("allergens are real ones, listed once each; an estimate that found nothing is NULL (not provided), never an empty list", () => {
+  const details = path.join(root, "scripts/seed-data/dish-details");
+  const COMP = JSON.parse(fs.readFileSync(path.join(details, "components.json"), "utf8"));
+  const DETAILS: Record<string, any> = Object.assign({}, ...fs.readdirSync(details).filter((f) => f.endsWith(".json") && f !== "components.json").sort().map((f) => JSON.parse(fs.readFileSync(path.join(details, f), "utf8"))));
+  const hasUnknownPart = (name: string) => DETAILS[name].parts.some((k: string) => COMP.components[k].unknown);
+
+  it("every dish has researched details, and every detail belongs to a dish", () => {
+    const names = data.items.map((i: any) => i.name.en);
+    expect(names.filter((n: string) => !(n in DETAILS))).toEqual([]);
+    expect(Object.keys(DETAILS).filter((n) => !names.includes(n))).toEqual([]);
+  });
+  it("every part a dish is made of exists, and every part says where its allergens come from, in a source that is listed", () => {
+    for (const [name, det] of Object.entries(DETAILS) as [string, any][]) for (const k of det.parts) expect(COMP.components[k], `${name}: ${k}`).toBeTruthy();
+    for (const [k, c] of Object.entries(COMP.components) as [string, any][]) {
+      expect(Array.isArray(c.allergens), k).toBe(true);
+      for (const a of c.allergens) expect(ALLERGENS as readonly string[], `${k}: ${a}`).toContain(a);
+      expect(c.basis, `${k} has no basis`).toBeTruthy();
+      for (const ref of String(c.basis).match(/\bS\d+\b/g) || []) expect(COMP.sources[ref], `${k}: ${ref}`).toBeTruthy();
+      if (c.unknown) expect(c.allergens, k).toEqual([]);                                           // an unknown part claims nothing
+    }
+    for (const [id, text] of Object.entries(COMP.sources) as [string, string][]) expect(text.length, id).toBeGreaterThan(20);
+  });
+  it("allergens are real ones, listed once each; unknown (NULL) exactly when the dish has a part nobody knows the content of", () => {
     for (const i of data.items) {
-      if (i.allergens === null) continue;
-      expect(i.allergens.length, `${i.name.en} would read as "no allergens"`).toBeGreaterThan(0);
+      if (hasUnknownPart(i.name.en)) { expect(i.allergens, `${i.name.en} has an unknown part: its allergens must be 'not provided'`).toBeNull(); continue; }
+      expect(Array.isArray(i.allergens), i.name.en).toBe(true);
       expect(new Set(i.allergens).size).toBe(i.allergens.length);
       for (const a of i.allergens) expect(ALLERGENS as readonly string[], `${i.name.en}: ${a}`).toContain(a);
     }
-    expect(data.items.filter((i: any) => i.allergens === null).length).toBeGreaterThan(20);
+    const nulls = data.items.filter((i: any) => i.allergens === null).length;
+    expect(nulls).toBeGreaterThan(20);
+    expect(nulls).toBeLessThan(60);
+  });
+  it("a dish's allergens are exactly the union of its parts' allergens (nothing added by hand, nothing dropped)", () => {
+    for (const i of data.items) {
+      if (i.allergens === null) continue;
+      const want = new Set<string>(DETAILS[i.name.en].parts.flatMap((k: string) => COMP.components[k].allergens));
+      expect([...i.allergens].sort(), i.name.en).toEqual([...want].sort());
+    }
+  });
+  it("an empty allergen list (a claim of 'none') is only on dishes whose every part is known and plain: rice, fries, lettuce, the drinks and the plain sea urchin nigiri", () => {
+    const empty = data.items.filter((i: any) => Array.isArray(i.allergens) && i.allergens.length === 0).map((i: any) => i.name.en);
+    expect(empty.sort()).toEqual(["Coca-Cola Original", "Coca-Cola Zero Sugar", "French Fries", "Japanese Rice", "Lettuce", "Red Soda", "Sea Urchin Roe Sushi", "Sprite"].sort());
   });
   it("crustaceans and molluscs are separate allergens (the prototype lumped them together)", () => {
     const shrimp = data.items.find((i: any) => i.name.en === "Giant Sweet Shrimp Sashimi");
@@ -52,46 +87,73 @@ describe("the HaChi Kyu data", () => {
     expect(shrimp.allergens).not.toContain("molluscs");
     const molluscs = data.items.filter((i: any) => (i.allergens || []).includes("molluscs"));
     expect(molluscs.length).toBeGreaterThan(5);
-    for (const m of molluscs) expect(m.ingredients.toLowerCase(), m.name.en).toMatch(/scallop|squid|octopus|clam/);
+    for (const m of molluscs) expect(m.ingredients.toLowerCase(), m.name.en).toMatch(/scallop|squid|octopus|clam|oyster/);
   });
-  it("a listed allergen is backed by an ingredient (nothing is invented), and an obvious one is never missed", () => {
-    const BACK: Record<string, RegExp> = { fish: /salmon|tuna|mackerel|yellowtail|eel|crab stick|roe|fish|stingray/i, shellfish: /shrimp|crab/i, molluscs: /scallop|squid|octopus|clam/i, egg: /egg/i, milk: /cheese/i, gluten: /batter|noodle|dumpling/i, soy: /soy|miso|teriyaki|edamame|tofu/i };
+  it("a listed allergen is backed by an ingredient word (nothing is invented), and an obvious one is never missed", () => {
+    const BACK: Record<string, RegExp> = {
+      fish: /salmon|tuna|mackerel|yellowtail|eel|crab stick|roe|fish|stingray|dashi|kimchi|yakisoba sauce|bonito|tobiko|tamago/i,
+      shellfish: /shrimp|crab|kimchi|ebiko/i, molluscs: /scallop|squid|octopus|clam|oyster/i,
+      egg: /egg|mayonnaise|tempura batter|breadcrumb|crab stick|omelette|batter/i, milk: /cheese/i,
+      gluten: /soy sauce|teriyaki|kabayaki|tempura|noodles|wrapper|flour|batter|breadcrumb|gochujang|crab stick|oyster sauce|sauce|marinade|salmon roe|seaweed salad|omelette/i,
+      soy: /soy|miso|tofu|edamame|teriyaki|kabayaki|gochujang|oyster sauce|yakisoba sauce|takoyaki sauce|salmon roe|omelette|grill sauce|marinade|seaweed salad/i,
+      sesame: /sesame|seaweed salad/i, mustard: /wasabi/i,
+    };
     for (const i of data.items) {
       for (const a of i.allergens || []) expect(i.ingredients, `${i.name.en} lists ${a}`).toMatch(BACK[a]);
-      if (/salmon|tuna/i.test(i.ingredients)) expect(i.allergens, i.name.en).toContain("fish");
+      if (i.allergens !== null && /salmon|tuna/i.test(i.ingredients)) expect(i.allergens, i.name.en).toContain("fish");
+      if (i.allergens !== null && /shrimp|crab/i.test(i.ingredients)) expect(i.allergens, i.name.en).toContain("shellfish");
+      if (i.allergens !== null && /\bsoy sauce\b|teriyaki|kabayaki/i.test(i.ingredients)) expect(i.allergens, `${i.name.en}: soy sauce means soy and wheat`).toEqual(expect.arrayContaining(["soy", "gluten"]));
     }
   });
-  it("tags: only facts the ingredients support (pork, spice); no vegetarian or vegan guesses", () => {
+  it("tags: pork only when pork or bacon is in the dish, spicy only with a spice level, vegetarian only for plain things; never vegan", () => {
+    const PLAIN = ["Coca-Cola Original", "Coca-Cola Zero Sugar", "Edamame", "French Fries", "Japanese Rice", "Lettuce", "Red Soda", "Sprite"];
     for (const i of data.items) {
-      expect(i.tags.filter((t: string) => !["contains_pork", "spicy"].includes(t)), i.name.en).toEqual([]);
+      expect(i.tags.filter((t: string) => !["contains_pork", "spicy", "vegetarian"].includes(t)), i.name.en).toEqual([]);
       expect(i.tags.includes("contains_pork"), i.name.en).toBe(/pork|bacon/i.test(i.ingredients));
       expect(i.spice, i.name.en).toBe(i.tags.includes("spicy") ? 2 : 0);
+      expect(i.tags.includes("vegetarian"), i.name.en).toBe(PLAIN.includes(i.name.en));
     }
   });
-  it("every dish has its ingredients in Thai too, one name per English ingredient, and Burmese where the prototype has it (an empty part = not translated)", () => {
-    const parts = (t: string) => t.split(/[,，、;；·•\n]/).map((x) => x.trim());
+  it("every dish has an English and a Thai description of one or two sentences; a dish with a house sauce or an unknown part says so, and none says 'safe'", () => {
+    for (const i of data.items) {
+      expect(i.desc.en.length, i.name.en).toBeGreaterThan(15);
+      expect(i.desc.en.length, i.name.en).toBeLessThan(260);
+      expect(i.desc.th, i.name.en).toMatch(/[฀-๿]/);
+      expect(`${i.desc.en} ${i.desc.th}`, i.name.en).not.toMatch(/\b(safe|allergy-free|guarantee)/i);
+      if (DETAILS[i.name.en].parts.includes("unknownpart") || DETAILS[i.name.en].parts.some((k: string) => /sauce$/.test(k) && COMP.components[k].unknown)) expect(i.desc.en, i.name.en).toMatch(/not listed|not known|own|ask the staff|house|recipe/i);
+    }
+  });
+  it("Burmese dish names use only words that are certain (the format words, the prototype's own ingredient words) or the English name in Latin letters", () => {
+    for (const i of data.items) {
+      if (!i.name.my) continue;
+      expect(i.name.my, i.name.en).toMatch(/[က-႟]/);
+      for (const word of i.name.my.split(/\s+/)) if (/[A-Za-z]/.test(word)) expect(word, `${i.name.en}: ${word}`).toMatch(/^[A-Za-z()'&-]+$/);       // a Latin word stays whole, never half Burmese half Latin
+    }
+    expect(data.items.filter((i: any) => i.name.my).length).toBeGreaterThan(40);
+  });
+  it("every dish has its ingredients in Thai too, one name per English ingredient (brackets keep their commas), and Burmese where it is known (an empty part = not translated)", () => {
     let burmese = 0;
     for (const i of data.items) {
-      const en = parts(i.ingredients);
-      const th = parts(i.ingredients_tr.th);
+      const en = splitIngredients(i.ingredients);
       if (!i.ingredients) { expect(i.ingredients_tr, i.name.en).toEqual({ th: "", my: "" }); continue; }            // a dish with no ingredient list has no translated one either
+      const th = translationParts(i.ingredients_tr.th);
       expect(th.length, `${i.name.en}: Thai parts vs English`).toBe(en.length);
       expect(th.every(Boolean), `${i.name.en}: a Thai name is missing`).toBe(true);
-      if (i.ingredients_tr.my) { burmese++; expect(parts(i.ingredients_tr.my).length, `${i.name.en}: Burmese parts vs English`).toBe(en.length); expect(parts(i.ingredients_tr.my).some(Boolean), i.name.en).toBe(true); }
+      if (i.ingredients_tr.my) { burmese++; const my = translationParts(i.ingredients_tr.my); expect(my.length, `${i.name.en}: Burmese parts vs English`).toBe(en.length); expect(my.some(Boolean), i.name.en).toBe(true); }
     }
-    expect(burmese).toBeGreaterThan(80);
+    expect(burmese).toBeGreaterThan(60);
     const yaki = data.items.find((i: any) => i.name.en === "[Coke Combo] Yakisoba with Coke");
-    expect(yaki.ingredients).toBe("Yakisoba noodles, Cola");
-    expect(yaki.ingredients_tr.th).toBe("เส้นยากิโซบะ, น้ำอัดลมโคล่า");
-    expect(yaki.ingredients_tr.my).toBe("ခေါက်ဆွဲ, ");                                      // the prototype has a Burmese name for noodles but not for cola
+    expect(yaki.ingredients).toBe("Yakisoba noodles (wheat), Pork, Cabbage, Yakisoba sauce (soy sauce, Worcestershire-style), Cola");
+    expect(yaki.ingredients_tr.th).toBe("เส้นยากิโซบะ (แป้งสาลี), หมู, กะหล่ำปลี, ซอสยากิโซบะ, น้ำอัดลมโคล่า");
+    expect(yaki.ingredients_tr.my).toBe("ခေါက်ဆွဲ, ဝက်သား, , , ");                                // Burmese names for noodles and pork; the sauce and the cola have none yet
   });
-  it("the file is exactly what the generator builds from prototype/data.js", () => {
+  it("the file is exactly what the generator builds from prototype/data.js and the researched details", () => {
     const r = run("scripts/make-hachi-kyu-seed.mts", {}, ["--check"]);
     expect(r.out).toContain("up to date");
     expect(r.code).toBe(0);
   });
-  it("says in an FAQ that the allergens are estimated, so the AI never presents them as confirmed", () => {
-    expect(data.faq.some((f: any) => /not yet|estimated/i.test(f.a) && /allerg/i.test(f.q))).toBe(true);
+  it("says in an FAQ that the ingredients and allergens are the usual ones, not the kitchen's, so the AI never presents them as confirmed", () => {
+    expect(data.faq.some((f: any) => /not yet/i.test(f.a) && /not the kitchen's own recipes/i.test(f.a) && /allerg/i.test(f.q))).toBe(true);
   });
 });
 
@@ -111,12 +173,15 @@ describe("scripts/seed-hachi-kyu.mts", () => {
     expect((await sql(r.dir, `SELECT COUNT(*) n FROM staff WHERE restaurant_id=${rid}`))[0].n).toBe(2);
     expect((await sql(r.dir, "SELECT COUNT(DISTINCT owner_id) n FROM restaurants"))[0].n).toBe(2);
   });
-  it("stores NULL for an unknown allergen estimate and a list for a known one", async () => {
+  it("stores NULL where a dish has a part nobody knows, a list where it is known, and the description and the Burmese name", async () => {
     const r = seed();
-    const rows = await sql(r.dir, "SELECT name_en, allergens_json FROM menu_items WHERE restaurant_id=(SELECT id FROM restaurants WHERE slug='hachi-kyu')");
-    expect(rows.filter((x) => x.allergens_json === "[]")).toEqual([]);
-    expect(rows.find((x) => x.name_en === "Salmon Sashimi")!.allergens_json).toBe('["fish"]');
+    const rows = await sql(r.dir, "SELECT name_en, name_my, desc_en, desc_th, allergens_json, spice, tags_json FROM menu_items WHERE restaurant_id=(SELECT id FROM restaurants WHERE slug='hachi-kyu')");
+    expect(rows.find((x) => x.name_en === "Salmon Sashimi")).toMatchObject({ allergens_json: '["fish"]', name_my: "ဆော်လမွန် ဆာရှီမီ", desc_en: "Slices of raw salmon, served on their own.", desc_th: "แซลม่อนสดหั่นเป็นชิ้นพอดีคำ เสิร์ฟเปล่า ๆ" });
     expect(rows.find((x) => x.name_en === "[Coke Combo] Garlic Fried Rice with Coke")!.allergens_json).toBeNull();
+    expect(rows.find((x) => x.name_en === "Japanese Rice")!.allergens_json).toBe("[]");
+    expect(rows.find((x) => x.name_en === "Yakisoba")).toMatchObject({ allergens_json: '["gluten","fish","soy"]', tags_json: '["contains_pork"]' });
+    expect(rows.find((x) => x.name_en === "Kimchi")).toMatchObject({ spice: 2, tags_json: '["spicy"]' });
+    expect(rows.every((x) => x.desc_en && x.desc_th)).toBe(true);
   });
   it("is safe to run twice, and leaves the first restaurant untouched", async () => {
     const r = seed();
@@ -130,7 +195,7 @@ describe("scripts/seed-hachi-kyu.mts", () => {
   it("stores the Thai and Burmese ingredient lines with each dish", async () => {
     const r = seed();
     const row = (await sql(r.dir, "SELECT ingredients, ingredients_th, ingredients_my FROM menu_items WHERE name_en = '[Coke Combo] Yakisoba with Coke'"))[0];
-    expect(row).toEqual({ ingredients: "Yakisoba noodles, Cola", ingredients_th: "เส้นยากิโซบะ, น้ำอัดลมโคล่า", ingredients_my: "ခေါက်ဆွဲ, " });
+    expect(row).toEqual({ ingredients: "Yakisoba noodles (wheat), Pork, Cabbage, Yakisoba sauce (soy sauce, Worcestershire-style), Cola", ingredients_th: "เส้นยากิโซบะ (แป้งสาลี), หมู, กะหล่ำปลี, ซอสยากิโซบะ, น้ำอัดลมโคล่า", ingredients_my: "ခေါက်ဆွဲ, ဝက်သား, , , " });
     const written = data.items.filter((i: any) => i.ingredients).length;                         // 6 dishes have no ingredient list at all
     expect(written).toBe(126);
     expect((await sql(r.dir, "SELECT COUNT(*) n FROM menu_items WHERE ingredients_th <> '' AND restaurant_id = (SELECT id FROM restaurants WHERE slug = 'hachi-kyu')"))[0].n).toBe(written);
@@ -190,12 +255,19 @@ describe("scripts/seed-hachi-kyu.mts", () => {
       const b = into(fresh(), ["golden-lotus"], { SEED_HACHI_PHOTOS: "1" });
       expect((await sql(b.dir, "SELECT COUNT(*) n FROM menu_items WHERE photo_url LIKE 'https://%'"))[0].n).toBe(132);
     });
-    it("tells the AI, in an FAQ, that these dishes' allergens are estimates; once only", async () => {
+    it("adds the FAQ that says the ingredients and allergens are the usual ones, once only, in place of an older wording of it", async () => {
       const r = into(fresh());
-      into(r.dir);
-      const faqs = await sql(r.dir, "SELECT q, a FROM faqs WHERE restaurant_id = 1 AND q LIKE '%sushi and grill%'");
-      expect(faqs).toHaveLength(1);
-      expect(faqs[0].a).toMatch(/estimated/);
+      const { DatabaseSync } = await import("node:sqlite");
+      const d = new DatabaseSync(path.join(r.dir, "shop.db"));
+      d.exec("INSERT INTO faqs (restaurant_id, q, a, sort) VALUES (1, 'Are the allergen details of the sushi and grill dishes confirmed by the kitchen?', 'old', 9)");
+      d.exec("DELETE FROM menu_items WHERE name_en = 'Tuna Sashimi'");
+      d.close();
+      into(r.dir);                                                                                      // adds the one dish back, so the FAQ step runs again
+      const faqs = await sql(r.dir, "SELECT q, a FROM faqs WHERE restaurant_id = 1 AND q LIKE '%allergen%'");
+      expect(faqs.map((f) => f.q)).toEqual(["Are the ingredients and allergens confirmed by the kitchen?"]);
+      expect(faqs[0].a).toMatch(/not the kitchen's own recipes/);
+      expect((await sql(r.dir, "SELECT COUNT(*) n FROM faqs WHERE restaurant_id = 1 AND q LIKE 'Do you serve raw fish%'"))[0].n).toBe(1);
+      expect((await sql(r.dir, "SELECT COUNT(*) n FROM faqs WHERE restaurant_id = 1 AND q LIKE '%Wi-Fi%'"))[0].n).toBe(1);     // the restaurant's own FAQs stay
     });
     it("is safe to run twice: the second run adds nothing", async () => {
       const r = into(fresh());
@@ -222,6 +294,56 @@ describe("scripts/seed-hachi-kyu.mts", () => {
       expect(into(dir, []).code).toBe(1);
       expect(into(dir, ["--other"]).code).toBe(1);
       expect((await sql(dir, "SELECT COUNT(*) n FROM menu_items"))[0].n).toBe(13);
+    });
+    describe("--replace", () => {
+      it("removes every dish and category the restaurant had and leaves exactly these 132 dishes in the 9 categories", async () => {
+        const dir = fresh();
+        const r = into(dir, ["golden-lotus", "--replace"]);
+        expect(r.code, r.out).toBe(0);
+        expect(r.out).toContain('Replaced the 13 dishes of "Golden Lotus Kitchen" (/r/golden-lotus) with 132 dishes in 9 categories.');
+        expect((await sql(dir, "SELECT COUNT(*) n FROM menu_items WHERE restaurant_id = 1"))[0].n).toBe(132);
+        expect((await sql(dir, "SELECT name_en FROM menu_items WHERE name_en IN ('Shrimp Pad Thai', 'Tom Yum Goong', 'Papaya Salad')")).length).toBe(0);
+        expect((await sql(dir, "SELECT name_en FROM categories WHERE restaurant_id = 1 ORDER BY sort")).map((c) => c.name_en)).toEqual(data.categories.map((c: any) => c.en));
+        expect((await sql(dir, "SELECT COUNT(*) n FROM menu_items WHERE category_id IS NULL"))[0].n).toBe(0);
+      });
+      it("keeps the restaurant's FAQs, staff, owner and orders, and an order line keeps its dish's name and price", async () => {
+        const dir = fresh();
+        expect(into(dir).code).toBe(0);                                                                  // makes the database (with the demo menu) first
+        const { DatabaseSync } = await import("node:sqlite");
+        const d = new DatabaseSync(path.join(dir, "shop.db"));
+        d.exec("INSERT INTO orders (restaurant_id, table_no, status, lang) VALUES (1, '4', 'new', 'en')");
+        const oid = (d.prepare("SELECT id FROM orders").get() as any).id;
+        d.exec(`INSERT INTO order_items (order_id, item_id, name, qty, price) VALUES (${oid}, 1, 'Shrimp Pad Thai', 2, 120)`);
+        d.close();
+        expect(into(dir, ["golden-lotus", "--replace"]).code).toBe(0);
+        expect(await sql(dir, "SELECT name, qty, price FROM order_items")).toEqual([{ name: "Shrimp Pad Thai", qty: 2, price: 120 }]);
+        expect((await sql(dir, "SELECT COUNT(*) n FROM orders"))[0].n).toBe(1);
+        expect((await sql(dir, "SELECT COUNT(*) n FROM staff"))[0].n).toBe(2);
+        expect((await sql(dir, "SELECT COUNT(*) n FROM users"))[0].n).toBe(1);
+        expect((await sql(dir, "SELECT COUNT(*) n FROM faqs WHERE restaurant_id = 1 AND q LIKE '%Wi-Fi%'"))[0].n).toBe(1);
+      });
+      it("is safe to run twice: the second run replaces the same dishes with the same dishes, and a dish's new id is never one an old order line points at", async () => {
+        const dir = fresh();
+        into(dir, ["golden-lotus", "--replace"]);
+        const firstMax = (await sql(dir, "SELECT MAX(id) m FROM menu_items"))[0].m;
+        const again = into(dir, ["golden-lotus", "--replace"]);
+        expect(again.out).toContain("Replaced the 132 dishes");
+        expect((await sql(dir, "SELECT COUNT(*) n FROM menu_items WHERE restaurant_id = 1"))[0].n).toBe(132);
+        expect((await sql(dir, "SELECT MIN(id) m FROM menu_items"))[0].m).toBeGreaterThan(firstMax);          // ids are not reused (an order line of the old dishes cannot point at a new dish)
+      });
+      it("on a restaurant other than the first it touches only that one", async () => {
+        const dir = fresh();
+        expect(seed({}, dir).code).toBe(0);
+        const r = into(dir, ["hachi-kyu", "--replace"]);
+        expect(r.out).toContain('Replaced the 132 dishes of "HaChi Kyu"');
+        expect((await sql(dir, "SELECT COUNT(*) n FROM menu_items WHERE restaurant_id = 1"))[0].n).toBe(13);
+        expect((await sql(dir, "SELECT name_en FROM menu_items WHERE restaurant_id = 1 ORDER BY id LIMIT 1"))[0].name_en).toBe("Shrimp Pad Thai");
+      });
+      it("without --replace nothing is removed", async () => {
+        const dir = fresh();
+        into(dir);
+        expect((await sql(dir, "SELECT COUNT(*) n FROM menu_items WHERE name_en = 'Shrimp Pad Thai'"))[0].n).toBe(1);
+      });
     });
     it("works on the HaChi Kyu restaurant itself without duplicating (all its dishes are already there)", async () => {
       const r = seed();
@@ -294,7 +416,7 @@ describe("the HaChi Kyu ingredients in the diner's language", () => {
     signOut();
     const m = await call(publicMenu, { params: { slug: hachi }, url: `http://t/api/public/${hachi}/menu` });
     const yaki = m.data.items.find((i: any) => i.name.en === "[Coke Combo] Yakisoba with Coke");
-    expect(yaki.ingredients_tr).toEqual({ th: "เส้นยากิโซบะ, น้ำอัดลมโคล่า", my: "ခေါက်ဆွဲ, " });
+    expect(yaki.ingredients_tr).toEqual({ th: "เส้นยากิโซบะ (แป้งสาลี), หมู, กะหล่ำปลี, ซอสยากิโซบะ, น้ำอัดลมโคล่า", my: "ခေါက်ဆွဲ, ဝက်သား, , , " });
   });
   it("asked in Thai, the AI lists the Thai ingredient names", async () => {
     const r = await askIn("Tuna Sashimi ส่วนผสมมีอะไรบ้าง", "th");
@@ -304,13 +426,13 @@ describe("the HaChi Kyu ingredients in the diner's language", () => {
   });
   it("asked in Burmese, the AI uses the Burmese names it has and the English name for the one it has not", async () => {
     const r = await askIn("Eel Sushi ပါဝင်ပစ္စည်း ဘာတွေလဲ", "my");
-    expect(r.ingredients).toEqual(["ထမင်း", "Eel"]);
+    expect(r.ingredients).toEqual(["စူရှီထမင်း", "Grilled eel (unagi)", "Kabayaki eel sauce (soy sauce, mirin, sugar)"]);
     expect(r.lead).toMatch(/ဖြစ်ပါတယ်ခင်ဗျာ။$/);
   });
   it("asked in English, nothing changes", async () => {
     const r = await askIn("What is in the Eel Sushi?", "en");
-    expect(r.reply).toBe("Eel Sushi is made with: Japanese rice, Eel.");
-    expect(r.ingredients).toEqual(["Japanese rice", "Eel"]);
+    expect(r.reply).toBe("Eel Sushi is made with: Sushi rice (vinegar, sugar, salt), Grilled eel (unagi), Kabayaki eel sauce (soy sauce, mirin, sugar).");
+    expect(r.ingredients).toEqual(["Sushi rice (vinegar, sugar, salt)", "Grilled eel (unagi)", "Kabayaki eel sauce (soy sauce, mirin, sugar)"]);        // the commas inside the brackets do not split an ingredient
   });
 });
 

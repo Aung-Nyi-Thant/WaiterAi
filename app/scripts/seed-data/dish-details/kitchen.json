@@ -1,0 +1,1040 @@
+{
+ "French Fries": {
+  "parts": [
+   "potato"
+  ],
+  "desc": {
+   "en": "Deep-fried potato fries.",
+   "th": "เฟรนช์ฟรายส์มันฝรั่งทอดกรอบ"
+  },
+  "name_my": "အာလူးကြော်"
+ },
+ "Mori Ebi": {
+  "parts": [
+   "shrimp",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A shrimp dish from the house menu. How it is prepared is the kitchen's own: please ask the staff.",
+   "th": "เมนูกุ้งของทางร้าน ยังไม่มีรายละเอียดวิธีปรุงในระบบ กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Hokuto Ebi": {
+  "parts": [
+   "shrimp",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A shrimp dish from the house menu. How it is prepared is the kitchen's own: please ask the staff.",
+   "th": "เมนูกุ้งของทางร้าน ยังไม่มีรายละเอียดวิธีปรุงในระบบ กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Seaweed Salad": {
+  "parts": [
+   "seaweed"
+  ],
+  "desc": {
+   "en": "Chilled seaweed (wakame) salad with a sesame and soy dressing.",
+   "th": "สลัดสาหร่ายวากาเมะเย็น ราดน้ำสลัดงาและซีอิ๊ว"
+  }
+ },
+ "Addictive Cucumber": {
+  "parts": [
+   "cucumber",
+   "soysauce",
+   "sesameoil",
+   "garlic"
+  ],
+  "desc": {
+   "en": "Smashed cucumber dressed with soy sauce, sesame oil and garlic: the Japanese \"can't stop eating it\" side.",
+   "th": "แตงกวาทุบคลุกซีอิ๊ว น้ำมันงา และกระเทียม เมนูเคียงที่กินเพลินจนหยุดไม่ได้"
+  }
+ },
+ "Tuna with Wasabi": {
+  "parts": [
+   "tuna",
+   "wasabi",
+   "soysauce"
+  ],
+  "desc": {
+   "en": "Raw tuna tossed in wasabi, usually with a little soy sauce.",
+   "th": "ทูน่าดิบคลุกวาซาบิ ปกติใส่ซีอิ๊วเล็กน้อย"
+  }
+ },
+ "Fried Battered Squid": {
+  "parts": [
+   "squid",
+   "flourcoat"
+  ],
+  "desc": {
+   "en": "Squid coated in a flour batter and deep-fried.",
+   "th": "ปลาหมึกชุบแป้งทอดกรอบ"
+  }
+ },
+ "Salmon Yum (Spicy Salad)": {
+  "parts": [
+   "salmon",
+   "fishsauce",
+   "lime",
+   "chilli",
+   "onion",
+   "herbs"
+  ],
+  "desc": {
+   "en": "Thai-style spicy salad of salmon with lime juice, fish sauce, chilli, onion and herbs.",
+   "th": "ยำแซลม่อนสไตล์ไทย ปรุงด้วยน้ำมะนาว น้ำปลา พริก หอมใหญ่ และสมุนไพร"
+  },
+  "spice": 2,
+  "tags": [
+   "spicy"
+  ]
+ },
+ "Salmon Larb": {
+  "parts": [
+   "salmon",
+   "fishsauce",
+   "lime",
+   "chilli",
+   "ricepowder",
+   "herbs",
+   "onion"
+  ],
+  "desc": {
+   "en": "Salmon larb: salmon in the northern-Thai style, with lime, fish sauce, chilli, toasted rice powder and herbs.",
+   "th": "ลาบแซลม่อน ปรุงแบบลาบ ใส่มะนาว น้ำปลา พริก ข้าวคั่ว และสมุนไพร"
+  },
+  "spice": 2,
+  "tags": [
+   "spicy"
+  ]
+ },
+ "Cheese Balls": {
+  "parts": [
+   "cheese",
+   "breading"
+  ],
+  "desc": {
+   "en": "Cheese balls coated in breadcrumbs and deep-fried.",
+   "th": "ชีสบอลชุบเกล็ดขนมปังทอดกรอบ"
+  }
+ },
+ "Squid Tentacles with Wasabi": {
+  "parts": [
+   "squid",
+   "wasabi",
+   "soysauce"
+  ],
+  "desc": {
+   "en": "Squid tentacles tossed in wasabi, usually with a little soy sauce.",
+   "th": "หนวดปลาหมึกคลุกวาซาบิ ปกติใส่ซีอิ๊วเล็กน้อย"
+  }
+ },
+ "Salmon Skin Salad": {
+  "parts": [
+   "salmon",
+   "veg",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "Crispy salmon skin on fresh vegetables with the house dressing, which is not listed here.",
+   "th": "หนังปลาแซลม่อนกรอบบนผักสด ราดน้ำสลัดของทางร้าน ยังไม่มีสูตรในระบบ"
+  }
+ },
+ "Gyoza": {
+  "parts": [
+   "dumplingwrapper",
+   "pork",
+   "cabbage",
+   "garlic",
+   "soysauce",
+   "sesameoil"
+  ],
+  "desc": {
+   "en": "Pan-fried dumplings: a wheat wrapper around a typical pork and cabbage filling with garlic, soy sauce and sesame oil.",
+   "th": "เกี๊ยวซ่าทอดกระทะ แป้งสาลีห่อไส้หมูและกะหล่ำปลี ปรุงด้วยกระเทียม ซีอิ๊ว และน้ำมันงา"
+  }
+ },
+ "Chicken Skin with Wasabi": {
+  "parts": [
+   "chickenskin",
+   "wasabi"
+  ],
+  "desc": {
+   "en": "Crisp chicken skin tossed in wasabi.",
+   "th": "หนังไก่กรอบคลุกวาซาบิ"
+  }
+ },
+ "Vegetable Tempura": {
+  "parts": [
+   "veg",
+   "tempurabatter",
+   "dashi",
+   "soysauce"
+  ],
+  "desc": {
+   "en": "Vegetables in a light tempura batter, usually served with a dipping sauce of dashi (fish stock) and soy sauce.",
+   "th": "ผักชุบแป้งเทมปุระทอดกรอบ ปกติเสิร์ฟพร้อมน้ำจิ้มดาชิ (น้ำซุปปลา) และซีอิ๊ว"
+  }
+ },
+ "Wagyu Beef in Sweet Sauce": {
+  "parts": [
+   "wagyu",
+   "sweetsauce"
+  ],
+  "desc": {
+   "en": "Wagyu beef in the kitchen's sweet sauce, whose recipe is not listed here.",
+   "th": "เนื้อวากิวในซอสหวานของทางร้าน ยังไม่มีสูตรซอสในระบบ"
+  }
+ },
+ "HaChi Kyu Fried Chicken": {
+  "parts": [
+   "chicken",
+   "karaagamarinade",
+   "flourcoat"
+  ],
+  "desc": {
+   "en": "The house fried chicken, in the karaage style: marinated in soy and ginger, coated in flour and deep-fried.",
+   "th": "ไก่ทอดสูตรฮะจิคิว ทอดแบบคาราเกะ หมักซีอิ๊วและขิง เคลือบแป้งแล้วทอดกรอบ"
+  }
+ },
+ "Chicken Steak": {
+  "parts": [
+   "chicken",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A chicken steak. The sauce is the kitchen's own and is not listed here.",
+   "th": "สเต็กไก่ ซอสเป็นสูตรของทางร้าน ยังไม่มีในระบบ"
+  }
+ },
+ "Crab Stick Salad": {
+  "parts": [
+   "crabstick",
+   "cucumber",
+   "mayo"
+  ],
+  "desc": {
+   "en": "Crab stick (surimi) salad with cucumber and mayonnaise, the usual kani salad.",
+   "th": "สลัดปูอัดกับแตงกวาและมายองเนส แบบคานิสลัดทั่วไป"
+  }
+ },
+ "Takoyaki": {
+  "parts": [
+   "batterball",
+   "octopus",
+   "takoyakisauce",
+   "mayo"
+  ],
+  "desc": {
+   "en": "Takoyaki: wheat-flour and egg batter balls with a piece of octopus, topped with takoyaki sauce, mayonnaise and bonito flakes.",
+   "th": "ทาโกะยากิ ลูกแป้งสาลีผสมไข่ไส้ปลาหมึกยักษ์ ราดซอสทาโกะยากิ มายองเนส และปลาโอแห้งไส"
+  }
+ },
+ "Japanese Pizza": {
+  "parts": [
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A Japanese-style pizza. The toppings are the kitchen's own: please ask the staff.",
+   "th": "พิซซ่าสไตล์ญี่ปุ่น หน้าต่าง ๆ เป็นของทางร้าน กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Saba Teriyaki": {
+  "parts": [
+   "saba",
+   "teriyaki"
+  ],
+  "desc": {
+   "en": "Mackerel (saba) glazed with sweet teriyaki sauce.",
+   "th": "ปลาซาบะเคลือบซอสเทอริยากิรสหวาน"
+  }
+ },
+ "Japanese-style Pla Ra": {
+  "parts": [
+   "fish",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A fish dish in the Japanese style of fermented fish. How it is made is the kitchen's own: please ask the staff.",
+   "th": "เมนูปลาแบบปลาร้าสไตล์ญี่ปุ่น วิธีทำเป็นของทางร้าน กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Chicken Karaage": {
+  "parts": [
+   "chicken",
+   "karaagamarinade",
+   "flourcoat"
+  ],
+  "desc": {
+   "en": "Karaage: chicken marinated in soy sauce and ginger, coated in flour and deep-fried.",
+   "th": "ไก่คาราเกะ ไก่หมักซีอิ๊วและขิง เคลือบแป้งแล้วทอดกรอบ"
+  }
+ },
+ "Tuna in Sweet Sauce": {
+  "parts": [
+   "tuna",
+   "sweetsauce"
+  ],
+  "desc": {
+   "en": "Tuna in the kitchen's sweet sauce, whose recipe is not listed here.",
+   "th": "ทูน่าในซอสหวานของทางร้าน ยังไม่มีสูตรซอสในระบบ"
+  }
+ },
+ "Squid with Shrimp Roe": {
+  "parts": [
+   "squid",
+   "shrimproe"
+  ],
+  "desc": {
+   "en": "Raw squid tossed with shrimp roe (ebiko).",
+   "th": "ปลาหมึกดิบคลุกไข่กุ้ง (เอบิโกะ)"
+  }
+ },
+ "Soft-Shell Crab Salad": {
+  "parts": [
+   "softcrab",
+   "flourcoat",
+   "veg",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "Fried soft-shell crab on fresh vegetables with the house dressing, which is not listed here.",
+   "th": "ปูนิ่มทอดบนผักสด ราดน้ำสลัดของทางร้าน ยังไม่มีสูตรในระบบ"
+  }
+ },
+ "Crab Stick Yum": {
+  "parts": [
+   "crabstick",
+   "fishsauce",
+   "lime",
+   "chilli",
+   "onion",
+   "herbs"
+  ],
+  "desc": {
+   "en": "Thai-style spicy salad of crab stick with lime juice, fish sauce, chilli, onion and herbs.",
+   "th": "ยำปูอัดสไตล์ไทย ปรุงด้วยน้ำมะนาว น้ำปลา พริก หอมใหญ่ และสมุนไพร"
+  },
+  "spice": 2,
+  "tags": [
+   "spicy"
+  ]
+ },
+ "Tofu Salad": {
+  "parts": [
+   "tofu",
+   "veg",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "Tofu on fresh vegetables with the house dressing, which is not listed here.",
+   "th": "เต้าหู้บนผักสด ราดน้ำสลัดของทางร้าน ยังไม่มีสูตรในระบบ"
+  }
+ },
+ "Bacon-wrapped Enoki": {
+  "parts": [
+   "enoki",
+   "bacon",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "Enoki mushrooms wrapped in bacon and grilled. The seasoning is the kitchen's own.",
+   "th": "เห็ดเข็มทองพันเบคอนย่าง เครื่องปรุงเป็นของทางร้าน"
+  }
+ },
+ "Salmon Head Simmered in Soy": {
+  "parts": [
+   "salmon",
+   "soysauce"
+  ],
+  "desc": {
+   "en": "Salmon head simmered in a soy-sauce broth (kabuto-ni style).",
+   "th": "หัวปลาแซลม่อนต้มในน้ำซีอิ๊ว (แบบคาบูโตะนิ)"
+  }
+ },
+ "Salt-grilled Salmon Head": {
+  "parts": [
+   "salmon"
+  ],
+  "desc": {
+   "en": "Salmon head grilled with salt.",
+   "th": "หัวปลาแซลม่อนย่างเกลือ"
+  }
+ },
+ "Wasabi Fried Chicken": {
+  "parts": [
+   "chicken",
+   "karaagamarinade",
+   "flourcoat",
+   "wasabi"
+  ],
+  "desc": {
+   "en": "Karaage-style fried chicken tossed in wasabi.",
+   "th": "ไก่ทอดแบบคาราเกะคลุกวาซาบิ"
+  }
+ },
+ "Shrimp Tempura": {
+  "parts": [
+   "shrimp",
+   "tempurabatter",
+   "dashi",
+   "soysauce"
+  ],
+  "desc": {
+   "en": "Shrimp in a light tempura batter, usually served with a dipping sauce of dashi (fish stock) and soy sauce.",
+   "th": "กุ้งชุบแป้งเทมปุระทอดกรอบ ปกติเสิร์ฟพร้อมน้ำจิ้มดาชิ (น้ำซุปปลา) และซีอิ๊ว"
+  }
+ },
+ "Pork Neck in Special Sauce": {
+  "parts": [
+   "porkneck",
+   "specialsauce"
+  ],
+  "desc": {
+   "en": "Pork neck stir-fried in the kitchen's special sauce, whose recipe is not listed here.",
+   "th": "สันคอหมูผัดซอสพิเศษของทางร้าน ยังไม่มีสูตรซอสในระบบ"
+  }
+ },
+ "Salmon Salad": {
+  "parts": [
+   "salmon",
+   "veg",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "Salmon on fresh vegetables with the house dressing, which is not listed here.",
+   "th": "แซลม่อนบนผักสด ราดน้ำสลัดของทางร้าน ยังไม่มีสูตรในระบบ"
+  }
+ },
+ "Tuna Yum (Spicy Salad)": {
+  "parts": [
+   "tuna",
+   "fishsauce",
+   "lime",
+   "chilli",
+   "onion",
+   "herbs"
+  ],
+  "desc": {
+   "en": "Thai-style spicy salad of tuna with lime juice, fish sauce, chilli, onion and herbs.",
+   "th": "ยำทูน่าสไตล์ไทย ปรุงด้วยน้ำมะนาว น้ำปลา พริก หอมใหญ่ และสมุนไพร"
+  },
+  "spice": 2,
+  "tags": [
+   "spicy"
+  ]
+ },
+ "Salmon with Wasabi": {
+  "parts": [
+   "salmon",
+   "wasabi",
+   "soysauce"
+  ],
+  "desc": {
+   "en": "Raw salmon tossed in wasabi, usually with a little soy sauce.",
+   "th": "แซลม่อนดิบคลุกวาซาบิ ปกติใส่ซีอิ๊วเล็กน้อย"
+  }
+ },
+ "Purple Sweet Potato Cheese Balls": {
+  "parts": [
+   "sweetpotato",
+   "cheese",
+   "breading"
+  ],
+  "desc": {
+   "en": "Purple sweet potato and cheese balls, coated in breadcrumbs and deep-fried.",
+   "th": "ชีสบอลมันม่วง ชุบเกล็ดขนมปังทอดกรอบ"
+  }
+ },
+ "Stingray Fin": {
+  "parts": [
+   "stingray",
+   "mayo",
+   "chilli"
+  ],
+  "desc": {
+   "en": "Dried stingray fin (eihire), grilled and served the izakaya way with mayonnaise and chilli.",
+   "th": "ครีบปลากระเบนแห้งย่าง (เอฮิเระ) เสิร์ฟแบบอิซากายะ พร้อมมายองเนสและพริก"
+  }
+ },
+ "Kimchi": {
+  "parts": [
+   "kimchi"
+  ],
+  "desc": {
+   "en": "Korean fermented cabbage kimchi with chilli.",
+   "th": "กิมจิกะหล่ำปลีหมักสไตล์เกาหลี รสเผ็ด"
+  },
+  "spice": 2,
+  "tags": [
+   "spicy"
+  ]
+ },
+ "Kanimiso (Crab Innards)": {
+  "parts": [
+   "kanimiso"
+  ],
+  "desc": {
+   "en": "Kani miso: the rich brown paste from inside the crab.",
+   "th": "คานิมิโซะ มันปูสีน้ำตาลเข้มข้นจากในตัวปู"
+  }
+ },
+ "Lettuce": {
+  "parts": [
+   "lettuce"
+  ],
+  "desc": {
+   "en": "A plate of fresh lettuce.",
+   "th": "ผักกาดหอมสดเสิร์ฟเป็นจาน"
+  },
+  "name_my": "ဆလပ်ရွက်"
+ },
+ "Edamame": {
+  "parts": [
+   "edamame"
+  ],
+  "desc": {
+   "en": "Young soybeans in the pod, boiled and lightly salted.",
+   "th": "ถั่วแระญี่ปุ่นต้มในฝัก โรยเกลือเล็กน้อย"
+  }
+ },
+ "Yakisoba": {
+  "parts": [
+   "noodles",
+   "pork",
+   "cabbage",
+   "yakisobasauce"
+  ],
+  "desc": {
+   "en": "Yakisoba: stir-fried wheat noodles with pork and cabbage in a soy and Worcestershire-style sauce.",
+   "th": "ยากิโซบะ เส้นแป้งสาลีผัดกับหมูและกะหล่ำปลี ปรุงด้วยซอสซีอิ๊วแบบวูสเตอร์เชียร์"
+  }
+ },
+ "Yakisoba with Onsen Egg": {
+  "parts": [
+   "noodles",
+   "pork",
+   "cabbage",
+   "yakisobasauce",
+   "onsenegg"
+  ],
+  "desc": {
+   "en": "Yakisoba (wheat noodles, pork and cabbage in a soy and Worcestershire-style sauce) topped with a slow-cooked onsen egg.",
+   "th": "ยากิโซบะเส้นแป้งสาลีผัดกับหมูและกะหล่ำปลี ราดซอสซีอิ๊วแบบวูสเตอร์เชียร์ ท็อปด้วยไข่ออนเซ็น"
+  }
+ },
+ "[Coke Combo] Yakisoba with Coke": {
+  "parts": [
+   "noodles",
+   "pork",
+   "cabbage",
+   "yakisobasauce",
+   "cola"
+  ],
+  "desc": {
+   "en": "Yakisoba (wheat noodles, pork and cabbage in a soy and Worcestershire-style sauce) with a Coke.",
+   "th": "ยากิโซบะเส้นแป้งสาลีผัดกับหมูและกะหล่ำปลี ราดซอสซีอิ๊วแบบวูสเตอร์เชียร์ พร้อมโค้ก"
+  }
+ },
+ "[Coke Combo] Garlic Fried Rice with Coke": {
+  "parts": [
+   "rice",
+   "garlic",
+   "unknownpart",
+   "cola"
+  ],
+  "desc": {
+   "en": "Garlic fried rice with a Coke. The other seasoning in the rice is the kitchen's own.",
+   "th": "ข้าวผัดกระเทียมพร้อมโค้ก เครื่องปรุงอื่น ๆ ในข้าวผัดเป็นของทางร้าน"
+  }
+ },
+ "[Coke Combo] Fatty Beef Don with Coke": {
+  "parts": [
+   "rice",
+   "beef",
+   "tare",
+   "cola"
+  ],
+  "desc": {
+   "en": "Grilled fatty beef on rice with a sweet soy grill sauce, with a Coke.",
+   "th": "ข้าวหน้าเนื้อติดมันย่างราดซอสซีอิ๊วหวาน พร้อมโค้ก"
+  }
+ },
+ "Grilled Chicken Skin": {
+  "parts": [
+   "chickenskin",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A skewer of chicken skin, grilled over charcoal. Whether it is seasoned with salt or a sauce is the kitchen's own: please ask the staff.",
+   "th": "หนังไก่ย่างเสียบไม้ ย่างถ่าน จะปรุงด้วยเกลือหรือซอสเป็นของทางร้าน กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Grilled Chicken Tail": {
+  "parts": [
+   "chickentail",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A skewer of chicken tail, grilled over charcoal. Whether it is seasoned with salt or a sauce is the kitchen's own: please ask the staff.",
+   "th": "ตูดไก่ย่างเสียบไม้ ย่างถ่าน จะปรุงด้วยเกลือหรือซอสเป็นของทางร้าน กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Grilled Chicken Liver": {
+  "parts": [
+   "chickenliver",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A skewer of chicken liver, grilled over charcoal. Whether it is seasoned with salt or a sauce is the kitchen's own: please ask the staff.",
+   "th": "ตับไก่ย่างเสียบไม้ ย่างถ่าน จะปรุงด้วยเกลือหรือซอสเป็นของทางร้าน กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Grilled Chicken Gizzard": {
+  "parts": [
+   "gizzard",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A skewer of chicken gizzard, grilled over charcoal. Whether it is seasoned with salt or a sauce is the kitchen's own: please ask the staff.",
+   "th": "กึ๋นไก่ย่างเสียบไม้ ย่างถ่าน จะปรุงด้วยเกลือหรือซอสเป็นของทางร้าน กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Grilled Chicken Heart": {
+  "parts": [
+   "chickenheart",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A skewer of chicken heart, grilled over charcoal. Whether it is seasoned with salt or a sauce is the kitchen's own: please ask the staff.",
+   "th": "หัวใจไก่ย่างเสียบไม้ ย่างถ่าน จะปรุงด้วยเกลือหรือซอสเป็นของทางร้าน กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Chicken Teriyaki Skewer": {
+  "parts": [
+   "chicken",
+   "teriyaki"
+  ],
+  "desc": {
+   "en": "A skewer of chicken glazed with sweet teriyaki sauce and grilled.",
+   "th": "ไก่เสียบไม้เคลือบซอสเทอริยากิรสหวาน ย่างหอม"
+  }
+ },
+ "Grilled Salmon Belly": {
+  "parts": [
+   "salmon",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A skewer of salmon belly, grilled. Whether it is seasoned with salt or a sauce is the kitchen's own: please ask the staff.",
+   "th": "ท้องปลาแซลม่อนเสียบไม้ย่าง จะปรุงด้วยเกลือหรือซอสเป็นของทางร้าน กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Gochujang Chicken": {
+  "parts": [
+   "chicken",
+   "gochujang"
+  ],
+  "desc": {
+   "en": "A skewer of chicken in a spicy gochujang glaze, grilled.",
+   "th": "ไก่เสียบไม้เคลือบซอสโกจูจังรสเผ็ด ย่างหอม"
+  },
+  "spice": 2,
+  "tags": [
+   "spicy"
+  ]
+ },
+ "Japanese Leek Skewer": {
+  "parts": [
+   "leek",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A skewer of Japanese leek, grilled. Whether it is seasoned with salt or a sauce is the kitchen's own: please ask the staff.",
+   "th": "ต้นหอมญี่ปุ่นเสียบไม้ย่าง จะปรุงด้วยเกลือหรือซอสเป็นของทางร้าน กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Garlic Skewer": {
+  "parts": [
+   "garlic",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A skewer of garlic, grilled. Whether it is seasoned with salt or a sauce is the kitchen's own: please ask the staff.",
+   "th": "กระเทียมเสียบไม้ย่าง จะปรุงด้วยเกลือหรือซอสเป็นของทางร้าน กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Okra Skewer": {
+  "parts": [
+   "okra",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A skewer of okra, grilled. Whether it is seasoned with salt or a sauce is the kitchen's own: please ask the staff.",
+   "th": "กระเจี๊ยบเสียบไม้ย่าง จะปรุงด้วยเกลือหรือซอสเป็นของทางร้าน กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Pumpkin Skewer": {
+  "parts": [
+   "pumpkin",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A skewer of pumpkin, grilled. Whether it is seasoned with salt or a sauce is the kitchen's own: please ask the staff.",
+   "th": "ฟักทองเสียบไม้ย่าง จะปรุงด้วยเกลือหรือซอสเป็นของทางร้าน กรุณาสอบถามพนักงาน"
+  }
+ },
+ "King Oyster Mushroom Skewer": {
+  "parts": [
+   "kingoyster",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A skewer of king oyster mushroom, grilled. Whether it is seasoned with salt or a sauce is the kitchen's own: please ask the staff.",
+   "th": "เห็ดออรินจิเสียบไม้ย่าง จะปรุงด้วยเกลือหรือซอสเป็นของทางร้าน กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Shiitake Skewer": {
+  "parts": [
+   "shiitake",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A skewer of shiitake mushroom, grilled. Whether it is seasoned with salt or a sauce is the kitchen's own: please ask the staff.",
+   "th": "เห็ดหอมเสียบไม้ย่าง จะปรุงด้วยเกลือหรือซอสเป็นของทางร้าน กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Salt-grilled Saba": {
+  "parts": [
+   "saba"
+  ],
+  "desc": {
+   "en": "Mackerel (saba) grilled with salt.",
+   "th": "ปลาซาบะย่างเกลือ"
+  }
+ },
+ "Japanese Rice": {
+  "parts": [
+   "rice"
+  ],
+  "desc": {
+   "en": "A bowl of plain Japanese short-grain rice.",
+   "th": "ข้าวญี่ปุ่นเมล็ดสั้นหุงสุกเสิร์ฟเป็นถ้วย"
+  },
+  "name_my": "ဂျပန်ထမင်း"
+ },
+ "Garlic Fried Rice": {
+  "parts": [
+   "rice",
+   "garlic",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "Japanese rice fried with garlic. The other seasoning in the rice is the kitchen's own.",
+   "th": "ข้าวญี่ปุ่นผัดกระเทียม เครื่องปรุงอื่น ๆ ในข้าวผัดเป็นของทางร้าน"
+  }
+ },
+ "Beef Striploin Don": {
+  "parts": [
+   "rice",
+   "beef",
+   "tare"
+  ],
+  "desc": {
+   "en": "Grilled beef striploin on rice with a sweet soy grill sauce.",
+   "th": "ข้าวหน้าเนื้อสันนอกย่างราดซอสซีอิ๊วหวาน"
+  }
+ },
+ "Fatty Beef Don": {
+  "parts": [
+   "rice",
+   "beef",
+   "tare"
+  ],
+  "desc": {
+   "en": "Grilled fatty beef on rice with a sweet soy grill sauce.",
+   "th": "ข้าวหน้าเนื้อติดมันย่างราดซอสซีอิ๊วหวาน"
+  }
+ },
+ "Pork Neck Don": {
+  "parts": [
+   "rice",
+   "porkneck",
+   "tare"
+  ],
+  "desc": {
+   "en": "Grilled pork neck (tontoro) on rice with a sweet soy grill sauce.",
+   "th": "ข้าวหน้าสันคอหมูย่าง (ตอนโตโร) ราดซอสซีอิ๊วหวาน"
+  }
+ },
+ "Pork Loin Don": {
+  "parts": [
+   "rice",
+   "pork",
+   "tare"
+  ],
+  "desc": {
+   "en": "Grilled pork loin on rice with a sweet soy grill sauce.",
+   "th": "ข้าวหน้าสันนอกหมูย่างราดซอสซีอิ๊วหวาน"
+  }
+ },
+ "Bacon Don": {
+  "parts": [
+   "rice",
+   "bacon",
+   "tare"
+  ],
+  "desc": {
+   "en": "Grilled bacon on rice with a sweet soy grill sauce.",
+   "th": "ข้าวหน้าเบคอนย่างราดซอสซีอิ๊วหวาน"
+  }
+ },
+ "Gochujang Fatty Pork Don": {
+  "parts": [
+   "rice",
+   "pork",
+   "gochujang"
+  ],
+  "desc": {
+   "en": "Fatty pork in a spicy gochujang glaze on rice.",
+   "th": "ข้าวหน้าหมูติดมันเคลือบซอสโกจูจังรสเผ็ด"
+  },
+  "spice": 2,
+  "tags": [
+   "spicy"
+  ]
+ },
+ "Salmon Roe Don": {
+  "parts": [
+   "rice",
+   "salmonroe"
+  ],
+  "desc": {
+   "en": "Japanese rice topped with salmon roe (ikura).",
+   "th": "ข้าวญี่ปุ่นหน้าไข่ปลาแซลม่อน (อิคุระ)"
+  }
+ },
+ "Eel Don": {
+  "parts": [
+   "rice",
+   "eel",
+   "kabayaki"
+  ],
+  "desc": {
+   "en": "Grilled eel brushed with sweet kabayaki sauce on Japanese rice (unadon).",
+   "th": "ข้าวหน้าปลาไหลย่างทาซอสคาบายากิรสหวาน (อูนะด้ง)"
+  }
+ },
+ "Salmon Don": {
+  "parts": [
+   "rice",
+   "salmon"
+  ],
+  "desc": {
+   "en": "Japanese rice topped with raw salmon.",
+   "th": "ข้าวญี่ปุ่นหน้าแซลม่อนดิบ"
+  }
+ },
+ "Minced Tuna Don": {
+  "parts": [
+   "rice",
+   "tuna"
+  ],
+  "desc": {
+   "en": "Japanese rice topped with minced raw tuna.",
+   "th": "ข้าวญี่ปุ่นหน้าทูน่าดิบสับ"
+  }
+ },
+ "Tuna & Salmon Don": {
+  "parts": [
+   "rice",
+   "tuna",
+   "salmon"
+  ],
+  "desc": {
+   "en": "Japanese rice topped with raw tuna and raw salmon.",
+   "th": "ข้าวญี่ปุ่นหน้าทูน่าและแซลม่อนดิบ"
+  }
+ },
+ "Three-Topping Don": {
+  "parts": [
+   "rice",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "Japanese rice with three toppings. Which three is not listed here: please ask the staff.",
+   "th": "ข้าวญี่ปุ่นหน้า 3 อย่าง ยังไม่มีรายการหน้าข้าวในระบบ กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Seared Salmon Don": {
+  "parts": [
+   "rice",
+   "salmon"
+  ],
+  "desc": {
+   "en": "Japanese rice topped with salmon lightly seared on top.",
+   "th": "ข้าวญี่ปุ่นหน้าแซลม่อนเผาด้านบนเล็กน้อย (เบิร์น)"
+  }
+ },
+ "HaChi Kyu Basil Pork Rice": {
+  "parts": [
+   "rice",
+   "pork",
+   "basil",
+   "chilli",
+   "garlic",
+   "fishsauce",
+   "soysauce",
+   "oystersauce"
+  ],
+  "desc": {
+   "en": "The house take on pad kra pao: minced pork stir-fried with holy basil, chilli and garlic in fish, soy and oyster sauce, on rice.",
+   "th": "ข้าวกะเพราหมูสูตรฮะจิคิว หมูผัดกะเพรา พริก กระเทียม ปรุงด้วยน้ำปลา ซีอิ๊ว และน้ำมันหอย เสิร์ฟบนข้าว"
+  },
+  "spice": 2,
+  "tags": [
+   "spicy"
+  ]
+ },
+ "HaChi Kyu Basil Beef Rice": {
+  "parts": [
+   "rice",
+   "beef",
+   "basil",
+   "chilli",
+   "garlic",
+   "fishsauce",
+   "soysauce",
+   "oystersauce"
+  ],
+  "desc": {
+   "en": "The house take on pad kra pao: beef stir-fried with holy basil, chilli and garlic in fish, soy and oyster sauce, on rice.",
+   "th": "ข้าวกะเพราเนื้อสูตรฮะจิคิว เนื้อผัดกะเพรา พริก กระเทียม ปรุงด้วยน้ำปลา ซีอิ๊ว และน้ำมันหอย เสิร์ฟบนข้าว"
+  },
+  "spice": 2,
+  "tags": [
+   "spicy"
+  ]
+ },
+ "Salmon Garlic Fried Rice": {
+  "parts": [
+   "rice",
+   "garlic",
+   "salmon",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "Garlic fried rice with salmon. The other seasoning in the rice is the kitchen's own.",
+   "th": "ข้าวผัดกระเทียมแซลม่อน เครื่องปรุงอื่น ๆ ในข้าวผัดเป็นของทางร้าน"
+  }
+ },
+ "Fatty Beef Don with Onsen Egg": {
+  "parts": [
+   "rice",
+   "beef",
+   "tare",
+   "onsenegg"
+  ],
+  "desc": {
+   "en": "Grilled fatty beef on rice with a sweet soy grill sauce and a slow-cooked onsen egg.",
+   "th": "ข้าวหน้าเนื้อติดมันย่างราดซอสซีอิ๊วหวาน พร้อมไข่ออนเซ็น"
+  }
+ },
+ "Jo Tontoro Don with Onsen Egg": {
+  "parts": [
+   "rice",
+   "porkneck",
+   "tare",
+   "onsenegg"
+  ],
+  "desc": {
+   "en": "Grilled pork neck (tontoro) on rice with a sweet soy grill sauce and a slow-cooked onsen egg.",
+   "th": "ข้าวหน้าสันคอหมูย่าง (ตอนโตโร) ราดซอสซีอิ๊วหวาน พร้อมไข่ออนเซ็น"
+  }
+ },
+ "Miso Soup": {
+  "parts": [
+   "miso",
+   "dashi",
+   "tofu",
+   "greenonion"
+  ],
+  "desc": {
+   "en": "Miso soup: miso paste in dashi (bonito stock) with tofu and green onion.",
+   "th": "ซุปมิโซะ มิโซะในน้ำซุปดาชิ (ปลาโอ) ใส่เต้าหู้และต้นหอม"
+  },
+  "name_my": "Miso ဟင်းချို"
+ },
+ "Clear Soup": {
+  "parts": [
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A clear soup. What is in it is not listed here: please ask the staff.",
+   "th": "ซุปใส ยังไม่มีรายการส่วนประกอบในระบบ กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Tontoro Happy Set": {
+  "parts": [
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A set meal. What comes with it is not listed here: please ask the staff.",
+   "th": "ชุดตอนโตโร แฮปปี้เซ็ต เซ็ตอาหาร ยังไม่มีรายการในชุดในระบบ กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Buta Set": {
+  "parts": [
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A set meal. What comes with it is not listed here: please ask the staff.",
+   "th": "ชุดบุตะ เซ็ตอาหาร ยังไม่มีรายการในชุดในระบบ กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Omori Set": {
+  "parts": [
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A set meal. What comes with it is not listed here: please ask the staff.",
+   "th": "ชุดโอโมริ เซ็ตอาหาร ยังไม่มีรายการในชุดในระบบ กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Coca-Cola Original": {
+  "parts": [
+   "cola"
+  ],
+  "desc": {
+   "en": "Coca-Cola Original, a soft drink.",
+   "th": "โค้กออริจินัล น้ำอัดลม"
+  }
+ },
+ "Coca-Cola Zero Sugar": {
+  "parts": [
+   "cola"
+  ],
+  "desc": {
+   "en": "Coca-Cola Zero Sugar, a soft drink without sugar.",
+   "th": "โค้กซีโร่ น้ำอัดลมไม่มีน้ำตาล"
+  }
+ },
+ "Sprite": {
+  "parts": [
+   "sprite"
+  ],
+  "desc": {
+   "en": "Sprite, a lemon-lime soft drink.",
+   "th": "สไปรท์ น้ำอัดลมกลิ่นเลมอนไลม์"
+  }
+ },
+ "Red Soda": {
+  "parts": [
+   "redsoda"
+  ],
+  "desc": {
+   "en": "Thai red soda (nam daeng): red sala-flavoured syrup with soda water.",
+   "th": "น้ำแดงโซดา น้ำเชื่อมกลิ่นสละผสมโซดา"
+  }
+ }
+}
