@@ -654,15 +654,132 @@
   "id": "sm-en38",
   "lang": "en",
   "category": "out_of_menu",
-  "question": "Do you have tempura?",
+  "question": "Do you have ramen?",
   "expect": [
    [
-    "tempura"
+    "ramen"
    ]
   ],
   "forbid": [
    "\\byes, we (?:do|have)\\b"
   ]
+ },
+ {
+  "id": "sm-en39",
+  "lang": "en",
+  "category": "availability",
+  "question": "Do you have salmon sushi?",
+  "expect": [
+   [
+    "Yes"
+   ],
+   [
+    "Salmon Sushi"
+   ],
+   [
+    "96"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en40",
+  "lang": "en",
+  "category": "availability",
+  "question": "Is the Wagyu Sushi available?",
+  "expect": [
+   [
+    "Yes"
+   ],
+   [
+    "Wagyu Sushi"
+   ],
+   [
+    "417"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-en41",
+  "lang": "en",
+  "category": "ambiguous_order",
+  "question": "I want a coke",
+  "expect": [
+   [
+    "Which one"
+   ],
+   [
+    "Coca-Cola Original"
+   ],
+   [
+    "Coca-Cola Zero Sugar"
+   ]
+  ],
+  "forbid": [
+   "Added to your picks"
+  ],
+  "rules": true
+ },
+ {
+  "id": "sm-en42",
+  "lang": "en",
+  "category": "no_section",
+  "question": "Any dessert?",
+  "expect": [
+   [
+    "don't see a desserts section"
+   ],
+   [
+    "Sushi"
+   ]
+  ],
+  "forbid": [
+   "Mango",
+   "ice cream"
+  ],
+  "rules": true
+ },
+ {
+  "id": "sm-en43",
+  "lang": "en",
+  "category": "allergen_category",
+  "question": "Which sushi has no fish?",
+  "expect": [
+   [
+    "do not list fish"
+   ],
+   [
+    "Shrimp Roe Sushi"
+   ]
+  ],
+  "forbid": [
+   "\\bis safe\\b",
+   "\\bsafe to eat\\b",
+   "\\ballergen-free\\b",
+   "\\bno allergens\\b",
+   "\\bguarantee",
+   "\\byes, you can\\b"
+  ],
+  "rules": true
+ },
+ {
+  "id": "sm-en44",
+  "lang": "en",
+  "category": "preference",
+  "question": "I love shrimp",
+  "expect": [
+   [
+    "Shrimp"
+   ],
+   [
+    "Giant Sweet Shrimp"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
  },
  {
   "id": "sm-th1",
@@ -764,6 +881,22 @@
  {
   "id": "sm-th7",
   "lang": "th",
+  "category": "availability",
+  "question": "ซูชิแซลม่อนมีไหม",
+  "expect": [
+   [
+    "ซูชิแซลม่อน"
+   ],
+   [
+    "96"
+   ]
+  ],
+  "forbid": [],
+  "rules": true
+ },
+ {
+  "id": "sm-th8",
+  "lang": "th",
   "category": "recommend_bare",
   "question": "แนะนำหน่อย",
   "expect": [
@@ -776,7 +909,7 @@
   ]
  },
  {
-  "id": "sm-th8",
+  "id": "sm-th9",
   "lang": "th",
   "category": "allergen",
   "question": "ซูชิหมึกมีสารก่อภูมิแพ้อะไรบ้าง",

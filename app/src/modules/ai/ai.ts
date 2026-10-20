@@ -348,6 +348,7 @@ const THANKS = /\b(?:thanks?|thank you|thx|many thanks|appreciate it)\b|ขอ�
 const PAY_METHOD = /\b(?:credit|debit|visa|master ?card|amex|cash|cards?|promptpay|qr|alipay|wechat|apple pay|grab ?pay|payment (?:method|option)s?|accept(?:s|ed)? (?:payment|cards?)|by card|with card)\b|บัตรเครดิต|บัตรเดบิต|เงินสด|พร้อมเพย์|สแกนจ่าย|ကရက်ဒစ်|ကတ်|ငွေသား/;
 const CHEAPEST = /\b(?:cheapest|least expensive|lowest[- ]priced?|most affordable|cheapest)\b|ถูกที่สุด|ถูกสุด|ราคาถูกที่สุด|အပေါဆုံး|အသက်သာဆုံး|ဈေးအနည်းဆုံး|ဈေးအသက်သာဆုံး/;
 const PRICIEST = /\b(?:most expensive|priciest|highest[- ]priced?|costliest)\b|แพงที่สุด|แพงสุด|ราคาแพงที่สุด|ဈေးအကြီးဆုံး|ဈေးအများဆုံး|အဈေးအကြီးဆုံး|အဈေးအမြင့်ဆုံး/;
+const LIKES = /\b(?:i|we) (?:really )?(?:like|love|prefer|enjoy|crave)\b|\bin the mood for\b|\bcraving\b|\bfan of\b|ชอบกิน|ชอบทาน|อยากกิน|อยากทาน|ကြိုက်တယ်|စားချင်/;
 const SEAFOOD = /\bsea ?food\b|อาหารทะเล|ပင်လယ်စာ/;
 const HALAL = /\bhalal\b|ฮาลาล|ဟလာလ်|ဟာလာလ်|ဟလာလ်/;
 const COMPARE = /\b(?:difference|differences|compare|versus|vs)\b|ต่างกัน|แตกต่าง|เปรียบเทียบ|ကွာခြားပုံ|ကွာသလဲ|ကွာတာ/;
@@ -725,6 +726,12 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
   // "gluten-free", "peanut free dishes", "ปลอดกลูเตน" ask for dishes WITHOUT it, not for the dishes that list it
   const asksFree = /\b(without|free of|free from|no|not contain|don'?t contain|doesn'?t contain)\b|[a-z]-free\b|\bfree\b/.test(t) || /ปลอด(?!ภัย)/.test(t) || has(t, ["ไม่ใส่", "ไม่มี", "မပါ"]);
   if (!meatFree && (mentioned.length || (intent && dishes.length))) {
+    // "I like salmon": a liking, not an allergy. The dishes that carry the word in their name, if there are any (else the allergen answer below)
+    if (!dishes.length && LIKES.test(t) && !intent && !STATES_ALLERGY.test(t) && !asksFree) {
+      const words = Object.values(ALLERGEN_WORDS).flat().filter((w) => /^[a-z' ]+$/.test(w) && wordIn(t, w));
+      const named = live.filter((i) => fitsProfile(i, profile) && words.some((w) => norm(i.name.en).includes(w)));
+      if (named.length) return done(categoryListReply(lang, p, words.map((w) => w[0].toUpperCase() + w.slice(1)).join(", "), named, profile), { type: "show_dishes", ids: named.slice(0, 6).map((i) => i.id) }, { topic: "recommend" });
+    }
     // a question about ONE named dish ("does the Tom Yum have dairy?") is answered about that dish, not with a list of other dishes
     if (!mentioned.length || dishes.length === 1) {
       const it = dishes[0].item;

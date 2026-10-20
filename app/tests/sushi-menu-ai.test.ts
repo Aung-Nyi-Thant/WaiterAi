@@ -208,4 +208,12 @@ describe("everyday questions about the menu", () => {
     expect(shown(r).length).toBeGreaterThan(0);
     expect(shown(r).every((n: string) => dish(n).category_id === sushiId && !(dish(n).allergens ?? []).includes("fish"))).toBe(true);
   });
+  it("'I like salmon' is a liking, not an allergy: it lists the dishes with salmon in the name, and 'I'm allergic to salmon' still gives the allergen answer", async () => {
+    const like = await ask("I like salmon. What can I eat?");
+    expect(like.usedModel).toBe(false);
+    expect(like.reply).toMatch(/^Salmon \(\d+\)/);
+    expect(shown(like).every((n: string) => /salmon/i.test(n))).toBe(true);
+    const allergic = await ask("I'm allergic to salmon");
+    expect(allergic.reply).toMatch(/^Dishes that list fish/);
+  });
 });
