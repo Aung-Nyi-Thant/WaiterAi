@@ -1,5 +1,5 @@
 import { all } from "@/modules/platform/db";
-import { restaurantById, itemsOf, faqsOf, specialsOf } from "@/modules/platform/menu";
+import { restaurantById, itemsOf, faqsOf, specialsOf, categoriesOf } from "@/modules/platform/menu";
 import { warmUpPrompt } from "@/modules/ai/ai";
 
 // Called once when the server starts (src/instrumentation.ts), not awaited there. Reads each restaurant's system prompt into
@@ -13,7 +13,7 @@ export async function warmUpAll(max = 5): Promise<number> {
   for (const { id } of all<{ id: number }>("SELECT id FROM restaurants ORDER BY id LIMIT ?", max).reverse()) {
     const r = restaurantById(id);
     if (!r) continue;
-    try { await warmUpPrompt({ restaurant: r, items: itemsOf(id), faqs: faqsOf(id) as any, specials: specialsOf(id), history: [] }); done++; }
+    try { await warmUpPrompt({ restaurant: r, items: itemsOf(id), faqs: faqsOf(id) as any, specials: specialsOf(id), history: [], categories: categoriesOf(id) }); done++; }   // the same context as api/chat.ts, or the prompt differs and the warm-up is wasted
     catch { break; }                                 // Ollama is not running: the first real question will load the model instead
   }
   return done;
