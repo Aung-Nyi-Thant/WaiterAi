@@ -49,7 +49,10 @@ export async function complete(messages: Msg[], o: Opts): Promise<string> {
 }
 
 // Context size of every request (Ollama reloads the model when it changes, so it must be the same everywhere).
-const NUM_CTX = 8192;
+// 16384 since the menus grew: Golden Lotus with the prototype's 132 dishes added is an 8,574-token prompt (Ollama's log: "truncating input
+// prompt"), which did not fit 8192, so Ollama cut the middle out of it (the menu the model saw was incomplete) and, because the cut
+// moved with every question, could never reuse the prompt it had read. OLLAMA_NUM_CTX overrides it.
+const NUM_CTX = Number(process.env.OLLAMA_NUM_CTX) || 16384;
 
 async function viaOllama(messages: Msg[], o: Opts): Promise<string> {
   const res = await fetch(`${process.env.OLLAMA_URL || "http://localhost:11434"}/api/chat`, {

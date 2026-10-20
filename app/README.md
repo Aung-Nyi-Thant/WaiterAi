@@ -47,6 +47,7 @@ For a real deployment run `npm run db:seed` with `NODE_ENV=production`: it loads
 | `OLLAMA_URL`, `OLLAMA_MODEL` | the local model (there is no cloud option) | `http://localhost:11434`, `gemma4:12b` |
 | `AI_WARMUP` | `0` = do not read the restaurants' prompts into the model when the server starts (default: on; it takes up to a minute in the background) | on |
 | `OLLAMA_KEEP_ALIVE` | how long the model stays loaded after the last question | `12h` |
+| `OLLAMA_NUM_CTX` | the model's context window in tokens; the menu, FAQs and rules must fit (a 145-dish menu is about 8,600 tokens) | `16384` |
 | `DATA_DIR` | database, session secret and uploaded photos | `./data` |
 | `SESSION_SECRET` | signs session cookies | generated once into `DATA_DIR/secret` |
 | `RATE_LIMIT_LOGIN_MAX`, `RATE_LIMIT_LOGIN_WINDOW_SEC` | failed owner logins allowed per account (email) per window, then HTTP 429. Staff PIN sign-in has its own lock, see the next two rows | 10, 60 s |
