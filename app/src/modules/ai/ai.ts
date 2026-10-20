@@ -78,11 +78,23 @@ export function allergensMentioned(text: string): string[] {
 const STOP = new Set(["curry", "fried", "rice", "fresh", "with", "lime", "thai", "salad", "grilled", "steamed", "sticky", "iced", "cream", "spring", "soup", "stir", "fry"]);
 const isAllergenWord = (w: string) => Object.values(ALLERGEN_WORDS).some((ws) => ws.some((a) => w.includes(a) || a.includes(w)));
 const THAI_PROTEINS = ["เนื้อ", "ไก่", "หมู", "กุ้ง", "ปลา", "ปู", "หมึก", "ไข่"];
+// The names a dish is really called, in each language, with and without a bracketed part and without spaces (Thai and Burmese).
+function fullNames(item: Item): Set<string> {
+  const out = new Set<string>();
+  for (const l of ["en", "th", "my"] as Lang[]) {
+    const whole = norm(item.name[l]).replace(/\s+/g, " ").trim(), bare = whole.replace(/\(.*?\)/g, "").replace(/\s+/g, " ").trim();
+    for (const x of [whole, bare]) if (x) { out.add(x); if (l !== "en") out.add(x.replace(/\s+/g, "")); }
+  }
+  return out;
+}
 function variants(item: Item, all: Item[]): string[] {
   const v = new Set<string>();
   for (const l of ["en", "th", "my"] as Lang[]) {
-    const n = norm(item.name[l]).replace(/\(.*?\)/g, "").trim();
+    // "Hamachi (Yellowtail) Sushi" is typed both with and without the bracket; removing it must not leave a double space
+    const n = norm(item.name[l]).replace(/\(.*?\)/g, "").replace(/\s+/g, " ").trim();
     if (n) v.add(n);
+    const whole = norm(item.name[l]).replace(/\s+/g, " ").trim();
+    if (whole) v.add(whole);
     const compact = n.replace(/\s+/g, "");
     if (l !== "en" && compact.length >= 3) v.add(compact);
   }
@@ -129,16 +141,25 @@ function variants(item: Item, all: Item[]): string[] {
 // right and a number already used by an earlier dish ("papaya salad x4 thai tea x2": the 4 is the salad's) is skipped.
 const QTY_BEFORE = /(\d+)\s*(?:x|×)?\s*$/;
 const QTY_AFTER = /^(?:[\s,]*[x×]\s*(\d+)|\s*(\d+)\s*(?:x|×|จาน|ที่|ชุด|ခွက်|ပွဲ|plates?|portions?|pcs|pieces))/;
-function matchDishes(text: string, items: Item[]): { item: Item; qty: number }[] {
+export function matchDishes(text: string, items: Item[]): { item: Item; qty: number }[] {
   const t = norm(text);
-  const found: { item: Item; len: number; at: number }[] = [];
+  const found: { item: Item; len: number; at: number; exact: boolean }[] = [];
   for (const it of items) {
-    let best = 0, at = -1;
+    let best = 0, at = -1, bestV = "";
     for (const v of variants(it, items)) {
       const i = t.indexOf(v);
-      if (i >= 0 && v.length > best) { best = v.length; at = i; }
+      if (i >= 0 && v.length > best) { best = v.length; at = i; bestV = v; }
     }
-    if (best) found.push({ item: it, len: best, at });
+    if (best) found.push({ item: it, len: best, at, exact: fullNames(it).has(bestV) });
+  }
+  // The diner typed ONE dish: its full name also contains the short nicknames of other dishes ("Squid Sushi" holds "sushi", "Miso Soup"
+  // holds "soup"), which on a big menu would add nine dishes to the picks. A match that lies inside a longer match of another dish is
+  // that dish's own name, not a second dish. Two dishes that match the very same words are both kept (the diner was ambiguous).
+  for (let k = found.length - 1; k >= 0; k--) {
+    const a = found[k];
+    // ... and when two dishes match the very same words, the one whose FULL name that is wins over one that only uses it as a nickname
+    // ("Salmon Sushi" is a dish, and also what "Seared Salmon Sushi" is shortened to)
+    if (found.some((b) => b !== a && b.at <= a.at && b.at + b.len >= a.at + a.len && (b.len > a.len || (b.len === a.len && b.at === a.at && b.exact && !a.exact)))) found.splice(k, 1);
   }
   const used: [number, number][] = [];                                    // character ranges of numbers already read as a quantity
   const free = (a: number, b: number) => !used.some(([x, y]) => a < y && b > x);
@@ -624,7 +645,7 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
       // the diner may still pick a dish that conflicts with their profile (it is their choice), but is told, and the staff are told too
       const conflict = dishes.find((d) => !fitsProfile(d.item, profile));
       return done((lang === "en" ? `Added to your picks: ${names}. Tap "Send to staff" when you're ready.` : lang === "th" ? `เพิ่มลงในรายการที่เลือกแล้ว: ${names}${p} กด "ให้พนักงานดู" เมื่อพร้อมสั่ง` : `${names} ကို ရွေးထားတာတွေထဲ ထည့်လိုက်ပါတယ်${p}။`)
-        + (conflict ? ` ⚠ ${profileConflictReply(lang, p, conflict.item, profile)}` : ""), { type: "add_to_picks", ids: dishes.map((d) => d.item.id), qty });
+        + (conflict ? ` ${lang === "en" ? "Warning:" : lang === "th" ? "คำเตือน:" : "သတိပေးချက် -"} ${profileConflictReply(lang, p, conflict.item, profile)}` : ""), { type: "add_to_picks", ids: dishes.map((d) => d.item.id), qty });
     }
   }
 
