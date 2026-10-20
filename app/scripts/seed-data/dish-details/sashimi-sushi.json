@@ -1,0 +1,435 @@
+{
+ "Salmon Sashimi": {
+  "name_my": "ဆော်လမွန် ဆာရှီမီ",
+  "parts": [
+   "salmon"
+  ],
+  "desc": {
+   "en": "Slices of raw salmon, served on their own.",
+   "th": "แซลม่อนสดหั่นเป็นชิ้นพอดีคำ เสิร์ฟเปล่า ๆ"
+  }
+ },
+ "Giant Sweet Shrimp Sashimi": {
+  "name_my": "ပုစွန်ကြီး ဆာရှီမီ",
+  "parts": [
+   "sweetshrimp"
+  ],
+  "desc": {
+   "en": "Raw large sweet shrimp (amaebi), peeled and served on their own.",
+   "th": "กุ้งหวานตัวใหญ่ดิบ (อามาเอบิ) แกะเปลือก เสิร์ฟเปล่า ๆ"
+  }
+ },
+ "Tuna Sashimi": {
+  "name_my": "တူနာ ဆာရှီမီ",
+  "parts": [
+   "tuna"
+  ],
+  "desc": {
+   "en": "Slices of raw tuna, served on their own.",
+   "th": "ทูน่าสดหั่นเป็นชิ้นพอดีคำ เสิร์ฟเปล่า ๆ"
+  }
+ },
+ "Salmon Belly Sashimi": {
+  "name_my": "ဆော်လမွန်ဗိုက် ဆာရှီမီ",
+  "parts": [
+   "salmon"
+  ],
+  "desc": {
+   "en": "Slices of raw salmon belly, the fattiest and softest cut.",
+   "th": "ท้องปลาแซลม่อนดิบหั่นชิ้น ส่วนที่มันและนุ่มที่สุด"
+  }
+ },
+ "Shrimp Roe": {
+  "name_my": "ပုစွန်ဥ",
+  "parts": [
+   "shrimproe"
+  ],
+  "desc": {
+   "en": "A small serving of shrimp roe (ebiko).",
+   "th": "ไข่กุ้ง (เอบิโกะ) เสิร์ฟเป็นถ้วยเล็ก"
+  }
+ },
+ "Salmon Roe": {
+  "name_my": "ဆော်လမွန်ငါးဥ",
+  "parts": [
+   "salmonroe"
+  ],
+  "desc": {
+   "en": "A serving of salmon roe (ikura), the large orange pearls usually cured in soy sauce.",
+   "th": "ไข่ปลาแซลม่อน (อิคุระ) เม็ดสีส้มใหญ่ ปกติหมักด้วยซีอิ๊ว"
+  }
+ },
+ "Crab Stick": {
+  "name_my": "",
+  "parts": [
+   "crabstick"
+  ],
+  "desc": {
+   "en": "Crab sticks (surimi): cooked fish paste, shaped and flavoured like crab.",
+   "th": "ปูอัด ทำจากเนื้อปลาบด ขึ้นรูปและปรุงรสให้คล้ายเนื้อปู"
+  }
+ },
+ "Hachi Ebi Roll": {
+  "name_my": "Hachi Ebi ရိုးလ်",
+  "parts": [
+   "sushirice",
+   "nori",
+   "shrimp"
+  ],
+  "desc": {
+   "en": "The house shrimp roll: sushi rice and shrimp wrapped in nori. The exact filling is the kitchen's own.",
+   "th": "โรลกุ้งประจำร้าน ข้าวซูชิและกุ้งห่อด้วยสาหร่ายโนริ ไส้อื่น ๆ เป็นสูตรของทางร้าน"
+  }
+ },
+ "Salmon Sushi": {
+  "name_my": "ဆော်လမွန် ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "salmon"
+  ],
+  "desc": {
+   "en": "One piece of nigiri: a slice of raw salmon on a small block of sushi rice.",
+   "th": "ซูชิหนึ่งคำ แซลม่อนดิบวางบนข้าวซูชิก้อนเล็ก"
+  }
+ },
+ "Salmon Belly Sushi": {
+  "name_my": "ဆော်လမွန်ဗိုက် ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "salmon"
+  ],
+  "desc": {
+   "en": "One piece of nigiri with raw salmon belly, the fattiest cut, on sushi rice.",
+   "th": "ซูชิหนึ่งคำ ท้องปลาแซลม่อนดิบ ส่วนที่มันที่สุด วางบนข้าวซูชิ"
+  }
+ },
+ "Seared Salmon Sushi": {
+  "name_my": "ဆော်လမွန်ကင် ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "salmon"
+  ],
+  "desc": {
+   "en": "One piece of nigiri with salmon lightly seared on top, on sushi rice.",
+   "th": "ซูชิหนึ่งคำ แซลม่อนเผาด้านบนเล็กน้อย (เบิร์น) วางบนข้าวซูชิ"
+  }
+ },
+ "Salmon Roe Sushi": {
+  "name_my": "ဆော်လမွန်ငါးဥ ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "nori",
+   "salmonroe"
+  ],
+  "desc": {
+   "en": "A small sushi rice block wrapped in a strip of nori and topped with salmon roe (ikura).",
+   "th": "ข้าวซูชิก้อนเล็กพันสาหร่ายโนริ ราดด้วยไข่ปลาแซลม่อน (อิคุระ)"
+  }
+ },
+ "Tuna Sushi": {
+  "name_my": "တူနာ ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "tuna"
+  ],
+  "desc": {
+   "en": "One piece of nigiri: a slice of raw tuna on sushi rice.",
+   "th": "ซูชิหนึ่งคำ ทูน่าดิบวางบนข้าวซูชิ"
+  }
+ },
+ "Shrimp Roe Sushi": {
+  "name_my": "ပုစွန်ဥ ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "nori",
+   "shrimproe"
+  ],
+  "desc": {
+   "en": "A small sushi rice block wrapped in nori and topped with shrimp roe (ebiko).",
+   "th": "ข้าวซูชิก้อนเล็กพันสาหร่ายโนริ ราดด้วยไข่กุ้ง (เอบิโกะ)"
+  }
+ },
+ "Eel Sushi": {
+  "name_my": "Eel ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "eel",
+   "kabayaki"
+  ],
+  "desc": {
+   "en": "One piece of nigiri with grilled eel brushed with sweet kabayaki sauce.",
+   "th": "ซูชิหนึ่งคำ ปลาไหลย่างทาซอสคาบายากิรสหวาน"
+  }
+ },
+ "Crab Stick Sushi": {
+  "name_my": "Crab Stick ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "crabstick"
+  ],
+  "desc": {
+   "en": "One piece of nigiri with crab stick (surimi) on sushi rice.",
+   "th": "ซูชิหนึ่งคำ ปูอัดวางบนข้าวซูชิ"
+  }
+ },
+ "Salmon Roll Sushi": {
+  "name_my": "ဆော်လမွန် ရိုးလ် ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "nori",
+   "salmon"
+  ],
+  "desc": {
+   "en": "A sushi roll of salmon and sushi rice wrapped in nori. The exact filling is the kitchen's own.",
+   "th": "ซูชิโรลแซลม่อนและข้าวซูชิห่อด้วยสาหร่ายโนริ ไส้อื่น ๆ เป็นสูตรของทางร้าน"
+  }
+ },
+ "Wagyu Sushi": {
+  "name_my": "Wagyu ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "wagyu",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "One piece of nigiri with a slice of wagyu beef on sushi rice. How it is cooked and seasoned is the kitchen's own.",
+   "th": "ซูชิหนึ่งคำ เนื้อวากิวหั่นชิ้นวางบนข้าวซูชิ วิธีปรุงและเครื่องปรุงเป็นของทางร้าน"
+  }
+ },
+ "Giant Sweet Shrimp Sushi": {
+  "name_my": "ပုစွန်ကြီး ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "sweetshrimp"
+  ],
+  "desc": {
+   "en": "One piece of nigiri with a large raw sweet shrimp (amaebi) on sushi rice.",
+   "th": "ซูชิหนึ่งคำ กุ้งหวานตัวใหญ่ดิบ (อามาเอบิ) วางบนข้าวซูชิ"
+  }
+ },
+ "Special Sushi": {
+  "name_my": "Special ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A special sushi from the house. What it is made of is not listed here: please ask the staff.",
+   "th": "ซูชิพิเศษของทางร้าน ยังไม่มีรายการส่วนประกอบในระบบ กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Scallop Sashimi": {
+  "name_my": "Scallop ဆာရှီမီ",
+  "parts": [
+   "scallop"
+  ],
+  "desc": {
+   "en": "Slices of raw scallop, served on their own.",
+   "th": "หอยเชลล์ดิบหั่นชิ้น เสิร์ฟเปล่า ๆ"
+  }
+ },
+ "Scallop Sushi": {
+  "name_my": "Scallop ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "scallop"
+  ],
+  "desc": {
+   "en": "One piece of nigiri with raw scallop on sushi rice.",
+   "th": "ซูชิหนึ่งคำ หอยเชลล์ดิบวางบนข้าวซูชิ"
+  }
+ },
+ "Sea Urchin Roe Sushi": {
+  "name_my": "Sea Urchin ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "nori",
+   "urchin"
+  ],
+  "desc": {
+   "en": "A small sushi rice block wrapped in nori and topped with sea urchin (uni), a creamy, sweet-briny delicacy.",
+   "th": "ข้าวซูชิก้อนเล็กพันสาหร่ายโนริ วางหอยเม่น (อุนิ) เนื้อครีมมี่ รสหวานเค็มทะเล"
+  }
+ },
+ "Saba (Mackerel) Sashimi": {
+  "name_my": "Saba ဆာရှီမီ",
+  "parts": [
+   "saba"
+  ],
+  "desc": {
+   "en": "Slices of mackerel (saba), served on their own.",
+   "th": "ปลาซาบะหั่นชิ้น เสิร์ฟเปล่า ๆ"
+  }
+ },
+ "Saba (Mackerel) Sushi": {
+  "name_my": "Saba ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "saba"
+  ],
+  "desc": {
+   "en": "One piece of nigiri with mackerel (saba) on sushi rice.",
+   "th": "ซูชิหนึ่งคำ ปลาซาบะวางบนข้าวซูชิ"
+  }
+ },
+ "Minced Tuna Sushi": {
+  "name_my": "တူနာကြိတ် ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "nori",
+   "tuna"
+  ],
+  "desc": {
+   "en": "Minced raw tuna on a small block of sushi rice, held with a strip of nori.",
+   "th": "ทูน่าดิบสับวางบนข้าวซูชิก้อนเล็ก พันด้วยแถบสาหร่ายโนริ"
+  }
+ },
+ "Squid Sashimi": {
+  "name_my": "Squid ဆာရှီမီ",
+  "parts": [
+   "squid"
+  ],
+  "desc": {
+   "en": "Thin slices of raw squid, served on their own.",
+   "th": "ปลาหมึกดิบหั่นชิ้นบาง เสิร์ฟเปล่า ๆ"
+  }
+ },
+ "Assorted Sashimi": {
+  "name_my": "ရောစုံ ဆာရှီမီ",
+  "parts": [
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "A platter of mixed sashimi. Which fish are on it changes: please ask the staff.",
+   "th": "ซาชิมิรวมหลายชนิดเป็นจาน ชนิดปลาเปลี่ยนไปตามวัน กรุณาสอบถามพนักงาน"
+  }
+ },
+ "Sweet Egg (Tamago) Sashimi": {
+  "name_my": "ကြက်ဥ တာမာဂို ဆာရှီမီ",
+  "parts": [
+   "tamago"
+  ],
+  "desc": {
+   "en": "Slices of sweet rolled omelette (tamago), made with egg, dashi, soy sauce and sugar.",
+   "th": "ไข่หวานม้วน (ทามาโกะ) หั่นชิ้น ทำจากไข่ น้ำซุปดาชิ ซีอิ๊ว และน้ำตาล"
+  }
+ },
+ "Squid with Shrimp Roe Sushi": {
+  "name_my": "Squid နှင့် ပုစွန်ဥ ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "squid",
+   "shrimproe"
+  ],
+  "desc": {
+   "en": "Raw squid on sushi rice, topped with shrimp roe (ebiko).",
+   "th": "ปลาหมึกดิบวางบนข้าวซูชิ โรยไข่กุ้ง (เอบิโกะ)"
+  }
+ },
+ "Surf Clam Sashimi": {
+  "name_my": "Surf Clam ဆာရှီမီ",
+  "parts": [
+   "clam"
+  ],
+  "desc": {
+   "en": "Slices of raw surf clam (hokkigai), served on their own.",
+   "th": "หอยปีกนก (โฮกิงาย) ดิบหั่นชิ้น เสิร์ฟเปล่า ๆ"
+  }
+ },
+ "Hamachi (Yellowtail) Sushi": {
+  "name_my": "Hamachi ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "hamachi"
+  ],
+  "desc": {
+   "en": "One piece of nigiri with yellowtail (hamachi) on sushi rice.",
+   "th": "ซูชิหนึ่งคำ ปลาฮามาจิวางบนข้าวซูชิ"
+  }
+ },
+ "Hamachi (Yellowtail) Sashimi": {
+  "name_my": "Hamachi ဆာရှီမီ",
+  "parts": [
+   "hamachi"
+  ],
+  "desc": {
+   "en": "Slices of yellowtail (hamachi), served on their own.",
+   "th": "ปลาฮามาจิหั่นชิ้น เสิร์ฟเปล่า ๆ"
+  }
+ },
+ "Foie Gras Sushi": {
+  "name_my": "Foie Gras ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "foie",
+   "unknownpart"
+  ],
+  "desc": {
+   "en": "One piece of nigiri with foie gras (fattened goose or duck liver). How it is cooked and seasoned is the kitchen's own.",
+   "th": "ซูชิหนึ่งคำ ตับห่าน (ฟัวกราส์) วิธีปรุงและเครื่องปรุงเป็นของทางร้าน"
+  }
+ },
+ "Squid Sushi": {
+  "name_my": "Squid ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "squid"
+  ],
+  "desc": {
+   "en": "One piece of nigiri with raw squid on sushi rice.",
+   "th": "ซูชิหนึ่งคำ ปลาหมึกดิบวางบนข้าวซูชิ"
+  }
+ },
+ "Surf Clam Sushi": {
+  "name_my": "Surf Clam ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "clam"
+  ],
+  "desc": {
+   "en": "One piece of nigiri with raw surf clam (hokkigai) on sushi rice.",
+   "th": "ซูชิหนึ่งคำ หอยปีกนก (โฮกิงาย) ดิบวางบนข้าวซูชิ"
+  }
+ },
+ "Soft-Shell Crab Roll": {
+  "name_my": "Soft-Shell Crab ရိုးလ်",
+  "parts": [
+   "sushirice",
+   "nori",
+   "softcrab",
+   "tempurabatter"
+  ],
+  "desc": {
+   "en": "A sushi roll with a deep-fried soft-shell crab, coated in tempura batter. Sauces on the roll are the kitchen's own.",
+   "th": "ซูชิโรลปูนิ่มทอดชุบแป้งเทมปุระ ซอสที่ราดเป็นสูตรของทางร้าน"
+  }
+ },
+ "California Roll": {
+  "name_my": "California ရိုးလ်",
+  "parts": [
+   "sushirice",
+   "nori",
+   "crabstick",
+   "cucumber",
+   "mayo",
+   "sesame",
+   "tobiko"
+  ],
+  "desc": {
+   "en": "The classic inside-out roll: crab stick, cucumber and mayonnaise, rolled in sushi rice with sesame seeds and flying-fish roe. Avocado is common; ask the staff.",
+   "th": "แคลิฟอร์เนียโรลแบบคลาสสิก ปูอัด แตงกวา และมายองเนส ม้วนด้วยข้าวซูชิ โรยงาและไข่ปลาบิน โดยทั่วไปมีอะโวคาโดด้วย สอบถามพนักงานได้"
+  }
+ },
+ "Sweet Egg (Tamago) Sushi": {
+  "name_my": "ကြက်ဥ တာမာဂို ဆူရှီ",
+  "parts": [
+   "sushirice",
+   "nori",
+   "tamago"
+  ],
+  "desc": {
+   "en": "One piece of nigiri with a slice of sweet rolled omelette (tamago) on sushi rice, held with a strip of nori.",
+   "th": "ซูชิหนึ่งคำ ไข่หวานม้วน (ทามาโกะ) หั่นชิ้นวางบนข้าวซูชิ รัดด้วยแถบสาหร่ายโนริ"
+  }
+ }
+}

@@ -3,12 +3,12 @@ import { ALLERGENS } from "@/modules/platform/constants";
 type Lang = "en" | "th" | "my";
 
 // The owner types ingredients as one line ("rice noodles, shrimp, egg"). The diner screen shows them one by one, so the line is cut
-// at commas (also the Thai/Chinese ones), semicolons, line breaks and middle dots; blanks and repeats are dropped. A slash is NOT a separator
-// ("Batter / flour coating" is one ingredient).
+// at commas (also the Thai/Chinese ones), semicolons, line breaks and middle dots, but not inside brackets; blanks and repeats are dropped. A
+// slash is NOT a separator ("Batter / flour coating" is one ingredient).
 export function splitIngredients(text: string): string[] {
   const seen = new Set<string>();
   const out: string[] = [];
-  for (const raw of String(text || "").split(/[,，、;；·•\n]+/)) {
+  for (const raw of cutAt(String(text || ""), /[,，、;；·•\n]/)) {
     const part = raw.trim().replace(/\s+/g, " ").replace(/^[-–—]\s*/, "");
     const key = part.toLowerCase();
     if (!part || seen.has(key)) continue;
@@ -16,6 +16,20 @@ export function splitIngredients(text: string): string[] {
     out.push(part);
   }
   return out;
+}
+
+// Cuts a line at a separator, but not inside brackets: "Sushi rice (vinegar, sugar, salt), Salmon" is two ingredients, not four.
+function cutAt(text: string, separator: RegExp): string[] {
+  const parts: string[] = [];
+  let depth = 0, from = 0;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === "(" || c === "（") depth++;
+    else if ((c === ")" || c === "）") && depth > 0) depth--;
+    else if (depth === 0 && separator.test(c)) { parts.push(text.slice(from, i)); from = i + 1; }
+  }
+  parts.push(text.slice(from));
+  return parts;
 }
 
 // Words that name an allergen inside an ingredient ("crushed peanuts" -> peanut). Only a hint to point at the ingredient behind an allergen
@@ -51,7 +65,7 @@ export function allergensIn(ingredient: string): string[] {
 /** The parts of a translated line, in order. Every separator counts, so an empty part ("shrimp, , lime") stays an empty part (= not translated
  *  yet), and repeats are not removed: the parts stay in step with the English list. */
 export function translationParts(text: string): string[] {
-  return String(text || "").split(/[,，、;；·•\n]/).map((x) => x.trim().replace(/\s+/g, " "));
+  return cutAt(String(text || ""), /[,，、;；·•\n]/).map((x) => x.trim().replace(/\s+/g, " "));
 }
 
 /** The ingredients of a dish in a language: the translated names when they line up with the English ones, else the English ones. */
