@@ -54,7 +54,8 @@ const data = {
 };
 const text = `${JSON.stringify(data, null, 1)}\n`;
 if (process.argv.includes("--check")) {
-  const same = fs.existsSync(out) && fs.readFileSync(out, "utf8") === text;
+  // Windows checks files out with CRLF line endings: compare the content, not the line endings
+  const same = fs.existsSync(out) && fs.readFileSync(out, "utf8").replace(/\r\n/g, "\n") === text;
   console.log(same ? "hachi-kyu.json is up to date" : "hachi-kyu.json is out of date: run scripts/make-hachi-kyu-seed.mts");
   process.exit(same ? 0 : 1);
 }
