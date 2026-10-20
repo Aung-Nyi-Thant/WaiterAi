@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Icon from "@/modules/platform/Icon";
+import { useFresh } from "@/modules/platform/Presence";
 import SwipeCard from "@/modules/staff/SwipeCard";
 import { beep } from "@/modules/staff/beep";
 import { api, usePoll, minutesAgo } from "@/modules/platform/client";
@@ -34,6 +35,8 @@ export default function Waiter() {
     if (seen.current && ids.some((id) => !seen.current!.has(id))) beep();
     seen.current = new Set(ids);
   }, [d]);
+  // a new call, pick or ready order rises in and glows once
+  const fresh = useFresh(d ? [...d.calls.map((c) => `call-${c.id}`), ...d.picks.map((o) => `pick-${o.id}`), ...d.active.filter((o) => o.status === "ready").map((o) => `ready-${o.id}`)] : []);
   const act = async (path: string, body?: any) => { try { await api(path, { body: body ?? {} }); } catch (e: any) { setErr(e.message); } load(); };
   const logout = async () => { await api("/api/auth/logout", { body: {} }); router.push("/staff"); };
   if (!d) return <div className="sa-app" data-theme="night" style={{ padding: 40 }}>{err || "Loading…"}</div>;
@@ -85,7 +88,7 @@ export default function Waiter() {
               const resolve = () => (b ? act(`/api/staff/bills/${encodeURIComponent(c.table)}`) : act(`/api/staff/calls/${c.id}`));
               return (
               <SwipeCard key={`call-${c.id}`} onSwipeRight={resolve} rightLabel={b ? "Mark paid" : "Done"}>
-                <div className={`sa-call${long ? " sa-call--urgent" : ""}`}>
+                <div className={`sa-call${long ? " sa-call--urgent" : ""}${fresh.has(`call-${c.id}`) ? " sa-fresh" : ""}`}>
                   <div className="sa-call__table"><small>Table</small><b>{c.table || "?"}</b></div>
                   <div><p className="sa-call__why">{(KIND[c.kind] || KIND.other).toUpperCase()}{b && <> · ฿{b.total}</>}</p><p className={`sa-call__wait${long ? " sa-call__wait--long" : ""}`}>{mins < 1 ? "Just called" : `Waiting ${mins} min`}</p></div>
                   <button type="button" className="sa-btn sa-btn--ok sa-btn--sm" onClick={resolve}><Icon name="check" />{b ? "Mark paid" : "Done"}</button>
@@ -95,7 +98,7 @@ export default function Waiter() {
         )}
         {tab === "feed" && d.picks.map((o) => (
           <SwipeCard key={`pick-${o.id}`} onSwipeRight={() => act(`/api/staff/orders/${o.id}`, { action: "take" })} onSwipeLeft={() => act(`/api/staff/orders/${o.id}`, { action: "later" })} rightLabel="Take order" leftLabel="Dismiss">
-            <article className="sa-ticket" style={{ borderLeft: `4px solid ${waitColor(o.createdAt)}` }}>
+            <article className={`sa-ticket${fresh.has(`pick-${o.id}`) ? " sa-fresh" : ""}`} style={{ borderLeft: `4px solid ${waitColor(o.createdAt)}` }}>
               <div className="sa-ticket__head"><div className="sa-ticket__table">T{o.table || "?"}</div><div className="sa-ticket__meta">{{ en: "English", th: "Thai", my: "Burmese" }[o.lang as string]} · {minutesAgo(o.createdAt)}<br /><span className="sa-status sa-status--new">Picks</span></div></div>
               <ul className="sa-ticket__lines">{o.items.map((i: any, k: number) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: read-only list of order lines (the same dish can appear twice), never reordered
@@ -111,7 +114,7 @@ export default function Waiter() {
         ))}
         {tab === "feed" && ready.map((o) => (
           <SwipeCard key={`ready-${o.id}`} onSwipeRight={() => act(`/api/staff/orders/${o.id}`, { action: "served" })} rightLabel="Served">
-            <article className="sa-ticket sa-ticket--ready">
+            <article className={`sa-ticket sa-ticket--ready${fresh.has(`ready-${o.id}`) ? " sa-fresh" : ""}`}>
               <div className="sa-ticket__head"><div className="sa-ticket__table">T{o.table || "?"}</div><div className="sa-ticket__meta">#{o.id}<br /><span className="sa-status sa-status--ready">Ready</span></div></div>
               <ul className="sa-ticket__lines">{o.items.map((i: any, k: number) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: read-only list of order lines (the same dish can appear twice), never reordered
@@ -171,7 +174,7 @@ const Empty = ({ text }: { text: string }) => <div className="sa-plate sa-empty"
 export function LineFlag({ flag }: { flag?: string }) {
   if (!flag) return null;
   const text = flag === "unknown" ? "Allergen data missing" : flag.split(",").map((a) => ALLERGEN_LABEL[a] || a).join(", ");
-  return <span className="sa-tag sa-tag--alert" title="Clashes with the diner's allergy profile">⚠ {text}</span>;
+  return <span className="sa-tag sa-tag--alert" title="Clashes with the diner's allergy profile"><Icon name="alert" size={13} />{text}</span>;
 }
 
 // The design system's allergy banner: caution-sign yellow, the allergen in big type. Never dismissible.

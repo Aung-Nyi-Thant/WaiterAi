@@ -1,4 +1,5 @@
 /* ---- Tokens: generated from the Shop AI Diner design system (tokens.json). Day counter is the default theme. ---- */
+:root { --ic-flag: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 21V4M5 4h11l-2 4 2 4H5'/%3E%3C/svg%3E"); }
 :root, [data-theme="day"] {
   --surface-page: #fbf3e4;
   --surface-card: #fffaf2;
@@ -131,7 +132,7 @@
   transform: translateY(0); transition: transform .08s ease, box-shadow .08s ease;
   cursor: pointer; text-decoration: none; white-space: nowrap; margin-bottom: var(--press-depth);
 }
-.sa-btn:hover { filter: brightness(1.05); }
+@media (hover: hover) and (pointer: fine) { .sa-btn:hover { filter: brightness(1.05); } }
 .sa-btn:active, .sa-btn[aria-pressed="true"] {
   transform: translateY(var(--press-depth));
   box-shadow: inset 0 0 0 3px var(--face), inset 0 0 0 4.5px var(--inlay), 0 0 0 var(--edge), 0 2px 4px rgba(40,20,5,.16);
@@ -307,7 +308,8 @@
 .sa-ticket__meta { font: 400 13px/18px var(--font-ticket); color: var(--ink-muted); text-align: right; }
 .sa-timer { font: 700 22px/28px var(--font-ticket); color: var(--ink); }
 .sa-timer--late { color: var(--cherry-text); }
-.sa-timer--late::before { content: "⚑ "; }
+.sa-timer--late::before, .sa-call__wait--long::before { content: ""; display: inline-block; width: .9em; height: .9em; margin-right: .35em; vertical-align: -.1em; background: currentColor;
+  -webkit-mask: var(--ic-flag) center / contain no-repeat; mask: var(--ic-flag) center / contain no-repeat; }
 .sa-ticket__lines { list-style: none; margin: var(--space-4) 0; padding: var(--space-3) 0; border-top: 2px dashed var(--line-strong); border-bottom: 2px dashed var(--line-strong);
   font: 700 18px/28px var(--font-ticket); }
 .sa-ticket__lines li { display: flex; gap: var(--space-3); }
@@ -332,7 +334,6 @@
 .sa-call__why { font: 700 18px/24px var(--font-ticket); margin: 0; }
 .sa-call__wait { margin: 2px 0 0; font: 400 14px/20px var(--font-ticket); color: var(--ink-muted); }
 .sa-call__wait--long { color: var(--cherry-text); font-weight: 700; }
-.sa-call__wait--long::before { content: "⚑ "; }
 
 /* ---------- Table grid (floor map) ---------- */
 .sa-floor { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); }
@@ -363,7 +364,7 @@
 .sa-side { width: 248px; background: var(--ink); color: var(--surface-card); padding: var(--space-4) var(--space-3); display: flex; flex-direction: column; gap: 2px; border-right: 6px solid var(--chrome); }
 .sa-side__brand { font: 400 22px/28px var(--font-display); color: var(--mustard); padding: var(--space-2) var(--space-3) var(--space-4); }
 .sa-side a { display: flex; align-items: center; gap: var(--space-3); min-height: var(--tap-min); padding: 0 var(--space-3); border-radius: var(--radius-md); color: inherit; text-decoration: none; font-weight: 500; }
-.sa-side a:hover { background: rgba(255,255,255,.08); }
+@media (hover: hover) and (pointer: fine) { .sa-side a:hover { background: rgba(255,255,255,.08); } }
 .sa-side a[aria-current="page"] { background: var(--cherry); color: var(--on-cherry); font-weight: 700; box-shadow: 0 3px 0 var(--cherry-deep); }
 .sa-side svg { width: 20px; height: 20px; }
 .sa-meter { display: flex; flex-direction: column; gap: var(--space-2); }
@@ -504,7 +505,7 @@ label.lbl, span.lbl { display: block; font: 700 13px/16px var(--font-sans); colo
 .sa-side__foot { margin-top: auto; padding: var(--space-3); border-radius: var(--radius-md); background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); font-size: 14px; line-height: 20px; }
 .sa-side__foot .sa-meter__bar { height: 10px; background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.2); box-shadow: none; }
 .sa-side a.sa-btn { color: var(--txt); border-radius: var(--radius-pill); justify-content: center; font-weight: 700; padding: 0 var(--space-4); }
-.sa-side a.sa-btn:hover { background: var(--face); filter: brightness(1.05); }
+@media (hover: hover) and (pointer: fine) { .sa-side a.sa-btn:hover { background: var(--face); filter: brightness(1.05); } }
 .sa-side__muted { color: var(--line); opacity: .85; font-size: 13px; }
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-6) var(--space-8) var(--space-12); }
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; min-height: 52px; }
@@ -631,7 +632,7 @@ html:lang(th) .sa-btn, html:lang(my) .sa-btn { white-space: normal; text-align: 
 .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
 .keypad .sa-btn { font: 400 24px var(--font-display); padding: 0; }
 .home-card { padding: var(--space-6); text-decoration: none; color: var(--ink); display: block; }
-.home-card:hover { box-shadow: var(--lift-2); }
+@media (hover: hover) and (pointer: fine) { .home-card:hover { box-shadow: var(--lift-2); } }
 
 @media (max-width: 900px) {
   .shell { flex-direction: column; }
@@ -657,4 +658,57 @@ html:lang(th) .sa-btn, html:lang(my) .sa-btn { white-space: normal; text-align: 
   .sa-side, .topbar, .no-print { display: none !important; }
   .aurora-l, .sa-app { background: #fff !important; } .main { padding: 0; }
   .qr-card { break-inside: avoid; box-shadow: none !important; }
+}
+
+
+/* ---------- Touch: the small fixes that make a web page feel installed ---------- */
+html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
+button, a, [role="button"], .sa-tab, .sa-chip { touch-action: manipulation; }
+.sa-btn, .sa-tab, .sa-chip, .sa-bell, .sa-qty button { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.sheet-back > .sa-sheet, .sheet-back > .sa-picks { overscroll-behavior: contain; }
+.sa-tag--alert svg { flex: none; }
+
+/* ---------- Motion ----------
+   Each animation answers one question the user has. Under 300 ms, transform and opacity only, one easing family. Leaving is faster
+   than arriving. The movement is dropped for prefers-reduced-motion; the fades stay. */
+:root { --ease-out: cubic-bezier(0.23, 1, 0.32, 1); --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1); }
+
+/* Did it respond? Tabs and chips settle into their selected look instead of snapping. */
+.sa-tab, .sa-chip { transition: background-color .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s var(--ease-out); }
+
+/* Where did that come from? Sheets slide up in 320 ms and slide away in 170 ms (Presence keeps them mounted for the exit). */
+.sheet-back { animation: sa-fade-in .2s var(--ease-out); }
+.sheet-back > .sa-sheet, .sheet-back > .sa-picks { animation: sa-sheet-in .32s var(--ease-drawer); }
+.sa-leaving > .sheet-back { animation: sa-fade-out .17s var(--ease-out) forwards; }
+.sa-leaving > .sheet-back > .sa-sheet, .sa-leaving > .sheet-back > .sa-picks { animation: sa-sheet-out .17s var(--ease-drawer) forwards; }
+
+/* Did my filter change the list? Dish cards arrive 30 ms apart (the delay is set per card, first eight). */
+.sa-in { animation: sa-rise .26s var(--ease-out) backwards; }
+/* Did it land in my picks? The count bounces; quantity numbers tick. */
+.sa-bump { display: inline-block; animation: sa-bump .36s var(--ease-out); }
+.sa-tick { display: inline-block; animation: sa-tick .22s var(--ease-out); }
+/* Feedback for a message. */
+.toast { animation: sa-pop .22s var(--ease-out); display: flex; align-items: center; gap: 8px; }
+.toast--warn { background: var(--allergy); color: var(--on-allergy); border: 2px solid var(--on-allergy); }
+/* Something new arrived for the staff (an order, a call): it rises in and glows once. */
+.sa-fresh { animation: sa-rise .32s var(--ease-out), sa-glow 1.4s var(--ease-out); }
+/* Where am I? A page slides in when the route changes (owner and staff templates). */
+.sa-page { animation: sa-page-in .22s var(--ease-out); }
+
+@keyframes sa-fade-in { from { opacity: 0; } }
+@keyframes sa-fade-out { to { opacity: 0; } }
+@keyframes sa-sheet-in { from { transform: translateY(100%); } }
+@keyframes sa-sheet-out { to { transform: translateY(100%); } }
+@keyframes sa-rise { from { opacity: 0; transform: translateY(8px); } }
+@keyframes sa-page-in { from { opacity: 0; transform: translateX(12px); } }
+@keyframes sa-pop { from { opacity: 0; transform: translateX(-50%) translateY(8px) scale(.97); } }
+@keyframes sa-bump { 40% { transform: scale(1.3); } }
+@keyframes sa-tick { from { opacity: .3; transform: translateY(-6px) scale(.9); } }
+@keyframes sa-glow { from { box-shadow: 0 0 0 3px var(--mustard), var(--lift-1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-back > .sa-sheet, .sheet-back > .sa-picks, .sa-leaving > .sheet-back > .sa-sheet, .sa-leaving > .sheet-back > .sa-picks { animation: none; }
+  .sa-in, .sa-fresh, .sa-page, .sa-bump, .sa-tick { animation: sa-fade-in .15s ease; }
+  .toast { animation: sa-fade-in .15s ease; }
+  .sa-tab, .sa-chip { transition-property: background-color, color, border-color; }
 }
