@@ -6,11 +6,12 @@ import Presence from "@/modules/platform/Presence";
 import { api, useEscape } from "@/modules/platform/client";
 import { tr, priceLabel, chatLineHeight } from "@/modules/diner/i18n";
 import { clash, filterMenu } from "@/modules/diner/filters";
+import { allergensIn, ingredientList, splitIngredients } from "@/modules/platform/ingredients";
 import type { Item, Category, Lang } from "@/modules/platform/menu";
 import { ALLERGENS, allergenName, cleanProfile } from "@/modules/platform/constants";
 
 type Menu = { restaurant: { name: string; city: string; currency: string; hours: any; persona: { name: string; gender: string; greeting: string } }; categories: Category[]; items: Item[]; specials: { id: number; title: string; text: string }[] };
-type Msg = { id: string; role: "user" | "assistant"; text: string; dishes?: Item[]; topic?: string; messageId?: number; rated?: number; answered?: boolean };
+type Msg = { id: string; role: "user" | "assistant"; text: string; lead?: string; ingredients?: string[]; dishes?: Item[]; topic?: string; messageId?: number; rated?: number; answered?: boolean };
 type Pick = { id: number; qty: number };
 type BillLine = { name: string; qty: number; price: number };
 type Bill = { table: string; lines: BillLine[]; total: number; pending: BillLine[]; asked: boolean };
@@ -192,20 +193,21 @@ export default function Diner({ slug }: { slug: string }) {
   if (!menu) return <div className="sa-app"><div className="diner" style={{ paddingTop: 80, textAlign: "center" }}><div className="dots"><span /><span /><span /></div></div></div>;
 
   const hasFilters = activeFilterCount > 0;
+  const shownBill: Bill = bill ?? { table, lines: [], total: 0, pending: [], asked: false };
   return (
     <div className="sa-app">
       <div className="diner">
-        <div className="sa-checker" />
         <header className="sa-sign">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-            <div style={{ minWidth: 0 }}>
+          <div className="sa-sign__row">
+            <span className="sa-logo" aria-hidden="true">ShopAI</span>
+            <div className="sa-sign__id">
               <h1 className="sa-sign__name">{menu.restaurant.name}</h1>
               <p className="sa-sign__meta">{[menu.restaurant.city, table ? `${t("table")} ${table}` : ""].filter(Boolean).join(" · ")}</p>
             </div>
-            {/* biome-ignore lint/a11y/useSemanticElements: a <fieldset> would bring its default browser styling into the design */}
-            <div className="sa-lang" role="group" aria-label="Language">
-              {(["th", "my", "en"] as Lang[]).map((l) => <button type="button" key={l} onClick={() => chooseLang(l)} aria-pressed={lang === l}>{l.toUpperCase()}</button>)}
-            </div>
+          </div>
+          {/* biome-ignore lint/a11y/useSemanticElements: a <fieldset> would bring its default browser styling into the design */}
+          <div className="sa-lang" role="group" aria-label="Language">
+            {(["th", "my", "en"] as Lang[]).map((l) => <button type="button" key={l} onClick={() => chooseLang(l)} aria-pressed={lang === l}>{l.toUpperCase()}</button>)}
           </div>
         </header>
 
@@ -241,11 +243,9 @@ export default function Diner({ slug }: { slug: string }) {
             <Icon name="search" />
             <input className="sa-input" aria-label={t("search")} value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("search")} />
           </div>
-          <div style={{ marginTop: 12 }}>
-            <button type="button" className="sa-chip" aria-haspopup="dialog" aria-pressed={profile.length > 0} onClick={() => setProfileOpen(true)}>
-              <Icon name="alert" size={16} />{profile.length ? `${t("myAllergies")}: ${profile.map((a) => allergenName(a, lang)).join(", ")}` : t("setAllergies")}
-            </button>
-          </div>
+          {profile.length > 0 && (
+            <p className="sa-label" style={{ margin: "12px 0 0", display: "flex", alignItems: "center", gap: 6 }}><Icon name="alert" size={16} />{t("myAllergies")}: {profile.map((a) => allergenName(a, lang)).join(", ")}</p>
+          )}
         </div>
 
         {/* Category access stays reachable while scrolling a long menu; the less-used dietary filters
@@ -267,11 +267,11 @@ export default function Diner({ slug }: { slug: string }) {
           )}
         </div>
 
-        <div className="diner-pad" style={{ display: "flex", flexDirection: "column", gap: 16, paddingTop: 16 }}>
+        <div className="diner-pad diner-list" style={{ paddingTop: 16 }}>
           {menu.specials.length > 0 && (
-            <div className="sa-plate" style={{ padding: "12px 16px", borderTop: "6px solid var(--mustard)" }}>
-              {lang === "en" ? <div className="sa-flourish">{t("specials")}</div> : <div className="sa-label">{t("specials")}</div>}
-              <div className="sa-display" style={{ fontSize: 20, lineHeight: "26px" }}>{menu.specials[0].title}</div>
+            <div className="sa-plate diner-special" style={{ padding: "12px 16px", background: "var(--mustard-soft)" }}>
+              <div className="sa-flourish">{t("specials")}</div>
+              <div className="sa-display" style={{ fontSize: 18, lineHeight: "24px" }}>{menu.specials[0].title}</div>
               {menu.specials[0].text && <div className="muted" style={{ fontSize: 14 }}>{menu.specials[0].text}</div>}
             </div>
           )}
@@ -282,18 +282,6 @@ export default function Diner({ slug }: { slug: string }) {
 
       <div className="diner-dock">
         <div className="diner-dock__inner">
-          <div className="diner-dock__row">
-            {bill && (bill.lines.length > 0 || bill.pending.length > 0) && (
-              <button type="button" className="sa-btn diner-bill-btn" onClick={() => { loadBill(); setBillOpen(true); }} aria-haspopup="dialog">
-                <span className="sa-label" style={{ color: "inherit" }}>{t("tableBill")}</span>
-                <span className="sa-display" style={{ fontSize: 20 }}>{priceLabel(lang, bill.total)}</span>
-              </button>
-            )}
-            <button type="button" className={`sa-bell${ringing ? " is-ringing" : ""}`} onClick={callStaff}>
-              <span className="sa-bell__knob"><BellSvg /></span>
-              <span className="sa-bell__label">{t("callStaff")}</span>
-            </button>
-          </div>
           {total > 0 && (
             <div className="picks-bar">
               <button type="button" className="sa-plain picks-bar__open" onClick={() => setPicksOpen(true)} aria-haspopup="dialog">
@@ -303,6 +291,16 @@ export default function Diner({ slug }: { slug: string }) {
               <button type="button" className="sa-btn sa-btn--staff sa-btn--sm" onClick={sendPicks}><Icon name="send" />{t("showToWaiter")}</button>
             </div>
           )}
+          {/* The navigation pill. The menu and the AI are views of this page; allergies and the bill open sheets; the bell calls the staff. */}
+          <nav className="diner-nav" aria-label={t("navMenu")}>
+            <button type="button" className={chatOpen ? "" : "on"} onClick={() => { setChatOpen(false); window.scrollTo({ top: 0, behavior: "smooth" }); }}><span><Icon name="menu" size={22} /></span><span className="nav-label">{t("navMenu")}</span></button>
+            <button type="button" aria-haspopup="dialog" aria-label={profile.length ? `${t("myAllergies")}: ${profile.map((a) => allergenName(a, lang)).join(", ")}` : t("setAllergies")} onClick={() => setProfileOpen(true)}>
+              <span><Icon name="alert" size={22} />{profile.length > 0 && <span className="nav-badge">{profile.length}</span>}</span><span className="nav-label">{t("navAllergy")}</span>
+            </button>
+            <button type="button" className={`nav-ai${chatOpen ? " on" : ""}`} aria-pressed={chatOpen} onClick={() => setChatOpen((v) => !v)}><span><Icon name="sparkles" size={26} /></span><span className="nav-label">{t("navAi")}</span></button>
+            <button type="button" aria-haspopup="dialog" aria-label={bill && bill.lines.length > 0 ? `${t("tableBill")} ${priceLabel(lang, bill.total)}` : t("tableBill")} onClick={() => { loadBill(); setBillOpen(true); }}><span><Icon name="receipt" size={22} /></span><span className="nav-label">{bill && bill.lines.length > 0 ? priceLabel(lang, bill.total) : t("tableBill")}</span></button>
+            <button type="button" className={ringing ? "is-ringing" : ""} onClick={callStaff}><span><Icon name="bell" size={22} /></span><span className="nav-label">{t("callStaff")}</span></button>
+          </nav>
         </div>
       </div>
 
@@ -363,10 +361,11 @@ export default function Diner({ slug }: { slug: string }) {
           </section>
         </div>
       )}</Presence>
-      <Presence>{billOpen && bill && (
+      <Presence>{billOpen && (
         // biome-ignore lint/a11y/noStaticElementInteractions: clicking outside is a mouse shortcut; keyboard users close this with Escape (useEscape)
         <div className="sheet-back" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) setBillOpen(false); }}>
           <section className="sa-picks" role="dialog" aria-label={t("tableBill")}>
+            {/* the table's bill, or an empty one while nothing has been sent from this phone */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 12 }}>
               <h3 className="sa-display" style={{ margin: 0, fontSize: 24 }}>{t("tableBill")}</h3>
               <div className="row" style={{ gap: 12 }}>
@@ -374,21 +373,21 @@ export default function Diner({ slug }: { slug: string }) {
                 <button type="button" className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" onClick={() => setBillOpen(false)} aria-label={t("close")}><Icon name="close" size={18} /></button>
               </div>
             </div>
-            {bill.lines.length === 0 ? <div className="muted" style={{ marginBottom: 12 }}>{t("billEmpty")}</div> : (
+            {shownBill.lines.length === 0 ? <div className="muted" style={{ marginBottom: 12 }}>{t("billEmpty")}</div> : (
               <div className="sa-picks__slip">
-                {bill.lines.map((l) => <div key={`${l.name}|${l.price}`} className="sa-picks__row"><span>{l.qty}× {l.name}</span><span>{priceLabel(lang, l.qty * l.price)}</span></div>)}
-                <div className="sa-picks__row bill-total"><span>{t("billTotal")}</span><span>{priceLabel(lang, bill.total)}</span></div>
+                {shownBill.lines.map((l) => <div key={`${l.name}|${l.price}`} className="sa-picks__row"><span>{l.qty}× {l.name}</span><span>{priceLabel(lang, l.qty * l.price)}</span></div>)}
+                <div className="sa-picks__row bill-total"><span>{t("billTotal")}</span><span>{priceLabel(lang, shownBill.total)}</span></div>
               </div>
             )}
-            {bill.pending.length > 0 && (
+            {shownBill.pending.length > 0 && (
               <div style={{ marginBottom: 12 }}>
                 <p className="sa-sheet__label" style={{ marginTop: 0 }}>{t("billPending")}</p>
-                <div className="sa-ticket-font muted" style={{ fontSize: 14 }}>{bill.pending.map((l) => `${l.qty}× ${l.name}`).join(", ")}</div>
+                <div className="sa-ticket-font muted" style={{ fontSize: 14 }}>{shownBill.pending.map((l) => `${l.qty}× ${l.name}`).join(", ")}</div>
               </div>
             )}
-            {bill.lines.length > 0 && (bill.asked
+            {shownBill.lines.length > 0 && (shownBill.asked
               ? <button type="button" className="sa-btn sa-btn--block" disabled><Icon name="check" />{t("billRequested")}</button>
-              : <button type="button" className="sa-btn sa-btn--staff sa-btn--block" onClick={() => { setBillOpen(false); askForBill(); }}><BellSvg />{t("askBill")}</button>)}
+              : <button type="button" className="sa-btn sa-btn--staff sa-btn--block" onClick={() => { setBillOpen(false); askForBill(); }}><Icon name="bell" />{t("askBill")}</button>)}
           </section>
         </div>
       )}</Presence>
@@ -438,13 +437,6 @@ export default function Diner({ slug }: { slug: string }) {
   );
 }
 
-// The Call staff bell from the design system: a chrome knob whose "ding" marks show while it rings.
-const BellSvg = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M12 5V8M10 5h4" /><path d="M4.5 17a7.5 7.5 0 0 1 15 0" /><path d="M3 17h18v2.5H3z" /><path className="sa-bell__ding" d="M20.5 5.5l1.5-1.5M21.5 9h2M3.5 5.5L2 4M2.5 9h-2" />
-  </svg>
-);
-
 const DIET: Record<string, string> = { vegan: "sa-tag--veg", vegetarian: "sa-tag--veg", spicy: "sa-tag--spicy" };
 
 // The allergens a dish lists. The ones in the diner's profile come first and are marked, so they are never hidden behind "+2".
@@ -462,9 +454,37 @@ function Plate({ item }: { item: Item }) {
   return <DishPhoto src={item.photo_url} />;
 }
 
+// The ingredients one by one, as a list of small pills, instead of one long line. An ingredient whose name points at an allergen of the diner's
+// profile is red with a warning sign; one that points at another allergen the dish lists is marked quietly. Never colour alone: the marked pills
+// carry an icon, and a note under the list says what the marks mean. Used in the dish sheet and in the AI's answer to "what's in it?".
+function IngredientPills({ list, en, listed, profile, t, label }: { list: string[]; en?: string[]; listed: string[] | null; profile: string[]; t: (k: string) => string; label?: boolean }) {
+  if (!list.length) return null;
+  // the allergen hint reads the name in the shown language and in English (the English line is what the owner keeps complete)
+  const marks = list.map((name, i) => { const hits = [...new Set([...allergensIn(name), ...(en && en.length === list.length ? allergensIn(en[i]) : [])])]; return { name, mine: hits.some((a) => profile.includes(a)), other: hits.some((a) => (listed || []).includes(a)) }; });
+  const anyMine = marks.some((m) => m.mine), anyOther = marks.some((m) => !m.mine && m.other);
+  return (
+    <>
+      {label && <p className="sa-sheet__label">{t("ingredients")}<span className="sa-ing-count">{list.length}</span></p>}
+      <ul className="sa-ing" aria-label={t("ingredients")}>
+        {marks.map((m) => (
+          <li key={m.name} className={`sa-ing__item${m.mine ? " sa-ing__item--mine" : m.other ? " sa-ing__item--allergen" : ""}`}>
+            {m.mine ? <Icon name="alert" size={14} /> : m.other ? <span className="sa-ing__dot" aria-hidden="true" /> : null}{m.name}
+          </li>
+        ))}
+      </ul>
+      {(anyMine || anyOther) && (
+        <p className="sa-ing__note">
+          {anyMine && <span><Icon name="alert" size={14} />{t("ingYours")}</span>}
+          {anyOther && <span><span className="sa-ing__dot" aria-hidden="true" />{t("ingAllergen")}</span>}
+        </p>
+      )}
+    </>
+  );
+}
+
 function DishCard({ item, lang, profile, onOpen, onAdd, t, n = 0 }: { item: Item; lang: Lang; profile: string[]; onOpen: () => void; onAdd: () => void; t: (k: string) => string; n?: number }) {
   const nm = item.name[lang] || item.name.en;
-  const other = (["th", "my", "en"] as Lang[]).filter((l) => l !== lang).map((l) => item.name[l]).filter((n) => n && n !== nm);
+  const other = [...new Set((["th", "my", "en"] as Lang[]).filter((l) => l !== lang).map((l) => item.name[l]).filter((n) => n && n !== nm))];   // a dish with no Burmese name has its English one there: show it once
   return (
     <article className={`sa-plate sa-dish sa-in${item.available ? "" : " sa-dish--soldout"}${clash(item, profile) ? " sa-dish--conflict" : ""}`} style={{ animationDelay: `${Math.min(n, 7) * 30}ms` }}>
       <Plate item={item} />
@@ -480,7 +500,7 @@ function DishCard({ item, lang, profile, onOpen, onAdd, t, n = 0 }: { item: Item
         <div className="sa-dish__foot">
           <span className="sa-price">{priceLabel(lang, item.price)}</span>
           {item.available
-            ? <button type="button" className="sa-btn sa-btn--special sa-btn--sm" onClick={onAdd} aria-label={`${t("add")} ${nm}`} data-add-btn={item.id}><Icon name="plus" />{t("add")}</button>
+            ? <button type="button" className="sa-btn sa-btn--special sa-add" onClick={onAdd} aria-label={`${t("add")} ${nm}`} data-add-btn={item.id}><Icon name="plus" /></button>
             : <button type="button" className="sa-btn sa-btn--sm" disabled>{t("soldOut")}</button>}
         </div>
       </div>
@@ -492,38 +512,41 @@ function Detail({ item, lang, profile, t, onClose, onAdd, onAsk }: { item: Item;
   useEscape(onClose);
   const [qty, setQty] = useState(1);
   const nm = item.name[lang] || item.name.en;
-  const other = (["th", "my", "en"] as Lang[]).filter((l) => l !== lang).map((l) => item.name[l]).filter((n) => n && n !== nm);
+  const other = [...new Set((["th", "my", "en"] as Lang[]).filter((l) => l !== lang).map((l) => item.name[l]).filter((n) => n && n !== nm))];   // a dish with no Burmese name has its English one there: show it once
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: clicking outside is a mouse shortcut; keyboard users close this with Escape (useEscape)
     <div className="sheet-back" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <section className="sa-sheet has-hero" role="dialog" aria-label={nm}>
+      <section className="sa-sheet" role="dialog" aria-label={nm}>
         <div className="sa-sheet__grab" />
         <button type="button" className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm sheet-close" onClick={onClose} aria-label={t("close")}><Icon name="close" size={18} /></button>
         <div className="sa-sheet__hero"><Plate item={item} /></div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}><h3>{nm}</h3><span className="sa-price">{priceLabel(lang, item.price)}</span></div>
-        {other.length > 0 && <p className="sa-dish__alt">{other.join(" · ")}</p>}
-        {item.desc[lang] && <p style={{ margin: "8px 0 0" }}>{item.desc[lang]}</p>}
-        <p className="sa-sheet__label">{t("allergens")}</p>
-        <div className="sa-dish__tags">{item.allergens && item.allergens.length === 0 ? <span className="sa-tag">{t("allergenNone")}</span> : <AllergenTags item={item} t={t} profile={profile} max={20} />}</div>
-        {item.ingredients && <><p className="sa-sheet__label">{t("ingredients")}</p><p className="muted" style={{ margin: 0 }}>{item.ingredients}</p></>}
-        {item.available && (
-          <div className="detail-qty" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, margin: "16px 0 8px" }}>
-            <span className="sa-qty" style={{ scale: "1.1" }}>
-              <button type="button" aria-label="Decrease quantity" disabled={qty <= 1} onClick={() => setQty((q) => Math.max(1, q - 1))}>−</button>
-              <span key={qty} className="sa-tick" style={{ minWidth: 28, textAlign: "center", fontWeight: 700 }}>{qty}</span>
-              <button type="button" aria-label="Increase quantity" disabled={qty >= 20} onClick={() => setQty((q) => Math.min(20, q + 1))}>+</button>
-            </span>
-          </div>
-        )}
-        <div className="sa-sheet__actions">
-          <button type="button" className="sa-btn sa-btn--ai" onClick={onAsk}><Icon name="sparkles" />{t("askWaiter")}</button>
-          {item.available ? (
-            <button type="button" className="sa-btn sa-btn--special" onClick={() => onAdd(qty)}>
-              <Icon name="plus" />{t("add")}{qty > 1 ? ` · ${priceLabel(lang, item.price * qty)}` : ""}
-            </button>
-          ) : (
-            <button type="button" className="sa-btn" disabled>{t("soldOut")}</button>
+        <div className="sa-sheet__body">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}><h3>{nm}</h3><span className="sa-price">{priceLabel(lang, item.price)}</span></div>
+          {other.length > 0 && <p className="sa-dish__alt">{other.join(" · ")}</p>}
+          {item.desc[lang] && <p style={{ margin: "8px 0 0" }}>{item.desc[lang]}</p>}
+          <p className="sa-sheet__label">{t("allergens")}</p>
+          <div className="sa-dish__tags">{item.allergens && item.allergens.length === 0 ? <span className="sa-tag">{t("allergenNone")}</span> : <AllergenTags item={item} t={t} profile={profile} max={20} />}</div>
+          <IngredientPills list={ingredientList(item, lang)} en={splitIngredients(item.ingredients)} listed={item.allergens} profile={profile} t={t} label />
+          {item.available && (
+            <div className="detail-qty" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, margin: "16px 0 0" }}>
+              <span className="sa-qty">
+                <button type="button" aria-label="Decrease quantity" disabled={qty <= 1} onClick={() => setQty((q) => Math.max(1, q - 1))}>−</button>
+                <span key={qty} className="sa-tick">{qty}</span>
+                <button type="button" aria-label="Increase quantity" disabled={qty >= 20} onClick={() => setQty((q) => Math.min(20, q + 1))}>+</button>
+              </span>
+              <span className="sa-price" style={{ fontSize: 20 }}>{priceLabel(lang, item.price * qty)}</span>
+            </div>
           )}
+          <div className="sa-sheet__actions">
+            <button type="button" className="sa-btn sa-btn--ai" onClick={onAsk}><Icon name="sparkles" />{t("askWaiter")}</button>
+            {item.available ? (
+              <button type="button" className="sa-btn sa-btn--special" onClick={() => onAdd(qty)}>
+                <Icon name="plus" />{t("add")}{qty > 1 ? ` · ${priceLabel(lang, item.price * qty)}` : ""}
+              </button>
+            ) : (
+              <button type="button" className="sa-btn" disabled>{t("soldOut")}</button>
+            )}
+          </div>
         </div>
       </section>
     </div>
@@ -584,7 +607,7 @@ function Chat({ slug, table, lang, sessionId, msgs, setMsgs, profile, addMsg, me
     try {
       const r = await api<any>(`/api/public/${slug}/chat`, { body: { message, sessionId, table, lang, profile } });
       const answered = r.answered !== false;
-      setMsgs((m) => [...m, { id: uid(), role: "assistant", text: r.reply, dishes: r.dishes, topic: r.action?.type === "show_dishes" ? "dishes" : undefined, messageId: r.messageId, answered }]);
+      setMsgs((m) => [...m, { id: uid(), role: "assistant", text: r.reply, lead: r.lead, ingredients: r.ingredients, dishes: r.dishes, topic: r.action?.type === "show_dishes" ? "dishes" : undefined, messageId: r.messageId, answered }]);
       setMissCount((n) => { const next = answered ? 0 : n + 1; setEscalate(next >= ESCALATE_AFTER_MISSES); return next; });
       const a = r.action || {};
       if (a.type === "add_to_picks") aiAdd(a.ids || [], a.qty);
@@ -622,7 +645,8 @@ function Chat({ slug, table, lang, sessionId, msgs, setMsgs, profile, addMsg, me
         ) : (
           <div key={m.id} className="sa-msg sa-msg--ai" style={{ lineHeight: chatLineHeight(lang) }}>
             <div className="sa-msg__who"><Icon name="sparkles" size={14} />{persona.name || t("theWaiter")}</div>
-            {m.text}
+            {m.ingredients?.length ? m.lead : m.text}
+            {m.ingredients?.length ? (() => { const dish = m.dishes?.[0] && (byId.get(m.dishes[0].id) || m.dishes[0]); return <IngredientPills list={m.ingredients} en={dish ? splitIngredients(dish.ingredients) : undefined} listed={dish ? dish.allergens : null} profile={profile} t={t} />; })() : null}
             {m.dishes && m.dishes.length > 0 && m.dishes.map((d) => { const cur = byId.get(d.id) || d; const name = cur.name[lang] || cur.name.en; return (
               <div key={d.id} className="sa-mini">
                 <DishPhoto src={cur.photo_url} />

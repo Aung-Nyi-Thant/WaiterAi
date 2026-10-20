@@ -18,7 +18,7 @@ export default function StaffLogin() {
   return (
     <div className="sa-app center-screen" data-theme="night">
       <form onSubmit={go} className="sa-plate auth-card" style={{ maxWidth: 380 }}>
-        <div><h1 style={{ fontSize: 32 }}>Staff sign in</h1><p className="muted" style={{ margin: "6px 0 0" }}>Enter your PIN. Floor staff and chefs land on their own screen.</p></div>
+        <div><h1 style={{ fontSize: 26 }}>Staff sign in</h1><p className="muted" style={{ margin: "6px 0 0" }}>Enter your PIN. Floor staff and chefs land on their own screen.</p></div>
         <label className="sa-field"><span>Restaurant</span><input className="sa-input" value={slug} onChange={(e) => setSlug(e.target.value)} autoCapitalize="none" /></label>
         <div className="pin-display" aria-live="polite">{"•".repeat(pin.length) || <span className="muted" style={{ fontSize: 14, letterSpacing: 0 }}>PIN</span>}</div>
         <div className="keypad">

@@ -35,7 +35,8 @@ export default function Chef() {
     seen.current = new Set(ids);
   }, [d]);
   const fresh = useFresh(d ? (["new", "cooking", "ready"] as const).flatMap((k) => d.tickets[k].map((o) => `${k}-${o.id}`)) : []);
-  const act = async (id: number, action: string) => { try { await api(`/api/staff/orders/${id}`, { body: { action } }); } catch (e: any) { setErr(e.message); } load(); };
+  // A refused action refreshes the board first and shows its message after it (the refresh clears the old error).
+  const act = async (id: number, action: string) => { let msg = ""; try { await api(`/api/staff/orders/${id}`, { body: { action } }); } catch (e: any) { msg = e.message; } await load(); if (msg) setErr(msg); };
   const toggle = async (id: number, available: boolean) => { await api(`/api/staff/items/${id}`, { body: { available } }); load(); };
   const logout = async () => { await api("/api/auth/logout", { body: {} }); router.push("/staff"); };
   if (!d) return <div className="sa-app" data-theme="night" style={{ padding: 40 }}>{err || "Loading…"}</div>;
@@ -43,7 +44,7 @@ export default function Chef() {
   return (
     <div className="sa-app kitchen" data-theme="night">
       <div className="sa-plate kitchen-bar">
-        <div className="row" style={{ gap: 14, alignItems: "baseline" }}><h1 style={{ fontSize: 32 }}>Kitchen</h1><span className="staff-head__meta">Chef · {d.me.name}</span></div>
+        <div className="row" style={{ gap: 14, alignItems: "baseline" }}><h1 style={{ fontSize: 26 }}>Kitchen</h1><span className="staff-head__meta">Chef · {d.me.name}</span></div>
         <div className="row" style={{ gap: 20 }}>
           <div className="staff-live" role="status">
             <span className={`sa-status ${err ? "sa-status--offline" : "sa-status--live"}`}>{err ? (lastUpdated ? "Reconnecting" : "Offline") : "Live"}</span>

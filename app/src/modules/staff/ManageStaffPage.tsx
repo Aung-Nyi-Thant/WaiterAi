@@ -23,7 +23,7 @@ export default function StaffPage() {
   }
   return (
     <>
-      <div><h1 style={{ fontSize: 40 }}>Staff</h1><p className="soft-l" style={{ margin: "6px 0 0" }}>Waiters and chefs sign in at <b>/staff</b> with a PIN. Restaurant code: <b>{restaurant.slug}</b></p></div>
+      <div><h1 style={{ fontSize: 28 }}>Staff</h1><p className="soft-l" style={{ margin: "6px 0 0" }}>Waiters and chefs sign in at <b>/staff</b> with a PIN. Restaurant code: <b>{restaurant.slug}</b></p></div>
       <div className="grid2" style={{ alignItems: "start" }}>
         <form onSubmit={add} className="sa-plate r-xl" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 12 }}>
           <h2 style={{ fontSize: 22 }}>Add a team member</h2>
