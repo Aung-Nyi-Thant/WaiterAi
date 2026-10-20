@@ -421,6 +421,39 @@ function parseRec(t: string): Rec {
   if (has(t, POPULAR)) rec.popular = true;
   return rec;
 }
+// A bare request for a recommendation, with nothing to go on: "what do you recommend?", "suggest something", "แนะนำหน่อย", "ဘာစားသင့်လဲ". Every
+// word of it is a filler or the request itself; "what would you recommend on a hot day?" is not bare, it says something the model can use.
+const BARE_WORDS = new Set(["what", "whats", "what's", "which", "do", "you", "would", "should", "i", "we", "can", "could", "please", "recommend", "recommended", "recommendation",
+  "recommendations", "suggest", "suggestion", "suggestions", "for", "me", "us", "something", "anything", "any", "good", "your", "the", "a", "some", "to", "eat", "order", "try", "have",
+  "get", "is", "dish", "dishes", "food", "here", "today", "tonight", "now", "hi", "hello", "hey", "so", "any", "got", "there"]);
+function bareRecommendation(t: string): boolean {
+  const s = t.trim();
+  if (/[က-႟]/.test(s)) return /အကြံပြု|ဘာစားသင့်|ဘာကောင်း/.test(s) && s.replace(/\s/g, "").length <= 30;
+  if (/[฀-๿]/.test(s)) return /แนะนำ|อะไรอร่อย|อะไรดี/.test(s) && s.replace(/แนะนำ|อะไรอร่อย|อะไรดี|เมนู|อะไร|หน่อย|ครับ|ค่ะ|คะ|นะ|ไหม|มั้ย|ด้วย|ที|ให้|ช่วย|มี|ร้านนี้|ของร้าน|\s|[?？!]/g, "") === "";
+  const words = s.replace(/[^a-z' ]/g, " ").split(/\s+/).filter(Boolean);
+  const asks = words.some((w) => /^(?:recommend|recommended|recommendations?|suggest|suggestions?)$/.test(w))
+    || (words.includes("good") && words.some((w) => /^what(?:'s|s)?$/.test(w)))
+    || (words.includes("should") && words.some((w) => /^(?:eat|order|try|get|have)$/.test(w)));              // "what should I order?"
+  return words.length > 0 && asks && words.every((w) => BARE_WORDS.has(w));
+}
+// What to answer a bare request when there is no order history to rank by: one dish from each of the largest categories (a dish with a photo first), only
+// available dishes that fit the diner's allergy profile, no word of "best" or "popular" (the data cannot say that).
+function spreadOfMenu(items: Item[], profile: string[], limit = 4): Item[] {
+  const live = items.filter((i) => i.available && fitsProfile(i, profile));
+  const byCat = new Map<number | null, Item[]>();
+  for (const i of live) { const k = i.category_id; if (!byCat.has(k)) byCat.set(k, []); byCat.get(k)!.push(i); }
+  return [...byCat.values()]
+    .sort((a, b) => b.length - a.length)
+    .slice(0, limit)
+    .map((list) => list.find((i) => i.photo_url) ?? list[0]);
+}
+const spreadReply = (l: Lang, p: string, list: Item[], profile: string[]) => {
+  const names = join(l, list.map((i) => `${nm(i, l)} (${money(l, i.price)})`));
+  const note = profile.length ? ` ${profileNote(l, p, profile)}` : "";
+  return (l === "en" ? `I can't say which dishes are the most popular, because there is no order history to go by. Here are a few from different parts of the menu: ${names}. Tell me what you like (spicy or mild, a budget, a type of dish, vegetarian) and I will narrow it down.`
+    : l === "th" ? `ยังไม่มีข้อมูลการสั่งที่บอกได้ว่าเมนูไหนขายดี${p} ขอยกตัวอย่างจากหลายหมวดของเมนู: ${names}${p} บอกได้เลยว่าชอบแบบไหน (เผ็ดหรือไม่เผ็ด งบเท่าไร ประเภทอาหาร มังสวิรัติ) แล้วจะช่วยเลือกให้${p}`
+    : `ဘယ်ဟင်းလျာက လူကြိုက်အများဆုံးလဲဆိုတာ ပြောနိုင်တဲ့ မှာယူမှုမှတ်တမ်း မရှိသေးပါဘူး${p}။ မီနူးအမျိုးမျိုးထဲက ${names} တို့ကို ဥပမာပြပါတယ်${p}။ စပ်/မစပ်၊ ဘတ်ဈေး၊ အမျိုးအစား၊ သက်သတ်လွတ် ဘာကြိုက်လဲ ပြောပေးရင် ရွေးပေးပါ့မယ်${p}။`) + note;
+};
 const SPICE = { en: ["not spicy", "mild", "spicy", "very spicy"], th: ["ไม่เผ็ด", "เผ็ดน้อย", "เผ็ด", "เผ็ดมาก"], my: ["မစပ်ပါ", "စပ်နည်းနည်း", "စပ်", "အရမ်းစပ်"] };
 function recReply(l: Lang, p: string, rec: Rec, vegan: boolean | null, catName: string, list: Item[], popular: Record<number, number>, profile: string[]): string {
   const crit = [
@@ -640,6 +673,16 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
     const rec = parseRec(t), wantsVeg = has(t, W.veg), vegan = wantsVeg ? has(t, W.vegan) : null;
     const catIds = rec.category ? (ctx.categories ?? []).filter((c) => c.name.en.toLowerCase().includes(rec.category!)).map((c) => c.id) : [];
     if (rec.category && !catIds.length) delete rec.category;       // the owner has no such category: ignore the word
+    // A bare "what do you recommend?" is answered from the data too: ranked by what was really ordered when there is an order history, else a spread of the menu.
+    // "Ordered here" counts only the dishes that are on the menu now: orders for dishes that were removed say nothing about these.
+    const hasOrders = live.some((i) => (ctx.popular?.[i.id] || 0) > 0);
+    const bare = !rec.mild && !rec.hot && !rec.category && !rec.popular && rec.budget === undefined && !wantsVeg && !meatFree && bareRecommendation(t);
+    if (bare && hasOrders) rec.popular = true;
+    // "what's popular?" with no order history cannot be answered with a ranking: a list called "popular" that is really the first dishes of the menu would be a lie.
+    else if ((bare || (rec.popular && !rec.mild && !rec.hot && !rec.category && rec.budget === undefined && !wantsVeg)) && !hasOrders) {
+      const list = spreadOfMenu(items, profile);
+      if (list.length) return done(spreadReply(lang, p, list, profile), { type: "show_dishes", ids: list.map((i) => i.id) }, { topic: "recommend" });
+    }
     const detail = rec.mild || rec.hot || rec.category || rec.popular || (rec.budget !== undefined && !wantsVeg);
     if (detail && !(wantsVeg && !rec.mild && !rec.hot && !rec.category && !rec.popular)) {
       const popular = ctx.popular ?? {};

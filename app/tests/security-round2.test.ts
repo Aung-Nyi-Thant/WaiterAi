@@ -68,7 +68,7 @@ describe("AI-15 / ST-5 the chat 'preview' flag is only honoured for the signed-i
     const calls = mockModel("model answer");
     run("UPDATE restaurants SET chat_cap = ? WHERE slug = ?", used(), slug);       // the limit is already reached
     signOut();
-    const r = await say("What would you recommend?", { preview: true });
+    const r = await say("What would you recommend on a hot day?", { preview: true });
     expect(r.data.reply).toMatch(/reached its chat limit/);
     expect(calls.length).toBe(0);                                                   // no model call, so no free use of the shop's computer
     run("UPDATE restaurants SET chat_cap = 300 WHERE slug = ?", slug);
@@ -82,7 +82,7 @@ describe("AI-15 / ST-5 the chat 'preview' flag is only honoured for the signed-i
     const other = await call(register, { method: "POST", body: { email: "previewrival@example.com", password: "previewrival-1", restaurantName: "Preview Rival" } });
     expect(other.status).toBe(200);                                                 // register signs the new owner in
     run("UPDATE restaurants SET chat_cap = ? WHERE slug = ?", used(), slug);
-    const r = await say("What would you recommend?", { preview: true });
+    const r = await say("What would you recommend on a hot day?", { preview: true });
     expect(r.data.reply).toMatch(/reached its chat limit/);
   });
 
@@ -91,7 +91,7 @@ describe("AI-15 / ST-5 the chat 'preview' flag is only honoured for the signed-i
     run("UPDATE restaurants SET chat_cap = ? WHERE slug = ?", used(), slug);
     await ownerLogin();
     const before = used();
-    expect((await say("What would you recommend?", { preview: true })).data.reply).toBe("model answer");
+    expect((await say("What would you recommend on a hot day?", { preview: true })).data.reply).toBe("model answer");
     expect(used()).toBe(before);
   });
 });

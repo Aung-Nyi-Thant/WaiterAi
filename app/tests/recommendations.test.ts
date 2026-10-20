@@ -111,10 +111,11 @@ describe("popular: ranked by what diners really ordered here", () => {
     expect(shown(r)).toEqual(["Papaya Salad", "Shrimp Pad Thai", "Thai Iced Tea"]);
     expect(r.reply).toContain("Papaya Salad (฿70, very spicy, ordered 9×)");
   });
-  it("with no orders yet it still answers (menu order) and does not invent order counts", async () => {
+  it("with no orders yet it still answers with a spread of the menu, says it cannot name the most popular, and does not invent order counts", async () => {
     const r = await rec("surprise me");
-    expect(shown(r)).toHaveLength(3);
+    expect(shown(r).length).toBeGreaterThanOrEqual(3);
     expect(r.reply).not.toContain("ordered");
+    expect(r.reply).toMatch(/can't say which dishes are the most popular/);
   });
   it("popularDishes counts the last 30 days of real orders and ignores cancelled ones", async () => {
     const send = (items: object[], table: string) => call(placeOrder, { method: "POST", params: { slug }, body: { table, items } });

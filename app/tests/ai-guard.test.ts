@@ -143,7 +143,7 @@ describe("AI-3 / AI-10 / NFR-S3 a wrong or unsafe model reply is replaced", () =
     const c = await aiCtx();
     expect((await answer("อะไรอร่อยบ้างวันนี้ ช่วยเลือกให้หน่อย", "th", c)).reply).toBe("ขออภัย ไม่มีข้อมูลนี้ครับ กรุณาสอบถามพนักงานครับ");
     mockModel("This is safe to eat");
-    expect((await answer("ဘာကောင်းလဲ ရွေးပေးပါ", "my", c)).reply).toContain("ဝန်ထမ်းကို မေးမြန်းပေးပါ");
+    expect((await answer("ဒီနေ့ ရာသီဥတု ပူတယ်၊ ဘာကောင်းလဲ ရွေးပေးပါ", "my", c)).reply).toContain("ဝန်ထမ်းကို မေးမြန်းပေးပါ");
   });
 });
 
