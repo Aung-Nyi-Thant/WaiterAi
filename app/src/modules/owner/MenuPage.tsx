@@ -1,13 +1,14 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import Icon from "@/modules/platform/Icon";
+import { splitIngredients, translationParts } from "@/modules/platform/ingredients";
 import DishPhoto, { Thumb } from "@/modules/platform/DishPhoto";
 import { useOwner } from "@/modules/owner/OwnerShell";
 import { api, useEscape } from "@/modules/platform/client";
 import { ALLERGENS, TAGS, ALLERGEN_LABEL, TAG_LABEL } from "@/modules/platform/constants";
 import type { Item, Category } from "@/modules/platform/menu";
 
-const blank = (category_id: number | null): any => ({ category_id, name: { en: "", th: "", my: "" }, desc: { en: "", th: "", my: "" }, price: 0, ingredients: "", allergens: null, tags: [], spice: 0, available: true, photo_url: "" });
+const blank = (category_id: number | null): any => ({ category_id, name: { en: "", th: "", my: "" }, desc: { en: "", th: "", my: "" }, price: 0, ingredients: "", ingredients_tr: { th: "", my: "" }, allergens: null, tags: [], spice: 0, available: true, photo_url: "" });
 
 export default function MenuPage() {
   const { toast } = useOwner();
@@ -31,7 +32,7 @@ export default function MenuPage() {
   const shown = items.filter((i) =>
     (!tab || i.category_id === tab) &&
     (!missingOnly || i.allergens === null) &&
-    (!query || [i.name.en, i.name.th, i.name.my, i.ingredients].some((value) => value.toLowerCase().includes(query))),
+    (!query || [i.name.en, i.name.th, i.name.my, i.ingredients, i.ingredients_tr?.th || "", i.ingredients_tr?.my || ""].some((value) => value.toLowerCase().includes(query))),
   );
   const complete = items.filter((i) => i.allergens !== null).length;
   const toggle = async (i: Item) => { await api(`/api/owner/items/${i.id}`, { method: "PUT", body: { available: !i.available } }); load(); };
@@ -61,7 +62,7 @@ export default function MenuPage() {
   return (
     <>
       <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-end", gap: 20, flexWrap: "wrap" }}>
-        <div><h1 style={{ fontSize: 40 }}>Menu items</h1><p className="soft-l" style={{ margin: "6px 0 0" }}>What diners see, and what the AI waiter is allowed to say.</p></div>
+        <div><h1 style={{ fontSize: 28 }}>Menu items</h1><p className="soft-l" style={{ margin: "6px 0 0" }}>What diners see, and what the AI waiter is allowed to say.</p></div>
         <div className="sa-plate sa-meter" style={{ width: 320, padding: "14px 18px" }}>
           <div className="sa-meter__row"><b>Allergen data complete</b><span>{complete} of {items.length} dishes</span></div>
           {/* biome-ignore lint/a11y/useSemanticElements: <meter> has default browser styling that would change the design */}
@@ -166,7 +167,7 @@ function ItemForm({ item, cats, isDuplicate, onClose, onSaved }: { item: any; ca
     if (Object.keys(errors).length) return;
     setBusy(true);
     try {
-      const body = { category_id: f.category_id, name: f.name, desc: f.desc, price: f.price, ingredients: f.ingredients, allergens: f.allergens, tags: f.tags, spice: f.spice, available: f.available, photo_url: f.photo_url };
+      const body = { category_id: f.category_id, name: f.name, desc: f.desc, price: f.price, ingredients: f.ingredients, ingredients_tr: f.ingredients_tr || { th: "", my: "" }, allergens: f.allergens, tags: f.tags, spice: f.spice, available: f.available, photo_url: f.photo_url };
       if (isNew) await api("/api/owner/items", { body }); else await api(`/api/owner/items/${f.id}`, { method: "PUT", body });
       onSaved();
     } catch (e: any) {
@@ -202,18 +203,18 @@ function ItemForm({ item, cats, isDuplicate, onClose, onSaved }: { item: any; ca
         </div>
         <div>
           <div className="lbl" style={{ marginBottom: 8 }}>Diner card preview</div>
-          <article className="sa-plate sa-dish" style={{ maxWidth: 420, padding: 10 }}>
-            <DishPhoto src={f.photo_url} style={{ width: 92, height: 92 }} />
+          <article className="sa-plate sa-dish" style={{ maxWidth: 240 }}>
+            <DishPhoto src={f.photo_url} />
             <div className="sa-dish__body">
-              <h3 className="sa-dish__name" style={{ fontSize: 18 }}><button type="button" disabled style={{ cursor: "default" }}>{previewName}</button></h3>
+              <h3 className="sa-dish__name"><button type="button" disabled style={{ cursor: "default" }}>{previewName}</button></h3>
               {previewAlt.length > 0 && <p className="sa-dish__alt">{previewAlt.join(" · ")}</p>}
               <div className="sa-dish__tags" style={{ minHeight: 18 }}>
                 {(f.tags || []).slice(0, 2).map((tag: string) => <span key={tag} className="sa-tag" style={{ fontSize: 11 }}>{TAG_LABEL[tag] || tag}</span>)}
                 {(f.allergens || []).slice(0, 2).map((allergen: string) => <span key={allergen} className="sa-tag" style={{ fontSize: 11 }}>{ALLERGEN_LABEL[allergen] || allergen}</span>)}
               </div>
               <div className="sa-dish__foot">
-                <span className="sa-price" style={{ fontSize: 18, lineHeight: "24px" }}>฿{Number(f.price) || 0}</span>
-                <button type="button" className="sa-btn sa-btn--special sa-btn--sm" disabled style={{ opacity: 0.8 }}>Add</button>
+                <span className="sa-price">฿{Number(f.price) || 0}</span>
+                <button type="button" className="sa-btn sa-btn--special sa-add" disabled aria-label="Add" style={{ opacity: 0.8 }}><Icon name="plus" /></button>
               </div>
             </div>
           </article>
@@ -228,6 +229,23 @@ function ItemForm({ item, cats, isDuplicate, onClose, onSaved }: { item: any; ca
         </div>
         <div><label className="lbl" htmlFor="ds">Description (English)</label><textarea id="ds" className="in-l" value={f.desc.en} onChange={(e) => set("desc", { ...f.desc, en: e.target.value })} style={{ minHeight: 60 }} /></div>
         <div><label className="lbl" htmlFor="ing">Ingredients</label><input id="ing" className="in-l" value={f.ingredients} onChange={(e) => set("ingredients", e.target.value)} placeholder="rice noodles, shrimp, egg…" /></div>
+        <div className="grid2" style={{ gap: 12 }}>
+          {(["th", "my"] as const).map((l) => {
+            const enN = splitIngredients(f.ingredients).length;
+            const parts = translationParts(f.ingredients_tr?.[l] || "");
+            while (parts.length > enN && !parts[parts.length - 1]) parts.pop();
+            const filled = parts.some(Boolean), ok = parts.length === enN;
+            const label = l === "th" ? "Ingredients in Thai" : "Ingredients in Burmese";
+            return (
+              <div key={l}>
+                <label className="lbl" htmlFor={`ing-${l}`}>{label} (optional)</label>
+                <input id={`ing-${l}`} className="in-l" value={f.ingredients_tr?.[l] || ""} onChange={(e) => set("ingredients_tr", { ...(f.ingredients_tr || { th: "", my: "" }), [l]: e.target.value })} aria-describedby={`ing-${l}-hint`} placeholder={l === "th" ? "ข้าว, กุ้ง, ไข่…" : "ထမင်း, ပုစွန်, ဥ…"} />
+                <div id={`ing-${l}-hint`} className="soft-l" style={{ fontSize: 12, marginTop: 4, color: filled && !ok ? "var(--cherry-text)" : undefined }}>
+                  {!filled ? "Same order as the English line. Leave empty to show the English names." : ok ? `${parts.length} of ${enN} names: shown to ${l === "th" ? "Thai" : "Burmese"} diners. An empty part keeps its English name.` : `${parts.length} parts, but the English line has ${enN}: this line is not used until the numbers match.`}
+                </div>
+              </div>);
+          })}
+        </div>
         <div>
           <div className="row" style={{ justifyContent: "space-between", marginBottom: 6 }}>
             <span className="lbl" style={{ margin: 0 }}>Allergens</span>

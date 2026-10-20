@@ -133,7 +133,8 @@ describe("DM-7: dish detail, quantity and adding", () => {
     fireEvent.click(screen.getByRole("button", { name: "Shrimp Pad Thai" }));
     const dlg = screen.getByRole("dialog", { name: "Shrimp Pad Thai" });
     expect(within(dlg).getByText(T("ingredients"))).toBeTruthy();
-    for (const a of ["peanut", "shellfish", "egg", "fish"]) expect(within(dlg).getByText(a)).toBeTruthy();   // all four, no "+1"
+    const tags = dlg.querySelector(".sa-dish__tags") as HTMLElement;
+    for (const a of ["peanut", "shellfish", "egg", "fish"]) expect(within(tags).getByText(a)).toBeTruthy();   // all four, no "+1" (the ingredient pills below have their own list)
     fireEvent.click(within(dlg).getByRole("button", { name: "Increase quantity" }));
     fireEvent.click(within(dlg).getByRole("button", { name: "Increase quantity" }));
     expect(within(dlg).getByText("3")).toBeTruthy();

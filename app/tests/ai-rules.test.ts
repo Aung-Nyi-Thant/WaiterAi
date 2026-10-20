@@ -178,6 +178,44 @@ describe("AI-5 / ST-1 price, hours, ingredients, pork and sold-out come from the
     const r = await ask("What are the ingredients of the Papaya Salad?");
     expect(r.reply).toBe("Papaya Salad is made with: green papaya, chili, lime, peanuts, dried shrimp.");
   });
+  it("gives an ingredient answer the list one by one and a short lead, so the phone can show it as pills; the reply stays the whole text", async () => {
+    const r = await ask("What are the ingredients of the Papaya Salad?");
+    expect(r.ingredients).toEqual(["green papaya", "chili", "lime", "peanuts", "dried shrimp"]);
+    expect(r.lead).toBe("Papaya Salad is made with:");
+    expect(r.reply.startsWith(r.lead as string)).toBe(true);
+    expect(r.reply).toContain((r.ingredients as string[]).join(", "));
+    expect(r.usedModel).toBe(false);
+  });
+  it("answers an ingredient question in Thai and Burmese with a polite lead, and no particle stuck to the last ingredient", async () => {
+    const th = await ask("ส่วนผสมของส้มตำมีอะไรบ้าง");
+    expect(th.ingredients).toHaveLength(5);
+    expect(th.lead).toBe("ส่วนผสมของส้มตำมีดังนี้ครับ");
+    expect(th.reply).toBe("ส่วนผสมของส้มตำ: มะละกอดิบ, พริก, มะนาว, ถั่วลิสง, กุ้งแห้ง ครับ");          // the demo menu has Thai ingredient names; a space before the particle
+    expect(th.ingredients).toEqual(["มะละกอดิบ", "พริก", "มะนาว", "ถั่วลิสง", "กุ้งแห้ง"]);
+    const my = await ask("သင်္ဘောသီးသုပ်မှာ ဘာတွေပါလဲ");
+    expect(my.ingredients).toHaveLength(5);
+    expect(my.ingredients).toEqual(["green papaya", "chili", "lime", "peanuts", "dried shrimp"]);   // no Burmese names written: the English ones, never a blank
+    expect(my.lead).toMatch(/ပါဝင်ပစ္စည်းများက အောက်ပါအတိုင်း ဖြစ်ပါတယ်ခင်ဗျာ။$/);
+    expect(my.lead).not.toMatch(/သည်|ရှင်|ကျွန်မ/);                                  // the default voice is the male, spoken one
+  });
+  it("a female waiter uses her particle in the Thai lead", async () => {
+    const r = await ask("ส่วนผสมของส้มตำมีอะไรบ้าง", await female());
+    expect(r.lead).toBe("ส่วนผสมของส้มตำมีดังนี้ค่ะ");
+  });
+  it("a dish with no ingredients written gets the plain answer, with no list", async () => {
+    const c = await aiCtx();
+    const items = c.items.map((i: any) => (i.name.en === "Papaya Salad" ? { ...i, ingredients: "" } : i));
+    const r = await ask("What are the ingredients of the Papaya Salad?", { items });
+    expect(r.ingredients).toBeUndefined();
+    expect(r.lead).toBeUndefined();
+  });
+  it("only an ingredient answer carries a list (hours, prices and allergen answers do not)", async () => {
+    for (const q of ["What time do you close?", "How much is the Papaya Salad?", "I'm allergic to peanuts"]) {
+      const r = await ask(q);
+      expect(r.ingredients, q).toBeUndefined();
+      expect(r.lead, q).toBeUndefined();
+    }
+  });
   it("lists pork dishes from the contains_pork tag", async () => {
     const r = await ask("do you have pork?");
     expect(r.reply).toContain("Grilled Pork Skewers (฿60)");

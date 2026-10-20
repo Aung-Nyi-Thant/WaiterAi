@@ -10,6 +10,28 @@ const slug = "golden-lotus";
 const say = (message: string, o: Record<string, unknown> = {}) => call(chat, { method: "POST", params: { slug }, body: { message, sessionId: "t-" + Math.random().toString(36).slice(2), table: "5", lang: "en", ...o } });
 const count = (table: string) => get(`SELECT COUNT(*) AS n FROM ${table}`)!.n as number;
 
+describe("ingredient answers over the API", () => {
+  it("send the list and the lead next to the reply, and the dish card, for the phone to show as pills", async () => {
+    noModel();
+    const r = await say("What is in the Pad Thai?");
+    expect(r.data.ingredients).toEqual(["rice noodles", "shrimp", "egg", "tamarind", "fish sauce", "crushed peanuts"]);
+    expect(r.data.lead).toBe("Shrimp Pad Thai is made with:");
+    expect(r.data.reply).toBe("Shrimp Pad Thai is made with: rice noodles, shrimp, egg, tamarind, fish sauce, crushed peanuts.");
+    expect(r.data.dishes.map((d: any) => d.name.en)).toEqual(["Shrimp Pad Thai"]);
+  });
+  it("store the whole reply text, not the lead", async () => {
+    noModel();
+    await say("What is in the Pad Thai?", { sessionId: "ingr-store" });
+    expect(get("SELECT text FROM chat_messages WHERE session_id = 'ingr-store' AND role = 'assistant'")!.text).toContain("rice noodles, shrimp");
+  });
+  it("add nothing to other answers", async () => {
+    noModel();
+    const r = await say("What time do you close?");
+    expect("ingredients" in r.data).toBe(false);
+    expect("lead" in r.data).toBe(false);
+  });
+});
+
 describe("chat endpoint basics", () => {
   it("unknown restaurant is 404; an empty message is 400", async () => {
     noModel();

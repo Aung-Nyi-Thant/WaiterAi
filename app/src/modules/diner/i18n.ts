@@ -20,6 +20,8 @@ const en: Dict = {
   myAllergies: "My allergies", setAllergies: "Set my allergies", clearAll: "Clear", done: "Done", mine: "Without my allergens", yourAllergen: "Your allergen",
   profileHelp: "Saved only on this phone. The AI uses it for every answer and the staff see it on your order. It never makes a dish safe: always confirm with the staff.",
   conflictToast: "lists your allergen. The staff will be told.", chipMyAllergies: "What can I eat?",
+  ingYours: "Contains your allergen", ingAllergen: "Linked to an allergen of this dish",
+  navMenu: "Menu", navAi: "AI", navAllergy: "Allergies",
 };
 const th: Dict = {
   kitchen: "ครัว", search: "ค้นหาเมนู", all: "ทั้งหมด", vegetarian: "มังสวิรัติ", noPeanuts: "ไม่มีถั่วลิสง", under100: "ต่ำกว่า ฿100", spicy: "เผ็ด",
@@ -37,6 +39,9 @@ const th: Dict = {
   myAllergies: "อาหารที่ฉันแพ้", setAllergies: "ตั้งค่าอาหารที่แพ้", clearAll: "ล้าง", done: "เสร็จ", mine: "ไม่มีสิ่งที่ฉันแพ้", yourAllergen: "สิ่งที่คุณแพ้",
   profileHelp: "บันทึกไว้ในโทรศัพท์เครื่องนี้เท่านั้น AI ใช้กับทุกคำตอบ และพนักงานจะเห็นในออเดอร์ของคุณ ไม่ได้ทำให้เมนูใดปลอดภัย กรุณายืนยันกับพนักงานทุกครั้ง",
   conflictToast: "มีสิ่งที่คุณแพ้ จะแจ้งพนักงานให้", chipMyAllergies: "กินอะไรได้บ้าง",
+  heroEyebrow: "ผู้ช่วยเมนูด้วย AI", heroPlaceholder: "ถามเรื่องเมนู สารก่อภูมิแพ้ หรือขอคำแนะนำ…", heroChip1: "เมนูไหนเผ็ด?", heroChip2: "มีเมนูวีแกนไหม?", heroChip3: "แนะนำให้หน่อย",
+  ingYours: "มีสิ่งที่คุณแพ้", ingAllergen: "เกี่ยวข้องกับสารก่อภูมิแพ้ของเมนูนี้",
+  navMenu: "เมนู", navAi: "ถาม AI", navAllergy: "แพ้อาหาร",
 };
 const my: Dict = {
   kitchen: "မီးဖိုချောင်", search: "ဟင်းလျာရှာရန်", all: "အားလုံး", vegetarian: "သက်သတ်လွတ်", noPeanuts: "မြေပဲမပါ", under100: "၁၀၀ ဘတ်အောက်", spicy: "စပ်",
@@ -54,6 +59,9 @@ const my: Dict = {
   myAllergies: "ကိုယ့် Allergens", setAllergies: "ကိုယ့် Allergens ရွေးရန်", clearAll: "ဖျက်ရန်", done: "ပြီးပြီ", mine: "ကိုယ့် Allergens မပါတာ", yourAllergen: "ကိုယ့် Allergen",
   profileHelp: "ဒီဖုန်းထဲမှာပဲ သိမ်းထားပါတယ်။ AI က အဖြေတိုင်းမှာ သုံးပြီး ဝန်ထမ်းတွေလည်း အော်ဒါမှာ မြင်ရပါမယ်။ ဟင်းလျာတစ်ခုခုကို လုံခြုံတယ်လို့ မဆိုပါဘူး၊ ဝန်ထမ်းကို အမြဲမေးပါ။",
   conflictToast: "ပါပါတယ်။ ဝန်ထမ်းကို အသိပေးပါမယ်", chipMyAllergies: "ဘာစားလို့ရလဲ?",
+  heroEyebrow: "AI မီနူး အကူ", heroPlaceholder: "ဟင်းလျာ၊ Allergens အကြောင်း မေးပါ၊ ဒါမှမဟုတ် အကြံပြုချက် တောင်းပါ…", heroChip1: "ဘာတွေ စပ်လဲ?", heroChip2: "သက်သတ်လွတ် ရှိလား?", heroChip3: "ဘာစားရင် ကောင်းမလဲ",
+  ingYours: "ကိုယ့် Allergen ပါတယ်", ingAllergen: "ဒီဟင်းလျာရဲ့ Allergen နဲ့ ဆိုင်တယ်",
+  navMenu: "မီနူး", navAi: "AI မေးရန်", navAllergy: "မတည့်တာ",
 };
 export const DICT: Record<Lang, Dict> = { en, th, my };
 export const tr = (lang: Lang, key: string) => DICT[lang][key] ?? en[key] ?? key;

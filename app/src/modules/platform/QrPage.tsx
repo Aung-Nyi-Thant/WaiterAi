@@ -14,7 +14,7 @@ export default function QrPage() {
   const isLocal = /localhost|127\.0\.0\.1/.test(base);
   return (
     <>
-      <div className="no-print"><h1 style={{ fontSize: 40 }}>QR codes</h1><p className="soft-l" style={{ margin: "6px 0 0" }}>One code per table. Print, cut out and put them on the tables.</p></div>
+      <div className="no-print"><h1 style={{ fontSize: 28 }}>QR codes</h1><p className="soft-l" style={{ margin: "6px 0 0" }}>One code per table. Print, cut out and put them on the tables.</p></div>
       <div className="sa-plate r-xl no-print" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
         <div className="grid2" style={{ gap: 12 }}>
           <div><label className="lbl" htmlFor="qb">Address diners will open</label><input id="qb" className="in-l" value={base} onChange={(e) => setBase(e.target.value)} /></div>

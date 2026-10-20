@@ -5,10 +5,10 @@ import { DICT as OWNER, tr as ownerTr } from "@/modules/owner/i18n";
 
 const THAI = /[฀-๿]/, BURMESE = /[က-႟]/;
 
-// Found by this test: the hero card on top of the diner screen (heroEyebrow, heroPlaceholder, three chips) has English text only, so a Thai or
-// Burmese diner sees English there (tr() falls back to English). Tharathon's branch feat/diner-i18n-fixes adds them. Until then they are listed here;
-// when they are translated the "known gap" test below fails and tells you to empty this list, so the gap can never be forgotten or re-opened.
-const KNOWN_UNTRANSLATED = ["heroEyebrow", "heroPlaceholder", "heroChip1", "heroChip2", "heroChip3"];
+// The hero card on top of the diner screen (heroEyebrow, heroPlaceholder, three chips) used to have English text only, so a Thai or Burmese diner saw
+// English there (tr() falls back to English). They are translated now. If a label is ever added to English first, list it here; the "known gap" test
+// below fails when a listed key gets translated and tells you to remove it, so a gap can never be forgotten or re-opened.
+const KNOWN_UNTRANSLATED: string[] = [];
 
 describe("the diner's dictionary", () => {
   const keys = Object.keys(DINER.en);
@@ -37,7 +37,6 @@ describe("the diner's dictionary", () => {
   });
   it("tr() falls back to English for a missing label (that is what the gap above shows), and to the key itself when nothing has it", () => {
     expect(tr("th", "soldOut")).toBe(DINER.th.soldOut);
-    expect(tr("th", "heroChip1")).toBe(DINER.en.heroChip1);
     expect(tr("my", "__no_such_key__")).toBe("__no_such_key__");
   });
 });

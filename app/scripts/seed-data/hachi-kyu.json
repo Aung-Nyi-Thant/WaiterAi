@@ -76,6 +76,10 @@
    },
    "price": 99,
    "ingredients": "Yakisoba noodles, Cola",
+   "ingredients_tr": {
+    "th": "เส้นยากิโซบะ, น้ำอัดลมโคล่า",
+    "my": "ခေါက်ဆွဲ, "
+   },
    "allergens": [
     "gluten"
    ],
@@ -91,6 +95,10 @@
    },
    "price": 99,
    "ingredients": "Japanese rice, Garlic, Cola",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, กระเทียม, น้ำอัดลมโคล่า",
+    "my": "ထမင်း, ကြက်သွန်ဖြူ, "
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -104,6 +112,10 @@
    },
    "price": 159,
    "ingredients": "Japanese rice, Beef, Cola",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, เนื้อวัว, น้ำอัดลมโคล่า",
+    "my": "ထမင်း, အမဲသား, "
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -117,6 +129,10 @@
    },
    "price": 203,
    "ingredients": "Salmon",
+   "ingredients_tr": {
+    "th": "แซลม่อน",
+    "my": "ဆော်လမွန်"
+   },
    "allergens": [
     "fish"
    ],
@@ -132,6 +148,10 @@
    },
    "price": 214,
    "ingredients": "Sweet shrimp",
+   "ingredients_tr": {
+    "th": "กุ้งหวาน",
+    "my": "ပုစွန်"
+   },
    "allergens": [
     "shellfish"
    ],
@@ -147,6 +167,10 @@
    },
    "price": 203,
    "ingredients": "Tuna",
+   "ingredients_tr": {
+    "th": "ทูน่า",
+    "my": "တူနာ"
+   },
    "allergens": [
     "fish"
    ],
@@ -162,6 +186,10 @@
    },
    "price": 235,
    "ingredients": "Salmon",
+   "ingredients_tr": {
+    "th": "แซลม่อน",
+    "my": "ဆော်လမွန်"
+   },
    "allergens": [
     "fish"
    ],
@@ -177,6 +205,10 @@
    },
    "price": 139,
    "ingredients": "Shrimp roe",
+   "ingredients_tr": {
+    "th": "ไข่กุ้ง",
+    "my": ""
+   },
    "allergens": [
     "shellfish"
    ],
@@ -192,6 +224,10 @@
    },
    "price": 235,
    "ingredients": "Salmon roe",
+   "ingredients_tr": {
+    "th": "ไข่ปลาแซลม่อน",
+    "my": ""
+   },
    "allergens": [
     "fish"
    ],
@@ -207,6 +243,10 @@
    },
    "price": 85,
    "ingredients": "Crab stick (surimi)",
+   "ingredients_tr": {
+    "th": "ปูอัด",
+    "my": ""
+   },
    "allergens": [
     "fish"
    ],
@@ -222,6 +262,10 @@
    },
    "price": 212,
    "ingredients": "Japanese rice, Shrimp",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, กุ้ง",
+    "my": "ထမင်း, ပုစွန်"
+   },
    "allergens": [
     "shellfish"
    ],
@@ -237,6 +281,10 @@
    },
    "price": 96,
    "ingredients": "Japanese rice, Salmon",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, แซลม่อน",
+    "my": "ထမင်း, ဆော်လမွန်"
+   },
    "allergens": [
     "fish"
    ],
@@ -252,6 +300,10 @@
    },
    "price": 117,
    "ingredients": "Japanese rice, Salmon",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, แซลม่อน",
+    "my": "ထမင်း, ဆော်လမွန်"
+   },
    "allergens": [
     "fish"
    ],
@@ -267,6 +319,10 @@
    },
    "price": 106,
    "ingredients": "Japanese rice, Salmon",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, แซลม่อน",
+    "my": "ထမင်း, ဆော်လမွန်"
+   },
    "allergens": [
     "fish"
    ],
@@ -282,6 +338,10 @@
    },
    "price": 128,
    "ingredients": "Japanese rice, Salmon roe",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, ไข่ปลาแซลม่อน",
+    "my": "ထမင်း, "
+   },
    "allergens": [
     "fish"
    ],
@@ -297,6 +357,10 @@
    },
    "price": 96,
    "ingredients": "Japanese rice, Tuna",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, ทูน่า",
+    "my": "ထမင်း, တူနာ"
+   },
    "allergens": [
     "fish"
    ],
@@ -312,6 +376,10 @@
    },
    "price": 96,
    "ingredients": "Japanese rice, Shrimp roe",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, ไข่กุ้ง",
+    "my": "ထမင်း, "
+   },
    "allergens": [
     "shellfish"
    ],
@@ -327,6 +395,10 @@
    },
    "price": 117,
    "ingredients": "Japanese rice, Eel",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, ปลาไหล",
+    "my": "ထမင်း, "
+   },
    "allergens": [
     "fish"
    ],
@@ -342,6 +414,10 @@
    },
    "price": 64,
    "ingredients": "Japanese rice, Crab stick (surimi)",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, ปูอัด",
+    "my": "ထမင်း, "
+   },
    "allergens": [
     "fish"
    ],
@@ -357,6 +433,10 @@
    },
    "price": 310,
    "ingredients": "Japanese rice, Salmon",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, แซลม่อน",
+    "my": "ထမင်း, ဆော်လမွန်"
+   },
    "allergens": [
     "fish"
    ],
@@ -372,6 +452,10 @@
    },
    "price": 417,
    "ingredients": "Japanese rice, Wagyu beef",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, เนื้อวากิว",
+    "my": "ထမင်း, အမဲသား"
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -385,6 +469,10 @@
    },
    "price": 117,
    "ingredients": "Japanese rice, Sweet shrimp",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, กุ้งหวาน",
+    "my": "ထမင်း, ပုစွန်"
+   },
    "allergens": [
     "shellfish"
    ],
@@ -400,6 +488,10 @@
    },
    "price": 481,
    "ingredients": "Japanese rice",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น",
+    "my": "ထမင်း"
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -413,6 +505,10 @@
    },
    "price": 278,
    "ingredients": "Scallop",
+   "ingredients_tr": {
+    "th": "หอยเชล",
+    "my": ""
+   },
    "allergens": [
     "molluscs"
    ],
@@ -428,6 +524,10 @@
    },
    "price": 106,
    "ingredients": "Japanese rice, Scallop",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, หอยเชล",
+    "my": "ထမင်း, "
+   },
    "allergens": [
     "molluscs"
    ],
@@ -443,6 +543,10 @@
    },
    "price": 203,
    "ingredients": "Japanese rice, Sea urchin",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, หอยเม่น",
+    "my": "ထမင်း, "
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -456,6 +560,10 @@
    },
    "price": 181,
    "ingredients": "Mackerel (saba)",
+   "ingredients_tr": {
+    "th": "ปลาซาบะ",
+    "my": ""
+   },
    "allergens": [
     "fish"
    ],
@@ -471,6 +579,10 @@
    },
    "price": 106,
    "ingredients": "Japanese rice, Mackerel (saba)",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, ปลาซาบะ",
+    "my": "ထမင်း, "
+   },
    "allergens": [
     "fish"
    ],
@@ -486,6 +598,10 @@
    },
    "price": 139,
    "ingredients": "Japanese rice, Tuna",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, ทูน่า",
+    "my": "ထမင်း, တူနာ"
+   },
    "allergens": [
     "fish"
    ],
@@ -501,6 +617,10 @@
    },
    "price": 246,
    "ingredients": "Squid",
+   "ingredients_tr": {
+    "th": "ปลาหมึก",
+    "my": ""
+   },
    "allergens": [
     "molluscs"
    ],
@@ -516,6 +636,10 @@
    },
    "price": 952,
    "ingredients": "",
+   "ingredients_tr": {
+    "th": "",
+    "my": ""
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -529,6 +653,10 @@
    },
    "price": 96,
    "ingredients": "Egg",
+   "ingredients_tr": {
+    "th": "ไข่",
+    "my": "ဥ"
+   },
    "allergens": [
     "egg"
    ],
@@ -544,6 +672,10 @@
    },
    "price": 149,
    "ingredients": "Japanese rice, Squid, Shrimp roe",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, ปลาหมึก, ไข่กุ้ง",
+    "my": "ထမင်း, , "
+   },
    "allergens": [
     "shellfish",
     "molluscs"
@@ -560,6 +692,10 @@
    },
    "price": 310,
    "ingredients": "Surf clam",
+   "ingredients_tr": {
+    "th": "หอยปีกนก",
+    "my": ""
+   },
    "allergens": [
     "molluscs"
    ],
@@ -575,6 +711,10 @@
    },
    "price": 149,
    "ingredients": "Japanese rice, Yellowtail (hamachi)",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, ฮามาจิ",
+    "my": "ထမင်း, "
+   },
    "allergens": [
     "fish"
    ],
@@ -590,6 +730,10 @@
    },
    "price": 278,
    "ingredients": "Yellowtail (hamachi)",
+   "ingredients_tr": {
+    "th": "ฮามาจิ",
+    "my": ""
+   },
    "allergens": [
     "fish"
    ],
@@ -605,6 +749,10 @@
    },
    "price": 203,
    "ingredients": "Japanese rice, Foie gras",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, ตับห่าน",
+    "my": "ထမင်း, "
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -618,6 +766,10 @@
    },
    "price": 106,
    "ingredients": "Japanese rice, Squid",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, ปลาหมึก",
+    "my": "ထမင်း, "
+   },
    "allergens": [
     "molluscs"
    ],
@@ -633,6 +785,10 @@
    },
    "price": 171,
    "ingredients": "Japanese rice, Surf clam",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, หอยปีกนก",
+    "my": "ထမင်း, "
+   },
    "allergens": [
     "molluscs"
    ],
@@ -648,6 +804,10 @@
    },
    "price": 427,
    "ingredients": "Japanese rice, Soft-shell crab",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, ปูนิ่ม",
+    "my": "ထမင်း, "
+   },
    "allergens": [
     "shellfish"
    ],
@@ -663,6 +823,10 @@
    },
    "price": 310,
    "ingredients": "Japanese rice, Crab stick (surimi)",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, ปูอัด",
+    "my": "ထမင်း, "
+   },
    "allergens": [
     "fish"
    ],
@@ -678,6 +842,10 @@
    },
    "price": 64,
    "ingredients": "Japanese rice, Egg",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, ไข่",
+    "my": "ထမင်း, ဥ"
+   },
    "allergens": [
     "egg"
    ],
@@ -693,6 +861,10 @@
    },
    "price": 96,
    "ingredients": "Potato",
+   "ingredients_tr": {
+    "th": "มันฝรั่ง",
+    "my": "အာလူး"
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -706,6 +878,10 @@
    },
    "price": 160,
    "ingredients": "Shrimp",
+   "ingredients_tr": {
+    "th": "กุ้ง",
+    "my": "ပုစွန်"
+   },
    "allergens": [
     "shellfish"
    ],
@@ -721,6 +897,10 @@
    },
    "price": 160,
    "ingredients": "Shrimp",
+   "ingredients_tr": {
+    "th": "กุ้ง",
+    "my": "ပုစွန်"
+   },
    "allergens": [
     "shellfish"
    ],
@@ -736,6 +916,10 @@
    },
    "price": 74,
    "ingredients": "Seaweed",
+   "ingredients_tr": {
+    "th": "สาหร่าย",
+    "my": "ပင်လယ်ရေညှိ"
+   },
    "allergens": null,
    "tags": [
     "spicy"
@@ -751,6 +935,10 @@
    },
    "price": 74,
    "ingredients": "Cucumber",
+   "ingredients_tr": {
+    "th": "แตงกวา",
+    "my": "သခွားသီး"
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -764,6 +952,10 @@
    },
    "price": 203,
    "ingredients": "Tuna, Wasabi",
+   "ingredients_tr": {
+    "th": "ทูน่า, วาซาบิ",
+    "my": "တူနာ, "
+   },
    "allergens": [
     "fish"
    ],
@@ -779,6 +971,10 @@
    },
    "price": 96,
    "ingredients": "Edamame",
+   "ingredients_tr": {
+    "th": "ถั่วแระญี่ปุ่น",
+    "my": ""
+   },
    "allergens": [
     "soy"
    ],
@@ -794,6 +990,10 @@
    },
    "price": 96,
    "ingredients": "Squid, Batter / flour coating",
+   "ingredients_tr": {
+    "th": "ปลาหมึก, แป้งชุบทอด",
+    "my": ""
+   },
    "allergens": [
     "gluten",
     "molluscs"
@@ -810,6 +1010,10 @@
    },
    "price": 203,
    "ingredients": "Salmon",
+   "ingredients_tr": {
+    "th": "แซลม่อน",
+    "my": "ဆော်လမွန်"
+   },
    "allergens": [
     "fish"
    ],
@@ -827,6 +1031,10 @@
    },
    "price": 203,
    "ingredients": "Salmon",
+   "ingredients_tr": {
+    "th": "แซลม่อน",
+    "my": "ဆော်လမွန်"
+   },
    "allergens": [
     "fish"
    ],
@@ -844,6 +1052,10 @@
    },
    "price": 96,
    "ingredients": "Cheese",
+   "ingredients_tr": {
+    "th": "ชีส",
+    "my": "ချိစ်"
+   },
    "allergens": [
     "milk"
    ],
@@ -859,6 +1071,10 @@
    },
    "price": 171,
    "ingredients": "Squid, Wasabi",
+   "ingredients_tr": {
+    "th": "ปลาหมึก, วาซาบิ",
+    "my": ""
+   },
    "allergens": [
     "molluscs"
    ],
@@ -874,6 +1090,10 @@
    },
    "price": 128,
    "ingredients": "Salmon, Vegetables",
+   "ingredients_tr": {
+    "th": "แซลม่อน, ผัก",
+    "my": "ဆော်လမွန်, ဟင်းသီးဟင်းရွက်"
+   },
    "allergens": [
     "fish"
    ],
@@ -889,6 +1109,10 @@
    },
    "price": 96,
    "ingredients": "Dumpling wrapper",
+   "ingredients_tr": {
+    "th": "แป้งเกี๊ยว",
+    "my": ""
+   },
    "allergens": [
     "gluten"
    ],
@@ -904,6 +1128,10 @@
    },
    "price": 96,
    "ingredients": "Chicken skin, Wasabi",
+   "ingredients_tr": {
+    "th": "หนังไก่, วาซาบิ",
+    "my": ""
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -917,6 +1145,10 @@
    },
    "price": 139,
    "ingredients": "Vegetables, Batter / flour coating",
+   "ingredients_tr": {
+    "th": "ผัก, แป้งชุบทอด",
+    "my": "ဟင်းသီးဟင်းရွက်, "
+   },
    "allergens": [
     "gluten"
    ],
@@ -932,6 +1164,10 @@
    },
    "price": 417,
    "ingredients": "Wagyu beef, Sweet sauce",
+   "ingredients_tr": {
+    "th": "เนื้อวากิว, ซอสหวาน",
+    "my": "အမဲသား, "
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -945,6 +1181,10 @@
    },
    "price": 128,
    "ingredients": "Yakisoba noodles",
+   "ingredients_tr": {
+    "th": "เส้นยากิโซบะ",
+    "my": "ခေါက်ဆွဲ"
+   },
    "allergens": [
     "gluten"
    ],
@@ -960,6 +1200,10 @@
    },
    "price": 106,
    "ingredients": "Chicken, Batter / flour coating",
+   "ingredients_tr": {
+    "th": "ไก่, แป้งชุบทอด",
+    "my": "ကြက်သား, "
+   },
    "allergens": [
     "gluten"
    ],
@@ -975,6 +1219,10 @@
    },
    "price": 128,
    "ingredients": "Chicken",
+   "ingredients_tr": {
+    "th": "ไก่",
+    "my": "ကြက်သား"
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -988,6 +1236,10 @@
    },
    "price": 74,
    "ingredients": "Crab stick (surimi), Vegetables",
+   "ingredients_tr": {
+    "th": "ปูอัด, ผัก",
+    "my": ", ဟင်းသီးဟင်းရွက်"
+   },
    "allergens": [
     "fish"
    ],
@@ -1003,6 +1255,10 @@
    },
    "price": 117,
    "ingredients": "Octopus, Batter / flour coating",
+   "ingredients_tr": {
+    "th": "ปลาหมึกยักษ์ (ทาโกะ), แป้งชุบทอด",
+    "my": ""
+   },
    "allergens": [
     "gluten",
     "molluscs"
@@ -1019,6 +1275,10 @@
    },
    "price": 139,
    "ingredients": "",
+   "ingredients_tr": {
+    "th": "",
+    "my": ""
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1032,6 +1292,10 @@
    },
    "price": 181,
    "ingredients": "Mackerel (saba), Teriyaki sauce",
+   "ingredients_tr": {
+    "th": "ปลาซาบะ, ซอสเทอริยากิ",
+    "my": ""
+   },
    "allergens": [
     "fish",
     "soy"
@@ -1048,6 +1312,10 @@
    },
    "price": 171,
    "ingredients": "Fish",
+   "ingredients_tr": {
+    "th": "ปลา",
+    "my": "ငါး"
+   },
    "allergens": [
     "fish"
    ],
@@ -1063,6 +1331,10 @@
    },
    "price": 128,
    "ingredients": "Chicken, Batter / flour coating",
+   "ingredients_tr": {
+    "th": "ไก่, แป้งชุบทอด",
+    "my": "ကြက်သား, "
+   },
    "allergens": [
     "gluten"
    ],
@@ -1078,6 +1350,10 @@
    },
    "price": 267,
    "ingredients": "Tuna, Sweet sauce",
+   "ingredients_tr": {
+    "th": "ทูน่า, ซอสหวาน",
+    "my": "တူနာ, "
+   },
    "allergens": [
     "fish"
    ],
@@ -1093,6 +1369,10 @@
    },
    "price": 171,
    "ingredients": "Squid, Shrimp roe",
+   "ingredients_tr": {
+    "th": "ปลาหมึก, ไข่กุ้ง",
+    "my": ""
+   },
    "allergens": [
     "shellfish",
     "molluscs"
@@ -1109,6 +1389,10 @@
    },
    "price": 352,
    "ingredients": "Soft-shell crab, Vegetables",
+   "ingredients_tr": {
+    "th": "ปูนิ่ม, ผัก",
+    "my": ", ဟင်းသီးဟင်းရွက်"
+   },
    "allergens": [
     "shellfish"
    ],
@@ -1124,6 +1408,10 @@
    },
    "price": 139,
    "ingredients": "Crab stick (surimi)",
+   "ingredients_tr": {
+    "th": "ปูอัด",
+    "my": ""
+   },
    "allergens": [
     "fish"
    ],
@@ -1141,6 +1429,10 @@
    },
    "price": 128,
    "ingredients": "Tofu, Vegetables",
+   "ingredients_tr": {
+    "th": "เต้าหู้, ผัก",
+    "my": "တိုဖူး, ဟင်းသီးဟင်းရွက်"
+   },
    "allergens": [
     "soy"
    ],
@@ -1156,6 +1448,10 @@
    },
    "price": 64,
    "ingredients": "Enoki mushroom, Bacon",
+   "ingredients_tr": {
+    "th": "เห็ดเข็มทอง, เบคอน",
+    "my": "မှို, "
+   },
    "allergens": null,
    "tags": [
     "contains_pork"
@@ -1171,6 +1467,10 @@
    },
    "price": 235,
    "ingredients": "Salmon, Soy sauce",
+   "ingredients_tr": {
+    "th": "แซลม่อน, ซีอิ๊ว",
+    "my": "ဆော်လမွန်, ပဲငံပြာရည်"
+   },
    "allergens": [
     "fish",
     "soy"
@@ -1187,6 +1487,10 @@
    },
    "price": 235,
    "ingredients": "Salmon",
+   "ingredients_tr": {
+    "th": "แซลม่อน",
+    "my": "ဆော်လမွန်"
+   },
    "allergens": [
     "fish"
    ],
@@ -1202,6 +1506,10 @@
    },
    "price": 96,
    "ingredients": "Chicken, Batter / flour coating, Wasabi",
+   "ingredients_tr": {
+    "th": "ไก่, แป้งชุบทอด, วาซาบิ",
+    "my": "ကြက်သား, , "
+   },
    "allergens": [
     "gluten"
    ],
@@ -1217,6 +1525,10 @@
    },
    "price": 160,
    "ingredients": "Shrimp, Batter / flour coating",
+   "ingredients_tr": {
+    "th": "กุ้ง, แป้งชุบทอด",
+    "my": "ပုစွန်, "
+   },
    "allergens": [
     "gluten",
     "shellfish"
@@ -1233,6 +1545,10 @@
    },
    "price": 171,
    "ingredients": "Pork, Special sauce",
+   "ingredients_tr": {
+    "th": "หมู, ซอสพิเศษ",
+    "my": "ဝက်သား, "
+   },
    "allergens": null,
    "tags": [
     "contains_pork"
@@ -1248,6 +1564,10 @@
    },
    "price": 203,
    "ingredients": "Salmon, Vegetables",
+   "ingredients_tr": {
+    "th": "แซลม่อน, ผัก",
+    "my": "ဆော်လမွန်, ဟင်းသီးဟင်းရွက်"
+   },
    "allergens": [
     "fish"
    ],
@@ -1263,6 +1583,10 @@
    },
    "price": 203,
    "ingredients": "Tuna",
+   "ingredients_tr": {
+    "th": "ทูน่า",
+    "my": "တူနာ"
+   },
    "allergens": [
     "fish"
    ],
@@ -1280,6 +1604,10 @@
    },
    "price": 203,
    "ingredients": "Salmon, Wasabi",
+   "ingredients_tr": {
+    "th": "แซลม่อน, วาซาบิ",
+    "my": "ဆော်လမွန်, "
+   },
    "allergens": [
     "fish"
    ],
@@ -1295,6 +1623,10 @@
    },
    "price": 106,
    "ingredients": "Cheese, Purple sweet potato",
+   "ingredients_tr": {
+    "th": "ชีส, มันม่วง",
+    "my": "ချိစ်, "
+   },
    "allergens": [
     "milk"
    ],
@@ -1310,6 +1642,10 @@
    },
    "price": 128,
    "ingredients": "Stingray fin",
+   "ingredients_tr": {
+    "th": "ครีบปลากระเบน",
+    "my": ""
+   },
    "allergens": [
     "fish"
    ],
@@ -1325,6 +1661,10 @@
    },
    "price": 42,
    "ingredients": "Chicken, Teriyaki sauce",
+   "ingredients_tr": {
+    "th": "ไก่, ซอสเทอริยากิ",
+    "my": "ကြက်သား, "
+   },
    "allergens": [
     "soy"
    ],
@@ -1340,6 +1680,10 @@
    },
    "price": 53,
    "ingredients": "Kimchi",
+   "ingredients_tr": {
+    "th": "กิมจิ",
+    "my": ""
+   },
    "allergens": null,
    "tags": [
     "spicy"
@@ -1355,6 +1699,10 @@
    },
    "price": 32,
    "ingredients": "Chicken skin",
+   "ingredients_tr": {
+    "th": "หนังไก่",
+    "my": ""
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1368,6 +1716,10 @@
    },
    "price": 32,
    "ingredients": "Chicken tail",
+   "ingredients_tr": {
+    "th": "ตูดไก่",
+    "my": ""
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1381,6 +1733,10 @@
    },
    "price": 32,
    "ingredients": "Chicken liver",
+   "ingredients_tr": {
+    "th": "ตับไก่",
+    "my": ""
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1394,6 +1750,10 @@
    },
    "price": 32,
    "ingredients": "Chicken gizzard",
+   "ingredients_tr": {
+    "th": "กึ๋นไก่",
+    "my": ""
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1407,6 +1767,10 @@
    },
    "price": 32,
    "ingredients": "Chicken heart",
+   "ingredients_tr": {
+    "th": "หัวใจไก่",
+    "my": ""
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1420,6 +1784,10 @@
    },
    "price": 42,
    "ingredients": "Salmon",
+   "ingredients_tr": {
+    "th": "แซลม่อน",
+    "my": "ဆော်လမွန်"
+   },
    "allergens": [
     "fish"
    ],
@@ -1435,6 +1803,10 @@
    },
    "price": 42,
    "ingredients": "Chicken, Gochujang",
+   "ingredients_tr": {
+    "th": "ไก่, โกจูจัง",
+    "my": "ကြက်သား, "
+   },
    "allergens": null,
    "tags": [
     "spicy"
@@ -1450,6 +1822,10 @@
    },
    "price": 21,
    "ingredients": "Japanese leek",
+   "ingredients_tr": {
+    "th": "ต้นหอมญี่ปุ่น",
+    "my": ""
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1463,6 +1839,10 @@
    },
    "price": 21,
    "ingredients": "Garlic",
+   "ingredients_tr": {
+    "th": "กระเทียม",
+    "my": "ကြက်သွန်ဖြူ"
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1476,6 +1856,10 @@
    },
    "price": 21,
    "ingredients": "Okra",
+   "ingredients_tr": {
+    "th": "กระเจี๊ยบ",
+    "my": "ဘန်ဒါသီး"
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1489,6 +1873,10 @@
    },
    "price": 21,
    "ingredients": "Pumpkin",
+   "ingredients_tr": {
+    "th": "ฟักทอง",
+    "my": "ဖရုံသီး"
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1502,6 +1890,10 @@
    },
    "price": 21,
    "ingredients": "King oyster mushroom",
+   "ingredients_tr": {
+    "th": "เห็ดออรินจิ",
+    "my": "မှို"
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1515,6 +1907,10 @@
    },
    "price": 32,
    "ingredients": "Shiitake mushroom",
+   "ingredients_tr": {
+    "th": "เห็ดหอม",
+    "my": "မှို"
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1528,6 +1924,10 @@
    },
    "price": 181,
    "ingredients": "Mackerel (saba)",
+   "ingredients_tr": {
+    "th": "ปลาซาบะ",
+    "my": ""
+   },
    "allergens": [
     "fish"
    ],
@@ -1543,6 +1943,10 @@
    },
    "price": 159,
    "ingredients": "Crab",
+   "ingredients_tr": {
+    "th": "ปู",
+    "my": "ဂဏန်း"
+   },
    "allergens": [
     "shellfish"
    ],
@@ -1558,6 +1962,10 @@
    },
    "price": 42,
    "ingredients": "Japanese rice",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น",
+    "my": "ထမင်း"
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1571,6 +1979,10 @@
    },
    "price": 42,
    "ingredients": "Miso",
+   "ingredients_tr": {
+    "th": "มิโซะ",
+    "my": ""
+   },
    "allergens": [
     "soy"
    ],
@@ -1586,6 +1998,10 @@
    },
    "price": 42,
    "ingredients": "",
+   "ingredients_tr": {
+    "th": "",
+    "my": ""
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1599,6 +2015,10 @@
    },
    "price": 64,
    "ingredients": "Japanese rice, Garlic",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, กระเทียม",
+    "my": "ထမင်း, ကြက်သွန်ဖြူ"
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1612,6 +2032,10 @@
    },
    "price": 256,
    "ingredients": "Japanese rice, Beef",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, เนื้อวัว",
+    "my": "ထမင်း, အမဲသား"
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1625,6 +2049,10 @@
    },
    "price": 235,
    "ingredients": "Japanese rice, Beef",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, เนื้อวัว",
+    "my": "ထမင်း, အမဲသား"
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1638,6 +2066,10 @@
    },
    "price": 171,
    "ingredients": "Japanese rice, Pork",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, หมู",
+    "my": "ထမင်း, ဝက်သား"
+   },
    "allergens": null,
    "tags": [
     "contains_pork"
@@ -1653,6 +2085,10 @@
    },
    "price": 171,
    "ingredients": "Japanese rice, Pork",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, หมู",
+    "my": "ထမင်း, ဝက်သား"
+   },
    "allergens": null,
    "tags": [
     "contains_pork"
@@ -1668,6 +2104,10 @@
    },
    "price": 171,
    "ingredients": "Japanese rice, Bacon",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, เบคอน",
+    "my": "ထမင်း, "
+   },
    "allergens": null,
    "tags": [
     "contains_pork"
@@ -1683,6 +2123,10 @@
    },
    "price": 181,
    "ingredients": "Japanese rice, Pork, Gochujang",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, หมู, โกจูจัง",
+    "my": "ထမင်း, ဝက်သား, "
+   },
    "allergens": null,
    "tags": [
     "contains_pork",
@@ -1699,6 +2143,10 @@
    },
    "price": 374,
    "ingredients": "Japanese rice, Salmon roe",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, ไข่ปลาแซลม่อน",
+    "my": "ထမင်း, "
+   },
    "allergens": [
     "fish"
    ],
@@ -1714,6 +2162,10 @@
    },
    "price": 353,
    "ingredients": "Japanese rice, Eel",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, ปลาไหล",
+    "my": "ထမင်း, "
+   },
    "allergens": [
     "fish"
    ],
@@ -1729,6 +2181,10 @@
    },
    "price": 267,
    "ingredients": "Japanese rice, Salmon",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, แซลม่อน",
+    "my": "ထမင်း, ဆော်လမွန်"
+   },
    "allergens": [
     "fish"
    ],
@@ -1744,6 +2200,10 @@
    },
    "price": 267,
    "ingredients": "Japanese rice, Tuna",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, ทูน่า",
+    "my": "ထမင်း, တူနာ"
+   },
    "allergens": [
     "fish"
    ],
@@ -1759,6 +2219,10 @@
    },
    "price": 310,
    "ingredients": "Japanese rice, Tuna, Salmon",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, ทูน่า, แซลม่อน",
+    "my": "ထမင်း, တူနာ, ဆော်လမွန်"
+   },
    "allergens": [
     "fish"
    ],
@@ -1774,6 +2238,10 @@
    },
    "price": 310,
    "ingredients": "Japanese rice",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น",
+    "my": "ထမင်း"
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1787,6 +2255,10 @@
    },
    "price": 235,
    "ingredients": "Japanese rice, Salmon",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, แซลม่อน",
+    "my": "ထမင်း, ဆော်လမွန်"
+   },
    "allergens": [
     "fish"
    ],
@@ -1802,6 +2274,10 @@
    },
    "price": 74,
    "ingredients": "Lettuce",
+   "ingredients_tr": {
+    "th": "ผักกาดหอม",
+    "my": ""
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1815,6 +2291,10 @@
    },
    "price": 53,
    "ingredients": "Japanese rice, Pork, Holy basil",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, หมู, กะเพรา",
+    "my": "ထမင်း, ဝက်သား, "
+   },
    "allergens": null,
    "tags": [
     "contains_pork",
@@ -1831,6 +2311,10 @@
    },
    "price": 74,
    "ingredients": "Japanese rice, Beef, Holy basil",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, เนื้อวัว, กะเพรา",
+    "my": "ထမင်း, အမဲသား, "
+   },
    "allergens": null,
    "tags": [
     "spicy"
@@ -1846,6 +2330,10 @@
    },
    "price": 74,
    "ingredients": "Japanese rice, Garlic, Salmon",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, กระเทียม, แซลม่อน",
+    "my": "ထမင်း, ကြက်သွန်ဖြူ, ဆော်လမွန်"
+   },
    "allergens": [
     "fish"
    ],
@@ -1861,6 +2349,10 @@
    },
    "price": 129,
    "ingredients": "Japanese rice, Beef, Egg",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, เนื้อวัว, ไข่",
+    "my": "ထမင်း, အမဲသား, ဥ"
+   },
    "allergens": [
     "egg"
    ],
@@ -1876,6 +2368,10 @@
    },
    "price": 89,
    "ingredients": "Japanese rice, Pork, Egg",
+   "ingredients_tr": {
+    "th": "ข้าวญี่ปุ่น, หมู, ไข่",
+    "my": "ထမင်း, ဝက်သား, ဥ"
+   },
    "allergens": [
     "egg"
    ],
@@ -1893,6 +2389,10 @@
    },
    "price": 99,
    "ingredients": "Yakisoba noodles, Egg",
+   "ingredients_tr": {
+    "th": "เส้นยากิโซบะ, ไข่",
+    "my": "ခေါက်ဆွဲ, ဥ"
+   },
    "allergens": [
     "gluten",
     "egg"
@@ -1909,6 +2409,10 @@
    },
    "price": 299,
    "ingredients": "",
+   "ingredients_tr": {
+    "th": "",
+    "my": ""
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1922,6 +2426,10 @@
    },
    "price": 499,
    "ingredients": "",
+   "ingredients_tr": {
+    "th": "",
+    "my": ""
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1935,6 +2443,10 @@
    },
    "price": 1200,
    "ingredients": "",
+   "ingredients_tr": {
+    "th": "",
+    "my": ""
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1948,6 +2460,10 @@
    },
    "price": 30,
    "ingredients": "Cola",
+   "ingredients_tr": {
+    "th": "น้ำอัดลมโคล่า",
+    "my": ""
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1961,6 +2477,10 @@
    },
    "price": 30,
    "ingredients": "Cola",
+   "ingredients_tr": {
+    "th": "น้ำอัดลมโคล่า",
+    "my": ""
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1974,6 +2494,10 @@
    },
    "price": 30,
    "ingredients": "Lemon-lime soda",
+   "ingredients_tr": {
+    "th": "น้ำอัดลมกลิ่นเลมอนไลม์",
+    "my": ""
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,
@@ -1987,6 +2511,10 @@
    },
    "price": 30,
    "ingredients": "Red soda",
+   "ingredients_tr": {
+    "th": "น้ำอัดลมสีแดง",
+    "my": ""
+   },
    "allergens": null,
    "tags": [],
    "spice": 0,

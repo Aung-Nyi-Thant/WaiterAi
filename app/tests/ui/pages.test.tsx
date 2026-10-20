@@ -15,6 +15,7 @@ import WaiterRoute from "@/app/staff/waiter/page";
 import ChefRoute from "@/app/staff/chef/page";
 import MenuRoute from "@/app/owner/menu/page";
 import Icon from "@/modules/platform/Icon";
+import { get, run } from "@/modules/platform/db";
 import { ownerLogin } from "../helpers";
 import { router, withRealApi } from "./harness";
 
@@ -29,6 +30,53 @@ describe("home page", () => {
     expect(screen.getByText("demo@shop.ai")).toBeTruthy();
     expect(screen.getByText("1111")).toBeTruthy();
     expect(screen.getByText("2222")).toBeTruthy();
+  });
+});
+
+describe("home page with more than one restaurant", () => {
+  const addShop = (slug: string, name: string, dishes: number) => {
+    const uid = run("INSERT INTO users (email, password_hash) VALUES (?, 'x')", `${slug}@example.com`).id;
+    const rid = run("INSERT INTO restaurants (owner_id, slug, name, city) VALUES (?,?,?,?)", uid, slug, name, "").id;
+    for (let i = 0; i < dishes; i++) run("INSERT INTO menu_items (restaurant_id, name_en, price) VALUES (?,?,?)", rid, `Dish ${i}`, 10);
+    return { uid, rid };
+  };
+  const removeShop = ({ uid, rid }: { uid: number; rid: number }) => { run("DELETE FROM menu_items WHERE restaurant_id = ?", rid); run("DELETE FROM restaurants WHERE id = ?", rid); run("DELETE FROM users WHERE id = ?", uid); };
+  it("gives each demo restaurant its own door with its name and dish count, so HaChi Kyu can be reached from the site", () => {
+    const hachi = addShop("hachi-kyu", "HaChi Kyu", 3);
+    try {
+      render(<Home />);
+      const hrefs = screen.getAllByRole("link").map((a) => a.getAttribute("href"));
+      expect(hrefs).toEqual(expect.arrayContaining(["/r/golden-lotus?t=5", "/r/hachi-kyu?t=5"]));
+      const door = screen.getByRole("link", { name: /HaChi Kyu/ });
+      expect(door.textContent).toContain("3 dishes");
+      expect(screen.getByRole("link", { name: /Golden Lotus Kitchen/ }).textContent).toContain("13 dishes");
+    } finally { removeShop(hachi); }
+  });
+  it("lists the demo logins of each demo restaurant", () => {
+    const hachi = addShop("hachi-kyu", "HaChi Kyu", 1);
+    try {
+      render(<Home />);
+      expect(screen.getByText("demo@shop.ai")).toBeTruthy();
+      expect(screen.getByText("hachi@shop.ai")).toBeTruthy();
+      expect(screen.getAllByText("1111")).toHaveLength(2);
+      expect(screen.getByText("hachi-kyu")).toBeTruthy();
+    } finally { removeShop(hachi); }
+  });
+  it("says '1 dish' for one dish", () => {
+    const hachi = addShop("hachi-kyu", "HaChi Kyu", 1);
+    try { render(<Home />); expect(screen.getByRole("link", { name: /HaChi Kyu/ }).textContent).toContain("1 dish.") } finally { removeShop(hachi); }
+  });
+  it("does not advertise another owner's restaurant: without demo restaurants it shows the first one only", () => {
+    const demo = get("SELECT slug FROM restaurants WHERE id = 1")!.slug;
+    run("UPDATE restaurants SET slug = 'my-own-place' WHERE id = 1");
+    const other = addShop("someone-else", "Someone Else", 2);
+    try {
+      render(<Home />);
+      const hrefs = screen.getAllByRole("link").map((a) => a.getAttribute("href"));
+      expect(hrefs).toContain("/r/my-own-place?t=5");
+      expect(hrefs).not.toContain("/r/someone-else?t=5");
+      expect(screen.queryByText("demo@shop.ai")).toBeNull();                              // no demo logins are shown for a restaurant that is not a demo one
+    } finally { removeShop(other); run("UPDATE restaurants SET slug = ? WHERE id = 1", demo); }
   });
 });
 

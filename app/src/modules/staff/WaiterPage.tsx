@@ -37,7 +37,8 @@ export default function Waiter() {
   }, [d]);
   // a new call, pick or ready order rises in and glows once
   const fresh = useFresh(d ? [...d.calls.map((c) => `call-${c.id}`), ...d.picks.map((o) => `pick-${o.id}`), ...d.active.filter((o) => o.status === "ready").map((o) => `ready-${o.id}`)] : []);
-  const act = async (path: string, body?: any) => { try { await api(path, { body: body ?? {} }); } catch (e: any) { setErr(e.message); } load(); };
+  // A refused action refreshes the floor first and shows its message after it: the refresh clears the old error, and used to clear this one too.
+  const act = async (path: string, body?: any) => { let msg = ""; try { await api(path, { body: body ?? {} }); } catch (e: any) { msg = e.message; } await load(); if (msg) setErr(msg); };
   const logout = async () => { await api("/api/auth/logout", { body: {} }); router.push("/staff"); };
   if (!d) return <div className="sa-app" data-theme="night" style={{ padding: 40 }}>{err || "Loading…"}</div>;
 

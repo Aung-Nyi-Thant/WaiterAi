@@ -21,6 +21,8 @@ const P: Record<string, React.ReactNode> = {
   flag: <path d="M5 21V4M5 4h11l-2 4 2 4H5" />,
   image: <><rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="9" cy="10" r="1.5" /><path d="M4 18l5-5 4 4 3-3 4 4" /></>,
   utensils: <><path d="M5 3v5a3 3 0 0 0 6 0V3M8 11v10" /><path d="M17 21V3c-2 1.4-3 4-3 7 0 2 1 3 3 3" /></>,
+  menu: <><path d="M6 3h12a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" /><path d="M9 8h6M9 12h6M9 16h3.5" /></>,
+  receipt: <><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z" /><path d="M9 8h6M9 12h6" /></>,
   serviceBell: <><path d="M4 17h16" /><path d="M6 17a6 6 0 0 1 12 0" /><path d="M12 11V8" /><circle cx="12" cy="6.5" r="1.3" /></>,
 };
 export default function Icon({ name, size = 20, color = "currentColor" }: { name: string; size?: number; color?: string }) {

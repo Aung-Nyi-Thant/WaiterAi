@@ -16,7 +16,7 @@ export default function InsightsPage() {
   return (
     <>
       <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
-        <div><h1 style={{ fontSize: 40 }}>What diners asked</h1><p className="soft-l" style={{ margin: "6px 0 0" }}>What people wanted, and what you could not answer.</p></div>
+        <div><h1 style={{ fontSize: 28 }}>What diners asked</h1><p className="soft-l" style={{ margin: "6px 0 0" }}>What people wanted, and what you could not answer.</p></div>
         <div className="row" style={{ gap: 6 }}>{[1, 7, 30].map((n) => <button type="button" key={n} className={`pill pill-l ${days === n ? "on" : ""}`} onClick={() => setDays(n)}>{n === 1 ? "Today" : `${n} days`}</button>)}</div>
       </div>
       <div className="grid4">

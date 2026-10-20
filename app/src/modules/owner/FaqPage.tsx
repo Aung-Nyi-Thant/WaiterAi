@@ -24,7 +24,7 @@ function Inner() {
   }
   return (
     <>
-      <div><h1 style={{ fontSize: 40 }}>FAQ &amp; rules</h1><p className="soft-l" style={{ margin: "6px 0 0" }}>Answers the AI waiter can give about your shop, and rules it must follow.</p></div>
+      <div><h1 style={{ fontSize: 28 }}>FAQ &amp; rules</h1><p className="soft-l" style={{ margin: "6px 0 0" }}>Answers the AI waiter can give about your shop, and rules it must follow.</p></div>
       <div className="grid2" style={{ alignItems: "start" }}>
         <div className="sa-plate r-xl" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 12 }}>
           <h2 style={{ fontSize: 22 }}>Questions &amp; answers</h2>
