@@ -223,7 +223,8 @@ describe("PC-2 / PC-5: sending the order and the table bill", () => {
     expect(sentOrders()).toHaveLength(1);
     expect(sentOrders()[0].body).toMatchObject({ table: "7", items: [{ id: 3, qty: 2 }, { id: 10, qty: 1 }] });
     expect(document.querySelector(".picks-bar")).toBeNull();
-    expect(JSON.parse(localStorage.getItem("picks:golden-lotus") || "x")).toEqual([]);
+    // the phone saves its picks from an effect that runs just after the state changes: on a slow machine that is a moment later than the dialog
+    await waitFor(() => expect(JSON.parse(localStorage.getItem("picks:golden-lotus") || "x")).toEqual([]));
     expect(all("SELECT table_no FROM orders").map((r: any) => r.table_no)).toEqual(["7"]);
     fireEvent.click(within(dlg).getByRole("button", { name: T("done") }));
     expect(screen.queryByRole("dialog")).toBeNull();
