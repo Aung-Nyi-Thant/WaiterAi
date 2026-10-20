@@ -55,3 +55,29 @@ describe("a big menu", () => {
     expect(Array.isArray(compact.items[0])).toBe(true);
   });
 });
+
+describe("a big menu with categories", () => {
+  it("adds each dish's category as a position in 'categories', and tells the model to answer 'what combos do you have?' from it", async () => {
+    const base = (await aiCtx()).items;
+    const items = (await bigItems(BIG_MENU + 3, base)).map((i: any, k: number) => ({ ...i, category_id: k % 2 ? 11 : 12 }));
+    const ctx = await aiCtx({ items, categories: [{ id: 11, name: { en: "Sets & Combos", th: "เซ็ต", my: "ဆက်" } }, { id: 12, name: { en: "Sushi", th: "ซูชิ", my: "ဆူရှီ" } }] });
+    const p = systemPrompt(ctx);
+    const d = dataOf(p);
+    expect(d.categories).toEqual(["Sets & Combos", "Sushi"]);
+    expect(d.items[0][7]).toBe(1);                                                  // category_id 12 is the second category
+    expect(d.items[1][7]).toBe(0);
+    expect(p).toContain("allergens, tags, category]");
+    expect(p).toContain("what combos / sets / drinks / sushi / noodles do you have?");
+    expect(p).toContain("The data does not say what a set or combo includes");
+  });
+  it("a dish with no known category gets -1, and a menu without categories keeps the seven-field rows", async () => {
+    const base = (await aiCtx()).items;
+    const items = (await bigItems(BIG_MENU + 1, base)).map((i: any) => ({ ...i, category_id: null }));
+    const withCats = dataOf(systemPrompt(await aiCtx({ items, categories: [{ id: 1, name: { en: "Sushi", th: "ซูชิ", my: "ဆူရှီ" } }] })));
+    expect(withCats.items[0][7]).toBe(-1);
+    const without = dataOf(systemPrompt(await aiCtx({ items })));
+    expect(without.items[0]).toHaveLength(7);
+    expect(without.categories).toBeUndefined();
+  });
+});
+
