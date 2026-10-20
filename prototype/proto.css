@@ -2092,8 +2092,7 @@ nav span .bd {
   margin: 0 auto 8px;
   border-radius: 50%;
   background: var(--ok-bg);
-  color: var(--ok);
-  animation: popin 360ms var(--ease-out)
+  color: var(--ok)
 }
 
 @keyframes popin {
@@ -2417,6 +2416,205 @@ nav span .bd {
 
   #app {
     box-shadow: none
+  }
+}
+
+/* ===== Motion: each animation answers a question the user has. Under 300 ms, transform and opacity only, one easing family.
+   motion.js adds the classes (.pg-f .pg-b .stg .sel .tick .bump .fresh); the screens are rebuilt on every change, so plain
+   transitions would never run. ===== */
+
+/* Where did I go? The page slides in from the side it lies on (tabs are ordered), 200 ms */
+main.pg-f,
+.mn.pg-f {
+  animation: pgF 220ms var(--ease-out)
+}
+
+main.pg-b,
+.mn.pg-b {
+  animation: pgB 220ms var(--ease-out)
+}
+
+@keyframes pgF {
+  from {
+    opacity: 0;
+    transform: translateX(16px)
+  }
+}
+
+@keyframes pgB {
+  from {
+    opacity: 0;
+    transform: translateX(-16px)
+  }
+}
+
+/* Did my filter change the list? The cards arrive one after another (30 ms apart, first eight only) */
+.stg>* {
+  animation: rise 260ms var(--ease-out) backwards
+}
+
+.stg>*:nth-child(2) { animation-delay: 30ms }
+.stg>*:nth-child(3) { animation-delay: 60ms }
+.stg>*:nth-child(4) { animation-delay: 90ms }
+.stg>*:nth-child(5) { animation-delay: 120ms }
+.stg>*:nth-child(6) { animation-delay: 150ms }
+.stg>*:nth-child(7) { animation-delay: 180ms }
+.stg>*:nth-child(n+8) { animation-delay: 210ms }
+
+/* Did it register? What was just selected settles into place (tabs, chips, language, options) */
+.sel {
+  animation: selIn 240ms var(--ease-out)
+}
+
+@keyframes selIn {
+  from {
+    opacity: .55;
+    transform: scale(0.92)
+  }
+}
+
+nav .aib.sel .ic {
+  animation: spark 420ms var(--ease-out)
+}
+
+@keyframes spark {
+  from {
+    transform: rotate(-35deg) scale(0.8)
+  }
+}
+
+/* Did it land in my cart? The cart icon and its badge bounce */
+.bump .ic,
+.bump .bd {
+  animation: bump 360ms var(--ease-out)
+}
+
+@keyframes bump {
+  40% {
+    transform: scale(1.22)
+  }
+}
+
+/* A number changed: it ticks */
+.tick {
+  display: inline-block;
+  animation: tick 220ms var(--ease-out)
+}
+
+@keyframes tick {
+  from {
+    opacity: .3;
+    transform: translateY(-6px) scale(0.9)
+  }
+}
+
+/* Something new arrived for the staff (an order, a call, a bill): it rises in and glows once */
+.fresh {
+  animation: rise 320ms var(--ease-out), glow 1400ms var(--ease-out)
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 0 3px #ffc928cc, var(--sh-1)
+  }
+}
+
+/* The order was placed: the check draws itself (only when the screen opens, not on every refresh) */
+.pg .ok i {
+  animation: popin 360ms var(--ease-out)
+}
+
+.pg .ok svg circle {
+  stroke-dasharray: 57;
+  animation: drawC 520ms var(--ease-out) backwards
+}
+
+.pg .ok svg path {
+  stroke-dasharray: 13;
+  animation: drawP 320ms 240ms var(--ease-out) backwards
+}
+
+@keyframes drawC {
+  from {
+    stroke-dashoffset: 57
+  }
+}
+
+@keyframes drawP {
+  from {
+    stroke-dashoffset: 13
+  }
+}
+
+/* Leaving is quicker than arriving (170 ms against 320 ms) */
+.ov.out {
+  animation: fadeout 170ms var(--ease-out) forwards
+}
+
+.ov.out .sh {
+  animation: sheetout 170ms var(--ease-drawer) forwards
+}
+
+.ov.c.out .sh {
+  animation: dialogout 170ms var(--ease-out) forwards
+}
+
+@keyframes fadeout {
+  to {
+    opacity: 0
+  }
+}
+
+@keyframes sheetout {
+  to {
+    transform: translateY(100%)
+  }
+}
+
+@keyframes dialogout {
+  to {
+    opacity: 0;
+    transform: scale(0.96)
+  }
+}
+
+/* Hover (mouse only): a card lifts, buttons warm up. Press still wins: scale on :active comes last. */
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--sh-2)
+  }
+
+  .btn:not(.alt):not(.dk):hover,
+  .add:hover {
+    background: #FFD34F
+  }
+
+  .btn.alt:hover {
+    background: #EFE8D2
+  }
+
+  .chip:not(.on):hover,
+  .opt button:not(.on):hover,
+  .sg button:hover {
+    background: var(--tint)
+  }
+
+  .li:hover,
+  .ci.mr:hover {
+    background: #FFFBEA
+  }
+
+  nav button:not(.on):hover {
+    color: var(--tx)
+  }
+
+  .rmv:hover {
+    color: var(--red)
+  }
+
+  .card:active {
+    transform: scale(0.98)
   }
 }
 

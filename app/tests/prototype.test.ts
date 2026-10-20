@@ -54,7 +54,7 @@ describe("the M4 clickable prototype", () => {
   });
   it("shows no emoji: every icon is drawn in icons.js (i18n.js is the app's own dictionary and is stripped when it is shown)", () => {
     const emoji = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}]/u;
-    for (const f of ["app.js", "owner.js", "data.js", "switcher.js", "icons.js", "index.html", "proto.css"]) {
+    for (const f of ["app.js", "owner.js", "data.js", "switcher.js", "icons.js", "motion.js", "index.html", "proto.css"]) {
       const bad = read(`prototype/${f}`).split("\n").map((l, i) => [i + 1, l] as const).filter(([, l]) => emoji.test(l));
       expect(bad.map(([n, l]) => `${f}:${n} ${l.trim().slice(0, 60)}`), f).toEqual([]);
     }

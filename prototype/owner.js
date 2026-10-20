@@ -61,7 +61,7 @@
   };
   const login = () => `<div class="lg"><div class="logo" style="display:inline-block;font-size:20px">ShopAI</div><h2>Owner login · ${esc(REST)}</h2><label>Email</label><input class="in" id="em" type="email" autocomplete="username"><label>Password</label><input class="in" id="pw" type="password" autocomplete="current-password">${U.err ? `<div class="warn" style="margin-bottom:10px">${U.err}</div>` : ''}<button class="btn" data-o="login">Log in</button><p style="color:var(--sub);font-size:12px;margin-top:12px">Demo: ${OWNER.email} / ${OWNER.pass}</p></div>`;
   const shell = () => `<aside><div class="logo">ShopAI</div>${PG.map(p => `<button class="${U.pg == p[0] ? 'on' : ''}" data-o="pg" data-v="${p[0]}"><span>${ic(p[1], 18)}</span>${p[2]}</button>`).join('')}<div style="flex:1"></div><small>${OWNER.email}</small><button data-o="logout">${ic('lock', 18)}<span>Log out</span></button></aside><div class="mn"><h1>${PG.find(p => p[0] == U.pg)[2]}</h1>${P[U.pg]()}</div>${U.edit != null ? form() : ''}`;
-  function R() { const m = root.querySelector('.mn'), sy = m ? m.scrollTop : 0; root.innerHTML = (U.ok ? shell() : login()) + (U.toast ? `<div class="toast in" role="status">${U.toast}</div>` : ''); const n = root.querySelector('.mn'); if (n) n.scrollTop = sy }
+  function R() { const m = root.querySelector('.mn'), sy = m ? m.scrollTop : 0, _fx = fx.snap(root); root.innerHTML = (U.ok ? shell() : login()) + (U.toast ? `<div class="toast in" role="status">${U.toast}</div>` : ''); _fx({ page: U.ok ? U.pg : 'login', order: PG.map(p => p[0]), main: '.mn' }); const n = root.querySelector('.mn'); if (n) n.scrollTop = sy }
 
   /* ---- actions ---- */
   const rows = (sel, f) => [...document.querySelectorAll(sel)].map(f);
