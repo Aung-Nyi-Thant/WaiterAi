@@ -155,6 +155,79 @@ describe("scripts/seed-hachi-kyu.mts", () => {
     const b = seed({ SEED_HACHI_PHOTOS: "1" });
     expect((await sql(b.dir, "SELECT COUNT(*) n FROM menu_items WHERE photo_url LIKE 'https://%'"))[0].n).toBe(132);
   });
+  describe("--into: the same dishes on an existing restaurant's menu", () => {
+    const into = (dir: string, slugArg: string[] = ["golden-lotus"], env: Record<string, string> = {}) => ({ dir, ...run("scripts/seed-hachi-kyu.mts", { DATA_DIR: dir, ...env }, ["--into", ...slugArg]) });
+    const fresh = () => { const dir = fs.mkdtempSync(path.join(os.tmpdir(), "shopai-into-")); dirs.push(dir); return dir; };
+    it("adds the 132 dishes and the categories Golden Lotus does not have, without a new restaurant, owner or staff", async () => {
+      const r = into(fresh());
+      expect(r.code, r.out).toBe(0);
+      expect(r.out).toContain('Added 132 dishes and 8 categories to "Golden Lotus Kitchen" (/r/golden-lotus).');
+      expect((await sql(r.dir, "SELECT slug FROM restaurants")).map((x) => x.slug)).toEqual(["golden-lotus"]);
+      expect((await sql(r.dir, "SELECT COUNT(*) n FROM menu_items WHERE restaurant_id = 1"))[0].n).toBe(145);
+      expect((await sql(r.dir, "SELECT COUNT(*) n FROM users"))[0].n).toBe(1);
+      expect((await sql(r.dir, "SELECT COUNT(*) n FROM staff"))[0].n).toBe(2);
+    });
+    it("shares a category with the same English name (Drinks), puts the new ones after the old, and leaves the old dishes as they were", async () => {
+      const r = into(fresh());
+      const cats = (await sql(r.dir, "SELECT name_en FROM categories WHERE restaurant_id = 1 ORDER BY sort")).map((x) => x.name_en);
+      expect(cats.slice(0, 6)).toEqual(["Starters", "Mains", "Curries", "Salads", "Desserts", "Drinks"]);
+      expect(cats.filter((c) => c === "Drinks")).toHaveLength(1);
+      expect(cats.slice(6)).toEqual(["Sets & Combos", "Sashimi", "Sushi", "Appetizers", "Grilled Skewers", "Rice & Don", "Noodles", "Soup"]);
+      const drinks = (await sql(r.dir, "SELECT i.name_en FROM menu_items i JOIN categories c ON c.id = i.category_id WHERE c.name_en = 'Drinks' ORDER BY i.sort")).map((x) => x.name_en);
+      expect(drinks[0]).toBe("Thai Iced Tea");                                                              // the old drink, then the new ones
+      expect(drinks.length).toBeGreaterThan(3);
+      const old = await sql(r.dir, "SELECT name_en, price, ingredients_th FROM menu_items WHERE name_en = 'Shrimp Pad Thai'");
+      expect(old).toEqual([{ name_en: "Shrimp Pad Thai", price: 120, ingredients_th: "เส้นผัดไทย, กุ้ง, ไข่, น้ำมะขาม, น้ำปลา, ถั่วลิสงบด" }]);
+      const sorts = (await sql(r.dir, "SELECT sort FROM menu_items WHERE restaurant_id = 1 ORDER BY id")).map((x) => x.sort);
+      expect(sorts).toEqual([...sorts].sort((a, b) => a - b));                                                  // the new dishes come after the old ones
+      expect(new Set(sorts).size).toBe(145);
+    });
+    it("carries the Thai and Burmese ingredient lines and the allergen estimates, and the photo links only with SEED_HACHI_PHOTOS=1", async () => {
+      const a = into(fresh());
+      expect((await sql(a.dir, "SELECT COUNT(*) n FROM menu_items WHERE photo_url <> ''"))[0].n).toBe(0);
+      const row = (await sql(a.dir, "SELECT ingredients_th, ingredients_my, allergens_json FROM menu_items WHERE name_en = 'Tuna Sashimi'"))[0];
+      expect(row).toEqual({ ingredients_th: "ทูน่า", ingredients_my: "တူနာ", allergens_json: '["fish"]' });
+      const b = into(fresh(), ["golden-lotus"], { SEED_HACHI_PHOTOS: "1" });
+      expect((await sql(b.dir, "SELECT COUNT(*) n FROM menu_items WHERE photo_url LIKE 'https://%'"))[0].n).toBe(132);
+    });
+    it("tells the AI, in an FAQ, that these dishes' allergens are estimates; once only", async () => {
+      const r = into(fresh());
+      into(r.dir);
+      const faqs = await sql(r.dir, "SELECT q, a FROM faqs WHERE restaurant_id = 1 AND q LIKE '%sushi and grill%'");
+      expect(faqs).toHaveLength(1);
+      expect(faqs[0].a).toMatch(/estimated/);
+    });
+    it("is safe to run twice: the second run adds nothing", async () => {
+      const r = into(fresh());
+      const again = into(r.dir);
+      expect(again.code).toBe(0);
+      expect(again.out).toContain("already has these dishes: nothing to add");
+      expect((await sql(r.dir, "SELECT COUNT(*) n FROM menu_items WHERE restaurant_id = 1"))[0].n).toBe(145);
+      expect((await sql(r.dir, "SELECT COUNT(*) n FROM categories WHERE restaurant_id = 1"))[0].n).toBe(14);
+    });
+    it("only adds the dishes the restaurant does not have yet (same English name)", async () => {
+      const dir = fresh();
+      const first = into(dir);
+      expect(first.code).toBe(0);
+      const { DatabaseSync } = await import("node:sqlite");
+      const d = new DatabaseSync(path.join(dir, "shop.db"));
+      d.exec("DELETE FROM menu_items WHERE name_en IN ('Tuna Sashimi', 'Salmon Sashimi')");
+      d.close();
+      expect(into(dir).out).toContain("Added 2 dishes and 0 categories");
+    });
+    it("refuses a restaurant that does not exist and a missing code, and changes nothing", async () => {
+      const dir = fresh();
+      expect(into(dir, ["nowhere"]).out).toMatch(/not one/);
+      expect(into(dir, ["nowhere"]).code).toBe(1);
+      expect(into(dir, []).code).toBe(1);
+      expect(into(dir, ["--other"]).code).toBe(1);
+      expect((await sql(dir, "SELECT COUNT(*) n FROM menu_items"))[0].n).toBe(13);
+    });
+    it("works on the HaChi Kyu restaurant itself without duplicating (all its dishes are already there)", async () => {
+      const r = seed();
+      expect(into(r.dir, ["hachi-kyu"]).out).toContain("nothing to add");
+    });
+  });
   it("production: refuses the public demo logins, and generates its own when none are given", async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "shopai-hachi-prod-"));
     dirs.push(dir);

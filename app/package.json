@@ -15,6 +15,7 @@
     "lint": "biome lint .",
     "load-test": "node --experimental-strip-types --no-warnings scripts/load-test.mts",
     "db:seed:hachi": "node --experimental-strip-types --no-warnings scripts/seed-hachi-kyu.mts",
+    "db:seed:hachi:into": "node --experimental-strip-types --no-warnings scripts/seed-hachi-kyu.mts --into golden-lotus",
     "db:seed:hachi:build": "node --experimental-strip-types --no-warnings scripts/make-hachi-kyu-seed.mts"
   },
   "devDependencies": {

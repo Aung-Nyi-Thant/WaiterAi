@@ -39,6 +39,8 @@ Start `npm run dev` with Ollama running. Use a phone (or a narrow browser window
 
 For a real deployment run `npm run db:seed` with `NODE_ENV=production`: it loads the sample menu from `eval/menu.json` with a **random** owner password and PINs (printed once), or your own `SEED_OWNER_EMAIL`, `SEED_OWNER_PASSWORD`, `SEED_WAITER_PIN`, `SEED_CHEF_PIN`. It refuses the public demo logins and does nothing if the database already has users. Real restaurants register at `/register`.
 
+**More sample dishes.** The prototype's sushi menu (132 dishes with photos, Thai and Burmese ingredient names) can be loaded two ways, both safe to run twice: `npm run db:seed:hachi` adds it as a second restaurant (`/r/hachi-kyu`, own owner and PINs), and `npm run db:seed:hachi:into` adds the same dishes to Golden Lotus's own menu (145 dishes). Set `SEED_HACHI_PHOTOS=1` to include the photo links (they point at the menu's source site). Their allergens are estimates; the AI says so. A big menu makes the AI's first question after a menu change slower (the model re-reads the menu once, about a minute for 145 dishes), so restart the server after loading it and it is warmed up in the background.
+
 ## Settings (environment variables, all optional; see `.env.example`)
 | Variable | Meaning | Default |
 |---|---|---|
