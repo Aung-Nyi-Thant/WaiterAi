@@ -442,6 +442,16 @@ describe("matching a dish on a big menu: one typed name is one dish", () => {
     const items = await mk("Hamachi (Yellowtail) Sushi", "Salmon Sushi");
     for (const q of ["the Hamachi (Yellowtail) Sushi", "the hamachi sushi", "HAMACHI (YELLOWTAIL) SUSHI"]) expect(names(matchDishes(q, items)), q).toEqual(["Hamachi (Yellowtail) Sushi"]);
   });
+  it("the name variants are kept per menu, and an owner's rename or a new dish is matched at once (the cache is keyed on the names)", async () => {
+    const before = await mk("Squid Sushi", "Salmon Sushi");
+    expect(names(matchDishes("the squid sushi", before))).toEqual(["Squid Sushi"]);
+    expect(names(matchDishes("the squid sushi", before))).toEqual(["Squid Sushi"]);                // second call: from the cache, same answer
+    const renamed = before.map((i, n) => (n === 0 ? { ...i, name: { ...i.name, en: "Calamari Sushi" } } : i));
+    expect(names(matchDishes("the squid sushi", renamed))).not.toContain("Squid Sushi");        // the old name is gone (the generic word "sushi" still matches)
+    expect(names(matchDishes("the calamari sushi", renamed))).toEqual(["Calamari Sushi"]);        // the new one works
+    const added = [...before, ...(await mk("Tuna Sushi")).map((i) => ({ ...i, id: 999 }))];
+    expect(names(matchDishes("tuna sushi please", added))).toEqual(["Tuna Sushi"]);
+  });
   it("ordering one dish adds one dish with the quantity asked, never its look-alikes", async () => {
     const ctx = await aiCtx({ items: await mk("Squid Sushi", "Salmon Sushi", "Tuna Sushi") });
     const r = await answer("I'll have 2 Squid Sushi", "en", ctx as any);

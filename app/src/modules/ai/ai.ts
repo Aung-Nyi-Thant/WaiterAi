@@ -137,6 +137,22 @@ function variants(item: Item, all: Item[]): string[] {
   }
   return [...v].filter((x) => x.length >= 3);
 }
+// variants() compares every dish with every other dish, so on a big menu it costs ~9 ms per question (132 dishes) if redone each time.
+// They depend only on the dish names, so they are kept per menu: the key is the list of ids and names, and an owner's edit changes it.
+const VARIANTS_BY_ARRAY = new WeakMap<Item[], Map<number, string[]>>();
+const VARIANTS_BY_NAMES = new Map<string, Map<number, string[]>>();
+function variantsOf(item: Item, all: Item[]): string[] {
+  let m = VARIANTS_BY_ARRAY.get(all);
+  if (!m) {
+    const key = all.map((i) => `${i.id}|${i.name.en}|${i.name.th}|${i.name.my}`).join("\n");
+    m = VARIANTS_BY_NAMES.get(key);
+    if (!m) { m = new Map(); if (VARIANTS_BY_NAMES.size >= 16) VARIANTS_BY_NAMES.delete(VARIANTS_BY_NAMES.keys().next().value as string); VARIANTS_BY_NAMES.set(key, m); }
+    VARIANTS_BY_ARRAY.set(all, m);
+  }
+  let v = m.get(item.id);
+  if (!v) { v = variants(item, all); m.set(item.id, v); }
+  return v;
+}
 // "3 x dish", "3x dish", "dish x3", "dish 3x", "dish 3 plates". Each number belongs to ONE dish: the dishes are read left to
 // right and a number already used by an earlier dish ("papaya salad x4 thai tea x2": the 4 is the salad's) is skipped.
 const QTY_BEFORE = /(\d+)\s*(?:x|×)?\s*$/;
@@ -146,7 +162,7 @@ export function matchDishes(text: string, items: Item[]): { item: Item; qty: num
   const found: { item: Item; len: number; at: number; exact: boolean }[] = [];
   for (const it of items) {
     let best = 0, at = -1, bestV = "";
-    for (const v of variants(it, items)) {
+    for (const v of variantsOf(it, items)) {
       const i = t.indexOf(v);
       if (i >= 0 && v.length > best) { best = v.length; at = i; bestV = v; }
     }
@@ -184,7 +200,7 @@ export function matchDishes(text: string, items: Item[]): { item: Item; qty: num
 // Allergen words in a text, ignoring the ones that are part of a dish name ("Shrimp Pad Thai" is not an allergy statement).
 export function allergensOutsideDishNames(text: string, items: Item[]): string[] {
   let t = norm(text);
-  for (const d of matchDishes(text, items)) for (const v of variants(d.item, items).sort((a, b) => b.length - a.length)) t = t.split(v).join(" ");
+  for (const d of matchDishes(text, items)) for (const v of [...variantsOf(d.item, items)].sort((a, b) => b.length - a.length)) t = t.split(v).join(" ");
   return allergensMentioned(t);
 }
 
@@ -495,7 +511,7 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
   const dishes = matchDishes(message, items);
   // allergen words inside a dish name ("Shrimp Pad Thai") are not an allergy statement
   let tAllergy = t;
-  for (const d of dishes) for (const v of variants(d.item, items).sort((a, b) => b.length - a.length)) tAllergy = tAllergy.split(v).join(" ");
+  for (const d of dishes) for (const v of [...variantsOf(d.item, items)].sort((a, b) => b.length - a.length)) tAllergy = tAllergy.split(v).join(" ");
   const mentioned = allergensMentioned(tAllergy);
   const done = (reply: string, action: Action, extra: Partial<ChatResult> = {}): ChatResult => ({ reply, action, topic, allergens: mentioned, answered: true, usedModel: false, ...extra });
 
