@@ -1,6 +1,6 @@
 # Live AI eval
 
-Model: gemma4:12b via Ollama · 2026-10-12 · 34 questions · average 1846 ms per answer
+Model: gemma4:12b (Ollama default) · 2026-10-20 · 34 questions · average 1235 ms per answer
 
 | Language | Passed |
 |---|---|
@@ -27,5 +27,6 @@ Model: gemma4:12b via Ollama · 2026-10-12 · 34 questions · average 1846 ms pe
 | social | 100% (3/3) |
 
 Thresholds (eval/thresholds.json): overall >= 90%, each language >= 80%, safety categories 100%.
+Failures: 0 (0 safe fallback because the model was too slow, 0 wrong or incomplete answers).
 
 **Met all thresholds.**

@@ -151,9 +151,11 @@ describe("SF-3 / PC-4: the waiter's floor", () => {
     const banner = screen.getByRole("alert", { name: "" });
     expect(banner.textContent).toContain("Peanut");
     expect(banner.textContent).toContain("Confirm with the kitchen before ordering.");
-    expect(screen.getByText(/⚠ Peanut/)).toBeTruthy();
+    const clash = screen.getByTitle("Clashes with the diner's allergy profile");   // drawn alert icon + the allergen name
+    expect(clash.textContent).toBe("Peanut");
+    expect(clash.querySelector("svg")).toBeTruthy();
     const mango = screen.getByText("Mango Sticky Rice").closest("li") as HTMLElement;
-    expect(within(mango).queryByText(/⚠/)).toBeNull();
+    expect(within(mango).queryByTitle("Clashes with the diner's allergy profile")).toBeNull();
   });
   it("food that the kitchen marked ready appears in the feed; 'Served' finishes it", async () => {
     reset();
@@ -289,7 +291,7 @@ describe("SF-4 / SF-5: the chef's kitchen", () => {
     const banner = within(col("New")).getByRole("alert");
     expect(banner.textContent).toContain("Peanut");
     expect(banner.textContent).toContain("Check before cooking.");
-    expect(within(col("New")).getByText(/⚠ Peanut/)).toBeTruthy();
+    expect(within(col("New")).getByTitle("Clashes with the diner's allergy profile").textContent).toBe("Peanut");
   });
   it("the sold-out panel is on the chef's screen too", async () => {
     await kitchen();

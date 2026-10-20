@@ -18,6 +18,9 @@ const P: Record<string, React.ReactNode> = {
   copy: <><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" /></>,
   sparkles: <><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z" /><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z" /></>,
   wifiOff: <><path d="M2 2l20 20" /><path d="M8.5 16.5a5 5 0 0 1 7 0" /><path d="M5 12.9a10 10 0 0 1 5.2-2.8M19 12.9a10 10 0 0 0-2-1.5" /><path d="M2 8.8a15 15 0 0 1 4.2-2.6M22 8.8A15 15 0 0 0 10.7 5" /><path d="M12 20h.01" /></>,
+  flag: <path d="M5 21V4M5 4h11l-2 4 2 4H5" />,
+  image: <><rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="9" cy="10" r="1.5" /><path d="M4 18l5-5 4 4 3-3 4 4" /></>,
+  utensils: <><path d="M5 3v5a3 3 0 0 0 6 0V3M8 11v10" /><path d="M17 21V3c-2 1.4-3 4-3 7 0 2 1 3 3 3" /></>,
   serviceBell: <><path d="M4 17h16" /><path d="M6 17a6 6 0 0 1 12 0" /><path d="M12 11V8" /><circle cx="12" cy="6.5" r="1.3" /></>,
 };
 export default function Icon({ name, size = 20, color = "currentColor" }: { name: string; size?: number; color?: string }) {

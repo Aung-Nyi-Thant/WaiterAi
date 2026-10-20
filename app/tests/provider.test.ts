@@ -1,14 +1,14 @@
 // The AI provider layer: always local Ollama (SRS 2.2 / NFR-5: no customer data to a cloud AI service).
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mockModel } from "./helpers";
-import { complete, completeJson, IMPORT_TIMEOUT_MS, AiBusyError } from "@/modules/ai/provider";
+import { complete, completeJson, IMPORT_TIMEOUT_MS, AiBusyError, trimToSentence, tokenBudget, modelSpeed } from "@/modules/ai/provider";
 
 const O = { temperature: 0.2, maxTokens: 100, timeoutMs: 5000 };
 const MSG = [{ role: "system" as const, content: "sys" }, { role: "user" as const, content: "hi" }];
 const KEYS = ["AI_PROVIDER", "AI_API_KEY", "AI_MODEL", "AI_BASE_URL", "OLLAMA_MODEL", "OLLAMA_URL"];
 let saved: Record<string, string | undefined>;
 beforeEach(() => { saved = Object.fromEntries(KEYS.map((k) => [k, process.env[k]])); });
-afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); for (const k of KEYS) { if (saved[k] === undefined) delete process.env[k]; else process.env[k] = saved[k]; } });
+afterEach(() => { delete (globalThis as any).__aiSpeed; vi.unstubAllGlobals(); vi.restoreAllMocks(); for (const k of KEYS) { if (saved[k] === undefined) delete process.env[k]; else process.env[k] = saved[k]; } });
 
 describe("NFR-M2 ollama: the model and address are settings (OLLAMA_URL, OLLAMA_MODEL)", () => {
   it("calls the local /api/chat with the configured model and options", async () => {
@@ -125,5 +125,82 @@ describe("FR-6: the menu photo is read within 120 seconds", () => {
     mockModel('{"items":[]}');
     await completeJson("read");
     expect(spy).toHaveBeenCalledWith(120_000);
+  });
+});
+
+describe("a reply cut off by the token cap is trimmed to its last full sentence", () => {
+  const reply = (content: string, done_reason?: string) => vi.stubGlobal("fetch", async () => new Response(JSON.stringify({ message: { content }, done_reason }), { status: 200, headers: { "content-type": "application/json" } }));
+
+  it("when the model stopped at the cap (done_reason length), the unfinished sentence is dropped", async () => {
+    reply("Try the Tom Yum Goong. It is a hot and sour soup with prawns. It also comes with a spicy", "length");
+    expect(await complete(MSG, O)).toBe("Try the Tom Yum Goong. It is a hot and sour soup with prawns.");
+  });
+  it("a reply that finished on its own is left exactly as it is", async () => {
+    reply("Try the Tom Yum Goong. It is a hot and sour soup with prawns. It also comes with a spicy", "stop");
+    expect(await complete(MSG, O)).toBe("Try the Tom Yum Goong. It is a hot and sour soup with prawns. It also comes with a spicy");
+    reply("No reason given", undefined);
+    expect(await complete(MSG, O)).toBe("No reason given");
+  });
+  it("a JSON answer is never trimmed (it is parsed whole)", async () => {
+    reply('{"a": 1, "b": "x', "length");
+    expect(await complete(MSG, { ...O, json: true })).toBe('{"a": 1, "b": "x');
+  });
+  it("English, Burmese, line breaks and an ellipsis count as sentence ends", () => {
+    expect(trimToSentence("One. Two! Three? Four and")).toBe("One. Two! Three?");
+    expect(trimToSentence("ဒီဟင်းကို စားကြည့်ပါ။ အရသာ ကောင်းပါတယ်။ နောက်ထပ်")).toBe("ဒီဟင်းကို စားကြည့်ပါ။ အရသာ ကောင်းပါတယ်။");
+    expect(trimToSentence("First line\nSecond line is longer than the first\nThird cut off")).toBe("First line\nSecond line is longer than the first");
+    expect(trimToSentence("I am happy to help you today\u2026 and the")).toBe("I am happy to help you today\u2026");
+  });
+  it("Thai (no full stop) is cut back to the last space, dropping the partial word", () => {
+    expect(trimToSentence("แนะนำต้มยำกุ้งครับ เป็นซุปรสเปรี้ยวเผ็ด มีกุ้งสด และเครื่องเทศหลา")).toBe("แนะนำต้มยำกุ้งครับ เป็นซุปรสเปรี้ยวเผ็ด มีกุ้งสด");
+  });
+  it("never throws most of a reply away: a very short first sentence is not a cut point", () => {
+    expect(trimToSentence("Ok. A very long sentence that never ends and keeps going on and on without a stop")).toBe("Ok. A very long sentence that never ends and keeps going on and on without a");
+    expect(trimToSentence("word")).toBe("word");
+    expect(trimToSentence("")).toBe("");
+    expect(trimToSentence("Short. then a really long unfinished sentence that goes on")).toBe("Short. then a really long unfinished sentence that goes");
+  });
+});
+
+describe("the length of a reply follows the model's measured speed (it halves under sustained load)", () => {
+  const FIT = 12_750;                                          // 85% of the 15 s limit
+  const speaking = (tokens: number, seconds: number) => { const bodies: any[] = []; vi.stubGlobal("fetch", async (_u: string, init: any) => { bodies.push(JSON.parse(init.body)); return new Response(JSON.stringify({ message: { content: "ok" }, eval_count: tokens, eval_duration: seconds * 1e9 }), { status: 200 }); }); return bodies; };
+
+  it("tokenBudget: the cap while the model is fast or unknown, fewer tokens when it is slow, never fewer than 60", () => {
+    expect(tokenBudget(130, FIT, undefined)).toBe(130);       // speed not measured yet
+    expect(tokenBudget(130, undefined, 5)).toBe(130);          // no time limit given
+    expect(tokenBudget(130, FIT, 12)).toBe(130);               // 11.25 s x 12 = 135: the cap wins
+    expect(tokenBudget(130, FIT, 6)).toBe(67);                 // throttled: 11.25 s x 6
+    expect(tokenBudget(100, FIT, 3)).toBe(60);                 // very slow: the floor
+    expect(tokenBudget(40, FIT, 1)).toBe(40);                  // a cap below the floor is respected
+    for (const speed of [4, 6, 8, 10, 12, 20]) expect(1.5 + tokenBudget(130, FIT, speed) / speed, `${speed} tokens/s`).toBeLessThanOrEqual(Math.max(15, 1.5 + 60 / speed));
+  });
+  it("measures the speed from Ollama's numbers and uses it for the next reply", async () => {
+    const bodies = speaking(100, 8.3);                         // 12 tokens/s
+    await complete(MSG, { ...O, maxTokens: 130, fitMs: FIT });
+    expect(bodies[0].options.num_predict).toBe(130);
+    expect(modelSpeed()).toBeCloseTo(12.05, 1);
+    speaking(100, 16.6);                                       // it slows to 6 tokens/s
+    await complete(MSG, { ...O, maxTokens: 130, fitMs: FIT });
+    expect(modelSpeed()).toBeCloseTo(9.03, 1);                 // smoothed, not a jump
+    const bodies2 = speaking(100, 16.6);
+    await complete(MSG, { ...O, maxTokens: 130, fitMs: FIT });
+    await complete(MSG, { ...O, maxTokens: 130, fitMs: FIT });
+    expect(bodies2[1].options.num_predict).toBeLessThan(90);   // the budget shrank to follow the speed
+    expect(bodies2[1].options.num_predict).toBeGreaterThanOrEqual(60);
+  });
+  it("recovers when the model speeds up again", async () => {
+    speaking(100, 16.6); await complete(MSG, { ...O, maxTokens: 130, fitMs: FIT }); await complete(MSG, { ...O, maxTokens: 130, fitMs: FIT });
+    const slow = modelSpeed()!;
+    speaking(100, 8.3); for (let i = 0; i < 4; i++) await complete(MSG, { ...O, maxTokens: 130, fitMs: FIT });
+    expect(modelSpeed()!).toBeGreaterThan(slow + 3);
+  });
+  it("ignores very short replies (a noisy figure), JSON answers keep their own cap, and no fitMs means no change", async () => {
+    speaking(5, 5);                                            // 1 token/s from a 5-token reply: not used
+    await complete(MSG, { ...O, maxTokens: 130, fitMs: FIT });
+    expect(modelSpeed()).toBeUndefined();
+    const bodies = speaking(100, 16.6);
+    await complete(MSG, { ...O, maxTokens: 130, fitMs: FIT }); await complete(MSG, { ...O, maxTokens: 130 });
+    expect(bodies[1].options.num_predict).toBe(130);           // no fitMs: the cap as given (the photo import)
   });
 });

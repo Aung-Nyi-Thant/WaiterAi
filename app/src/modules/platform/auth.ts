@@ -7,14 +7,15 @@ import { get } from "@/modules/platform/db";
 import { DATA_DIR } from "@/modules/platform/paths";
 import { clientIp, setting } from "@/modules/platform/rateLimit";
 
+// The secret signs every session cookie, so only the app's own user may read it (0600). "wx" makes two processes starting at
+// once agree on one secret: the loser of the race reads the winner's file. An older, world-readable file is tightened.
 function secret(): string {
   if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
   const file = path.join(DATA_DIR, "secret");
-  try { return fs.readFileSync(file, "utf8"); } catch {}
-  fs.mkdirSync(path.dirname(file), { recursive: true });
+  try { const s = fs.readFileSync(file, "utf8"); try { fs.chmodSync(file, 0o600); } catch {} return s; } catch {}
+  fs.mkdirSync(path.dirname(file), { recursive: true, mode: 0o700 });
   const s = crypto.randomBytes(32).toString("hex");
-  fs.writeFileSync(file, s);
-  return s;
+  try { fs.writeFileSync(file, s, { mode: 0o600, flag: "wx" }); return s; } catch { return fs.readFileSync(file, "utf8"); }
 }
 const SECRET = secret();
 

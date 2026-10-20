@@ -2,7 +2,7 @@
 // Questions here are open ones ("what do you recommend?") that the rules do not handle.
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { aiCtx, mockModel } from "./helpers";
-import { answer } from "@/modules/ai/ai";
+import { answer, CHAT_MAX_TOKENS, CHAT_TIMEOUT_MS } from "@/modules/ai/ai";
 
 afterEach(() => { vi.unstubAllGlobals(); });
 const OPEN = "What would you recommend on a hot day?";
@@ -38,8 +38,17 @@ describe("AI-9 / ST-3 open questions go to the model, with the restaurant's data
     const { calls } = await ask("ok", OPEN, { history });
     const msgs = calls[0].body.messages;
     expect(msgs.map((m: any) => m.content).slice(1)).toEqual(["turn 3", "turn 4", OPEN]);
-    expect(calls[0].body.options).toMatchObject({ temperature: 0.2, num_predict: 220 });
+    expect(calls[0].body.options).toMatchObject({ temperature: 0.2, num_predict: 130 });
     expect(calls[0].body.stream).toBe(false);
+  });
+  it("gives Thai and Burmese a smaller token budget than English, so a long reply still finishes inside the 15 s limit", async () => {
+    const budget = async (lang: "en" | "th" | "my", msg: string) => { const calls = mockModel("ok"); await answer(msg, lang, await aiCtx()); return calls[0].body.options.num_predict; };
+    expect(await budget("en", OPEN)).toBe(130);
+    expect(await budget("th", "ร้านนี้มีอะไรแนะนำสำหรับเด็กไหม")).toBe(115);
+    expect(await budget("my", "ဒီနေ့ ပူလွန်းတယ် ဘာသောက်သင့်လဲ")).toBe(100);
+    // the budget in time: ~1 s to read the prompt + tokens at the measured ~12 tokens a second, for a reply that uses all of it
+    for (const t of Object.values(CHAT_MAX_TOKENS)) expect(1 + t / 12).toBeLessThan(12);
+    expect(CHAT_TIMEOUT_MS).toBe(15_000);
   });
   it("tells the model the owner's voice and rules", async () => {
     const c = await aiCtx();
@@ -280,5 +289,34 @@ describe("a model reply that refers to the staff counts as 'unanswered' for the 
     const { r } = await ask("I'm not sure, please ask the staff about that.");
     expect(r.answered).toBe(false);
     expect(r.reply).toContain("ask the staff");
+  });
+});
+
+describe("R6 a model reply must not contradict the database about availability (found by the extended live eval, limit L11)", () => {
+  // demo data: Coconut Ice Cream is sold out, everything else is on sale
+  it.each([
+    "I recommend the Thai Iced Tea for 50 THB, but unfortunately it is sold out today.",
+    "Thai Iced Tea is currently unavailable.",
+    "Sorry, the Shrimp Pad Thai is out of stock right now. Please ask the staff.",
+  ])("replaces a claim that a dish on sale is sold out: %s", async (lie) => {
+    const { r } = await ask(`${lie}\nACTION: none`);
+    expect(r.reply).toBe(REFUSAL);
+    expect(r.answered).toBe(false);
+  });
+  it("replaces a recommendation of a dish that is sold out", async () => {
+    const { r } = await ask("On a hot day I recommend the Coconut Ice Cream for 60 THB.\nACTION: none");
+    expect(r.reply).toBe(REFUSAL);
+  });
+  it("keeps a true statement that a sold-out dish is sold out", async () => {
+    const { r } = await ask("The Coconut Ice Cream is sold out today, sorry.\nACTION: none");
+    expect(r.reply).toContain("Coconut Ice Cream is sold out");
+  });
+  it("keeps 'X is sold out, try Y' (names both, ambiguous on purpose)", async () => {
+    const { r } = await ask("Coconut Ice Cream is sold out, but you could try the Thai Iced Tea for 50 THB.\nACTION: none");
+    expect(r.reply).toContain("Thai Iced Tea");
+  });
+  it("keeps an ordinary recommendation of dishes on sale", async () => {
+    const { r } = await ask("I recommend the Thai Iced Tea for 50 THB. It is refreshing.\nACTION: none");
+    expect(r.reply).toContain("Thai Iced Tea");
   });
 });

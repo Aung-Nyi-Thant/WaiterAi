@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Icon from "@/modules/platform/Icon";
+import { useFresh } from "@/modules/platform/Presence";
 import SwipeCard from "@/modules/staff/SwipeCard";
 import { AllergyBanner, LineFlag, SoldOutList } from "@/modules/staff/WaiterPage";
 import { api, usePoll, minutesAgo } from "@/modules/platform/client";
@@ -33,6 +34,7 @@ export default function Chef() {
     if (seen.current && ids.some((id) => !seen.current!.has(id))) beep();
     seen.current = new Set(ids);
   }, [d]);
+  const fresh = useFresh(d ? (["new", "cooking", "ready"] as const).flatMap((k) => d.tickets[k].map((o) => `${k}-${o.id}`)) : []);
   const act = async (id: number, action: string) => { try { await api(`/api/staff/orders/${id}`, { body: { action } }); } catch (e: any) { setErr(e.message); } load(); };
   const toggle = async (id: number, available: boolean) => { await api(`/api/staff/items/${id}`, { body: { available } }); load(); };
   const logout = async () => { await api("/api/auth/logout", { body: {} }); router.push("/staff"); };
@@ -62,7 +64,7 @@ export default function Chef() {
               const late = key !== "ready" && mins >= LATE_AFTER_MIN;
               return (
               <SwipeCard key={o.id} onSwipeRight={() => act(o.id, next)} rightLabel={`${btn} →`} rightColor={key === "new" ? "var(--cherry)" : "var(--ok)"}>
-                <article className={`sa-ticket${key === "cooking" ? " sa-ticket--cooking" : key === "ready" ? " sa-ticket--ready" : ""}`}>
+                <article className={`sa-ticket${key === "cooking" ? " sa-ticket--cooking" : key === "ready" ? " sa-ticket--ready" : ""}${fresh.has(`${key}-${o.id}`) ? " sa-fresh" : ""}`}>
                   <div className="sa-ticket__head">
                     <div className="sa-ticket__table">T{o.table || "?"}</div>
                     <div className="sa-ticket__meta">#{o.id}<br /><span className={`sa-timer${late ? " sa-timer--late" : ""}`}>{minutesAgo(o.updatedAt)}</span></div>

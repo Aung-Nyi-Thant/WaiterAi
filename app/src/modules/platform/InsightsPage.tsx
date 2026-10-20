@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import Icon from "@/modules/platform/Icon";
 import { api } from "@/modules/platform/client";
 
 export default function InsightsPage() {
@@ -58,7 +59,7 @@ export default function InsightsPage() {
             <div key={a.allergen} className="row" style={{ justifyContent: "space-between", gap: 12, padding: "6px 0", borderBottom: "1px solid var(--line)" }}>
               <div style={{ fontWeight: 600 }}>{a.label}</div>
               <div style={{ textAlign: "right" }}>
-                <b>{a.diners}</b> {a.diners === 1 ? "diner" : "diners"} · <span style={a.dishes < 3 ? { color: "var(--cherry-text)", fontWeight: 700 } : undefined}>{a.dishes} {a.dishes === 1 ? "dish fits" : "dishes fit"}{a.dishes < 3 ? " ⚠" : ""}</span>
+                <b>{a.diners}</b> {a.diners === 1 ? "diner" : "diners"} · <span style={a.dishes < 3 ? { color: "var(--cherry-text)", fontWeight: 700 } : undefined}>{a.dishes} {a.dishes === 1 ? "dish fits" : "dishes fit"}{a.dishes < 3 && <Icon name="alert" size={14} />}</span>
               </div>
             </div>))}
           {d.allergensAsked.length > 0 && <>

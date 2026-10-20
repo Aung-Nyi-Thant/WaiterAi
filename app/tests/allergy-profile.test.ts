@@ -130,7 +130,7 @@ describe("picking a dish that conflicts with the profile: allowed, but the diner
     expect(r.action.type).toBe("add_to_picks");
     expect(r.reply).toContain("Added to your picks");
     expect(r.reply).toContain('Tap "Send to staff"');                       // the button is called "Send to staff", not "waiter"
-    expect(r.reply).toContain("⚠ Beef Massaman Curry lists peanut, which is in your allergy profile.");
+    expect(r.reply).toContain("Warning: Beef Massaman Curry lists peanut, which is in your allergy profile.");   // a word, not a glyph
     expect(r.reply).toContain(STAFF_EN);
   });
   it("a dish with no allergen data gets the 'not provided' warning", async () => {
@@ -141,8 +141,8 @@ describe("picking a dish that conflicts with the profile: allowed, but the diner
   });
   it("no warning for a dish that fits, and none without a profile", async () => {
     noModel();
-    expect((await ask("I'll have the Thai Iced Tea", ["peanut"])).reply).not.toContain("⚠");
-    expect((await ask("I'll have the Beef Massaman Curry", [])).reply).not.toContain("⚠");
+    expect((await ask("I'll have the Thai Iced Tea", ["peanut"])).reply).not.toContain("Warning:");
+    expect((await ask("I'll have the Beef Massaman Curry", [])).reply).not.toContain("Warning:");
   });
 });
 

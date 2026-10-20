@@ -1,8 +1,8 @@
 // The rule-based part of the AI waiter. Every question here must be answered from the database
 // WITHOUT calling the language model (noModel() makes any model call fail the test).
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { aiCtx, noModel } from "./helpers";
-import { answer, detectLang, allergensMentioned, topicOf } from "@/modules/ai/ai";
+import { aiCtx, noModel, mockModel } from "./helpers";
+import { answer, detectLang, allergensMentioned, topicOf, matchDishes } from "@/modules/ai/ai";
 
 let modelCalls: unknown[];
 beforeEach(() => { modelCalls = noModel(); });
@@ -416,5 +416,94 @@ describe("topic and allergen helpers", () => {
     expect(allergensMentioned("ပုစွန်")).toEqual(["shellfish"]);
     expect(allergensMentioned("coconut milk")).toEqual(["milk"]);   // 'coconut' must not count as a nut
     expect(allergensMentioned("hello")).toEqual([]);
+  });
+});
+
+// Found on the 132-dish HaChi Kyu menu (tests/hachi-kyu.test.ts): on the 13-dish demo menu no dish name contains another's, so these never showed.
+describe("matching a dish on a big menu: one typed name is one dish", () => {
+  const mk = async (...names: string[]) => { const base = (await aiCtx()).items[0]; return names.map((en, n) => ({ ...base, id: 900 + n, name: { en, th: "", my: "" }, allergens: [] as string[], ingredients: "", available: true })); };
+  const names = (m: { item: { name: { en: string } } }[]) => m.map((x) => x.item.name.en).sort();
+
+  it("the short nickname of another dish inside the typed name is not a second dish ('Squid Sushi' holds 'sushi')", async () => {
+    const items = await mk("Squid Sushi", "Salmon Sushi", "Tuna Sushi", "Miso Soup", "Clear Soup");
+    expect(names(matchDishes("I'll have the Squid Sushi", items))).toEqual(["Squid Sushi"]);
+    expect(names(matchDishes("2 miso soup please", items))).toEqual(["Miso Soup"]);
+  });
+  it("two dishes typed side by side are still two dishes", async () => {
+    const items = await mk("Squid Sushi", "Salmon Sushi", "Tuna Sushi");
+    expect(names(matchDishes("squid sushi and tuna sushi", items))).toEqual(["Squid Sushi", "Tuna Sushi"]);
+  });
+  it("a dish's full name beats another dish that only uses those words as a nickname ('Salmon Sushi' / 'Seared Salmon Sushi')", async () => {
+    const items = await mk("Salmon Sushi", "Seared Salmon Sushi", "Salmon Belly Sushi");
+    expect(names(matchDishes("Can I eat the Salmon Sushi?", items))).toEqual(["Salmon Sushi"]);
+    expect(names(matchDishes("Can I eat the Seared Salmon Sushi?", items))).toEqual(["Seared Salmon Sushi"]);
+  });
+  it("a name with a bracketed part is found with the bracket, without it, and in capitals", async () => {
+    const items = await mk("Hamachi (Yellowtail) Sushi", "Salmon Sushi");
+    for (const q of ["the Hamachi (Yellowtail) Sushi", "the hamachi sushi", "HAMACHI (YELLOWTAIL) SUSHI"]) expect(names(matchDishes(q, items)), q).toEqual(["Hamachi (Yellowtail) Sushi"]);
+  });
+  it("the name variants are kept per menu, and an owner's rename or a new dish is matched at once (the cache is keyed on the names)", async () => {
+    const before = await mk("Squid Sushi", "Salmon Sushi");
+    expect(names(matchDishes("the squid sushi", before))).toEqual(["Squid Sushi"]);
+    expect(names(matchDishes("the squid sushi", before))).toEqual(["Squid Sushi"]);                // second call: from the cache, same answer
+    const renamed = before.map((i, n) => (n === 0 ? { ...i, name: { ...i.name, en: "Calamari Sushi" } } : i));
+    expect(names(matchDishes("the squid sushi", renamed))).not.toContain("Squid Sushi");        // the old name is gone (the generic word "sushi" still matches)
+    expect(names(matchDishes("the calamari sushi", renamed))).toEqual(["Calamari Sushi"]);        // the new one works
+    const added = [...before, ...(await mk("Tuna Sushi")).map((i) => ({ ...i, id: 999 }))];
+    expect(names(matchDishes("tuna sushi please", added))).toEqual(["Tuna Sushi"]);
+  });
+  it("a word that many dishes share is not a choice of dish: 'the sashimi' matches none, 'the salmon sashimi' matches one", async () => {
+    const items = await mk("Salmon Sashimi", "Tuna Sashimi", "Squid Sashimi", "Miso Soup");
+    expect(names(matchDishes("I'll have the sashimi", items))).toEqual([]);
+    expect(names(matchDishes("I'll have the salmon sashimi", items))).toEqual(["Salmon Sashimi"]);
+    expect(names(matchDishes("salmon sashimi and tuna sashimi", items))).toEqual(["Salmon Sashimi", "Tuna Sashimi"]);
+    const r = await answer("I'll have the sashimi", "en", (await aiCtx({ items })) as any);
+    expect(r.action.type).not.toBe("add_to_picks");                  // never all three at once
+  });
+  it("a one-word nickname after another descriptive word names a different dish: 'wagyu steak' is not the 'Chicken Steak'", async () => {
+    const items = await mk("Chicken Steak", "Salmon Sushi");
+    expect(names(matchDishes("How much is the Wagyu Steak?", items))).toEqual([]);
+    expect(names(matchDishes("How much is the steak?", items))).toEqual(["Chicken Steak"]);          // filler before it does not count
+    expect(names(matchDishes("how much is the chicken steak", items))).toEqual(["Chicken Steak"]);
+    expect(names(matchDishes("I want steak please", items))).toEqual(["Chicken Steak"]);
+  });
+  it("ordering one dish adds one dish with the quantity asked, never its look-alikes", async () => {
+    const ctx = await aiCtx({ items: await mk("Squid Sushi", "Salmon Sushi", "Tuna Sushi") });
+    const r = await answer("I'll have 2 Squid Sushi", "en", ctx as any);
+    expect(r.action).toMatchObject({ type: "add_to_picks", ids: [900] });
+    expect(r.reply).toContain("2× Squid Sushi");
+    expect(r.reply).not.toContain("Salmon");
+  });
+  it("an allergy question about one dish is answered about that dish, not with the list of every dish", async () => {
+    const items = (await mk("Squid Sushi", "Salmon Sushi", "Tuna Sushi")).map((i, n) => ({ ...i, allergens: n === 0 ? ["molluscs"] : n === 1 ? ["fish"] : null }));
+    const r = await answer("I'm allergic to fish. Can I eat the Squid Sushi?", "en", (await aiCtx({ items })) as any);
+    expect(r.reply).toContain("Squid Sushi");
+    expect(r.reply).not.toContain("Salmon Sushi");
+  });
+});
+
+describe("topics the data never holds (discounts, promotions, coupons, reservations) are not left to the model", () => {
+  it("says it does not know and points to the staff, in all three languages, without calling the model", async () => {
+    for (const q of ["Can I get a discount?", "Do you have any promotions today?", "Can I reserve a table for six?", "มีส่วนลดไหม", "จองโต๊ะได้ไหม", "လျှော့ပေးလို့ရလား", "ကူပွန် ရှိလား"]) {
+      const r = await ask(q);
+      expect(r.usedModel, q).toBe(false);
+      expect(r.answered, q).toBe(false);
+      expect(r.reply, q).toMatch(/staff|พนักงาน|ဝန်ထမ်း/);
+      expect(r.reply, q).not.toMatch(/\b(yes|no discount|cannot be reduced)\b/i);
+    }
+    expect(modelCalls.length).toBe(0);
+  });
+  it("an owner's FAQ about the topic still reaches the model, which has the FAQs", async () => {
+    const calls = mockModel("Yes, 10% off for students.");
+    const faqs = [{ q: "Do you have a student discount?", a: "Yes, 10% off for students with a student card." }];
+    const r = await answer("Can I get a discount?", "en", await aiCtx({ faqs }));
+    expect(calls.length).toBe(1);
+    expect(r.reply).toContain("10%");
+  });
+  it("ordinary questions are not caught: a dish, a price, a birthday, 'reduce the spice'", async () => {
+    for (const q of ["How much is the Tom Yum Goong?", "I'm celebrating a birthday, any suggestion?", "Can you make it less spicy?"]) {
+      const r = await ask(q).catch(() => null);
+      expect(r === null || !/^.{0,5}(don't|do not) know/i.test(r.reply), q).toBe(true);
+    }
   });
 });

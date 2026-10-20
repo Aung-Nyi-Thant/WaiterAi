@@ -191,7 +191,7 @@ describe("what is kept when the model's answer is partly an allergen claim", () 
 });
 
 describe("a reply that is only 'how can I help?' does not count as an answer", () => {
-  it.each([["Can I get a discount?", "How can I help you today?", "en"], ["လျှော့ပေးလို့ရလား", "ဘာများ ကူညီပေးရမလဲခင်ဗျာ။", "my"]] as [string, string, L][])("'%s'", async (q, reply, l) => {
+  it.each([["Do you do catering for big parties?", "How can I help you today?", "en"], ["ဆိုင်ကို ဘယ်လိုလာရမလဲ", "ဘာများ ကူညီပေးရမလဲခင်ဗျာ။", "my"]] as [string, string, L][])("'%s'", async (q, reply, l) => {
     const r = await viaModel(q, reply, l);
     expect(r.answered).toBe(false);
     expect(r.reply).toMatch(/don't have that information|ไม่มีข้อมูล|အချက်အလက် မရှိ/);

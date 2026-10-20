@@ -313,7 +313,10 @@ describe("DM-11: allergy profile", () => {
     fireEvent.click(within(dlg).getByRole("button", { name: /^peanut$/i }));
     expect(JSON.parse(localStorage.getItem("allergyProfile") || "[]")).toEqual(["peanut"]);
     fireEvent.click(within(dlg).getByRole("button", { name: T("done") }));
-    expect(within(cardOf("Papaya Salad")).getByText("⚠ peanut")).toBeTruthy();
+    const tag = within(cardOf("Papaya Salad")).getByText("peanut");                  // the allergen the diner chose is marked with a drawn alert icon, not a glyph
+    expect(tag.className).toContain("sa-tag--alert");
+    expect(tag.querySelector("svg")).toBeTruthy();
+    expect(tag.textContent).not.toMatch(/[\u26A0\u{1F000}-\u{1FAFF}]/u);
     expect(within(cardOf("Fresh Spring Rolls")).getByText(new RegExp(T("allergenUnknown")))).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: new RegExp(T("filters")) }));
     fireEvent.click(screen.getByRole("button", { name: T("mine") }));
@@ -325,7 +328,10 @@ describe("DM-11: allergy profile", () => {
     localStorage.setItem("allergyProfile", JSON.stringify(["peanut"]));
     await open();
     fireEvent.click(addBtn("Papaya Salad"));
-    expect(screen.getByRole("status").textContent).toContain("⚠");
+    const toast = screen.getByRole("status");                                       // a warning toast carries the alert icon and the allergen
+    expect(toast.className).toContain("toast--warn");
+    expect(toast.querySelector("svg")).toBeTruthy();
+    expect(toast.textContent).toContain("peanut");
     expect(document.querySelector(".picks-bar__line")?.textContent).toBe("Papaya Salad");
   });
   it("the profile is sent with the order so the staff see it", async () => {

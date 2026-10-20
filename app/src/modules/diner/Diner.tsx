@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Icon from "@/modules/platform/Icon";
+import DishPhoto from "@/modules/platform/DishPhoto";
+import Presence from "@/modules/platform/Presence";
 import { api, useEscape } from "@/modules/platform/client";
 import { tr, priceLabel, chatLineHeight } from "@/modules/diner/i18n";
 import { clash, filterMenu } from "@/modules/diner/filters";
@@ -46,7 +48,7 @@ export default function Diner({ slug }: { slug: string }) {
   const [detail, setDetail] = useState<Item | null>(null);
   const [picksOpen, setPicksOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
-  const [toast, setToast] = useState("");
+  const [toast, setToast] = useState<{ m: string; warn: boolean } | null>(null);
   const [ringing, setRinging] = useState(false);
   const [bill, setBill] = useState<Bill | null>(null);
   const [billOpen, setBillOpen] = useState(false);
@@ -59,7 +61,7 @@ export default function Diner({ slug }: { slug: string }) {
   // The chat's messages live here, not in Chat: closing the chat unmounts Chat, and the conversation must still be there when it is reopened.
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const t = (k: string) => tr(lang, k);
-  const say = (m: string) => { setToast(m); setTimeout(() => setToast(""), 2600); };
+  const say = (m: string, warn = false) => { setToast({ m, warn }); setTimeout(() => setToast(null), 2600); };
   const heroRef = useRef<HTMLDivElement>(null);
   // The chat now expands in place inside the hero card instead of covering the screen;
   // scroll it into view so it's visible no matter where the diner opened it from
@@ -153,7 +155,7 @@ export default function Diner({ slug }: { slug: string }) {
   const addPick = (id: number, qty = 1) => setPicks((p) => (p.some((x) => x.id === id) ? p.map((x) => (x.id === id ? { ...x, qty: Math.min(20, x.qty + qty) } : x)) : [...p, { id, qty }]));
   const removePick = (id: number) => setPicks((p) => p.filter((x) => x.id !== id));
   // "Added: X" and, when the dish lists one of the diner's allergens (or has no allergen data), a warning. The diner may still pick it.
-  const addMsg = (i: Item) => { const c = clash(i, profile); return `${t("added")}: ${i.name[lang] || i.name.en}${c === "unknown" ? ` ⚠ ${t("allergenUnknown")}` : c ? ` ⚠ ${c.map((a) => allergenName(a, lang)).join(", ")} ${t("conflictToast")}` : ""}`; };
+  const addMsg = (i: Item): [string, boolean] => { const c = clash(i, profile); return [`${t("added")}: ${i.name[lang] || i.name.en}${c === "unknown" ? ` · ${t("allergenUnknown")}` : c ? ` · ${c.map((a) => allergenName(a, lang)).join(", ")} ${t("conflictToast")}` : ""}`, !!c]; };
   const valid = picks.filter((p) => byId.get(p.id)?.available);
   const total = valid.reduce((s, p) => s + p.qty, 0);
 
@@ -274,7 +276,7 @@ export default function Diner({ slug }: { slug: string }) {
             </div>
           )}
           {shown.length === 0 && <div className="sa-plate sa-empty">{t("none")}</div>}
-          {shown.map((i) => <DishCard key={i.id} item={i} lang={lang} profile={profile} onOpen={() => setDetail(i)} onAdd={() => { addPick(i.id); say(addMsg(i)); }} t={t} />)}
+          {shown.map((i, n) => <DishCard key={i.id} n={n} item={i} lang={lang} profile={profile} onOpen={() => setDetail(i)} onAdd={() => { addPick(i.id); say(...addMsg(i)); }} t={t} />)}
         </div>
       </div>
 
@@ -295,7 +297,7 @@ export default function Diner({ slug }: { slug: string }) {
           {total > 0 && (
             <div className="picks-bar">
               <button type="button" className="sa-plain picks-bar__open" onClick={() => setPicksOpen(true)} aria-haspopup="dialog">
-                <div className="sa-label">{t("myPicks")} · {total} {total === 1 ? t("dish") : t("dishes")}</div>
+                <div className="sa-label">{t("myPicks")} · <span key={total} className="sa-bump">{total}</span> {total === 1 ? t("dish") : t("dishes")}</div>
                 <div className="picks-bar__line">{valid.map((p) => `${p.qty > 1 ? p.qty + "× " : ""}${nm(byId.get(p.id)!)}`).join(", ")}</div>
               </button>
               <button type="button" className="sa-btn sa-btn--staff sa-btn--sm" onClick={sendPicks}><Icon name="send" />{t("showToWaiter")}</button>
@@ -304,8 +306,8 @@ export default function Diner({ slug }: { slug: string }) {
         </div>
       </div>
 
-      {detail && <Detail item={detail} lang={lang} profile={profile} t={t} onClose={() => setDetail(null)} onAdd={(qty = 1) => { addPick(detail.id, qty); say(addMsg(detail)); setDetail(null); }} onAsk={() => { setDetail(null); setChatOpen(true); setTimeout(() => window.dispatchEvent(new CustomEvent("ask", { detail: `${nm(detail)}?` })), 50); }} />}
-      {picksOpen && (
+      <Presence>{detail && <Detail item={detail} lang={lang} profile={profile} t={t} onClose={() => setDetail(null)} onAdd={(qty = 1) => { addPick(detail.id, qty); say(...addMsg(detail)); setDetail(null); }} onAsk={() => { setDetail(null); setChatOpen(true); setTimeout(() => window.dispatchEvent(new CustomEvent("ask", { detail: `${nm(detail)}?` })), 50); }} />}</Presence>
+      <Presence>{picksOpen && (
         // biome-ignore lint/a11y/noStaticElementInteractions: clicking outside is a mouse shortcut; keyboard users close this with Escape (useEscape)
         <div className="sheet-back" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) setPicksOpen(false); }}>
           <section className="sa-picks" role="dialog" aria-label={t("myPicks")}>
@@ -325,7 +327,7 @@ export default function Diner({ slug }: { slug: string }) {
                       {p.qty > 1
                         ? <button type="button" aria-label="-" onClick={() => setPicks((x) => x.map((y) => (y.id === p.id ? { ...y, qty: y.qty - 1 } : y)))}>−</button>
                         : <button type="button" className="sa-qty__del" aria-label={t("remove")} onClick={() => removePick(p.id)}><Icon name="trash" size={16} /></button>}
-                      {p.qty}
+                      <span key={p.qty} className="sa-tick">{p.qty}</span>
                       <button type="button" aria-label="+" onClick={() => addPick(p.id)}>+</button>
                     </span>
                   </div>); })}
@@ -334,8 +336,8 @@ export default function Diner({ slug }: { slug: string }) {
             {valid.length > 0 && <button type="button" className="sa-btn sa-btn--staff sa-btn--block" onClick={() => { setPicksOpen(false); sendPicks(); }}><Icon name="send" />{t("showToWaiter")} · {priceLabel(lang, valid.reduce((s, p) => s + p.qty * (byId.get(p.id)?.price || 0), 0))}</button>}
           </section>
         </div>
-      )}
-      {profileOpen && (
+      )}</Presence>
+      <Presence>{profileOpen && (
         // biome-ignore lint/a11y/noStaticElementInteractions: clicking outside is a mouse shortcut; keyboard users close this with Escape (useEscape)
         // biome-ignore lint/a11y/useKeyWithClickEvents: same as above, the keyboard way is Escape
         <div className="sheet-back" onClick={() => setProfileOpen(false)}>
@@ -360,8 +362,8 @@ export default function Diner({ slug }: { slug: string }) {
             </div>
           </section>
         </div>
-      )}
-      {billOpen && bill && (
+      )}</Presence>
+      <Presence>{billOpen && bill && (
         // biome-ignore lint/a11y/noStaticElementInteractions: clicking outside is a mouse shortcut; keyboard users close this with Escape (useEscape)
         <div className="sheet-back" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) setBillOpen(false); }}>
           <section className="sa-picks" role="dialog" aria-label={t("tableBill")}>
@@ -389,8 +391,8 @@ export default function Diner({ slug }: { slug: string }) {
               : <button type="button" className="sa-btn sa-btn--staff sa-btn--block" onClick={() => { setBillOpen(false); askForBill(); }}><BellSvg />{t("askBill")}</button>)}
           </section>
         </div>
-      )}
-      {confirmedOrder && (
+      )}</Presence>
+      <Presence>{confirmedOrder && (
         // biome-ignore lint/a11y/noStaticElementInteractions: clicking outside is a mouse shortcut; keyboard users close this with Escape (useEscape)
         <div className="sheet-back" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) setConfirmedOrder(null); }}>
           <section className="sa-picks" role="dialog" aria-label={t("sent")}>
@@ -420,8 +422,8 @@ export default function Diner({ slug }: { slug: string }) {
             </button>
           </section>
         </div>
-      )}
-      {toast && <div className="toast" role="status">{toast}</div>}
+      )}</Presence>
+      {toast && <div className={`toast${toast.warn ? " toast--warn" : ""}`} role="status">{toast.warn && <Icon name="alert" size={18} />}<span>{toast.m}</span></div>}
       {cursor.visible && (
         <>
           <div className="aiCursorTrail" style={{ transform: `translate(${cursor.x}px, ${cursor.y}px)` }} aria-hidden="true" />
@@ -447,24 +449,24 @@ const DIET: Record<string, string> = { vegan: "sa-tag--veg", vegetarian: "sa-tag
 
 // The allergens a dish lists. The ones in the diner's profile come first and are marked, so they are never hidden behind "+2".
 function AllergenTags({ item, t, profile, max = 3 }: { item: Item; t: (k: string) => string; profile: string[]; max?: number }) {
-  if (item.allergens === null) return <span className={`sa-tag sa-tag--unknown${profile.length ? " sa-tag--alert" : ""}`}>{profile.length ? "⚠ " : ""}{t("allergenUnknown")}</span>;
+  if (item.allergens === null) return <span className={`sa-tag sa-tag--unknown${profile.length ? " sa-tag--alert" : ""}`}>{profile.length > 0 && <Icon name="alert" size={13} />}{t("allergenUnknown")}</span>;
   const sorted = [...item.allergens].sort((a, b) => Number(profile.includes(b)) - Number(profile.includes(a)));
   const shownN = Math.max(max, sorted.filter((a) => profile.includes(a)).length);
   const extra = sorted.length - shownN;
   return <>{sorted.slice(0, shownN).map((a) => profile.includes(a)
-    ? <span key={a} className="sa-tag sa-tag--alert" title={t("yourAllergen")}>⚠ {a.replace("_", " ")}</span>
+    ? <span key={a} className="sa-tag sa-tag--alert" title={t("yourAllergen")}><Icon name="alert" size={13} />{a.replace("_", " ")}</span>
     : <span key={a} className="sa-tag">{a.replace("_", " ")}</span>)}{extra > 0 && <span className="sa-tag">+{extra}</span>}</>;
 }
 
 function Plate({ item }: { item: Item }) {
-  return <div className={`sa-dish__plate${item.photo_url ? "" : " sa-dish__plate--empty"}`} aria-hidden="true">{item.photo_url && <img src={item.photo_url} alt="" />}</div>;
+  return <DishPhoto src={item.photo_url} />;
 }
 
-function DishCard({ item, lang, profile, onOpen, onAdd, t }: { item: Item; lang: Lang; profile: string[]; onOpen: () => void; onAdd: () => void; t: (k: string) => string }) {
+function DishCard({ item, lang, profile, onOpen, onAdd, t, n = 0 }: { item: Item; lang: Lang; profile: string[]; onOpen: () => void; onAdd: () => void; t: (k: string) => string; n?: number }) {
   const nm = item.name[lang] || item.name.en;
   const other = (["th", "my", "en"] as Lang[]).filter((l) => l !== lang).map((l) => item.name[l]).filter((n) => n && n !== nm);
   return (
-    <article className={`sa-plate sa-dish${item.available ? "" : " sa-dish--soldout"}${clash(item, profile) ? " sa-dish--conflict" : ""}`}>
+    <article className={`sa-plate sa-dish sa-in${item.available ? "" : " sa-dish--soldout"}${clash(item, profile) ? " sa-dish--conflict" : ""}`} style={{ animationDelay: `${Math.min(n, 7) * 30}ms` }}>
       <Plate item={item} />
       {!item.available && <span className="sa-stamp">{t("soldOut")}</span>}
       <div className="sa-dish__body">
@@ -508,7 +510,7 @@ function Detail({ item, lang, profile, t, onClose, onAdd, onAsk }: { item: Item;
           <div className="detail-qty" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, margin: "16px 0 8px" }}>
             <span className="sa-qty" style={{ scale: "1.1" }}>
               <button type="button" aria-label="Decrease quantity" disabled={qty <= 1} onClick={() => setQty((q) => Math.max(1, q - 1))}>−</button>
-              <span style={{ minWidth: 28, textAlign: "center", fontWeight: 700 }}>{qty}</span>
+              <span key={qty} className="sa-tick" style={{ minWidth: 28, textAlign: "center", fontWeight: 700 }}>{qty}</span>
               <button type="button" aria-label="Increase quantity" disabled={qty >= 20} onClick={() => setQty((q) => Math.min(20, q + 1))}>+</button>
             </span>
           </div>
@@ -623,9 +625,9 @@ function Chat({ slug, table, lang, sessionId, msgs, setMsgs, profile, addMsg, me
             {m.text}
             {m.dishes && m.dishes.length > 0 && m.dishes.map((d) => { const cur = byId.get(d.id) || d; const name = cur.name[lang] || cur.name.en; return (
               <div key={d.id} className="sa-mini">
-                <div className={`sa-dish__plate${cur.photo_url ? "" : " sa-dish__plate--empty"}`} aria-hidden="true">{cur.photo_url && <img src={cur.photo_url} alt="" />}</div>
+                <DishPhoto src={cur.photo_url} />
                 <div className="sa-mini__txt">{name}<br /><span className="sa-dish__alt">{priceLabel(lang, cur.price)}</span></div>
-                <button type="button" className="sa-btn sa-btn--special sa-btn--sm sa-btn--icon" aria-label={`${t("add")} ${name}`} onClick={() => { addPick(cur.id); say(addMsg(cur)); }}><Icon name="plus" /></button>
+                <button type="button" className="sa-btn sa-btn--special sa-btn--sm sa-btn--icon" aria-label={`${t("add")} ${name}`} onClick={() => { addPick(cur.id); say(...addMsg(cur)); }}><Icon name="plus" /></button>
               </div>); })}
             {m.messageId && (
               <>

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import Icon from "@/modules/platform/Icon";
+import DishPhoto, { Thumb } from "@/modules/platform/DishPhoto";
 import { useOwner } from "@/modules/owner/OwnerShell";
 import { api, useEscape } from "@/modules/platform/client";
 import { ALLERGENS, TAGS, ALLERGEN_LABEL, TAG_LABEL } from "@/modules/platform/constants";
@@ -107,7 +108,7 @@ export default function MenuPage() {
         {shown.map((i) => (
           <div className="table-row" key={i.id}>
             <div className="row" style={{ gap: 12 }}>
-              {i.photo_url ? <img className="photo" src={i.photo_url} alt="" /> : <div className="photo">PHOTO</div>}
+              <Thumb src={i.photo_url} />
               <div style={{ minWidth: 0 }}><div style={{ fontWeight: 700 }}>{i.name.en}</div><div className="soft-l" style={{ fontSize: 12, lineHeight: 1.7 }}>{[i.name.th !== i.name.en && i.name.th, i.name.my !== i.name.en && i.name.my].filter(Boolean).join(" · ")}</div></div>
             </div>
             <div><span className="sa-price" style={{ fontSize: 17, lineHeight: "22px" }}>฿{i.price}</span></div>
@@ -202,9 +203,7 @@ function ItemForm({ item, cats, isDuplicate, onClose, onSaved }: { item: any; ca
         <div>
           <div className="lbl" style={{ marginBottom: 8 }}>Diner card preview</div>
           <article className="sa-plate sa-dish" style={{ maxWidth: 420, padding: 10 }}>
-            <div className={`sa-dish__plate${f.photo_url ? "" : " sa-dish__plate--empty"}`} aria-hidden="true" style={{ width: 92, height: 92 }}>
-              {f.photo_url && <img src={f.photo_url} alt="" />}
-            </div>
+            <DishPhoto src={f.photo_url} style={{ width: 92, height: 92 }} />
             <div className="sa-dish__body">
               <h3 className="sa-dish__name" style={{ fontSize: 18 }}><button type="button" disabled style={{ cursor: "default" }}>{previewName}</button></h3>
               {previewAlt.length > 0 && <p className="sa-dish__alt">{previewAlt.join(" · ")}</p>}
@@ -241,7 +240,7 @@ function ItemForm({ item, cats, isDuplicate, onClose, onSaved }: { item: any; ca
         </div>
         <div><span className="lbl">Tags</span><div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>{TAGS.map((t) => <label key={t} className="check"><input type="checkbox" checked={(f.tags || []).includes(t)} onChange={() => toggleIn("tags", t)} />{TAG_LABEL[t]}</label>)}</div></div>
         <div className="row" style={{ gap: 14, flexWrap: "wrap" }}>
-          {f.photo_url ? <img className="photo" style={{ width: 64, height: 64 }} src={f.photo_url} alt="" /> : <div className="photo" style={{ width: 64, height: 64 }}>PHOTO</div>}
+          <Thumb src={f.photo_url} size={64} />
           <div><label className="btn btn-ol btn-sm" style={{ cursor: "pointer" }}>Upload photo<input type="file" accept="image/jpeg,image/png,image/webp" className="sr" onChange={(e) => upload(e.target.files?.[0])} /></label>
             {f.photo_url && <button type="button" className="btn btn-ol btn-sm" style={{ marginLeft: 8 }} onClick={() => set("photo_url", "")}>Remove</button>}</div>
           <label className="check" style={{ marginLeft: "auto" }}><input type="checkbox" checked={!!f.available} onChange={(e) => set("available", e.target.checked)} />On sale today</label>

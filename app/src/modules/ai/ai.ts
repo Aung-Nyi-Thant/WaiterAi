@@ -23,7 +23,7 @@ export function detectLang(text: string, fallback: Lang = "en"): Lang {
 }
 const BD = "၀၁၂၃၄၅၆၇၈၉";
 const bd = (n: number | string) => String(n).replace(/\d/g, (d) => BD[+d]);
-const norm = (s: string) => s.toLowerCase().replace(/[၀-၉]/g, (d) => String(BD.indexOf(d)));
+const norm = (s: string) => s.toLowerCase().replace(/[’‘]/g, "'").replace(/[၀-၉]/g, (d) => String(BD.indexOf(d)));
 // English keywords must start a word ("pay" is not found in "papaya"); Thai and Burmese have no spaces, so they match anywhere.
 const has = (t: string, words: string[]) => words.some((w) => wordIn(t, w));
 
@@ -78,11 +78,32 @@ export function allergensMentioned(text: string): string[] {
 const STOP = new Set(["curry", "fried", "rice", "fresh", "with", "lime", "thai", "salad", "grilled", "steamed", "sticky", "iced", "cream", "spring", "soup", "stir", "fry"]);
 const isAllergenWord = (w: string) => Object.values(ALLERGEN_WORDS).some((ws) => ws.some((a) => w.includes(a) || a.includes(w)));
 const THAI_PROTEINS = ["เนื้อ", "ไก่", "หมู", "กุ้ง", "ปลา", "ปู", "หมึก", "ไข่"];
+// A one-word nickname ("steak" for "Chicken Steak") right after another descriptive word ("wagyu steak") means the diner named a DIFFERENT
+// dish. Answering with the nickname's dish would attach the wrong price or allergens to it ("How much is the Wagyu Steak?" -> "Chicken Steak is 128"),
+// which is worse than "that is not on our menu". Articles, verbs and other filler before it do not count ("the steak", "have steak", "much is steak").
+const FILLER = new Set(["the", "your", "some", "this", "that", "these", "those", "have", "like", "want", "would", "could", "should", "please", "order", "with", "much", "cost", "costs", "price", "does", "what", "whats", "about", "also", "just", "give", "need", "take", "more", "another", "extra", "tell", "show", "here", "there", "which", "where", "when", "then", "than", "from", "into", "only", "other", "both", "each", "every", "they", "them", "were", "will", "your", "ours", "mine", "best", "good", "nice"]);
+function namesAnotherDish(t: string, at: number, variant: string): boolean {
+  if (variant.includes(" ")) return false;
+  const w = t.slice(0, at).trimEnd().match(/([a-z]+)$/)?.[1];
+  return !!w && w.length >= 4 && !FILLER.has(w);
+}
+// The names a dish is really called, in each language, with and without a bracketed part and without spaces (Thai and Burmese).
+function fullNames(item: Item): Set<string> {
+  const out = new Set<string>();
+  for (const l of ["en", "th", "my"] as Lang[]) {
+    const whole = norm(item.name[l]).replace(/\s+/g, " ").trim(), bare = whole.replace(/\(.*?\)/g, "").replace(/\s+/g, " ").trim();
+    for (const x of [whole, bare]) if (x) { out.add(x); if (l !== "en") out.add(x.replace(/\s+/g, "")); }
+  }
+  return out;
+}
 function variants(item: Item, all: Item[]): string[] {
   const v = new Set<string>();
   for (const l of ["en", "th", "my"] as Lang[]) {
-    const n = norm(item.name[l]).replace(/\(.*?\)/g, "").trim();
+    // "Hamachi (Yellowtail) Sushi" is typed both with and without the bracket; removing it must not leave a double space
+    const n = norm(item.name[l]).replace(/\(.*?\)/g, "").replace(/\s+/g, " ").trim();
     if (n) v.add(n);
+    const whole = norm(item.name[l]).replace(/\s+/g, " ").trim();
+    if (whole) v.add(whole);
     const compact = n.replace(/\s+/g, "");
     if (l !== "en" && compact.length >= 3) v.add(compact);
   }
@@ -125,21 +146,51 @@ function variants(item: Item, all: Item[]): string[] {
   }
   return [...v].filter((x) => x.length >= 3);
 }
+// variants() compares every dish with every other dish, so on a big menu it costs ~9 ms per question (132 dishes) if redone each time.
+// They depend only on the dish names, so they are kept per menu: the key is the list of ids and names, and an owner's edit changes it.
+const VARIANTS_BY_ARRAY = new WeakMap<Item[], Map<number, string[]>>();
+const VARIANTS_BY_NAMES = new Map<string, Map<number, string[]>>();
+function variantsOf(item: Item, all: Item[]): string[] {
+  let m = VARIANTS_BY_ARRAY.get(all);
+  if (!m) {
+    const key = all.map((i) => `${i.id}|${i.name.en}|${i.name.th}|${i.name.my}`).join("\n");
+    m = VARIANTS_BY_NAMES.get(key);
+    if (!m) { m = new Map(); if (VARIANTS_BY_NAMES.size >= 16) VARIANTS_BY_NAMES.delete(VARIANTS_BY_NAMES.keys().next().value as string); VARIANTS_BY_NAMES.set(key, m); }
+    VARIANTS_BY_ARRAY.set(all, m);
+  }
+  let v = m.get(item.id);
+  if (!v) { v = variants(item, all); m.set(item.id, v); }
+  return v;
+}
 // "3 x dish", "3x dish", "dish x3", "dish 3x", "dish 3 plates". Each number belongs to ONE dish: the dishes are read left to
 // right and a number already used by an earlier dish ("papaya salad x4 thai tea x2": the 4 is the salad's) is skipped.
 const QTY_BEFORE = /(\d+)\s*(?:x|×)?\s*$/;
 const QTY_AFTER = /^(?:[\s,]*[x×]\s*(\d+)|\s*(\d+)\s*(?:x|×|จาน|ที่|ชุด|ခွက်|ပွဲ|plates?|portions?|pcs|pieces))/;
-function matchDishes(text: string, items: Item[]): { item: Item; qty: number }[] {
+export function matchDishes(text: string, items: Item[]): { item: Item; qty: number }[] {
   const t = norm(text);
-  const found: { item: Item; len: number; at: number }[] = [];
+  const found: { item: Item; len: number; at: number; exact: boolean }[] = [];
   for (const it of items) {
-    let best = 0, at = -1;
-    for (const v of variants(it, items)) {
+    let best = 0, at = -1, bestV = "";
+    const full = fullNames(it);
+    for (const v of variantsOf(it, items)) {
       const i = t.indexOf(v);
-      if (i >= 0 && v.length > best) { best = v.length; at = i; }
+      if (i >= 0 && v.length > best && (full.has(v) || !namesAnotherDish(t, i, v))) { best = v.length; at = i; bestV = v; }
     }
-    if (best) found.push({ item: it, len: best, at });
+    if (best) found.push({ item: it, len: best, at, exact: fullNames(it).has(bestV) });
   }
+  // The diner typed ONE dish: its full name also contains the short nicknames of other dishes ("Squid Sushi" holds "sushi", "Miso Soup"
+  // holds "soup"), which on a big menu would add nine dishes to the picks. A match that lies inside a longer match of another dish is
+  // that dish's own name, not a second dish. Two dishes that match the very same words are both kept (the diner was ambiguous).
+  for (let k = found.length - 1; k >= 0; k--) {
+    const a = found[k];
+    // ... and when two dishes match the very same words, the one whose FULL name that is wins over one that only uses it as a nickname
+    // ("Salmon Sushi" is a dish, and also what "Seared Salmon Sushi" is shortened to)
+    if (found.some((b) => b !== a && b.at <= a.at && b.at + b.len >= a.at + a.len && (b.len > a.len || (b.len === a.len && b.at === a.at && b.exact && !a.exact)))) found.splice(k, 1);
+  }
+  // A generic word ("sashimi", "sushi", "soup") that three or more dishes share and that is nobody's full name is not a choice of dish:
+  // "I'll have the sashimi" must not add all fourteen. Nothing is matched, so the diner is asked / shown the menu instead.
+  const generic = found.filter((a) => !a.exact && found.filter((b) => b.at === a.at && b.len === a.len).length >= 3 && !found.some((b) => b.at === a.at && b.len === a.len && b.exact));
+  for (const g of generic) found.splice(found.indexOf(g), 1);
   const used: [number, number][] = [];                                    // character ranges of numbers already read as a quantity
   const free = (a: number, b: number) => !used.some(([x, y]) => a < y && b > x);
   const out: { item: Item; qty: number; len: number }[] = [];
@@ -163,7 +214,7 @@ function matchDishes(text: string, items: Item[]): { item: Item; qty: number }[]
 // Allergen words in a text, ignoring the ones that are part of a dish name ("Shrimp Pad Thai" is not an allergy statement).
 export function allergensOutsideDishNames(text: string, items: Item[]): string[] {
   let t = norm(text);
-  for (const d of matchDishes(text, items)) for (const v of variants(d.item, items).sort((a, b) => b.length - a.length)) t = t.split(v).join(" ");
+  for (const d of matchDishes(text, items)) for (const v of [...variantsOf(d.item, items)].sort((a, b) => b.length - a.length)) t = t.split(v).join(" ");
   return allergensMentioned(t);
 }
 
@@ -254,11 +305,13 @@ export const unavailableReply = (l: Lang, p: string) =>
 export const limitReply = (l: Lang, p: string) =>
   l === "en" ? "The assistant has reached its chat limit for this month. Please browse the menu or ask the staff." : l === "th" ? `ผู้ช่วยใช้ครบโควต้าเดือนนี้แล้ว${p} ดูเมนูหรือถามพนักงานได้${p}` : `ဒီလအတွက် AI စားပွဲထိုး အသုံးပြုမှု ပြည့်သွားပါပြီ${p}။ မီနူးကို ကြည့်ပါ၊ ဝန်ထမ်းကို မေးပါ${p}။`;
 
+// Topics no menu data can answer. A word may start inside Thai and Burmese text (no spaces); English words must start a word.
+const NO_DATA_TOPIC = /(?<![a-z])(?:discounts?|promotions?|promo|coupons?|vouchers?|loyalty|membership|happy hour|reservations?|reserve a table|book a table)|ส่วนลด|ลดราคา|โปรโมชั่น|โปรโมชัน|คูปอง|บัตรสมาชิก|แฮปปี้อาวร์|จองโต๊ะ|လျှော့ပေး|လျှော့ဈေး|လျှော့ရင်|ဒစ်စကောင့်|ပရိုမိုးရှင်း|ကူပွန်|စားပွဲကြိုတင်|စားပွဲ ကြိုတင်/;
 // ------------------------------------------------------------------ intents
 const W = {
   price: ["how much", "price", "cost", "ราคา", "เท่าไหร่", "เท่าไร", "กี่บาท", "ဘယ်လောက်", "ဈေး", "စျေး"],
-  veg: ["vegetarian", "vegan", "meatless", "มังสวิรัติ", "วีแกน", "เจ", "သက်သတ်လွတ်"],
-  vegan: ["vegan", "วีแกน"],
+  veg: ["vegetarian", "vegan", "meatless", "มังสวิรัติ", "วีแกน", "เจ", "သက်သတ်လွတ်", "ဗီဂန်"],
+  vegan: ["vegan", "วีแกน", "ဗီဂန်"],
   hours: ["what time", "opening", "open until", "opening hours", "close", "closing", "hours", "กี่โมง", "เวลาเปิด", "เปิดกี่", "ปิดกี่", "နာရီ", "ဖွင့်", "ပိတ်"],
   menu: ["menu", "เมนู", "မီနူး", "what do you have", "what's available", "มีอะไรบ้าง"],
   order: ["i'll have", "i will have", "i want", "i'd like", "can i have", "could i have", "may i have", "give me", "order", "ขอสั่ง", "สั่ง", "เอา", "ขอ", "မှာမယ်", "မှာချင်", "စားမယ်", "ယူမယ်", "မှာလို့ရ"],
@@ -342,12 +395,15 @@ const budgetOf = (t: string): number | null => {
 // price, category, tags), ranked by what diners really ordered here in the last 30 days, and filtered by the allergy profile.
 // Only a question without such details ("what's good on a hot day?") goes to the language model.
 type Rec = { mild?: boolean; hot?: boolean; budget?: number; inclusive?: boolean; category?: string; popular?: boolean };
-const MILD = ["not spicy", "no spice", "not too spicy", "less spicy", "mild", "ไม่เผ็ด", "เผ็ดน้อย", "ไม่เอาเผ็ด", "မစပ်"];
+// "doesn't like spicy food" / "can't eat spicy" must mean mild too: read as "what's spicy?" it would list the hottest dishes.
+const MILD = ["not spicy", "no spice", "no spicy", "not too spicy", "less spicy", "mild", "doesn't like spicy", "don't like spicy", "do not like spicy", "does not like spicy", "not a fan of spicy", "doesnt like spicy", "dont like spicy",
+  "can't eat spicy", "cannot eat spicy", "can't handle spicy", "cant eat spicy", "hate spicy", "avoid spicy", "isn't into spicy", "not into spicy",
+  "ไม่เผ็ด", "เผ็ดน้อย", "ไม่เอาเผ็ด", "ไม่กินเผ็ด", "ไม่ชอบเผ็ด", "กินเผ็ดไม่ได้", "ทานเผ็ดไม่ได้", "မစပ်", "စပ်တာမစား", "စပ်တာ မစား", "စပ်စပ်မစား", "စပ်တာမကြိုက်", "စပ်တာ မကြိုက်"];
 const HOT = ["spicy", "เผ็ด", "စပ်"];
 const POPULAR = ["popular", "best seller", "bestseller", "best-seller", "most ordered", "famous", "signature", "must try", "must-try", "surprise me", "chef's pick", "chefs pick", "ยอดนิยม", "ขายดี", "ชื่อดัง", "เมนูเด็ด", "เมนูเด่น", "สุ่ม", "เซอร์ไพรส์", "လူကြိုက်များ", "လူကြိုက်အများဆုံး", "နာမည်ကြီး", "နာမည်ကျော်", "ရောင်းအား"];
 // [the word in the category's English name, words a diner uses for it]
 const CATEGORY_WORDS: [string, string[]][] = [
-  ["drink", ["drink", "beverage", "เครื่องดื่ม", "ของดื่ม", "သောက်စရာ"]], ["dessert", ["dessert", "sweet", "ของหวาน", "အချိုပွဲ"]],
+  ["drink", ["drink", "beverage", "เครื่องดื่ม", "ของดื่ม", "သောက်စရာ"]], ["dessert", ["dessert", "sweet", "ของหวาน", "ขนมหวาน", "အချိုပွဲ", "အချို"]],
   ["starter", ["starter", "appetizer", "appetiser", "snack", "ของทานเล่น", "အစာစား"]], ["salad", ["salad", "สลัด", "သုပ်"]],
   ["curr", ["curry", "curries", "แกง", "ဟင်းချို"]], ["main", ["main course", "mains", "จานหลัก", "ပင်မဟင်း"]],
 ];
@@ -471,7 +527,7 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
   const dishes = matchDishes(message, items);
   // allergen words inside a dish name ("Shrimp Pad Thai") are not an allergy statement
   let tAllergy = t;
-  for (const d of dishes) for (const v of variants(d.item, items).sort((a, b) => b.length - a.length)) tAllergy = tAllergy.split(v).join(" ");
+  for (const d of dishes) for (const v of [...variantsOf(d.item, items)].sort((a, b) => b.length - a.length)) tAllergy = tAllergy.split(v).join(" ");
   const mentioned = allergensMentioned(tAllergy);
   const done = (reply: string, action: Action, extra: Partial<ChatResult> = {}): ChatResult => ({ reply, action, topic, allergens: mentioned, answered: true, usedModel: false, ...extra });
 
@@ -621,7 +677,7 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
       // the diner may still pick a dish that conflicts with their profile (it is their choice), but is told, and the staff are told too
       const conflict = dishes.find((d) => !fitsProfile(d.item, profile));
       return done((lang === "en" ? `Added to your picks: ${names}. Tap "Send to staff" when you're ready.` : lang === "th" ? `เพิ่มลงในรายการที่เลือกแล้ว: ${names}${p} กด "ให้พนักงานดู" เมื่อพร้อมสั่ง` : `${names} ကို ရွေးထားတာတွေထဲ ထည့်လိုက်ပါတယ်${p}။`)
-        + (conflict ? ` ⚠ ${profileConflictReply(lang, p, conflict.item, profile)}` : ""), { type: "add_to_picks", ids: dishes.map((d) => d.item.id), qty });
+        + (conflict ? ` ${lang === "en" ? "Warning:" : lang === "th" ? "คำเตือน:" : "သတိပေးချက် -"} ${profileConflictReply(lang, p, conflict.item, profile)}` : ""), { type: "add_to_picks", ids: dishes.map((d) => d.item.id), qty });
     }
   }
 
@@ -648,9 +704,14 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
     return done(cantConfirmReply(lang, p), { type: "none" }, { answered: false });
   }
 
+  // 6c. things the data never holds (discounts, promotions, coupons, membership, reservations): say we do not know and send the diner to the
+  // staff, instead of letting the model make up a policy ("prices cannot be reduced", found by the live eval). The owner's FAQs still win:
+  // when one of them mentions the topic, the question goes on to the model, which has the FAQs.
+  if (NO_DATA_TOPIC.test(t) && !ctx.faqs.some((f) => NO_DATA_TOPIC.test(norm(`${f.q} ${f.a}`)))) return done(dontKnow(lang, p), { type: "none" }, { answered: false, topic: "other" });
+
   // 7. everything else goes to the language model, with checks on its output
   try {
-    const raw = await askModel(message, ctx);
+    const raw = await askModel(message, ctx, lang);
     return checkModelReply(raw, lang, p, ctx, topic, mentioned, message);
   } catch {
     return done(unavailableReply(lang, p), { type: "show_menu" }, { answered: false });
@@ -658,7 +719,7 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
 }
 
 // ------------------------------------------------------------------ language model
-function systemPrompt(ctx: Ctx): string {
+export function systemPrompt(ctx: Ctx): string {
   const { restaurant: r, items, faqs, specials } = ctx;
   const pr = r.persona, male = pr.gender !== "female";
   const data = {
@@ -674,7 +735,7 @@ function systemPrompt(ctx: Ctx): string {
 ${pr.greeting ? `Greeting to use when the customer says hello: ${pr.greeting}\n` : ""}
 RULES
 1. Answer only from the data. Never invent dishes, prices, ingredients, allergens or opening hours. If the data does not contain the answer, say you don't have that information and ask the customer to check with the staff.
-2. Reply in the SAME language as the customer's last message (English, Thai or Burmese). Keep replies short (max 4 sentences). Do not add information that was not asked for. Do not greet or welcome the customer unless they greeted you first. In Burmese answer in at most two short sentences and write each dish name only once, in Burmese, without the English name in brackets (Burmese text is slow to generate).
+2. Reply in the SAME language as the customer's last message (English, Thai or Burmese). Keep replies short (max 3 short sentences, under 60 words). Do not add information that was not asked for. Do not greet or welcome the customer unless they greeted you first. In Burmese answer in at most two short sentences and write each dish name only once, in Burmese, without the English name in brackets (Burmese text is slow to generate).
 3. Never say a dish is "safe", "allergy-free" or guaranteed. Only state allergens listed in the data. For any allergy question, tell the customer to confirm with the staff.
 4. Dishes with "available": false are sold out today; say so and suggest an alternative.
 5. Prices are in ${r.currency}. Copy prices and opening hours exactly from the data.
@@ -693,18 +754,23 @@ RESTAURANT DATA (JSON)
 ${JSON.stringify(data)}`;
 }
 
-async function askModel(message: string, ctx: Ctx): Promise<string> {
+async function askModel(message: string, ctx: Ctx, lang: Lang): Promise<string> {
   // Only the last couple of turns are kept: these questions are answered from a fresh read of the
   // menu each time, not from a long conversation, and every extra message is more tokens to read
   // before the model can start answering.
   const messages = [{ role: "system", content: systemPrompt(ctx) }, ...ctx.history.slice(-2).map((m) => ({ role: m.role, content: m.text })), { role: "user", content: message }];
-  // num_predict (maxTokens) caps a reply at ~220 tokens (well over the "max 4 sentences" rule) so one
-  // unusually long answer cannot make a diner wait far longer than the rest.
+  // num_predict (maxTokens) caps a reply so one unusually long answer cannot make a diner wait far longer than the rest.
+  // It must fit the time limit below: the laptop generates ~12 tokens a second (measured, gemma4:12b), plus ~1 s to read the prompt.
+  // The old flat 220 took ~17 s: a long answer was cut off by the timeout and thrown away, and the diner got "AI unavailable"
+  // (7 of 65 model answers in the 126-question eval; 150 still left 5 Burmese ones at 13-15 s). Burmese needs more tokens per word, so
+  // each language has its own cap (see CHAT_MAX_TOKENS). And the speed is not constant: after a minute of continuous answers the laptop runs
+  // at half speed (11.8 -> 6 tokens/s measured), so the provider also shortens the reply to what the measured speed can finish in 85% of the
+  // time limit (fitMs). A reply cut by the cap is trimmed to its last full sentence by the provider.
   // SRS FR-2 / NFR-1: once an answer is started it takes at most 15 seconds; a slower model is cut off and the
   // diner gets the "AI unavailable" message with the menu and staff call still at hand, not a long wait.
   // SRS NFR-7: with several diners at once the answers are made one at a time, and nobody waits more than
   // 14 seconds for a turn (15 s of work + 14 s of waiting + request overhead stays under the 30 s of NFR-7).
-  return complete(messages as Msg[], { temperature: 0.2, maxTokens: 220, timeoutMs: CHAT_TIMEOUT_MS, maxWaitMs: CHAT_QUEUE_WAIT_MS });
+  return complete(messages as Msg[], { temperature: 0.2, maxTokens: CHAT_MAX_TOKENS[lang], fitMs: CHAT_TIMEOUT_MS * 0.85, timeoutMs: CHAT_TIMEOUT_MS, maxWaitMs: CHAT_QUEUE_WAIT_MS });
 }
 // Warm-up (see ai/warmup.ts). The first time Ollama reads a long system prompt it needs 30-60 s, far more than the 15 s limit,
 // but it keeps the evaluated prompt and reuses it for every later question with the same system prompt. So the server sends each
@@ -714,6 +780,8 @@ export async function warmUpPrompt(ctx: Ctx): Promise<void> {
   await complete([{ role: "system", content: systemPrompt(ctx) }, { role: "user", content: "Hi" }] as Msg[], { temperature: 0.2, maxTokens: 1, timeoutMs: 180_000 });
 }
 export const CHAT_TIMEOUT_MS = 15_000;
+// ~1 s to read the prompt + tokens / 12 per second stays under 12 s even when a reply uses its whole budget.
+export const CHAT_MAX_TOKENS: Record<Lang, number> = { en: 130, th: 115, my: 100 };
 export const CHAT_QUEUE_WAIT_MS = 14_000;
 
 // FR-7: the owner's voice setting decides how a Thai or Burmese reply ends. The model is told this in its
@@ -829,6 +897,24 @@ function unknownDish(text: string, ctx: Ctx, question: string): string | null {
   return null;
 }
 
+// A model reply must not contradict the database about availability. Per sentence: if it says "sold out / unavailable" and
+// names only dishes that are on sale, the model made it up (seen in the live eval: "Thai Iced Tea ... is sold out" while it
+// was on sale). The reverse: a sentence that recommends a dish that is sold out. A sentence naming both an available and
+// a sold-out dish ("X is sold out, try Y") is ambiguous and allowed: a false alarm would only annoy the diner.
+const SOLD_OUT_CUE = /sold out|sold-out|out of stock|unavailable|not available|ran out|run out|หมด|ไม่มีจำหน่าย|ไม่พร้อมเสิร์ฟ|ကုန်သွား|ကုန်နေ|ကုန်ပါ|မရနိုင်/i;
+const RECOMMEND_CUE = /\b(?:recommend|suggest|try|enjoy|how about|you might like|you may like|go for)\b|แนะนำ|ลอง|ယူကြည့်|အကြံပြု|စားကြည့်/i;
+function availabilityLie(text: string, items: Item[]): boolean {
+  for (const sentence of text.split(/[.!?;\n।၊။]+/)) {
+    if (!sentence.trim()) continue;
+    const named = matchDishes(sentence, items).map((d) => d.item);
+    if (!named.length) continue;
+    const onSale = named.filter((i) => i.available), soldOut = named.filter((i) => !i.available);
+    if (SOLD_OUT_CUE.test(sentence) && onSale.length && !soldOut.length) return true;
+    if (!SOLD_OUT_CUE.test(sentence) && RECOMMEND_CUE.test(sentence) && soldOut.length && !onSale.length) return true;
+  }
+  return false;
+}
+
 function checkModelReply(raw: string, lang: Lang, p: string, ctx: Ctx, topic: string, allergens: string[], question: string): ChatResult {
   const m = raw.match(/\n?\s*ACTION:\s*(.*)$/s);
   let text = raw.replace(/\n?\s*ACTION:.*$/s, "").trim();
@@ -854,7 +940,7 @@ function checkModelReply(raw: string, lang: Lang, p: string, ctx: Ctx, topic: st
   // a reply that is only "how can I help you?" to a real question answers nothing (greetings and thanks are fine)
   const justHelp = text.length < 60 && /^(?:how can i (?:help|assist)[^.?]*\??|anything else i can help with\??|มีอะไรให้(?:ช่วย|ผม)[^.]*|ဘာ(?:များ)?\s?ကူညီပေးရမလဲ[^။]*။?)$/i.test(text.replace(/\s+/g, " ").trim());
   const greeting = /^\s*(?:hi|hello|hey|good (?:morning|afternoon|evening))\b|สวัสดี|หวัดดี|มีใคร|မင်္ဂလာ|ဟယ်လို/i.test(question);
-  const bad = !text || (justHelp && !greeting) || UNSAFE.some((re) => re.test(text)) || wrongPrice(text, ctx.items) || unknownAmount(text, ctx.items, question) || misPricedClause(text, ctx.items, question) || unknownDish(text, ctx, question) !== null;
+  const bad = !text || (justHelp && !greeting) || UNSAFE.some((re) => re.test(text)) || wrongPrice(text, ctx.items) || unknownAmount(text, ctx.items, question) || misPricedClause(text, ctx.items, question) || unknownDish(text, ctx, question) !== null || availabilityLie(text, ctx.items);
   if (bad) return { reply: dontKnow(lang, p), action: { type: "none" }, topic, allergens, answered: false, usedModel: true };
   // The model may not say anything about allergens, in either direction ("contains peanuts", "nut-free", "no dairy"):
   // it only sees the data it was given and has been wrong about it. Allergen facts come from the database only, so such
