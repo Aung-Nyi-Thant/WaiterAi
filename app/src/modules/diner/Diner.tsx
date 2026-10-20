@@ -63,7 +63,10 @@ export default function Diner({ slug }: { slug: string }) {
   // The chat's messages live here, not in Chat: closing the chat unmounts Chat, and the conversation must still be there when it is reopened.
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const t = (k: string) => tr(lang, k);
-  const say = (m: string, warn = false) => { setToast({ m, warn }); setTimeout(() => setToast(null), 2600); };
+  // One timer for the toast: a new message restarts it (the first message's timer used to cut the second one short), and leaving the page stops it.
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const say = (m: string, warn = false) => { setToast({ m, warn }); clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(null), 2600); };
+  useEffect(() => () => clearTimeout(toastTimer.current), []);
   const heroRef = useRef<HTMLDivElement>(null);
   // The chat now expands in place inside the hero card instead of covering the screen;
   // scroll it into view so it's visible no matter where the diner opened it from
