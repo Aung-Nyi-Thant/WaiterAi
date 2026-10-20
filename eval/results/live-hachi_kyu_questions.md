@@ -1,6 +1,6 @@
 # Live AI eval
 
-Model: gemma4:12b (Ollama default) · 2026-10-20 · 31 questions · average 2098 ms per answer
+Model: gemma4:12b (Ollama), HaChi Kyu (132 dishes) · 2026-10-20 · 31 questions · average 1438 ms per answer
 
 | Language | Passed |
 |---|---|
