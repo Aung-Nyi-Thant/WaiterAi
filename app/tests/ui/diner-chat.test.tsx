@@ -140,7 +140,7 @@ describe("using the chat", () => {
     expect(screen.getAllByText(T("hello"))).toHaveLength(1);
     expect(screen.getByText(/22:00/)).toBeTruthy();
   });
-  it("Escape closes the chat and returns focus to where it was", async () => {
+  it("Escape closes the chat", async () => {
     await open();
     await openChat();
     fireEvent.keyDown(document.querySelector(".chat-inline") as HTMLElement, { key: "Escape" });

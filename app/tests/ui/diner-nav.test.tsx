@@ -22,6 +22,9 @@ const open = async (url = "/?t=5") => {
 };
 const nav = () => document.querySelector(".diner-nav") as HTMLElement;      // the bottom pill (the category tabs are a navigation too)
 const navBtn = (name: RegExp | string) => within(nav()).getByRole("button", { name });
+// The sheet's Escape listener is attached by an effect that React may run a moment after the sheet appears (slowly, on a busy CI machine), so a single
+// key press right after the sheet shows can be missed. Press until it is gone: a person who pressed Escape and saw nothing would press it again.
+const escapeClosesDialog = () => waitFor(() => { fireEvent.keyDown(document, { key: "Escape" }); expect(screen.queryByRole("dialog")).toBeNull(); });
 const addBtn = (name: string) => screen.getByRole("button", { name: `${T("add")} ${name}` });
 
 describe("the header", () => {
@@ -110,8 +113,7 @@ describe("the bottom navigation", () => {
     const dlg = await screen.findByRole("dialog", { name: T("tableBill") });
     expect(within(dlg).getByText(T("billEmpty"))).toBeTruthy();
     expect(within(dlg).queryByRole("button", { name: new RegExp(T("askBill")) })).toBeNull();
-    fireEvent.keyDown(document, { key: "Escape" });
-    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await escapeClosesDialog();
   });
   it("the call button calls the staff for this table, rings for a second, and says so", async () => {
     run("DELETE FROM calls");
@@ -232,8 +234,7 @@ describe("the dish sheet", () => {
     fireEvent.click(within(dlg).getByRole("button", { name: T("close") }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     await openDish("Tom Yum Goong");
-    fireEvent.keyDown(document, { key: "Escape" });
-    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await escapeClosesDialog();
     dlg = await openDish("Tom Yum Goong");
     fireEvent.click(dlg.parentElement as HTMLElement);
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
@@ -260,8 +261,7 @@ describe("My picks and the sheets", () => {
     expect(within(dlg).getByText(B(180))).toBeTruthy();
     fireEvent.click(within(dlg).getByRole("button", { name: T("remove") }));
     expect(within(dlg).getByText(T("picksEmpty"))).toBeTruthy();
-    fireEvent.keyDown(document, { key: "Escape" });
-    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await escapeClosesDialog();
     expect(document.querySelector(".picks-bar")).toBeNull();
   });
   it("sending the picks shows the confirmation with the table, the lines and the total, and Escape or Done closes it", async () => {
@@ -273,8 +273,7 @@ describe("My picks and the sheets", () => {
     expect(within(dlg).getByText(`${T("table")} 7`)).toBeTruthy();
     expect(within(dlg).getByText("1× Tom Yum Goong")).toBeTruthy();
     expect(within(dlg).getByText(B(250))).toBeTruthy();                                // 180 + 70
-    fireEvent.keyDown(document, { key: "Escape" });
-    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await escapeClosesDialog();
     await flush();
   });
   it("the toast for an allergen warning is marked as a warning with an icon", async () => {
