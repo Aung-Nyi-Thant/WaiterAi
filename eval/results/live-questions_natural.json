@@ -1,6 +1,6 @@
 {
  "label": "gemma4:12b (Ollama default)",
- "date": "2026-10-20T10:43:34.009Z",
+ "date": "2026-10-20T19:11:13.077Z",
  "summary": {
   "overall": {
    "pass": 34,
@@ -103,15 +103,15 @@
    "lang": "en",
    "category": "payment",
    "pass": true,
-   "ms": 2349,
-   "reply": "I don't have that information. Please check with the staff."
+   "ms": 1866,
+   "reply": "I don't have that information, please check with the staff."
   },
   {
    "id": "ne2",
    "lang": "en",
    "category": "cheapest",
    "pass": true,
-   "ms": 7,
+   "ms": 18,
    "reply": "The cheapest on our menu: Thai Iced Tea (฿50), Grilled Pork Skewers (฿60), Papaya Salad (฿70). Anything else I can help with?"
   },
   {
@@ -119,7 +119,7 @@
    "lang": "en",
    "category": "cheapest",
    "pass": true,
-   "ms": 3,
+   "ms": 9,
    "reply": "The most expensive on our menu: Steamed Fish with Lime (฿260), Tom Yum Goong (฿180), Beef Massaman Curry (฿160). Anything else I can help with?"
   },
   {
@@ -127,7 +127,7 @@
    "lang": "en",
    "category": "named_dish",
    "pass": true,
-   "ms": 3,
+   "ms": 8,
    "reply": "Tom Yum Goong is very spicy (฿180). Anything else I can help with?"
   },
   {
@@ -135,15 +135,15 @@
    "lang": "en",
    "category": "popular",
    "pass": true,
-   "ms": 4,
-   "reply": "Popular here: Shrimp Pad Thai (฿120, not spicy), Chicken Green Curry (฿140, spicy), Tom Yum Goong (฿180, very spicy). Anything else I can help with?"
+   "ms": 7,
+   "reply": "I can't say which dishes are the most popular, because there is no order history to go by. Here are a few from different parts of the menu: Shrimp Pad Thai (฿120), Chicken Green Curry (฿140), Fresh Spring Rolls (฿85), Mango Sticky Rice (฿100). Tell me what you like (spicy or mild, a budget, a type of dish, vegetarian) and I will narrow it down."
   },
   {
    "id": "ne6",
    "lang": "en",
    "category": "social",
    "pass": true,
-   "ms": 3,
+   "ms": 5,
    "reply": "You're welcome! Anything else I can help with?"
   },
   {
@@ -151,7 +151,7 @@
    "lang": "en",
    "category": "no_data",
    "pass": true,
-   "ms": 1691,
+   "ms": 1711,
    "reply": "I do not have that information, please check with the staff."
   },
   {
@@ -159,15 +159,15 @@
    "lang": "en",
    "category": "open",
    "pass": true,
-   "ms": 5127,
-   "reply": "Would you like to try some Thai Iced Tea to go with your meal? Tom Yum Goong lists these allergens: shellfish, fish. Please confirm with the staff before ordering."
+   "ms": 8652,
+   "reply": "I don't have information on other soups, so please check with the staff. Would you like to try a Thai Iced Tea to go with your meal? Tom Yum Goong lists these allergens: shellfish, fish. Please confirm with the staff before ordering."
   },
   {
    "id": "ne9",
    "lang": "en",
    "category": "seafood",
    "pass": true,
-   "ms": 9,
+   "ms": 18,
    "reply": "Dishes that list shellfish / fish: Shrimp Pad Thai, Chicken Green Curry, Tom Yum Goong, Papaya Salad, Steamed Fish with Lime. Allergen information is not provided for: Fresh Spring Rolls. Please confirm with the staff before ordering."
   },
   {
@@ -175,7 +175,7 @@
    "lang": "en",
    "category": "modification",
    "pass": true,
-   "ms": 3,
+   "ms": 8,
    "reply": "Tom Yum Goong lists these allergens: shellfish, fish. Please confirm with the staff before ordering. I can't promise that a dish can be changed, so please ask the staff."
   },
   {
@@ -183,7 +183,7 @@
    "lang": "en",
    "category": "no_data",
    "pass": true,
-   "ms": 3,
+   "ms": 6,
    "reply": "I don't have that information. Please ask the staff."
   },
   {
@@ -191,7 +191,7 @@
    "lang": "en",
    "category": "compare",
    "pass": true,
-   "ms": 3,
+   "ms": 6,
    "reply": "Chicken Green Curry: ฿140, spicy. Beef Massaman Curry: ฿160, not spicy. I only have the price and spice level of each dish; please ask the staff about taste and portion size."
   },
   {
@@ -199,7 +199,7 @@
    "lang": "en",
    "category": "halal",
    "pass": true,
-   "ms": 2,
+   "ms": 5,
    "reply": "I don't have halal information for our dishes. Dishes that list pork: Grilled Pork Skewers. Please ask the staff."
   },
   {
@@ -207,23 +207,23 @@
    "lang": "en",
    "category": "kids",
    "pass": true,
-   "ms": 2524,
-   "reply": "I do not have information about a kids menu in my records. Please check with the staff for more details."
+   "ms": 3142,
+   "reply": "I do not have information about a kids menu. Please check with the staff for more details."
   },
   {
    "id": "ne15",
    "lang": "en",
    "category": "open",
    "pass": true,
-   "ms": 5830,
-   "reply": "I would recommend the Fresh Spring Rolls for 85 THB or the Vegetable Tofu Stir-fry for 90 THB. You might also enjoy a Thai Iced Tea for 50 THB."
+   "ms": 9288,
+   "reply": "I recommend the Fresh Spring Rolls for 85 THB or the Vegetable Tofu Stir-fry for 90 THB (vegan, vegetarian). You might also enjoy a Thai Iced Tea for 50 THB."
   },
   {
    "id": "ne16",
    "lang": "en",
    "category": "named_dish",
    "pass": true,
-   "ms": 6,
+   "ms": 17,
    "reply": "Shrimp Pad Thai is not tagged vegetarian on our menu, so it may contain meat or fish. Please confirm with the staff before ordering."
   },
   {
@@ -231,7 +231,7 @@
    "lang": "th",
    "category": "social",
    "pass": true,
-   "ms": 7,
+   "ms": 9,
    "reply": "ยินดีครับ มีอะไรให้ช่วยอีกไหมครับ"
   },
   {
@@ -239,15 +239,15 @@
    "lang": "th",
    "category": "faq",
    "pass": true,
-   "ms": 2458,
-   "reply": "ได้ค่ะ แจ้งพนักงานก่อนชำระเงินเพื่อขอใบกำกับภาษีครับ"
+   "ms": 3942,
+   "reply": "ได้ค่ะ แจ้งพนักงานก่อนชำระเงินเพื่อขอใบกำกับภาษีได้เลยครับ"
   },
   {
    "id": "nt3",
    "lang": "th",
    "category": "named_dish",
    "pass": true,
-   "ms": 6,
+   "ms": 19,
    "reply": "ต้มยำกุ้งเผ็ดมาก (180 บาท)ครับ มีอะไรให้ช่วยอีกไหมครับ"
   },
   {
@@ -255,7 +255,7 @@
    "lang": "th",
    "category": "compare",
    "pass": true,
-   "ms": 4,
+   "ms": 8,
    "reply": "แกงเขียวหวานไก่: 140 บาท, เผ็ดครับ แกงมัสมั่นเนื้อ: 160 บาท, ไม่เผ็ดครับ มีข้อมูลเฉพาะราคาและระดับความเผ็ดของแต่ละเมนูครับ ส่วนรสชาติและปริมาณ กรุณาสอบถามพนักงานครับ"
   },
   {
@@ -263,7 +263,7 @@
    "lang": "th",
    "category": "cheapest",
    "pass": true,
-   "ms": 4,
+   "ms": 8,
    "reply": "เมนูที่ราคาถูกที่สุด: ชาไทยเย็น (50 บาท), หมูปิ้ง (60 บาท), ส้มตำ (70 บาท)ครับ มีอะไรให้ช่วยอีกไหมครับ"
   },
   {
@@ -271,15 +271,15 @@
    "lang": "th",
    "category": "currency",
    "pass": true,
-   "ms": 7270,
-   "reply": "ยินดีต้อนรับครับ ผมขอแนะนำ ผัดไทยกุ้ง (120 บาท) และ แกงเขียวหวานไก่ (140 บาท) ครับ หรือหากต้องการเมนูมังสวิรัติ แนะนำ ผัดผักรวมเต้าหู้ (90 บาท) ครับ"
+   "ms": 11251,
+   "reply": "ยินดีต้อนรับครับ ผมขอแนะนำ ผัดไทยกุ้ง (120 บาท) และ แกงเขียวหวานไก่ (140 บาท) ครับ หรือหากต้องการเมนูมังสวิรัติ ผมแนะนำ ผัดผักรวมเต้าหู้ (90 บาท) ครับ"
   },
   {
    "id": "nt7",
    "lang": "th",
    "category": "halal",
    "pass": true,
-   "ms": 7,
+   "ms": 16,
    "reply": "ขออภัยครับ ไม่มีข้อมูลฮาลาลของเมนูครับ เมนูที่ระบุว่ามีหมู: หมูปิ้งครับ กรุณาสอบถามพนักงานครับ"
   },
   {
@@ -287,7 +287,7 @@
    "lang": "th",
    "category": "seafood",
    "pass": true,
-   "ms": 4,
+   "ms": 9,
    "reply": "เมนูที่มี กุ้ง/สัตว์น้ำมีเปลือก / ปลา ได้แก่ ผัดไทยกุ้ง, แกงเขียวหวานไก่, ต้มยำกุ้ง, ส้มตำ, ปลานึ่งมะนาวครับ ยังไม่มีข้อมูลสารก่อภูมิแพ้ของ: ปอเปี๊ยะสดครับ กรุณายืนยันกับพนักงานก่อนสั่งอาหารครับ"
   },
   {
@@ -295,7 +295,7 @@
    "lang": "th",
    "category": "no_data",
    "pass": true,
-   "ms": 4,
+   "ms": 7,
    "reply": "ขออภัยเป็นอย่างยิ่งครับ เรียกพนักงานมาที่โต๊ะให้แล้วครับ"
   },
   {
@@ -303,7 +303,7 @@
    "lang": "th",
    "category": "modification",
    "pass": true,
-   "ms": 3,
+   "ms": 6,
    "reply": "ต้มยำกุ้ง มีสารก่อภูมิแพ้: กุ้ง/สัตว์น้ำมีเปลือก, ปลาครับ กรุณายืนยันกับพนักงานก่อนสั่งอาหารครับ การเอาส่วนผสมออกหรือปรับสูตร ต้องให้พนักงานยืนยันครับ"
   },
   {
@@ -311,15 +311,15 @@
    "lang": "th",
    "category": "popular",
    "pass": true,
-   "ms": 1,
-   "reply": "ขอแนะนำเมนูยอดนิยม: ผัดไทยกุ้ง (120 บาท, ไม่เผ็ด), แกงเขียวหวานไก่ (140 บาท, เผ็ด), ต้มยำกุ้ง (180 บาท, เผ็ดมาก)ครับ มีอะไรให้ช่วยอีกไหมครับ"
+   "ms": 5,
+   "reply": "ยังไม่มีข้อมูลการสั่งที่บอกได้ว่าเมนูไหนขายดีครับ ขอยกตัวอย่างจากหลายหมวดของเมนู: ผัดไทยกุ้ง (120 บาท), แกงเขียวหวานไก่ (140 บาท), ปอเปี๊ยะสด (85 บาท), ข้าวเหนียวมะม่วง (100 บาท)ครับ บอกได้เลยว่าชอบแบบไหน (เผ็ดหรือไม่เผ็ด งบเท่าไร ประเภทอาหาร มังสวิรัติ) แล้วจะช่วยเลือกให้ครับ"
   },
   {
    "id": "nm1",
    "lang": "my",
    "category": "social",
    "pass": true,
-   "ms": 2,
+   "ms": 5,
    "reply": "ရပါတယ်ခင်ဗျာ။ ဘာကူညီပေးရမလဲခင်ဗျာ?"
   },
   {
@@ -327,7 +327,7 @@
    "lang": "my",
    "category": "no_data",
    "pass": true,
-   "ms": 5922,
+   "ms": 9146,
    "reply": "ကျွန်တော် အစားအစာပြင်ဆင်ချိန်ကို အချက်အလက်မရှိလို့ မပြောပြနိုင်ပါဘူးခင်ဗျာ။ ဝန်ထမ်းကို မေးမြန်းကြည့်စေလိုပါတယ်ခင်ဗျာ။ ဘာကူညီပေးရမလဲခင်ဗျာ။"
   },
   {
@@ -335,7 +335,7 @@
    "lang": "my",
    "category": "cheapest",
    "pass": true,
-   "ms": 7,
+   "ms": 16,
    "reply": "ဈေးအသက်သာဆုံး ဟင်းလျာတွေကတော့ ထိုင်းလက်ဖက်ရည်အေး (၅၀ ဘတ်)၊ ဝက်သားကင် (၆၀ ဘတ်)၊ သင်္ဘောသီးသုပ် (၇၀ ဘတ်) ဖြစ်ပါတယ်ခင်ဗျာ။ ဘာကူညီပေးရမလဲခင်ဗျာ?"
   },
   {
@@ -343,7 +343,7 @@
    "lang": "my",
    "category": "seafood",
    "pass": true,
-   "ms": 6,
+   "ms": 8,
    "reply": "shellfish / fish ပါဝင်တဲ့ ဟင်းလျာတွေကတော့ ပုစွန် ပတ်ထိုင်း၊ ကြက်သား ဂရင်းကာရီ၊ တွမ်ယမ်ကွန်း၊ သင်္ဘောသီးသုပ်၊ ငါးပေါင်း ဖြစ်ပါတယ်ခင်ဗျာ။ ဟင်းသီးဟင်းရွက် ကော်ပြန့်စိမ်း အတွက် Allergen အချက်အလက် မရှိပါဘူးခင်ဗျာ။ ဝန်ထမ်းကို မေးမြန်းပေးပါခင်ဗျာ။"
   },
   {
@@ -351,7 +351,7 @@
    "lang": "my",
    "category": "halal",
    "pass": true,
-   "ms": 4,
+   "ms": 6,
    "reply": "ဟလာလ် အချက်အလက် မရှိပါဘူးခင်ဗျာ။ ဝက်သားပါတဲ့ ဟင်းလျာတွေကတော့ ဝက်သားကင် ဖြစ်ပါတယ်ခင်ဗျာ။ ဝန်ထမ်းကို မေးမြန်းပေးပါခင်ဗျာ။"
   },
   {
@@ -359,7 +359,7 @@
    "lang": "my",
    "category": "currency",
    "pass": true,
-   "ms": 8713,
+   "ms": 12862,
    "reply": "ကျွန်တော် အကြံပြုလိုတဲ့ ဟင်းလျာတွေကတော့ တွမ်ယမ်ကွန်း (၁၈၀ ဘတ်) နဲ့ အမဲသား မတ်စမန်ကာရီ (၁၆၀ ဘတ်) တို့ ဖြစ်ပါတယ်ခင်ဗျာ။ အချိုပွဲအနေနဲ့ ထိုင်းလက်ဖက်ရည်အေးကိုလည်း မှာယူနိုင်ပါတယ်ခင်ဗျာ။"
   },
   {
@@ -367,7 +367,7 @@
    "lang": "my",
    "category": "named_dish",
    "pass": true,
-   "ms": 6,
+   "ms": 18,
    "reply": "တွမ်ယမ်ကွန်း က အရမ်းစပ်ပါတယ်ခင်ဗျာ။ ဈေးနှုန်းက ၁၈၀ ဘတ် ဖြစ်ပါတယ်ခင်ဗျာ။ ဘာကူညီပေးရမလဲခင်ဗျာ?"
   }
  ]

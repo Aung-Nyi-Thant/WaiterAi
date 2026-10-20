@@ -1,11 +1,11 @@
 {
  "label": "gemma4:12b (Ollama default)",
- "date": "2026-10-20T10:50:30.694Z",
+ "date": "2026-10-20T19:17:53.802Z",
  "summary": {
   "overall": {
-   "pass": 125,
+   "pass": 124,
    "total": 126,
-   "pct": 0.9920634920634921
+   "pct": 0.9841269841269841
   },
   "byLang": {
    "en": {
@@ -19,9 +19,9 @@
     "pct": 1
    },
    "th": {
-    "pass": 41,
+    "pass": 40,
     "total": 42,
-    "pct": 0.9761904761904762
+    "pct": 0.9523809523809523
    }
   },
   "byCategory": {
@@ -71,9 +71,9 @@
     "pct": 1
    },
    "recommend": {
-    "pass": 18,
+    "pass": 17,
     "total": 18,
-    "pct": 1
+    "pct": 0.9444444444444444
    },
    "smalltalk": {
     "pass": 12,
@@ -93,15 +93,15 @@
    "lang": "en",
    "category": "recommend",
    "pass": true,
-   "ms": 5138,
-   "reply": "I recommend the Thai Iced Tea for 50 THB. However, please note that the Coconut Ice Cream is sold out today, so you might enjoy the Thai Iced Tea instead."
+   "ms": 7447,
+   "reply": "I recommend the Thai Iced Tea for 50 THB. However, the Coconut Ice Cream is sold out today, so you might enjoy the Thai Iced Tea instead."
   },
   {
    "id": "oen-r2",
    "lang": "en",
    "category": "recommend",
    "pass": true,
-   "ms": 6029,
+   "ms": 9082,
    "reply": "I recommend the Chicken Fried Rice for 80 THB or the Beef Massaman Curry for 160 THB. You might also enjoy a refreshing Thai Iced Tea for 50 THB."
   },
   {
@@ -109,15 +109,15 @@
    "lang": "en",
    "category": "recommend",
    "pass": true,
-   "ms": 6312,
-   "reply": "I recommend the Shrimp Pad Thai (120 THB) and the Chicken Green Curry (140 THB, spicy). You could also enjoy a refreshing Thai Iced Tea (50 THB) together."
+   "ms": 8808,
+   "reply": "I recommend the Shrimp Pad Thai (120 THB) and the Chicken Green Curry (140 THB). You could also enjoy some Mango Sticky Rice (100 THB) for dessert."
   },
   {
    "id": "oen-r4",
    "lang": "en",
    "category": "recommend",
    "pass": true,
-   "ms": 5,
+   "ms": 17,
    "reply": "Desserts: Mango Sticky Rice (฿100, not spicy). Anything else I can help with?"
   },
   {
@@ -125,23 +125,23 @@
    "lang": "en",
    "category": "recommend",
    "pass": true,
-   "ms": 7146,
-   "reply": "I recommend trying the Beef Massaman Curry for 160 THB or the spicy Tom Yum Goong for 180 THB. You might also enjoy a refreshing Thai Iced Tea for 50 THB."
+   "ms": 9562,
+   "reply": "I recommend trying the Tom Yum Goong (180 THB, spicy) or the Beef Massaman Curry (160 THB). You could also enjoy a refreshing Thai Iced Tea (50 THB) afterwards."
   },
   {
    "id": "oen-r6",
    "lang": "en",
    "category": "recommend",
    "pass": true,
-   "ms": 5129,
-   "reply": "I don't have information on what goes well with the Chicken Green Curry. You may want to ask the staff for a recommendation."
+   "ms": 7046,
+   "reply": "I would suggest trying the Mango Sticky Rice to accompany your Chicken Green Curry. It is a vegan and vegetarian dish priced at 100 THB."
   },
   {
    "id": "oen-d1",
    "lang": "en",
    "category": "describe",
    "pass": true,
-   "ms": 6,
+   "ms": 18,
    "reply": "Tom Yum Goong: Hot and sour shrimp soup with lemongrass and lime. ฿180, very spicy. Anything else I can help with?"
   },
   {
@@ -149,7 +149,7 @@
    "lang": "en",
    "category": "describe",
    "pass": true,
-   "ms": 4,
+   "ms": 7,
    "reply": "Beef Massaman Curry: Mild curry with beef, potato and peanuts. ฿160, not spicy. Anything else I can help with?"
   },
   {
@@ -157,7 +157,7 @@
    "lang": "en",
    "category": "describe",
    "pass": true,
-   "ms": 4,
+   "ms": 8,
    "reply": "Fresh Spring Rolls is made with: rice paper, vegetables, herbs, dipping sauce (recipe not fully recorded)."
   },
   {
@@ -165,7 +165,7 @@
    "lang": "en",
    "category": "no_data",
    "pass": true,
-   "ms": 3,
+   "ms": 6,
    "reply": "I don't have that information. Please ask the staff."
   },
   {
@@ -173,7 +173,7 @@
    "lang": "en",
    "category": "describe",
    "pass": true,
-   "ms": 2,
+   "ms": 6,
    "reply": "Mango Sticky Rice is tagged vegan on our menu. Please confirm with the staff before ordering."
   },
   {
@@ -181,7 +181,7 @@
    "lang": "en",
    "category": "compare",
    "pass": true,
-   "ms": 3,
+   "ms": 5,
    "reply": "Papaya Salad is spicier (very spicy); Chicken Green Curry is spicy."
   },
   {
@@ -189,7 +189,7 @@
    "lang": "en",
    "category": "compare",
    "pass": true,
-   "ms": 2,
+   "ms": 4,
    "reply": "Chicken Fried Rice is cheaper (฿80); Shrimp Pad Thai is ฿120."
   },
   {
@@ -197,15 +197,15 @@
    "lang": "en",
    "category": "dietary",
    "pass": true,
-   "ms": 11704,
-   "reply": "Would you like to try a Thai Iced Tea to go with your meal? Chicken Green Curry lists these allergens: shellfish. Please confirm with the staff before ordering."
+   "ms": 11345,
+   "reply": "You might also enjoy the Mango Sticky Rice (100 THB, vegan, vegetarian) for dessert. Chicken Green Curry lists these allergens: shellfish. Please confirm with the staff before ordering."
   },
   {
    "id": "oen-t2",
    "lang": "en",
    "category": "dietary",
    "pass": true,
-   "ms": 6,
+   "ms": 16,
    "reply": "Shrimp Pad Thai is not tagged vegetarian on our menu, so it may contain meat or fish. Please confirm with the staff before ordering."
   },
   {
@@ -213,7 +213,7 @@
    "lang": "en",
    "category": "dietary",
    "pass": true,
-   "ms": 5,
+   "ms": 8,
    "reply": "Chicken Fried Rice is not tagged as containing pork on our menu. I can't see the kitchen, so please ask the staff if it matters."
   },
   {
@@ -221,7 +221,7 @@
    "lang": "en",
    "category": "dietary",
    "pass": true,
-   "ms": 4,
+   "ms": 8,
    "reply": "Vegetarian dishes: Vegetable Tofu Stir-fry (฿90), Mango Sticky Rice (฿100), Thai Iced Tea (฿50). Anything else I can help with?"
   },
   {
@@ -229,7 +229,7 @@
    "lang": "en",
    "category": "faq",
    "pass": true,
-   "ms": 3231,
+   "ms": 3491,
    "reply": "Yes, there is free Wi-Fi. Please ask the staff for the password."
   },
   {
@@ -237,23 +237,23 @@
    "lang": "en",
    "category": "faq",
    "pass": true,
-   "ms": 2793,
-   "reply": "There is free parking behind the building with 20 spaces available."
+   "ms": 3213,
+   "reply": "There is free parking behind the building with 20 spaces."
   },
   {
    "id": "oen-f3",
    "lang": "en",
    "category": "faq",
    "pass": true,
-   "ms": 3209,
-   "reply": "Yes, we can provide tax invoices. Please inform the staff before making your payment."
+   "ms": 2996,
+   "reply": "Yes, you can get a tax invoice. Please tell the staff before paying."
   },
   {
    "id": "oen-f4",
    "lang": "en",
    "category": "no_data",
    "pass": true,
-   "ms": 7,
+   "ms": 16,
    "reply": "I don't have that information. Please ask the staff."
   },
   {
@@ -261,7 +261,7 @@
    "lang": "en",
    "category": "no_data",
    "pass": true,
-   "ms": 2558,
+   "ms": 2666,
    "reply": "I don't have that information, please check with the staff."
   },
   {
@@ -269,7 +269,7 @@
    "lang": "en",
    "category": "no_data",
    "pass": true,
-   "ms": 2679,
+   "ms": 2668,
    "reply": "I don't have that information, please check with the staff."
   },
   {
@@ -277,31 +277,31 @@
    "lang": "en",
    "category": "out_of_menu",
    "pass": true,
-   "ms": 4749,
-   "reply": "I am sorry, but the restaurant does not serve pizza. I don't have any information on that item."
+   "ms": 4483,
+   "reply": "I'm sorry, but the restaurant does not serve pizza. May I suggest another dish from our menu instead?"
   },
   {
    "id": "oen-o2",
    "lang": "en",
    "category": "out_of_menu",
    "pass": true,
-   "ms": 4754,
-   "reply": "I'm sorry, but the restaurant does not serve sushi. Would you like to see our other available dishes instead?"
+   "ms": 4310,
+   "reply": "I'm sorry, but the restaurant does not serve sushi. May I suggest another dish or a drink instead?"
   },
   {
    "id": "oen-o3",
    "lang": "en",
    "category": "out_of_menu",
    "pass": true,
-   "ms": 4471,
-   "reply": "I'm sorry, but the restaurant does not serve beer. Please check with the staff for more information."
+   "ms": 5639,
+   "reply": "I'm sorry, but the restaurant does not serve beer. I don't have information on other beverages, but you may want to check with the staff."
   },
   {
    "id": "oen-s1",
    "lang": "en",
    "category": "smalltalk",
    "pass": true,
-   "ms": 2866,
+   "ms": 2681,
    "reply": "Hello! How can I help you today?"
   },
   {
@@ -309,7 +309,7 @@
    "lang": "en",
    "category": "smalltalk",
    "pass": true,
-   "ms": 5,
+   "ms": 17,
    "reply": "I'm The Waiter, the AI waiter of Golden Lotus Kitchen: a computer program, not a person. If you would like a person, tap \"Call staff\"."
   },
   {
@@ -317,7 +317,7 @@
    "lang": "en",
    "category": "smalltalk",
    "pass": true,
-   "ms": 4,
+   "ms": 8,
    "reply": "I'm The Waiter, the AI waiter of Golden Lotus Kitchen: a computer program, not a person. If you would like a person, tap \"Call staff\"."
   },
   {
@@ -325,15 +325,15 @@
    "lang": "en",
    "category": "smalltalk",
    "pass": true,
-   "ms": 3041,
-   "reply": "I don't have that information. Please check with the staff."
+   "ms": 2622,
+   "reply": "I don't have that information, please check with the staff."
   },
   {
    "id": "oen-m1",
    "lang": "en",
    "category": "complaint",
    "pass": true,
-   "ms": 6,
+   "ms": 17,
    "reply": "I'm sorry about that. I've called the staff to your table."
   },
   {
@@ -341,7 +341,7 @@
    "lang": "en",
    "category": "complaint",
    "pass": true,
-   "ms": 3,
+   "ms": 8,
    "reply": "I'm sorry about that. I've called the staff to your table."
   },
   {
@@ -349,23 +349,23 @@
    "lang": "en",
    "category": "vague",
    "pass": true,
-   "ms": 14983,
-   "reply": "We have several dishes available, such as Shrimp Pad Thai (120 THB), Chicken Green Curry (140 THB, spicy), and Tom Yum Goong (180 THB, spicy). For a vegetarian option, I can suggest Vegetable Tofu Stir-fry (90 THB). Would you like to see the full menu?"
+   "ms": 11214,
+   "reply": "We have several dishes available today. You can try Shrimp Pad Thai (120 THB), Chicken Green Curry (140 THB, spicy), or Vegetable Tofu Stir-fry (90 THB, vegan/vegetarian). Would you like to see the full menu?"
   },
   {
    "id": "oen-a2",
    "lang": "en",
    "category": "vague",
    "pass": true,
-   "ms": 5863,
-   "reply": "Please let me know which dish you are interested in so I can provide the price. I can also suggest a drink or dessert to go with your meal."
+   "ms": 5390,
+   "reply": "Please let me know which dish you are interested in so I can provide the price. I can also suggest a drink or dessert to accompany your meal."
   },
   {
    "id": "oen-p1",
    "lang": "en",
    "category": "price",
    "pass": true,
-   "ms": 6,
+   "ms": 18,
    "reply": "The most expensive on our menu: Steamed Fish with Lime (฿260), Tom Yum Goong (฿180), Beef Massaman Curry (฿160). Anything else I can help with?"
   },
   {
@@ -373,15 +373,15 @@
    "lang": "en",
    "category": "price",
    "pass": true,
-   "ms": 5,
-   "reply": "The cheapest on our menu: Thai Iced Tea (฿50). Anything else I can help with?"
+   "ms": 8,
+   "reply": "The cheapest in Drinks: Thai Iced Tea (฿50). Anything else I can help with?"
   },
   {
    "id": "oen-p3",
    "lang": "en",
    "category": "price",
    "pass": true,
-   "ms": 4,
+   "ms": 6,
    "reply": "No dish on the menu matches under ฿50 right now. Tell me what to change (budget, spice level or type of dish)."
   },
   {
@@ -389,7 +389,7 @@
    "lang": "en",
    "category": "no_data",
    "pass": true,
-   "ms": 5,
+   "ms": 7,
    "reply": "I don't have that information. Please ask the staff."
   },
   {
@@ -397,15 +397,15 @@
    "lang": "en",
    "category": "no_data",
    "pass": true,
-   "ms": 2786,
-   "reply": "I don't have that information. Please check with the staff."
+   "ms": 2595,
+   "reply": "I don't have that information, please check with the staff."
   },
   {
    "id": "oen-x1",
    "lang": "en",
    "category": "allergy_indirect",
    "pass": true,
-   "ms": 6,
+   "ms": 19,
    "reply": "Dishes that list peanut / tree nuts: Shrimp Pad Thai, Beef Massaman Curry, Papaya Salad. Allergen information is not provided for: Fresh Spring Rolls. Please confirm with the staff before ordering."
   },
   {
@@ -421,23 +421,23 @@
    "lang": "en",
    "category": "allergy_indirect",
    "pass": true,
-   "ms": 4,
+   "ms": 7,
    "reply": "Tom Yum Goong lists these allergens: shellfish, fish. Please confirm with the staff before ordering."
   },
   {
    "id": "oth-r1",
    "lang": "th",
    "category": "recommend",
-   "pass": true,
-   "ms": 13263,
-   "reply": "แนะนำเมนู \"ถาดผักรวมเต้าหู้\" (90 บาท, vegan, vegetarian) หรือ \"ข้าวเหนียวมะม่วง\" (100 บาท, vegan, vegetarian) เพื่อคลายร้อนครับ หรือจะรับ \"ชาไทยเย็น\" (50 บาท) สักแก้วดีไหมครับ"
+   "pass": false,
+   "ms": 12455,
+   "reply": "ขออภัย ไม่มีข้อมูลนี้ครับ กรุณาสอบถามพนักงานครับ"
   },
   {
    "id": "oth-r2",
    "lang": "th",
    "category": "recommend",
    "pass": true,
-   "ms": 11874,
+   "ms": 10562,
    "reply": "คุณสามารถสั่งข้าวผัดไก่ (80 บาท) หรือแกงมัสมั่นเนื้อ (160 บาท) ได้ครับ หรือหากต้องการเมนูที่มีรสเผ็ด ผมแนะนำต้มยำกุ้ง (180 บาท) ครับ"
   },
   {
@@ -445,15 +445,15 @@
    "lang": "th",
    "category": "recommend",
    "pass": true,
-   "ms": 12372,
-   "reply": "สำหรับสองท่าน ขอแนะนำผัดไทยกุ้ง (120 บาท) และแกงเขียวหวานไก่ (140 บาท) ครับ หรือหากต้องการเมนูมังสวิรัติสามารถเลือกผัดผักรวมเต้าหู้ (90 บาท) ได้ครับ"
+   "ms": 11085,
+   "reply": "สำหรับสองท่าน แนะนำเป็นผัดไทยกุ้ง (120 บาท) และแกงเขียวหวานไก่ (140 บาท) ครับ หรือหากต้องการเมนูมังสวิรัติสามารถเลือกผัดผักรวมเต้าหู้ (90 บาท) ได้ครับ"
   },
   {
    "id": "oth-r4",
    "lang": "th",
    "category": "recommend",
    "pass": true,
-   "ms": 6,
+   "ms": 17,
    "reply": "ขอแนะนำเมนูของหวาน: ข้าวเหนียวมะม่วง (100 บาท, ไม่เผ็ด)ครับ มีอะไรให้ช่วยอีกไหมครับ"
   },
   {
@@ -461,15 +461,15 @@
    "lang": "th",
    "category": "recommend",
    "pass": true,
-   "ms": 12593,
-   "reply": "คุณสามารถลอง \"แกงมัสมั่นเนื้อ\" ราคา 160 บาท หรือ \"ต้มยำกุ้ง\" ราคา 180 บาท (เผ็ด) ได้ครับ หรือจะรับ \"ชาไทยเย็น\" ราคา 50 บาท เป็นเครื่องดื่มปิดท้ายดีไหมครับ"
+   "ms": 11697,
+   "reply": "คุณสามารถลอง \"แกงเขียวหวานไก่\" (140 บาท, เผ็ด) หรือ \"ต้มยำกุ้ง\" (180 บาท, เผ็ด) ได้ครับ หรือจะรับ \"ข้าวเหนียวมะม่วง\" (100 บาท) เป็นของหวานดีครับ"
   },
   {
    "id": "oth-r6",
    "lang": "th",
    "category": "recommend",
    "pass": true,
-   "ms": 11575,
+   "ms": 10232,
    "reply": "แกงเขียวหวานไก่ (140 บาท, เผ็ด) ทานคู่กับข้าวเหนียวมะม่วง (100 บาท) ได้ดีครับ หรือจะรับเป็นเครื่องดื่มอย่างชาไทยเย็น (50 บาท) ดีครับ"
   },
   {
@@ -477,7 +477,7 @@
    "lang": "th",
    "category": "describe",
    "pass": true,
-   "ms": 5,
+   "ms": 16,
    "reply": "ต้มยำกุ้ง: Hot and sour shrimp soup with lemongrass and lime. ราคา 180 บาท เผ็ดมากครับ มีอะไรให้ช่วยอีกไหมครับ"
   },
   {
@@ -485,7 +485,7 @@
    "lang": "th",
    "category": "describe",
    "pass": true,
-   "ms": 4,
+   "ms": 8,
    "reply": "แกงมัสมั่นเนื้อ: Mild curry with beef, potato and peanuts. ราคา 160 บาท ไม่เผ็ดครับ มีอะไรให้ช่วยอีกไหมครับ"
   },
   {
@@ -493,15 +493,15 @@
    "lang": "th",
    "category": "describe",
    "pass": true,
-   "ms": 3,
-   "reply": "ส่วนผสมของปอเปี๊ยะสด: rice paper, vegetables, herbs, dipping sauce (recipe not fully recorded)ครับ"
+   "ms": 6,
+   "reply": "ส่วนผสมของปอเปี๊ยะสด: rice paper, vegetables, herbs, dipping sauce (recipe not fully recorded) ครับ"
   },
   {
    "id": "oth-d4",
    "lang": "th",
    "category": "no_data",
    "pass": true,
-   "ms": 3,
+   "ms": 5,
    "reply": "ขออภัย ไม่มีข้อมูลนี้ครับ กรุณาสอบถามพนักงานครับ"
   },
   {
@@ -509,7 +509,7 @@
    "lang": "th",
    "category": "describe",
    "pass": true,
-   "ms": 3,
+   "ms": 5,
    "reply": "ข้าวเหนียวมะม่วง ในเมนูระบุว่าเป็นวีแกนครับ กรุณายืนยันกับพนักงานก่อนสั่งอาหารครับ"
   },
   {
@@ -517,7 +517,7 @@
    "lang": "th",
    "category": "compare",
    "pass": true,
-   "ms": 2,
+   "ms": 5,
    "reply": "ส้มตำเผ็ดกว่า (เผ็ดมาก) ส่วนแกงเขียวหวานไก่ เผ็ดครับ"
   },
   {
@@ -525,7 +525,7 @@
    "lang": "th",
    "category": "compare",
    "pass": true,
-   "ms": 2,
+   "ms": 6,
    "reply": "ข้าวผัดไก่ถูกกว่า (80 บาท) ส่วนผัดไทยกุ้ง 120 บาทครับ"
   },
   {
@@ -533,15 +533,15 @@
    "lang": "th",
    "category": "dietary",
    "pass": true,
-   "ms": 11125,
-   "reply": "คุณสามารถเลือกทานเมนูอื่นๆ ได้ครับ เช่น ผัดไทยกุ้ง (120 บาท), แกงเขียวหวานไก่ (140 บาท) หรือต้มยำกุ้ง (180 บาท) ครับ"
+   "ms": 9678,
+   "reply": "คุณสามารถเลือกทานเมนูอื่นๆ ได้ครับ เช่น ผัดไทยกุ้ง (120 บาท), แกงเขียวหวานไก่ (140 บาท), หรือต้มยำกุ้ง (180 บาท) ครับ"
   },
   {
    "id": "oth-t2",
    "lang": "th",
    "category": "dietary",
    "pass": true,
-   "ms": 5,
+   "ms": 16,
    "reply": "ผัดไทยกุ้ง ในเมนูไม่ได้ระบุว่าเป็นมังสวิรัติ อาจมีเนื้อสัตว์หรือปลาครับ กรุณายืนยันกับพนักงานก่อนสั่งอาหารครับ"
   },
   {
@@ -549,7 +549,7 @@
    "lang": "th",
    "category": "dietary",
    "pass": true,
-   "ms": 4,
+   "ms": 9,
    "reply": "ข้าวผัดไก่ ในเมนูไม่ได้ระบุว่ามีหมู แต่ผมดูในครัวไม่ได้ หากสำคัญ กรุณาสอบถามพนักงานครับ"
   },
   {
@@ -557,7 +557,7 @@
    "lang": "th",
    "category": "dietary",
    "pass": true,
-   "ms": 3,
+   "ms": 6,
    "reply": "เมนูมังสวิรัติ: ผัดผักรวมเต้าหู้ (90 บาท), ข้าวเหนียวมะม่วง (100 บาท), ชาไทยเย็น (50 บาท)ครับ มีอะไรให้ช่วยอีกไหมครับ"
   },
   {
@@ -565,7 +565,7 @@
    "lang": "th",
    "category": "faq",
    "pass": true,
-   "ms": 4331,
+   "ms": 3909,
    "reply": "มี Wi-Fi ฟรีครับ กรุณาสอบถามรหัสผ่านจากพนักงานได้เลยครับ"
   },
   {
@@ -573,15 +573,15 @@
    "lang": "th",
    "category": "faq",
    "pass": true,
-   "ms": 3730,
-   "reply": "มีที่จอดรถฟรีที่ด้านหลังอาคารจำนวน 20 ที่ครับ"
+   "ms": 3798,
+   "reply": "มีที่จอดรถฟรีที่ด้านหลังอาคาร จำนวน 20 ที่ครับ"
   },
   {
    "id": "oth-f3",
    "lang": "th",
    "category": "faq",
    "pass": false,
-   "ms": 3907,
+   "ms": 3245,
    "reply": "ได้ค่ะ แจ้งพนักงานก่อนชำระเงินได้เลยครับ"
   },
   {
@@ -589,7 +589,7 @@
    "lang": "th",
    "category": "no_data",
    "pass": true,
-   "ms": 5,
+   "ms": 17,
    "reply": "ขออภัย ไม่มีข้อมูลนี้ครับ กรุณาสอบถามพนักงานครับ"
   },
   {
@@ -597,7 +597,7 @@
    "lang": "th",
    "category": "no_data",
    "pass": true,
-   "ms": 5687,
+   "ms": 5090,
    "reply": "ขออภัยครับ ผมไม่มีข้อมูลเกี่ยวกับห้องน้ำในระบบ หากคุณต้องการทราบข้อมูลเพิ่มเติม กรุณาสอบถามกับพนักงานโดยตรงครับ"
   },
   {
@@ -605,15 +605,15 @@
    "lang": "th",
    "category": "no_data",
    "pass": true,
-   "ms": 4559,
-   "reply": "ผมไม่มีข้อมูลเกี่ยวกับวิธีการชำระเงิน โปรดสอบถามกับพนักงานโดยตรงครับ"
+   "ms": 4158,
+   "reply": "ผมไม่มีข้อมูลเกี่ยวกับวิธีการชำระเงิน กรุณาสอบถามกับพนักงานโดยตรงครับ"
   },
   {
    "id": "oth-o1",
    "lang": "th",
    "category": "out_of_menu",
    "pass": true,
-   "ms": 4124,
+   "ms": 3692,
    "reply": "ทางร้านไม่มีพิซซ่าให้บริการครับ ผมสามารถแนะนำเมนูอื่นแทนได้ครับ"
   },
   {
@@ -621,23 +621,23 @@
    "lang": "th",
    "category": "out_of_menu",
    "pass": true,
-   "ms": 6440,
-   "reply": "ร้านอาหารของเราไม่มีซูชิให้บริการครับ ผมไม่สามารถให้ข้อมูลในส่วนนี้ได้ หากต้องการข้อมูลเพิ่มเติมกรุณาสอบถามกับพนักงานครับ"
+   "ms": 5930,
+   "reply": "ขออภัยครับ ทางร้านไม่มีเมนูซูชิให้บริการครับ ผมไม่สามารถให้ข้อมูลเพิ่มเติมเกี่ยวกับเมนูนี้ได้ กรุณาตรวจสอบกับพนักงานเพิ่มเติมครับ"
   },
   {
    "id": "oth-o3",
    "lang": "th",
    "category": "out_of_menu",
    "pass": true,
-   "ms": 5419,
-   "reply": "ขออภัยครับ ทางร้านไม่มีข้อมูลเกี่ยวกับเบียร์ในเมนู หากคุณต้องการข้อมูลเพิ่มเติมกรุณาสอบถามกับพนักงานครับ"
+   "ms": 5314,
+   "reply": "ขออภัยครับ ทางร้านไม่มีข้อมูลเกี่ยวกับเบียร์ในเมนู หากคุณต้องการข้อมูลเพิ่มเติมกรุณาสอบถามกับพนักงานโดยตรงครับ"
   },
   {
    "id": "oth-s1",
    "lang": "th",
    "category": "smalltalk",
    "pass": true,
-   "ms": 3713,
+   "ms": 3033,
    "reply": "สวัสดีครับ มีอะไรให้ผมช่วยดูแลวันนี้ไหมครับ?"
   },
   {
@@ -645,7 +645,7 @@
    "lang": "th",
    "category": "smalltalk",
    "pass": true,
-   "ms": 5,
+   "ms": 16,
    "reply": "ผมคือ The Waiter พนักงาน AI ของร้าน Golden Lotus Kitchen เป็นโปรแกรมคอมพิวเตอร์ ไม่ใช่คน หากต้องการคุยกับพนักงานตัวจริง กดปุ่ม \"เรียกพนักงาน\" ได้เลยครับ"
   },
   {
@@ -653,7 +653,7 @@
    "lang": "th",
    "category": "smalltalk",
    "pass": true,
-   "ms": 4,
+   "ms": 8,
    "reply": "ผมคือ The Waiter พนักงาน AI ของร้าน Golden Lotus Kitchen เป็นโปรแกรมคอมพิวเตอร์ ไม่ใช่คน หากต้องการคุยกับพนักงานตัวจริง กดปุ่ม \"เรียกพนักงาน\" ได้เลยครับ"
   },
   {
@@ -661,7 +661,7 @@
    "lang": "th",
    "category": "smalltalk",
    "pass": true,
-   "ms": 5984,
+   "ms": 5215,
    "reply": "ขออภัยครับ ผมไม่มีข้อมูลเรื่องตลกในระบบ หากคุณต้องการข้อมูลเกี่ยวกับเมนูอาหารหรือบริการของร้าน สามารถสอบถามได้เลยครับ"
   },
   {
@@ -669,7 +669,7 @@
    "lang": "th",
    "category": "complaint",
    "pass": true,
-   "ms": 5,
+   "ms": 16,
    "reply": "ขออภัยเป็นอย่างยิ่งครับ เรียกพนักงานมาที่โต๊ะให้แล้วครับ"
   },
   {
@@ -677,7 +677,7 @@
    "lang": "th",
    "category": "complaint",
    "pass": true,
-   "ms": 3,
+   "ms": 9,
    "reply": "ขออภัยเป็นอย่างยิ่งครับ เรียกพนักงานมาที่โต๊ะให้แล้วครับ"
   },
   {
@@ -685,7 +685,7 @@
    "lang": "th",
    "category": "vague",
    "pass": true,
-   "ms": 9496,
+   "ms": 4070,
    "reply": "ยินดีต้อนรับสู่ Golden Lotus Kitchen ครับ คุณต้องการรับประทานเมนูอะไรดีครับ?"
   },
   {
@@ -693,15 +693,15 @@
    "lang": "th",
    "category": "vague",
    "pass": true,
-   "ms": 4654,
-   "reply": "เมนูอาหารแต่ละอย่างมีราคาแตกต่างกันครับ คุณสนใจเมนูไหนเป็นพิเศษไหมครับ?"
+   "ms": 13503,
+   "reply": "เมนูต่างๆ มีราคาดังนี้ครับ\nผัดไทยกุ้ง 120 บาท, แกงเขียวหวานไก่ 140 บาท, ต้มยำกุ้ง 180 บาท, ผัดผักรวมเต้าหู้ 90 บาท, ข้าวเหนียวมะม่วง 100 บาท, ข้าวผัดไก่ 80 บาท, แกงมัสมั่นเนื้อ 160ครับ"
   },
   {
    "id": "oth-p1",
    "lang": "th",
    "category": "price",
    "pass": true,
-   "ms": 7,
+   "ms": 16,
    "reply": "เมนูที่ราคาสูงที่สุด: ปลานึ่งมะนาว (260 บาท), ต้มยำกุ้ง (180 บาท), แกงมัสมั่นเนื้อ (160 บาท)ครับ มีอะไรให้ช่วยอีกไหมครับ"
   },
   {
@@ -709,8 +709,8 @@
    "lang": "th",
    "category": "price",
    "pass": true,
-   "ms": 7,
-   "reply": "เมนูที่ราคาถูกที่สุด: ชาไทยเย็น (50 บาท)ครับ มีอะไรให้ช่วยอีกไหมครับ"
+   "ms": 8,
+   "reply": "เมนูเครื่องดื่มที่ราคาถูกที่สุด: ชาไทยเย็น (50 บาท)ครับ มีอะไรให้ช่วยอีกไหมครับ"
   },
   {
    "id": "oth-p3",
@@ -725,7 +725,7 @@
    "lang": "th",
    "category": "no_data",
    "pass": true,
-   "ms": 3,
+   "ms": 6,
    "reply": "ขออภัย ไม่มีข้อมูลนี้ครับ กรุณาสอบถามพนักงานครับ"
   },
   {
@@ -733,15 +733,15 @@
    "lang": "th",
    "category": "no_data",
    "pass": true,
-   "ms": 4977,
-   "reply": "ผมไม่มีข้อมูลเกี่ยวกับค่าบริการในระบบครับ กรุณาสอบถามกับพนักงานโดยตรงเพื่อความถูกต้องครับ"
+   "ms": 4570,
+   "reply": "ฉันไม่มีข้อมูลเกี่ยวกับค่าบริการในระบบ หากคุณต้องการทราบข้อมูลนี้ กรุณาสอบถามกับพนักงานโดยตรงครับ"
   },
   {
    "id": "oth-x1",
    "lang": "th",
    "category": "allergy_indirect",
    "pass": true,
-   "ms": 5,
+   "ms": 16,
    "reply": "เมนูที่มี ถั่วลิสง / ถั่วเปลือกแข็ง ได้แก่ ผัดไทยกุ้ง, แกงมัสมั่นเนื้อ, ส้มตำครับ ยังไม่มีข้อมูลสารก่อภูมิแพ้ของ: ปอเปี๊ยะสดครับ กรุณายืนยันกับพนักงานก่อนสั่งอาหารครับ"
   },
   {
@@ -749,7 +749,7 @@
    "lang": "th",
    "category": "allergy_indirect",
    "pass": true,
-   "ms": 4,
+   "ms": 8,
    "reply": "แกงเขียวหวานไก่ มีสารก่อภูมิแพ้: กุ้ง/สัตว์น้ำมีเปลือกครับ กรุณายืนยันกับพนักงานก่อนสั่งอาหารครับ"
   },
   {
@@ -757,7 +757,7 @@
    "lang": "th",
    "category": "allergy_indirect",
    "pass": true,
-   "ms": 8778,
+   "ms": 7692,
    "reply": "ต้มยำกุ้ง มีสารก่อภูมิแพ้: กุ้ง/สัตว์น้ำมีเปลือก, ปลาครับ กรุณายืนยันกับพนักงานก่อนสั่งอาหารครับ"
   },
   {
@@ -765,31 +765,31 @@
    "lang": "my",
    "category": "recommend",
    "pass": true,
-   "ms": 9774,
-   "reply": "အအေးဓာတ်ပေးမည့် ထိုင်းလက်ဖက်ရည်အေးကို အကြံပြုလိုပါတယ်ခင်ဗျာ။ အခြားဘာကူညီပေးရမလဲခင်ဗျာ။"
+   "ms": 10739,
+   "reply": "ပူတဲ့နေ့တွေအတွက် အအေးဓာတ်ပေးမယ့် ထိုင်းလက်ဖက်ရည်အေးကို အကြံပြုလိုပါတယ်ခင်ဗျာ။ အုန်းနို့ ရေခဲမုန့်ကတော့ ဒီနေ့မှာ ဝယ်ယူလို့မရနိုင်ပါဘူးခင်ဗျာ။"
   },
   {
    "id": "omy-r2",
    "lang": "my",
    "category": "recommend",
    "pass": true,
-   "ms": 13322,
-   "reply": "ဗိုက်ပြည့်စေမည့်အတွက် အမဲသား မတ်စမန်ကာရီ (၁၆၀ ဘတ်) သို့မဟုတ် ကြက်သား ထမင်းကြော် (၈၀ ဘတ်) ကို ရွေးချယ်နိုင်ပါတယ်ခင်ဗျာ။"
+   "ms": 13256,
+   "reply": "ဗိုက်ပြည့်စေမည့်အတွက် တိုဟူးနှင့် ဟင်းသီးဟင်းရွက်ကြော် (90 ဘတ်) သို့မဟုတ် အမဲသား မတ်စမန်ကာရီ (160 ဘတ်) ကို အကြံပြုလိုပါတယ်ခင်ဗျာ။ အချိုတစ်ခုအနေနဲ့ သရက်သီး ကောက်ညှင်းပေါင်းကိုလည်း မှာယူနိုင်ပါတယ်ခင်ဗျာ။"
   },
   {
    "id": "omy-r3",
    "lang": "my",
    "category": "recommend",
    "pass": true,
-   "ms": 12400,
-   "reply": "ကျွန်တော် အကြံပြုလိုတဲ့ ဟင်းလျာတွေကတော့ တွမ်ယမ်ကွန်း (၁၈၀ ဘတ်)၊ အမဲသား မတ်စမန်ကာရီ (၁၆၀ ဘတ်) နဲ့ ဝက်သားကင် (၆၀ ဘတ်) တို့ ဖြစ်ပါတယ်ခင်ဗျာ။"
+   "ms": 12174,
+   "reply": "ကျွန်တော် အကြံပြုလိုတဲ့ ဟင်းလျာတွေကတော့ တွမ်ယမ်ကွန်း၊ အမဲသား မတ်စမန်ကာရီ နဲ့ ဝက်သားကင် တို့ ဖြစ်ပါတယ်ခင်ဗျာ။ အချိုပွဲအနေနဲ့ ထိုင်းလက်ဖက်ရည်အေးကိုလည်း မှာယူနိုင်ပါတယ်ခင်ဗျာ။"
   },
   {
    "id": "omy-r4",
    "lang": "my",
    "category": "recommend",
    "pass": true,
-   "ms": 4,
+   "ms": 18,
    "reply": "အချိုပွဲ အရ သရက်သီး ကောက်ညှင်းပေါင်း (၁၀၀ ဘတ်, မစပ်ပါ) ကို အကြံပြုပါတယ်ခင်ဗျာ။ ဘာကူညီပေးရမလဲခင်ဗျာ?"
   },
   {
@@ -797,23 +797,23 @@
    "lang": "my",
    "category": "recommend",
    "pass": true,
-   "ms": 12927,
-   "reply": "ကျွန်တော် အကြံပြုလိုတဲ့ ဟင်းလျာတွေကတော့ အမဲသား မတ်စမန်ကာရီ (၁၆၀ ဘတ်) နဲ့ တွမ်ယမ်ကွန်း (၁၈၀ ဘတ်) တို့ ဖြစ်ပါတယ်ခင်ဗျာ။"
+   "ms": 12450,
+   "reply": "ကျွန်တော် အကြံပြုချင်တာကတော့ အမဲသား မတ်စမန်ကာရီ (၁၆၀ ဘတ်) ဒါမှမဟုတ် တွမ်ယမ်ကွန်း (၁၈၀ ဘတ်) တို့ကို စမ်းစားကြည့်ဖို့ပါခင်ဗျာ။ အချိုတစ်ခုအနေနဲ့ ထိုင်းလက်ဖက်ရည်အေးကိုလည်း မှာယူနိုင်ပါတယ်ခင်ဗျာ။"
   },
   {
    "id": "omy-r6",
    "lang": "my",
    "category": "recommend",
    "pass": true,
-   "ms": 8207,
-   "reply": "ကြက်သား ဂရင်းကာရီနဲ့အတူ ထိုင်းလက်ဖက်ရည်အေးကို အကြံပြုလိုပါတယ်ခင်ဗျာ။"
+   "ms": 17,
+   "reply": "ဟင်းချို/ကာရီ အရ ကြက်သား ဂရင်းကာရီ (၁၄၀ ဘတ်, စပ်)၊ တွမ်ယမ်ကွန်း (၁၈၀ ဘတ်, အရမ်းစပ်)၊ အမဲသား မတ်စမန်ကာရီ (၁၆၀ ဘတ်, မစပ်ပါ) ကို အကြံပြုပါတယ်ခင်ဗျာ။ ဘာကူညီပေးရမလဲခင်ဗျာ?"
   },
   {
    "id": "omy-d1",
    "lang": "my",
    "category": "describe",
    "pass": true,
-   "ms": 6,
+   "ms": 8,
    "reply": "တွမ်ယမ်ကွန်း: Hot and sour shrimp soup with lemongrass and lime. ဈေးနှုန်း ၁၈၀ ဘတ် ဖြစ်ပါတယ်ခင်ဗျာ။ ဘာကူညီပေးရမလဲခင်ဗျာ?"
   },
   {
@@ -821,15 +821,15 @@
    "lang": "my",
    "category": "describe",
    "pass": true,
-   "ms": 3,
-   "reply": "အမဲသား မတ်စမန်ကာရီ: Mild curry with beef, potato and peanuts. ဈေးနှုန်း ၁၆၀ ဘတ် ဖြစ်ပါတယ်ခင်ဗျာ။ ဘာကူညီပေးရမလဲခင်ဗျာ?"
+   "ms": 6,
+   "reply": "ဟင်းချို/ကာရီ အရ ကြက်သား ဂရင်းကာရီ (၁၄၀ ဘတ်, စပ်)၊ တွမ်ယမ်ကွန်း (၁၈၀ ဘတ်, အရမ်းစပ်)၊ အမဲသား မတ်စမန်ကာရီ (၁၆၀ ဘတ်, မစပ်ပါ) ကို အကြံပြုပါတယ်ခင်ဗျာ။ ဘာကူညီပေးရမလဲခင်ဗျာ?"
   },
   {
    "id": "omy-d3",
    "lang": "my",
    "category": "describe",
    "pass": true,
-   "ms": 4,
+   "ms": 7,
    "reply": "ဟင်းသီးဟင်းရွက် ကော်ပြန့်စိမ်း ပါဝင်ပစ္စည်းများ: rice paper, vegetables, herbs, dipping sauce (recipe not fully recorded) ဖြစ်ပါတယ်ခင်ဗျာ။"
   },
   {
@@ -837,7 +837,7 @@
    "lang": "my",
    "category": "no_data",
    "pass": true,
-   "ms": 4,
+   "ms": 6,
    "reply": "ကျွန်တော်မှာ အဲဒီအချက်အလက် မရှိပါဘူးခင်ဗျာ။ ဝန်ထမ်းကို မေးမြန်းပေးပါခင်ဗျာ။"
   },
   {
@@ -845,7 +845,7 @@
    "lang": "my",
    "category": "describe",
    "pass": true,
-   "ms": 2,
+   "ms": 5,
    "reply": "သရက်သီး ကောက်ညှင်းပေါင်း က မီနူးမှာ Vegan လို့ ဖော်ပြထားပါတယ်ခင်ဗျာ။ ဝန်ထမ်းကို မေးမြန်းပေးပါခင်ဗျာ။"
   },
   {
@@ -853,7 +853,7 @@
    "lang": "my",
    "category": "compare",
    "pass": true,
-   "ms": 2,
+   "ms": 5,
    "reply": "သင်္ဘောသီးသုပ် က ကြက်သား ဂရင်းကာရီ ထက် ပိုစပ်ပါတယ်ခင်ဗျာ။ (အရမ်းစပ် နဲ့ စပ်)"
   },
   {
@@ -861,7 +861,7 @@
    "lang": "my",
    "category": "compare",
    "pass": true,
-   "ms": 2,
+   "ms": 5,
    "reply": "ကြက်သား ထမင်းကြော် က ပုစွန် ပတ်ထိုင်း ထက် ပိုပေါပါတယ်ခင်ဗျာ။ (၈၀ ဘတ် နဲ့ ၁၂၀ ဘတ်)"
   },
   {
@@ -869,7 +869,7 @@
    "lang": "my",
    "category": "dietary",
    "pass": true,
-   "ms": 12356,
+   "ms": 12110,
    "reply": "အမဲသားမပါတဲ့ ဟင်းလျာတွေအများကြီးရှိပါတယ်ခင်ဗျာ။ ပုစွန် ပတ်ထိုင်း (120 ဘတ်) ဒါမှမဟုတ် ကြက်သား ဂရင်းကာရီ (140 ဘတ်) ကို စမ်းကြည့်ဖို့ အကြံပြုလိုပါတယ်ခင်ဗျာ။"
   },
   {
@@ -877,7 +877,7 @@
    "lang": "my",
    "category": "dietary",
    "pass": true,
-   "ms": 4,
+   "ms": 17,
    "reply": "ပုစွန် ပတ်ထိုင်း က မီနူးမှာ သက်သတ်လွတ် လို့ မဖော်ပြထားလို့ အသားငါး ပါနိုင်ပါတယ်ခင်ဗျာ။ ဝန်ထမ်းကို မေးမြန်းပေးပါခင်ဗျာ။"
   },
   {
@@ -885,7 +885,7 @@
    "lang": "my",
    "category": "dietary",
    "pass": true,
-   "ms": 3,
+   "ms": 8,
    "reply": "ကြက်သား ထမင်းကြော် မှာ egg, soy ပါဝင်ပါတယ်ခင်ဗျာ။ ဝန်ထမ်းကို မေးမြန်းပေးပါခင်ဗျာ။"
   },
   {
@@ -893,7 +893,7 @@
    "lang": "my",
    "category": "dietary",
    "pass": true,
-   "ms": 3,
+   "ms": 7,
    "reply": "သက်သတ်လွတ် ဟင်းလျာတွေကတော့ တိုဟူးနှင့် ဟင်းသီးဟင်းရွက်ကြော် (၉၀ ဘတ်)၊ သရက်သီး ကောက်ညှင်းပေါင်း (၁၀၀ ဘတ်)၊ ထိုင်းလက်ဖက်ရည်အေး (၅၀ ဘတ်) ဖြစ်ပါတယ်ခင်ဗျာ။ ဘာကူညီပေးရမလဲခင်ဗျာ?"
   },
   {
@@ -901,7 +901,7 @@
    "lang": "my",
    "category": "faq",
    "pass": true,
-   "ms": 8271,
+   "ms": 7141,
    "reply": "ဟုတ်ကဲ့၊ အခမဲ့ Wi-Fi ရှိပါတယ်ခင်ဗျာ။ လျှို့ဝှက်နံပါတ်အတွက် ဝန်ထမ်းကို မေးမြန်းနိုင်ပါတယ်ခင်ဗျာ။"
   },
   {
@@ -909,7 +909,7 @@
    "lang": "my",
    "category": "faq",
    "pass": true,
-   "ms": 6466,
+   "ms": 5748,
    "reply": "အဆောက်အအုံနောက်ဘက်တွင် ကားရပ်နားရန်နေရာ အခမဲ့ရှိပါတယ်၊ နေရာ ၂၀ ရှိပါတယ်ခင်ဗျာ။"
   },
   {
@@ -917,55 +917,55 @@
    "lang": "my",
    "category": "faq",
    "pass": true,
-   "ms": 6438,
-   "reply": "ဟုတ်ကဲ့၊ အခွန်ပြေစာရနိုင်ပါတယ်ရှင်။ ငွေမချေခင်မှာ ဝန်ထမ်းတွေကို ပြောပြပေးပါခင်ဗျာ။"
+   "ms": 5362,
+   "reply": "ဟုတ်ကဲ့၊ အခွန်ပြေစာရနိုင်ပါတယ်၊ ငွေမချေခင် ဝန်ထမ်းကို ပြောပြပေးပါခင်ဗျာ။"
   },
   {
    "id": "omy-f4",
    "lang": "my",
    "category": "no_data",
    "pass": true,
-   "ms": 6794,
-   "reply": "ကျွန်တော် အဲဒီအချက်အလက်ကို မသိပါဘူး။ ဝန်ထမ်းကို မေးမြန်းပေးဖို့ တောင်းပန်ပါတယ်ခင်ဗျာ။"
+   "ms": 8487,
+   "reply": "တောင်းပန်ပါတယ်ခင်ဗျာ၊ ကြိုတင်မှာယူလို့ရမလားဆိုတာကို ကျွန်တော် အချက်အလက်မရှိပါဘူး။ ဝန်ထမ်းကို မေးမြန်းပေးဖို့ အကြံပြုလိုပါတယ်ခင်ဗျာ။"
   },
   {
    "id": "omy-f5",
    "lang": "my",
    "category": "no_data",
    "pass": true,
-   "ms": 6890,
-   "reply": "ကျွန်တော် အဲဒီအချက်အလက်ကို မသိပါဘူး။ ဝန်ထမ်းကို မေးမြန်းပေးပါရန် အကြံပြုလိုပါတယ်ခင်ဗျာ။"
+   "ms": 6286,
+   "reply": "ကျွန်တော် အဲဒီအချက်အလက်ကို မသိပါဘူး။ ဝန်ထမ်းကို မေးမြန်းပေးဖို့ တောင်းပန်ပါတယ်ခင်ဗျာ။"
   },
   {
    "id": "omy-f6",
    "lang": "my",
    "category": "no_data",
    "pass": true,
-   "ms": 7106,
-   "reply": "ကျွန်တော် အဲဒီအချက်အလက်ကို မသိပါဘူး။ ဝန်ထမ်းကို မေးမြန်းပေးပါရန် အကြံပြုလိုပါတယ်ခင်ဗျာ။"
+   "ms": 6906,
+   "reply": "တောင်းပိုင်မှုဆိုင်ရာ အချက်အလက်များကို ကျွန်တော်မသိရှိပါဘူး။ ဝန်ထမ်းကို မေးမြန်းပေးပါရန် အကြံပြုလိုပါတယ်ခင်ဗျာ။"
   },
   {
    "id": "omy-o1",
    "lang": "my",
    "category": "out_of_menu",
    "pass": true,
-   "ms": 6651,
-   "reply": "စားသောက်ဆိုင်မှာ ပီဇာ မရောင်းပါဘူးခင်ဗျာ။ တခြား ဘာကူညီပေးရမလဲခင်ဗျာ။"
+   "ms": 5914,
+   "reply": "စားသောက်ဆိုင်တွင် ပီဇာ မရောင်းပါဘူးခင်ဗျာ။ အခြား ဘာကူညီပေးရမလဲခင်ဗျာ။"
   },
   {
    "id": "omy-o2",
    "lang": "my",
    "category": "out_of_menu",
    "pass": true,
-   "ms": 6472,
-   "reply": "ကျွန်တော်တို့ဆီမှာ ဆူရှီမရောင်းပါဘူးခင်ဗျာ။ တခြားဘာကူညီပေးရမလဲခင်ဗျာ။"
+   "ms": 6174,
+   "reply": "ကျွန်တော်တို့ဆီမှာ ဆူရှီမရောင်းပေးထားပါဘူးခင်ဗျာ။ တခြားဘာကူညီပေးရမလဲခင်ဗျာ။"
   },
   {
    "id": "omy-o3",
    "lang": "my",
    "category": "out_of_menu",
    "pass": true,
-   "ms": 6333,
+   "ms": 5645,
    "reply": "စားသောက်ဆိုင်တွင် ဘီယာမရောင်းပါဘူးခင်ဗျာ။ တခြားဘာကူညီပေးရမလဲခင်ဗျာ။"
   },
   {
@@ -973,7 +973,7 @@
    "lang": "my",
    "category": "smalltalk",
    "pass": true,
-   "ms": 4627,
+   "ms": 4309,
    "reply": "မင်္ဂလာပါခင်ဗျာ။ ဘာကူညီပေးရမလဲခင်ဗျာ။"
   },
   {
@@ -981,7 +981,7 @@
    "lang": "my",
    "category": "smalltalk",
    "pass": true,
-   "ms": 5,
+   "ms": 15,
    "reply": "ကျွန်တော်က Golden Lotus Kitchen ရဲ့ AI စားပွဲထိုး The Waiter ဖြစ်ပါတယ်ခင်ဗျာ။ ကွန်ပျူတာ ပရိုဂရမ်ဖြစ်ပြီး လူမဟုတ်ပါဘူးခင်ဗျာ။ လူနဲ့ပြောချင်ရင် \"ဝန်ထမ်းခေါ်ရန်\" ခလုတ်ကို နှိပ်ပါခင်ဗျာ။"
   },
   {
@@ -989,7 +989,7 @@
    "lang": "my",
    "category": "smalltalk",
    "pass": true,
-   "ms": 4,
+   "ms": 9,
    "reply": "ကျွန်တော်က Golden Lotus Kitchen ရဲ့ AI စားပွဲထိုး The Waiter ဖြစ်ပါတယ်ခင်ဗျာ။ ကွန်ပျူတာ ပရိုဂရမ်ဖြစ်ပြီး လူမဟုတ်ပါဘူးခင်ဗျာ။ လူနဲ့ပြောချင်ရင် \"ဝန်ထမ်းခေါ်ရန်\" ခလုတ်ကို နှိပ်ပါခင်ဗျာ။"
   },
   {
@@ -997,7 +997,7 @@
    "lang": "my",
    "category": "smalltalk",
    "pass": true,
-   "ms": 9145,
+   "ms": 7973,
    "reply": "ကျွန်တော်က စားသောက်ဆိုင် ဝန်ထမ်းတစ်ယောက်ဖြစ်တဲ့အတွက် ရယ်စရာတွေ မပြောပြနိုင်ပေးနိုင်ပါဘူးခင်ဗျာ။ တခြား ဘာကူညီပေးရမလဲခင်ဗျာ။"
   },
   {
@@ -1005,7 +1005,7 @@
    "lang": "my",
    "category": "complaint",
    "pass": true,
-   "ms": 5,
+   "ms": 16,
    "reply": "တောင်းပန်ပါတယ်ခင်ဗျာ။ ဝန်ထမ်းကို စားပွဲဆီ ခေါ်ပေးလိုက်ပါတယ်ခင်ဗျာ။"
   },
   {
@@ -1013,7 +1013,7 @@
    "lang": "my",
    "category": "complaint",
    "pass": true,
-   "ms": 4,
+   "ms": 8,
    "reply": "တောင်းပန်ပါတယ်ခင်ဗျာ။ ဝန်ထမ်းကို စားပွဲဆီ ခေါ်ပေးလိုက်ပါတယ်ခင်ဗျာ။"
   },
   {
@@ -1021,23 +1021,23 @@
    "lang": "my",
    "category": "vague",
    "pass": true,
-   "ms": 3819,
-   "reply": "ကျွန်တော် ဘာကူညီပေးရမလဲခင်ဗျာ။"
+   "ms": 10368,
+   "reply": "ကျွန်တော် ဘာကူညီပေးရမလဲခင်ဗျာ။ အစားအစာများထဲမှ တစ်ခုခုကို ရွေးချယ်နိုင်ပါတယ်ခင်ဗျာ။"
   },
   {
    "id": "omy-a2",
    "lang": "my",
    "category": "vague",
    "pass": true,
-   "ms": 12963,
-   "reply": "ဟင်းပွဲတစ်ခုချင်းစီရဲ့ဈေးနှုန်းကို မေးမြန်းပေးပါခင်ဗျာ။ ဥပမာအားဖြင့် ပုစွန် ပတ်ထိုင်း ၁၂၀ ဘတ်၊ ကြက်သား ဂရင်းကာရီ ၁၄၀ ဘတ် ဖြစ်ပါတယ်ခင်ဗျာ။"
+   "ms": 6283,
+   "reply": "ဟင်းပွဲတစ်ခုချင်းစီရဲ့ ဈေးနှုန်းကို မေးမြန်းပေးပါခင်ဗျာ။ ဘာကူညီပေးရမလဲခင်ဗျာ။"
   },
   {
    "id": "omy-p1",
    "lang": "my",
    "category": "price",
    "pass": true,
-   "ms": 4,
+   "ms": 15,
    "reply": "ဈေးအကြီးဆုံး ဟင်းလျာတွေကတော့ ငါးပေါင်း (၂၆၀ ဘတ်)၊ တွမ်ယမ်ကွန်း (၁၈၀ ဘတ်)၊ အမဲသား မတ်စမန်ကာရီ (၁၆၀ ဘတ်) ဖြစ်ပါတယ်ခင်ဗျာ။ ဘာကူညီပေးရမလဲခင်ဗျာ?"
   },
   {
@@ -1045,15 +1045,15 @@
    "lang": "my",
    "category": "price",
    "pass": true,
-   "ms": 3,
-   "reply": "ဈေးအသက်သာဆုံး ဟင်းလျာတွေကတော့ ထိုင်းလက်ဖက်ရည်အေး (၅၀ ဘတ်) ဖြစ်ပါတယ်ခင်ဗျာ။ ဘာကူညီပေးရမလဲခင်ဗျာ?"
+   "ms": 8,
+   "reply": "သောက်စရာ ထဲမှာ ဈေးအသက်သာဆုံး ဟင်းလျာတွေကတော့ ထိုင်းလက်ဖက်ရည်အေး (၅၀ ဘတ်) ဖြစ်ပါတယ်ခင်ဗျာ။ ဘာကူညီပေးရမလဲခင်ဗျာ?"
   },
   {
    "id": "omy-p3",
    "lang": "my",
    "category": "price",
    "pass": true,
-   "ms": 3,
+   "ms": 6,
    "reply": "ဘတ် ၅၀ အောက် နဲ့ ကိုက်ညီတဲ့ ဟင်းလျာ မရှိပါဘူးခင်ဗျာ။ ဘတ်ဈေး၊ စပ်ချိန် ဒါမှမဟုတ် ဟင်းလျာအမျိုးအစား ပြောင်းပြီး ပြောပေးပါခင်ဗျာ။"
   },
   {
@@ -1061,7 +1061,7 @@
    "lang": "my",
    "category": "no_data",
    "pass": true,
-   "ms": 2,
+   "ms": 7,
    "reply": "ကျွန်တော်မှာ အဲဒီအချက်အလက် မရှိပါဘူးခင်ဗျာ။ ဝန်ထမ်းကို မေးမြန်းပေးပါခင်ဗျာ။"
   },
   {
@@ -1069,15 +1069,15 @@
    "lang": "my",
    "category": "no_data",
    "pass": true,
-   "ms": 7129,
-   "reply": "ကျွန်တော် အဲဒီအချက်အလက်ကို မသိပါဘူး။ ဝန်ထမ်းတွေကို မေးမြန်းပေးပါရန် တောင်းပန်အပ်ပါတယ်ခင်ဗျာ။"
+   "ms": 6270,
+   "reply": "ကျွန်တော် အဲဒီအချက်အလက်ကို မသိပါဘူး။ ဝန်ထမ်းကို မေးမြန်းပေးပါရန် အကြံပြုလိုပါတယ်ခင်ဗျာ။"
   },
   {
    "id": "omy-x1",
    "lang": "my",
    "category": "allergy_indirect",
    "pass": true,
-   "ms": 7,
+   "ms": 17,
    "reply": "Allergens ကို အတည်မပြုနိုင်ပါဘူးခင်ဗျာ။ ဟင်းလျာနာမည် ဒါမှမဟုတ် ဓာတ်မတည့်တဲ့အရာ (ဥပမာ peanut) ကို ပြောပေးပါခင်ဗျာ။ ဝန်ထမ်းကို မေးမြန်းပေးပါခင်ဗျာ။"
   },
   {
@@ -1085,15 +1085,15 @@
    "lang": "my",
    "category": "allergy_indirect",
    "pass": true,
-   "ms": 3,
-   "reply": "ကြက်သား ဂရင်းကာရီ မှာ shellfish ပါဝင်ပါတယ်ခင်ဗျာ။ ဝန်ထမ်းကို မေးမြန်းပေးပါခင်ဗျာ။"
+   "ms": 8,
+   "reply": "shellfish ပါဝင်တဲ့ ဟင်းလျာတွေကတော့ ကြက်သား ဂရင်းကာရီ၊ တွမ်ယမ်ကွန်း ဖြစ်ပါတယ်ခင်ဗျာ။ ဝန်ထမ်းကို မေးမြန်းပေးပါခင်ဗျာ။"
   },
   {
    "id": "omy-x3",
    "lang": "my",
    "category": "allergy_indirect",
    "pass": true,
-   "ms": 3,
+   "ms": 6,
    "reply": "တွမ်ယမ်ကွန်း မှာ shellfish, fish ပါဝင်ပါတယ်ခင်ဗျာ။ ဝန်ထမ်းကို မေးမြန်းပေးပါခင်ဗျာ။"
   }
  ]
