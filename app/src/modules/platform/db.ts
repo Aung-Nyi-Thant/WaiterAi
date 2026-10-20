@@ -42,6 +42,8 @@ CREATE TABLE IF NOT EXISTS menu_items (
   desc_en TEXT NOT NULL DEFAULT '', desc_th TEXT NOT NULL DEFAULT '', desc_my TEXT NOT NULL DEFAULT '',
   price REAL NOT NULL DEFAULT 0,
   ingredients TEXT NOT NULL DEFAULT '',
+  ingredients_th TEXT NOT NULL DEFAULT '',     -- the same ingredients in Thai / Burmese, in the same order (see platform/ingredients.ts)
+  ingredients_my TEXT NOT NULL DEFAULT '',
   allergens_json TEXT,                 -- NULL = allergen info not provided
   tags_json TEXT NOT NULL DEFAULT '[]',
   spice INTEGER NOT NULL DEFAULT 0,
@@ -171,6 +173,11 @@ function open(): DB {
   addColumn(database, "ALTER TABLE order_items ADD COLUMN flag TEXT NOT NULL DEFAULT ''");
   // ...and before a diner's phone had to prove it ordered at a table before reading that table's bill
   addColumn(database, "ALTER TABLE orders ADD COLUMN receipt TEXT NOT NULL DEFAULT ''");
+  // ...and before a dish's ingredients could be written in Thai and Burmese too
+  addColumn(database, "ALTER TABLE menu_items ADD COLUMN ingredients_th TEXT NOT NULL DEFAULT ''");
+  addColumn(database, "ALTER TABLE menu_items ADD COLUMN ingredients_my TEXT NOT NULL DEFAULT ''");
+  // The demo menu gets its Thai ingredient lines in a database made before they existed (only where the dish still has the demo's own English line).
+  try { for (const row of ITEMS) database.prepare("UPDATE menu_items SET ingredients_th = ? WHERE name_en = ? AND ingredients = ? AND ingredients_th = '' AND restaurant_id IN (SELECT id FROM restaurants WHERE slug = 'golden-lotus')").run(ITEMS_ING_TH[row[1]] || "", row[1], row[6]); } catch {}
   // The demo accounts (demo@shop.ai / demo1234, PINs 1111 and 2222) are for local development only.
   // In production nothing is created: register an owner, or run `npm run db:seed` with your own credentials.
   if (process.env.NODE_ENV !== "production") {
@@ -205,6 +212,22 @@ const ITEMS: [string, string, string, string, string, number, string, string[] |
   ["Mains", "Steamed Fish with Lime", "ปลานึ่งมะนาว", "ငါးပေါင်း", "Sea bass steamed with lime, garlic and chili.", 260, "sea bass, lime, garlic, chili, coriander", ["fish"], ["spicy"], 2, "", true],
 ];
 
+// The demo menu's ingredients in Thai, in the order of the English line (first draft: have a native speaker check them).
+const ITEMS_ING_TH: Record<string, string> = {
+  "Shrimp Pad Thai": "เส้นผัดไทย, กุ้ง, ไข่, น้ำมะขาม, น้ำปลา, ถั่วลิสงบด",
+  "Chicken Green Curry": "ไก่, กะทิ, พริกแกงเขียวหวานผสมกะปิ, โหระพา",
+  "Tom Yum Goong": "กุ้ง, ตะไคร้, ข่า, มะนาว, พริก, น้ำปลา",
+  "Vegetable Tofu Stir-fry": "เต้าหู้, ผักรวม, ซีอิ๊วขาว, กระเทียม",
+  "Mango Sticky Rice": "มะม่วง, ข้าวเหนียว, กะทิ, น้ำตาล",
+  "Chicken Fried Rice": "ข้าว, ไก่, ไข่, ซีอิ๊วขาว",
+  "Beef Massaman Curry": "เนื้อวัว, มันฝรั่ง, ถั่วลิสง, กะทิ, พริกแกงมัสมั่น",
+  "Papaya Salad": "มะละกอดิบ, พริก, มะนาว, ถั่วลิสง, กุ้งแห้ง",
+  "Thai Iced Tea": "ชาดำ, น้ำตาล, นมข้นจืด, น้ำแข็ง",
+  "Coconut Ice Cream": "กะทิ, ครีม, น้ำตาล",
+  "Grilled Pork Skewers": "หมู, ซีอิ๊วขาว, กระเทียม, รากผักชี",
+  "Steamed Fish with Lime": "ปลากะพง, มะนาว, กระเทียม, พริก, ผักชี",
+};
+
 function seedIfEmpty(d: DB) {
   if (d.prepare("SELECT COUNT(*) AS n FROM users").get().n > 0) return;
   d.exec("BEGIN IMMEDIATE");
@@ -223,8 +246,8 @@ function seedDemo(d: DB) {
     cats[en] = Number(d.prepare("INSERT INTO categories (restaurant_id, name_en, name_th, name_my, sort) VALUES (?,?,?,?,?)").run(rid, en, th, my, i).lastInsertRowid);
   });
   ITEMS.forEach(([cat, en, th, my, desc, price, ing, al, tags, spice, photo, avail], i) => {
-    d.prepare(`INSERT INTO menu_items (restaurant_id, category_id, name_en, name_th, name_my, desc_en, price, ingredients, allergens_json, tags_json, spice, available, photo_url, sort)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(rid, cats[cat], en, th, my, desc, price, ing, al === null ? null : JSON.stringify(al), JSON.stringify(tags), spice, avail ? 1 : 0, photo, i);
+    d.prepare(`INSERT INTO menu_items (restaurant_id, category_id, name_en, name_th, name_my, desc_en, price, ingredients, ingredients_th, allergens_json, tags_json, spice, available, photo_url, sort)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(rid, cats[cat], en, th, my, desc, price, ing, ITEMS_ING_TH[en] || "", al === null ? null : JSON.stringify(al), JSON.stringify(tags), spice, avail ? 1 : 0, photo, i);
   });
   [["Is there Wi-Fi?", "Yes, free Wi-Fi. Ask staff for the password."], ["Is there parking?", "Free parking behind the building, 20 spaces."], ["Do you give tax invoices?", "Yes, tell staff before paying."]].forEach(([q, a], i) => {
     d.prepare("INSERT INTO faqs (restaurant_id, q, a, sort) VALUES (?,?,?,?)").run(rid, q, a, i);

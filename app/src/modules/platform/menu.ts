@@ -7,6 +7,7 @@ export type Item = {
   id: number; category_id: number | null;
   name: Record<Lang, string>; desc: Record<Lang, string>;
   price: number; ingredients: string;
+  ingredients_tr?: { th: string; my: string };         // the same ingredients written in Thai / Burmese, in the same order (see ingredientList)
   allergens: string[] | null; tags: string[]; spice: number; available: boolean; photo_url: string;
 };
 export type Category = { id: number; name: Record<Lang, string>; sort: number };
@@ -22,7 +23,7 @@ export function rowToItem(r: any): Item {
     id: r.id, category_id: r.category_id,
     name: { en: r.name_en, th: r.name_th || r.name_en, my: r.name_my || r.name_en },
     desc: { en: r.desc_en, th: r.desc_th || r.desc_en, my: r.desc_my || r.desc_en },
-    price: r.price, ingredients: r.ingredients,
+    price: r.price, ingredients: r.ingredients, ingredients_tr: { th: r.ingredients_th || "", my: r.ingredients_my || "" },
     allergens: r.allergens_json === null ? null : JSON.parse(r.allergens_json),
     tags: JSON.parse(r.tags_json || "[]"), spice: r.spice, available: !!r.available, photo_url: r.photo_url,
   };

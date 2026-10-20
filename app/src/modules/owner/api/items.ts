@@ -10,6 +10,7 @@ export function itemColumns(b: any, partial: boolean): Record<string, any> | str
   if (has("desc")) { out.desc_en = String(b.desc.en || ""); out.desc_th = String(b.desc.th || ""); out.desc_my = String(b.desc.my || ""); }
   if (has("price")) { const p = Number(b.price); if (!(p >= 0 && p < 100000)) return "Please enter a valid price."; out.price = p; }
   if (has("ingredients")) out.ingredients = String(b.ingredients).slice(0, 500);
+  if (has("ingredients_tr")) { out.ingredients_th = String(b.ingredients_tr?.th ?? "").slice(0, 700); out.ingredients_my = String(b.ingredients_tr?.my ?? "").slice(0, 900); }
   if (has("allergens")) out.allergens_json = b.allergens === null ? null : JSON.stringify((b.allergens as string[]).filter((a) => (ALLERGENS as readonly string[]).includes(a)));
   if (has("tags")) out.tags_json = JSON.stringify((b.tags as string[]).filter((t) => (TAGS as readonly string[]).includes(t)));
   if (has("spice")) out.spice = Math.max(0, Math.min(3, Number(b.spice) || 0));

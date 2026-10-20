@@ -68,6 +68,23 @@ describe("the HaChi Kyu data", () => {
       expect(i.spice, i.name.en).toBe(i.tags.includes("spicy") ? 2 : 0);
     }
   });
+  it("every dish has its ingredients in Thai too, one name per English ingredient, and Burmese where the prototype has it (an empty part = not translated)", () => {
+    const parts = (t: string) => t.split(/[,，、;；·•\n]/).map((x) => x.trim());
+    let burmese = 0;
+    for (const i of data.items) {
+      const en = parts(i.ingredients);
+      const th = parts(i.ingredients_tr.th);
+      if (!i.ingredients) { expect(i.ingredients_tr, i.name.en).toEqual({ th: "", my: "" }); continue; }            // a dish with no ingredient list has no translated one either
+      expect(th.length, `${i.name.en}: Thai parts vs English`).toBe(en.length);
+      expect(th.every(Boolean), `${i.name.en}: a Thai name is missing`).toBe(true);
+      if (i.ingredients_tr.my) { burmese++; expect(parts(i.ingredients_tr.my).length, `${i.name.en}: Burmese parts vs English`).toBe(en.length); expect(parts(i.ingredients_tr.my).some(Boolean), i.name.en).toBe(true); }
+    }
+    expect(burmese).toBeGreaterThan(80);
+    const yaki = data.items.find((i: any) => i.name.en === "[Coke Combo] Yakisoba with Coke");
+    expect(yaki.ingredients).toBe("Yakisoba noodles, Cola");
+    expect(yaki.ingredients_tr.th).toBe("เส้นยากิโซบะ, น้ำอัดลมโคล่า");
+    expect(yaki.ingredients_tr.my).toBe("ခေါက်ဆွဲ, ");                                      // the prototype has a Burmese name for noodles but not for cola
+  });
   it("the file is exactly what the generator builds from prototype/data.js", () => {
     const r = run("scripts/make-hachi-kyu-seed.mts", {}, ["--check"]);
     expect(r.out).toContain("up to date");
@@ -109,6 +126,28 @@ describe("scripts/seed-hachi-kyu.mts", () => {
     expect(again.out).toMatch(/already exists/);
     expect((await sql(r.dir, "SELECT COUNT(*) n FROM restaurants"))[0].n).toBe(2);
     expect(await sql(r.dir, "SELECT COUNT(*) n FROM menu_items WHERE restaurant_id=(SELECT id FROM restaurants WHERE slug='golden-lotus')")).toEqual(before);
+  });
+  it("stores the Thai and Burmese ingredient lines with each dish", async () => {
+    const r = seed();
+    const row = (await sql(r.dir, "SELECT ingredients, ingredients_th, ingredients_my FROM menu_items WHERE name_en = '[Coke Combo] Yakisoba with Coke'"))[0];
+    expect(row).toEqual({ ingredients: "Yakisoba noodles, Cola", ingredients_th: "เส้นยากิโซบะ, น้ำอัดลมโคล่า", ingredients_my: "ခေါက်ဆွဲ, " });
+    const written = data.items.filter((i: any) => i.ingredients).length;                         // 6 dishes have no ingredient list at all
+    expect(written).toBe(126);
+    expect((await sql(r.dir, "SELECT COUNT(*) n FROM menu_items WHERE ingredients_th <> '' AND restaurant_id = (SELECT id FROM restaurants WHERE slug = 'hachi-kyu')"))[0].n).toBe(written);
+  });
+  it("on a restaurant seeded before the translations existed, a second run fills them in, and keeps an owner's own line", async () => {
+    const r = seed();
+    const { DatabaseSync } = await import("node:sqlite");
+    const d = new DatabaseSync(path.join(r.dir, "shop.db"));
+    d.exec("UPDATE menu_items SET ingredients_th = '', ingredients_my = '' WHERE restaurant_id = (SELECT id FROM restaurants WHERE slug = 'hachi-kyu')");
+    d.exec("UPDATE menu_items SET ingredients_th = 'เส้น, น้ำ' WHERE name_en = '[Coke Combo] Yakisoba with Coke'");     // the owner already wrote this one
+    d.close();
+    const again = seed({}, r.dir);
+    expect(again.out).toMatch(/added the Thai and Burmese ingredient names to 125 dishes/);                 // 126 with a list, minus the one the owner wrote
+    const rows = await sql(r.dir, "SELECT name_en, ingredients_th FROM menu_items WHERE name_en IN ('[Coke Combo] Yakisoba with Coke', 'Tuna Sashimi')");
+    expect(rows.find((x) => x.name_en.startsWith("[Coke"))!.ingredients_th).toBe("เส้น, น้ำ");
+    expect(rows.find((x) => x.name_en === "Tuna Sashimi")!.ingredients_th).toBe("ทูน่า");
+    expect(seed({}, r.dir).out).toMatch(/nothing to seed/);                                      // and a third run changes nothing
   });
   it("leaves the photo links out unless SEED_HACHI_PHOTOS=1 (a diner's phone would otherwise fetch them from another site)", async () => {
     const a = seed();
@@ -173,6 +212,32 @@ describe("two restaurants in one database stay apart", () => {
     expect(JSON.stringify(mine.data)).not.toContain("Pad Thai");
     await ownerLogin("demo@shop.ai", "demo1234");
     expect(JSON.stringify((await call(ownerItems)).data)).not.toContain("Salmon Sashimi");
+  });
+});
+
+describe("the HaChi Kyu ingredients in the diner's language", () => {
+  const askIn = async (message: string, lang: string) => { noModel(); signOut(); return (await call(chat, { method: "POST", params: { slug: hachi }, body: { message, sessionId: `hk-i-${lang}-${Math.random()}`, table: "3", lang } })).data; };
+  it("the public menu carries the translated lines next to the English one", async () => {
+    signOut();
+    const m = await call(publicMenu, { params: { slug: hachi }, url: `http://t/api/public/${hachi}/menu` });
+    const yaki = m.data.items.find((i: any) => i.name.en === "[Coke Combo] Yakisoba with Coke");
+    expect(yaki.ingredients_tr).toEqual({ th: "เส้นยากิโซบะ, น้ำอัดลมโคล่า", my: "ခေါက်ဆွဲ, " });
+  });
+  it("asked in Thai, the AI lists the Thai ingredient names", async () => {
+    const r = await askIn("Tuna Sashimi ส่วนผสมมีอะไรบ้าง", "th");
+    expect(r.ingredients).toEqual(["ทูน่า"]);
+    expect(r.reply).toContain("ทูน่า");
+    expect(r.reply).not.toContain("Tuna,");
+  });
+  it("asked in Burmese, the AI uses the Burmese names it has and the English name for the one it has not", async () => {
+    const r = await askIn("Eel Sushi ပါဝင်ပစ္စည်း ဘာတွေလဲ", "my");
+    expect(r.ingredients).toEqual(["ထမင်း", "Eel"]);
+    expect(r.lead).toMatch(/ဖြစ်ပါတယ်ခင်ဗျာ။$/);
+  });
+  it("asked in English, nothing changes", async () => {
+    const r = await askIn("What is in the Eel Sushi?", "en");
+    expect(r.reply).toBe("Eel Sushi is made with: Japanese rice, Eel.");
+    expect(r.ingredients).toEqual(["Japanese rice", "Eel"]);
   });
 });
 

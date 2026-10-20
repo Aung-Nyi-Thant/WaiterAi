@@ -4,10 +4,13 @@
 import type { Item, Lang, Restaurant } from "@/modules/platform/menu";
 import { allergenName } from "@/modules/platform/constants";
 import { complete, type Msg } from "@/modules/ai/provider";
-import { tr } from "@/modules/diner/i18n";                  // the label of the Call-staff button, so the AI names it exactly as the screen does
+import { tr } from "@/modules/diner/i18n";
+import { ingredientList } from "@/modules/platform/ingredients";                  // the label of the Call-staff button, so the AI names it exactly as the screen does
 
 export type Action = { type: "none" | "show_menu" | "show_dishes" | "add_to_picks" | "call_staff"; ids?: number[]; kind?: string; qty?: Record<number, number> };
-export type ChatResult = { reply: string; action: Action; topic: string; allergens: string[]; answered: boolean; usedModel: boolean };
+// `ingredients` and `lead` are set only for an ingredient answer: the list one by one, and the sentence that introduces it. The phone shows
+// the lead and the list as pills; `reply` stays the whole answer as one text (what is stored, and what any client without pills shows).
+export type ChatResult = { reply: string; action: Action; topic: string; allergens: string[]; answered: boolean; usedModel: boolean; lead?: string; ingredients?: string[] };
 // profile: the allergens the diner chose once for this visit (see "allergy profile" below)
 type Ctx = { restaurant: Restaurant; items: Item[]; faqs: { q: string; a: string }[]; specials: any[]; history: { role: "user" | "assistant"; text: string }[]; profile?: string[];
   // the menu's categories (to understand "a dessert") and how many of each dish diners ordered here in the last 30 days (to rank)
@@ -548,7 +551,11 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
   // 0. ingredients of a named dish ("what's in the spring rolls?")
   if (dishes.length && !mentioned.length && (INGR_Q.test(t) || /มีอะไรบ้าง/.test(t))) {
     const it = dishes[0].item, n = nm(it, lang);
-    return done(lang === "en" ? `${n} is made with: ${it.ingredients}.` : lang === "th" ? `ส่วนผสมของ${n}: ${it.ingredients}${p}` : `${n} ပါဝင်ပစ္စည်းများ: ${it.ingredients} ဖြစ်ပါတယ်${p}။`, { type: "show_dishes", ids: [it.id] });
+    // the ingredients in the diner's language when the owner wrote them (HaChi Kyu, the demo menu in Thai), else the English line
+    const list = ingredientList(it, lang), text = lang === "en" ? it.ingredients : list.join(", ");
+    const reply = lang === "en" ? `${n} is made with: ${text}.` : lang === "th" ? `ส่วนผสมของ${n}: ${text} ${p}` : `${n} ပါဝင်ပစ္စည်းများ: ${text} ဖြစ်ပါတယ်${p}။`;
+    const lead = lang === "en" ? `${n} is made with:` : lang === "th" ? `ส่วนผสมของ${n}มีดังนี้${p}` : `${n} ပါဝင်ပစ္စည်းများက အောက်ပါအတိုင်း ဖြစ်ပါတယ်${p}။`;
+    return done(reply, { type: "show_dishes", ids: [it.id] }, list.length ? { lead, ingredients: list } : {});
   }
 
   // 0a. "what is X?" / "tell me about X": the owner's description, price and spice level (the model never sees descriptions)

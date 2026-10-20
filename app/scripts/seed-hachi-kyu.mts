@@ -40,7 +40,15 @@ if (prod && (creds.password === DEMO.password || creds.waiterPin === DEMO.waiter
 }
 
 const slug = data.restaurant.slug;
-if ((db.prepare("SELECT COUNT(*) AS n FROM restaurants WHERE slug = ?").get(slug) as any).n > 0) { console.log(`/r/${slug} already exists: nothing to seed.`); process.exit(0); }
+const existing = db.prepare("SELECT id FROM restaurants WHERE slug = ?").get(slug) as any;
+if (existing) {
+  // Seeded before the ingredient names had Thai and Burmese lines: fill them in for the dishes that have none yet (an owner's own lines are kept).
+  const fill = db.prepare("UPDATE menu_items SET ingredients_th = ?, ingredients_my = ? WHERE restaurant_id = ? AND name_en = ? AND ingredients = ? AND ingredients_th = '' AND ingredients_my = ''");
+  let filled = 0;
+  for (const it of data.items) if (it.ingredients_tr?.th || it.ingredients_tr?.my) filled += Number(fill.run(it.ingredients_tr?.th || "", it.ingredients_tr?.my || "", existing.id, it.name.en, it.ingredients).changes);
+  console.log(filled ? `/r/${slug} already exists: added the Thai and Burmese ingredient names to ${filled} dishes.` : `/r/${slug} already exists: nothing to seed.`);
+  process.exit(0);
+}
 if ((db.prepare("SELECT COUNT(*) AS n FROM users WHERE email = ?").get(creds.email) as any).n > 0) { console.error(`The email ${creds.email} is already an owner: set SEED_HACHI_OWNER_EMAIL to another one.`); process.exit(1); }
 
 db.exec("BEGIN IMMEDIATE");
@@ -50,8 +58,8 @@ try {
   const cat: Record<string, number> = {};
   data.categories.forEach((c: any, i: number) => { cat[c.key] = Number(db.prepare("INSERT INTO categories (restaurant_id, name_en, name_th, name_my, sort) VALUES (?,?,?,?,?)").run(rid, c.en, c.th, c.my, i).lastInsertRowid); });
   data.items.forEach((it: any, i: number) => {
-    db.prepare(`INSERT INTO menu_items (restaurant_id, category_id, name_en, name_th, name_my, price, ingredients, allergens_json, tags_json, spice, available, photo_url, sort) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(
-      rid, cat[it.category], it.name.en, it.name.th || "", "", it.price, it.ingredients, it.allergens === null ? null : JSON.stringify(it.allergens), JSON.stringify(it.tags), it.spice, 1, photos ? it.photo : "", i);
+    db.prepare(`INSERT INTO menu_items (restaurant_id, category_id, name_en, name_th, name_my, price, ingredients, ingredients_th, ingredients_my, allergens_json, tags_json, spice, available, photo_url, sort) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(
+      rid, cat[it.category], it.name.en, it.name.th || "", "", it.price, it.ingredients, it.ingredients_tr?.th || "", it.ingredients_tr?.my || "", it.allergens === null ? null : JSON.stringify(it.allergens), JSON.stringify(it.tags), it.spice, 1, photos ? it.photo : "", i);
   });
   data.faq.forEach((f: any, i: number) => { db.prepare("INSERT INTO faqs (restaurant_id, q, a, sort) VALUES (?,?,?,?)").run(rid, f.q, f.a, i); });
   db.prepare("INSERT INTO staff (restaurant_id, name, role, pin_hash) VALUES (?,?,?,?)").run(rid, "Waiter 1", "waiter", bcrypt.hashSync(creds.waiterPin, 8));

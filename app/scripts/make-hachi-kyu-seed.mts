@@ -26,8 +26,20 @@ const RULES: [string, string[]][] = [
 const ORDER = ["gluten", "shellfish", "egg", "fish", "peanut", "soy", "milk", "tree_nut", "celery", "mustard", "sesame", "sulphites", "lupin", "molluscs"];
 const SPICY = /กระเพรา|โกจุงจัง|ยำ|ลาบ|กิมจิ/;
 const ingName = (k: string) => (ING[k] || [k, k])[1];
+// The prototype names every ingredient in Thai, English and (for some) Burmese. The app keeps the English line and two more lines in the same
+// order; a Burmese name the prototype does not have is left as an empty part, which the app fills with the English name (platform/ingredients.ts).
+const ingTh = (k: string) => (ING[k] || [k, k])[0];
+const ingMy = (k: string) => (ING[k] || [k, k])[2] || "";
+const SEPARATOR = /[,，、;；·•\n]/;           // what the app cuts an ingredient line at: no name may contain it, or the lines would fall out of step
 
 const categories = CATS.filter((c: any) => c[0] !== "all" && c[0] !== "rec").map((c: any) => ({ key: c[0], th: c[2][0], en: c[2][1], my: c[2][2] }));
+function ingredientLines(keys: string[]) {
+  const names = keys.map(ingName);
+  for (const n of [...names, ...keys.map(ingTh), ...keys.map(ingMy)]) if (SEPARATOR.test(n)) throw new Error(`The ingredient name "${n}" contains a separator: the translated lines would no longer line up.`);
+  if (new Set(names.map((n) => n.toLowerCase())).size !== names.length) throw new Error(`Two ingredients of one dish share an English name (${names.join(", ")}): the translated lines would no longer line up.`);
+  const my = keys.map(ingMy);
+  return { th: keys.map(ingTh).join(", "), my: my.some(Boolean) ? my.join(", ") : "" };
+}
 const items = RAW.map(([th, en, price, cats, photo, ing]: any[]) => {
   const keys: string[] = ing;
   const found = RULES.filter(([, list]) => keys.some((k) => list.includes(k))).map(([a]) => a).sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b));
@@ -35,6 +47,7 @@ const items = RAW.map(([th, en, price, cats, photo, ing]: any[]) => {
   return {
     category: cats.split(",")[0], name: { en, th }, price,
     ingredients: keys.map(ingName).join(", "),
+    ingredients_tr: ingredientLines(keys),
     allergens: found.length ? found : null,
     tags: [...(keys.some((k) => k === "pork" || k === "bacon") ? ["contains_pork"] : []), ...(spicy ? ["spicy"] : [])],
     spice: spicy ? 2 : 0,
