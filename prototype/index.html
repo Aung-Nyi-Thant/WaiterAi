@@ -5,10 +5,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>ShopAI – HaChi Kyu</title>
-  <!-- Thai/Burmese fonts (requires internet; if offline, the system font will be used instead) -->
+  <!-- Thai/Burmese fonts (needs internet; offline, the system font is used). media="print" + onload makes the request non-blocking,
+       so a slow or missing connection never delays the first paint of the app. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;800&family=Noto+Sans+Myanmar:wght@400;700&display=swap"
-    rel="stylesheet">
+    rel="stylesheet" media="print" onload="this.media='all'">
+  <meta name="theme-color" content="#FFFDF5">
   <link rel="stylesheet" href="proto.css">
 </head>
 
@@ -20,6 +24,7 @@
     window.APP_VIEW = new URLSearchParams(location.search).get('view') || 'customer';
     window.STAFF_MODE = window.APP_VIEW !== 'customer';   // staff / owner: app.js loads only the menu data and does not draw the customer screen
   </script>
+  <script src="icons.js"></script> <!-- icon set: ic(name) + strip(text) -->
   <script src="i18n.js"></script> <!-- 3-language text -->
   <script src="data.js"></script> <!-- Store + allergens / ingredients / categories + menu -->
   <script src="app.js"></script> <!-- customer app + staff app + AI service -->

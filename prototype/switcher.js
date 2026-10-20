@@ -6,8 +6,8 @@
  * - Reset                 : wipe all prototype data (orders, calls, bills, cart, logins) and reload the current screen.
  * Loaded last in index.html. Styles live in Part 4 of proto.css (.pt-bar). */
 (() => {
-    // Views available in the prototype: [?view= value, button label, emoji]
-    const VIEWS = [['customer', 'Diner', '🍽️'], ['staff', 'Staff', '🧑‍🍳'], ['owner', 'Owner', '👑']];
+    // Views available in the prototype: [?view= value, button label, icon name (see icons.js)]
+    const VIEWS = [['customer', 'Diner', 'utensils'], ['staff', 'Staff', 'chefHat'], ['owner', 'Owner', 'store']];
 
     // Storage keys used by the prototype (see data.js Store, app.js save(), staff login, owner login)
     const LOCAL_KEYS = ['shopai_db'];                                  // shared demo database (orders / calls / bills / menu edits)
@@ -38,8 +38,8 @@
     bar.setAttribute('role', 'toolbar');
     bar.setAttribute('aria-label', 'Prototype controls');
     bar.innerHTML =
-        VIEWS.map(([v, label, ico]) => `<a href="${urlFor(v)}" class="${v === cur ? 'on' : ''}" title="${label}"><span>${ico}</span><b>${label}</b></a>`).join('') +
-        `<button type="button" class="rs" title="Reset prototype"><span>🔄</span><b>Reset</b></button>`;
+        VIEWS.map(([v, label, ico]) => `<a href="${urlFor(v)}" class="${v === cur ? 'on' : ''}" title="${label}"${v === cur ? ' aria-current="page"' : ''}><span>${ic(ico, 16)}</span><b>${label}</b></a>`).join('') +
+        `<button type="button" class="rs" title="Reset prototype"><span>${ic('refresh', 16)}</span><b>Reset</b></button>`;
     bar.querySelector('.rs').addEventListener('click', reset);
     document.body.appendChild(bar);
 

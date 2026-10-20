@@ -52,6 +52,23 @@ describe("the M4 clickable prototype", () => {
     expect(win.I18N.dict).toEqual(JSON.parse(JSON.stringify(DICT)));
     expect(win.I18N.allergens).toEqual([...ALLERGENS]);
   });
+  it("shows no emoji: every icon is drawn in icons.js (i18n.js is the app's own dictionary and is stripped when it is shown)", () => {
+    const emoji = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}]/u;
+    for (const f of ["app.js", "owner.js", "data.js", "switcher.js", "icons.js", "index.html", "proto.css"]) {
+      const bad = read(`prototype/${f}`).split("\n").map((l, i) => [i + 1, l] as const).filter(([, l]) => emoji.test(l));
+      expect(bad.map(([n, l]) => `${f}:${n} ${l.trim().slice(0, 60)}`), f).toEqual([]);
+    }
+    const win: any = {};
+    new Function("window", read("prototype/icons.js"))(win);
+    expect(win.strip("\u2705 Saved \u{1F60A}")).toBe("Saved");
+    const used = new Set([...(proto + read("prototype/switcher.js")).matchAll(/\bic\('([A-Za-z]+)'/g)].map((m) => m[1]));
+    // icon names also appear as plain strings (CATS in data.js, tab lists, page lists): collect those that are passed to ic() through a variable
+    for (const m of proto.matchAll(/\['[a-z]+', '([A-Za-z]+)', '[A-Z][^']*'\]/g)) used.add(m[1]);
+    for (const m of read("prototype/data.js").matchAll(/^\s*\["[a-z]+", "([a-z]+)", \[/gm)) used.add(m[1]);
+    const drawn = String(win.ic("star")), missing = [...used].filter((n) => win.ic(n) === win.ic("help") && n !== "help");
+    expect(drawn).toContain("<svg");
+    expect(missing, "icon names used but not drawn in icons.js").toEqual([]);
+  });
   it("opens from a folder with no server: every script and style it loads is a local file (only the font stylesheet is remote)", () => {
     const html = read("prototype/index.html");
     const scripts = [...html.matchAll(/<script[^>]*src="([^"]+)"/g)].map((m) => m[1]);

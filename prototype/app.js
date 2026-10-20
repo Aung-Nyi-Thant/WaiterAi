@@ -3,7 +3,7 @@
  * The page decides what to draw (see index.html):  index.html = customer · ?view=staff = waiter/chef · ?view=owner = owner dashboard (owner.js)
  *
  *  ── Customer app ──
- *   4  AI SERVICE ★ (TODO for dev)   5  CONFIG & STATE          6  ALLERGY (check + warning badges)
+ *   4  AI SERVICE * (TODO for dev)   5  CONFIG & STATE          6  ALLERGY (check + warning badges)
  *   7  CART                          8  UI: header/search/menu cards     9  UI: AI chat screen
  *   10 UI: cart/confirmation/more    11 UI: menu detail popup    12 RENDER (screen drawing)
  *   13 ACTIONS (button handling)     14 MAIN (customer startup)
@@ -15,7 +15,7 @@
  * ##################################################################### */
 
 /* =====================================================================
- * ▌Section 4 — AI SERVICE ★ the next dev must complete this
+ * ▌Section 4 — AI SERVICE * the next dev must complete this
  * AI connection layer: chat UI is ready (see AI chat screen section); only the backend call in AIService.send() remains
  * ===================================================================== */
 
@@ -96,7 +96,7 @@ try { Object.assign(S, JSON.parse(sessionStorage.getItem('shopai2') || '{}')) } 
 const save = () => { try { sessionStorage.setItem('shopai2', JSON.stringify({ lang: S.lang, cart: S.cart, al: S.al, other: S.other, orders: S.orders, staffAt: S.staffAt })) } catch (e) { } };
 // tr(translation array) = select the current language text (falls back to English if Myanmar translation is missing)
 // t('key') = get UI text from dictionary T in 02-i18n.js
-const tr = a => a[I[S.lang]] || a[1], t = k => tr(T[k]);
+const tr = a => a[I[S.lang]] || a[1], t = k => strip(tr(T[k]));
 
 /* =====================================================================
  * ▌Section 6 — ALLERGY: allergen checks and warning labels
@@ -115,13 +115,13 @@ const hits = m => {
 };
 
 // warn(menu) = HTML warning badge shown on card/detail/cart/chat
-//   1) red frame "ALLERGY ALERT" if the dish contains something the customer is allergic to (includes icon + text, not only color)
-//   2) "✅ Verified by the restaurant" if m.v=1
+//   1) red frame "ALLERGY ALERT" if the dish contains something the customer is allergic to (icon + text, never colour alone)
+//   2) "Verified by the restaurant" badge if m.v=1
 const warn = m => {
   const h = hits(m);
   let u = '';
-  if (m.v) u = `<div class="vf">${t('verified')}</div>`;
-  return (h.length ? `<div class="warn" role="alert">${t('alert')} ${h.join(', ')}</div>` : '') + u;
+  if (m.v) u = `<div class="vf">${ic('checkCircle', 14)}<span>${t('verified')}</span></div>`;
+  return (h.length ? `<div class="warn" role="alert">${ic('alert', 16)}<span>${t('alert')} ${h.join(', ')}</span></div>` : '') + u;
 };
 
 /* =====================================================================
@@ -146,26 +146,26 @@ const defL = id => ({ id: +id, qty: 1, spice: null, mods: [], note: '', ot: 'din
  * Every function returns an HTML string (render() composes them in the RENDER section)
  * ===================================================================== */
 
-// card(menu) = menu card: image (emoji) → name → description (category) → warning → price/rating/button +
+// card(menu) = menu card: image → name → description (category) → warning → price/rating/button +
 //   click card = open details (action 'open'), click + button = add to cart immediately (action 'quick')
-const card = m => `<div class="card${m.s ? ' so' : ''}" data-a="open" data-id="${m.id}"><div class="img">${m.img ? `<img src="${m.img}" alt="${esc(tr(m.n))}" loading="lazy">` : ''}</div><div class="cb"><b>${tr(m.n)}</b><small>${tr(m.d)}</small>${m.s ? `<span class="tag so-b">${t('soldT')}</span>` : ''}${warn(m)}<div class="row"><span class="pr">฿${m.p}</span><span>${m.r ? '⭐' + m.r : ''}</span><button class="add" aria-label="${t('add')}" data-a="quick" data-id="${m.id}">+</button></div></div></div>`;
+const card = m => `<div class="card${m.s ? ' so' : ''}" data-a="open" data-id="${m.id}"><div class="img">${m.img ? `<img data-c="${m.c[0]}" src="${m.img}" alt="${esc(tr(m.n))}" loading="lazy">` : ''}</div><div class="cb"><b>${tr(m.n)}</b><small>${tr(m.d)}</small>${m.s ? `<span class="tag so-b">${t('soldT')}</span>` : ''}${warn(m)}<div class="row"><span class="pr">฿${m.p}</span><span class="rt">${m.r ? ic('star', 14) + m.r : ''}</span><button class="add" aria-label="${t('add')}" data-a="quick" data-id="${m.id}">${ic('plus', 18)}</button></div></div></div>`;
 
 // filtered() = items matching the selected category + search term (searches across all 3 languages: name, category, ingredients)
 function filtered() { const q = S.q.trim().toLowerCase(); return MENU.filter(m => (S.cat == 'all' || m.c.includes(S.cat)) && (!q || [...m.n, ...m.d, ...m.ing.flatMap(i => ingA(i)), ...m.c.flatMap(c => CATS.find(x => x[0] == c) ? CATS.find(x => x[0] == c)[2] : [])].some(x => x.toLowerCase().includes(q)))) }
 // listH() = HTML for the menu list (if not found, show an empty state)
-const listH = () => { const L = filtered(); return L.length ? L.map(card).join('') : `<div class="empty"><i>🔍</i>${t('empty')}</div>` };
+const listH = () => { const L = filtered(); return L.length ? L.map(card).join('') : `<div class="empty"><i>${ic('search', 28)}</i>${t('empty')}</div>` };
 
-// header() = top bar: ShopAI logo · shop name · table · staff call button 🛎️ · cart 🛒 · language switch
+// header() = top bar: ShopAI logo · shop name · table · staff call button · cart · language switch
 function header() {
-  return `<header><div class="top"><div class="logo">ShopAI</div><div class="tt"><b>${REST}</b><small>${t('table')} ${TABLE}</small></div><button class="ib txt" data-a="modal" data-m="staff" aria-label="${t('staff')}">${t('staff')}</button><button class="ib" data-a="nav" data-v="cart" aria-label="${t('cart')}">🛒${cnt() ? `<span class="bd">${cnt()}</span>` : ''}</button></div>
+  return `<header><div class="top"><div class="logo">ShopAI</div><div class="tt"><b>${REST}</b><small>${t('table')} ${TABLE}</small></div><button class="ib txt" data-a="modal" data-m="staff" aria-label="${t('staff')}">${ic('bell', 16)}${t('staff')}</button><button class="ib" data-a="nav" data-v="cart" aria-label="${t('cart')}">${ic('cart', 21)}${cnt() ? `<span class="bd">${cnt()}</span>` : ''}</button></div>
 <div class="lang">${['th', 'en', 'my'].map(l => `<button data-a="lang" data-l="${l}" class="${S.lang == l ? 'on' : ''}">${{ th: 'ไทย', en: 'EN', my: 'မြန်မာ' }[l]}</button>`).join('')}</div></header>`
 }
 
 // disc(feat) = search/select menu page order: search box → category chips → (home-only: banner + featured menu) → menu grid
 function disc(feat) {
-  return `<div class="sb">🔍<input id="q" value="${S.q.replace(/"/g, '&quot;')}" placeholder="${t('search')}" aria-label="search"></div>
-<div class="chips">${CATS.map(c => `<button class="chip ${S.cat == c[0] ? 'on' : ''}" data-a="cat" data-c="${c[0]}"><span>${c[1]}</span>${tr(c[2])}</button>`).join('')}</div>
-${feat ? `<div class="hero"><div><small>${t('hello')}</small><b>${REST}</b><small>${t('hs')}</small></div><i>🍜</i></div><h2>🔥 ${t('feat')}</h2><div class="feat">${MENU.filter(m => m.c.includes('rec')).map(card).join('')}</div><h2>${t('all')}</h2>` : ''}
+  return `<div class="sb">${ic('search', 18)}<input id="q" value="${S.q.replace(/"/g, '&quot;')}" placeholder="${t('search')}" aria-label="search"></div>
+<div class="chips">${CATS.map(c => `<button class="chip ${S.cat == c[0] ? 'on' : ''}" data-a="cat" data-c="${c[0]}"><span>${ic(c[1], 18)}</span>${tr(c[2])}</button>`).join('')}</div>
+${feat ? `<div class="hero"><div><small>${t('hello')}</small><b>${REST}</b><small>${t('hs')}</small></div><i>${ic('bowl', 56)}</i></div><h2 class="hd">${ic('flame', 18)}${t('feat')}</h2><div class="feat">${MENU.filter(m => m.c.includes('rec')).map(card).join('')}</div><h2>${t('all')}</h2>` : ''}
 <div class="grid" id="list">${listH()}</div><p style="text-align:center;color:var(--sub);font-size:11px;margin-top:14px">${t('demo')}</p>`
 }
 
@@ -178,8 +178,8 @@ ${feat ? `<div class="hero"><div><small>${t('hello')}</small><b>${REST}</b><smal
 //   AI-side messages can be: text · menu cards with warning/add-to-cart buttons · quick action buttons · retry button on error
 //   Input box and suggested questions are in render() (RENDER section)
 function chatV() {
-  return `<div class="aih"><i>✨</i><div><b>${aiS().name || t('aiN')}</b><br><small>${t('aiH')}</small></div></div><div class="chat">
-<div class="m a">${aiS().greet ? aiS().greet.replace(/</g, '&lt;') : t('hi')}</div>${S.chat.map((c, ix) => c.typing ? `<div class="m a dots"><span></span><span></span><span></span></div>` : `<div class="m ${c.r}">${c.t}${c.r == 'a' && c.q && !c.retry ? `<div class="qa"><button data-a="wrong" data-i="${ix}" aria-label="wrong answer">👎</button></div>` : ''}${(c.items || []).map(id => { const m = byId(id); return `<div class="mc"><div class="r2">${m.img ? `<img src="${m.img}" alt="" style="width:44px;height:44px;object-fit:cover;border-radius:8px">` : ''}<div style="flex:1"><b>${tr(m.n)}</b><br>฿${m.p}${m.r ? ' · ⭐' + m.r : ''}</div></div>${warn(m)}<div class="r2"><button class="l" data-a="open" data-id="${id}">${t('det')}</button><button data-a="aiadd" data-id="${id}">+ ${t('add')}</button></div></div>` }).join('')}${(c.qa || []).length ? `<div class="qa">${c.qa.map(q => `<button data-a="${q[0]}" data-v="${q[1]}" data-m="${q[1]}">${q[2]}</button>`).join('')}</div>` : ''}${c.retry ? `<div class="qa"><button data-a="ask" data-t="${c.retry}">${t('retry')}</button></div>` : ''}</div>`).join('')}</div>`
+  return `<div class="aih"><i>${ic('sparkle', 22)}</i><div><b>${aiS().name || t('aiN')}</b><br><small>${t('aiH')}</small></div></div><div class="chat">
+<div class="m a">${aiS().greet ? aiS().greet.replace(/</g, '&lt;') : t('hi')}</div>${S.chat.map((c, ix) => c.typing ? `<div class="m a dots${fresh.chat && ix == S.chat.length - 1 ? ' in' : ''}"><span></span><span></span><span></span></div>` : `<div class="m ${c.r}${fresh.chat && ix == S.chat.length - 1 ? ' in' : ''}">${c.t}${c.r == 'a' && c.q && !c.retry ? `<div class="qa"><button data-a="wrong" data-i="${ix}" aria-label="wrong answer">${ic('thumbDown', 16)}</button></div>` : ''}${(c.items || []).map(id => { const m = byId(id); return `<div class="mc"><div class="r2">${m.img ? `<img data-c="${m.c[0]}" src="${m.img}" alt="" style="width:44px;height:44px;object-fit:cover;border-radius:8px">` : ''}<div style="flex:1"><b>${tr(m.n)}</b><br>฿${m.p}${m.r ? ' · ' + ic('star', 12) + m.r : ''}</div></div>${warn(m)}<div class="r2"><button class="l" data-a="open" data-id="${id}">${t('det')}</button><button data-a="aiadd" data-id="${id}">${ic('plus', 14)}${t('add')}</button></div></div>` }).join('')}${(c.qa || []).length ? `<div class="qa">${c.qa.map(q => `<button data-a="${q[0]}" data-v="${q[1]}" data-m="${q[1]}">${q[2]}</button>`).join('')}</div>` : ''}${c.retry ? `<div class="qa"><button data-a="ask" data-t="${c.retry}">${t('retry')}</button></div>` : ''}</div>`).join('')}</div>`
 }
 
 /* =====================================================================
@@ -192,19 +192,19 @@ function chatV() {
 // stOf(order) = live order status text (updated by waiter/chef through Store)
 const stOf = o => { const r = Store.get().orders.find(x => x.id == o.no); return t({ new: 'sNew', accepted: 'sAcc', cooking: 'sCook', ready: 'sReady', served: 'sServed', paid: 'sPaid' }[r ? r.status : 'new']) };
 function cartV() {
-  if (!S.cart.length) return `<div class="empty"><i>🛒</i>${t('cartE')}<button class="btn" data-a="nav" data-v="menu">${t('back')}</button></div>`;
-  return `<div class="opt"><span style="align-self:center;font-weight:700">${t('setAll')}:</span><button data-a="allot" data-v="dine">🍽️ ${t('dine')}</button><button data-a="allot" data-v="take">🥡 ${t('take')}</button></div>` + S.cart.map((l, i) => { const m = byId(l.id); return `<div class="ci"><div class="img">${m.img ? `<img src="${m.img}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:14px">` : ''}</div><div style="flex:1"><b>${tr(m.n)}</b>${warn(m)}<div style="font-size:12px;color:var(--sub)">${[l.spice != null ? tr(SP[l.spice]) : '', ...l.mods.map(k => tr(MODS[k]))].filter(Boolean).join(' · ')}${l.note ? '<br>📝 ' + l.note.replace(/</g, '&lt;') : ''}</div><button class="tag" data-a="lt" data-i="${i}">${l.ot == 'take' ? '🥡 ' + t('take') : '🍽️ ' + t('dine')} ⇄</button><div class="row" style="margin-top:6px"><div class="qt"><button data-a="cq" data-i="${i}" data-d="-1">−</button>${l.qty}<button data-a="cq" data-i="${i}" data-d="1">+</button></div><span class="pr" style="text-align:right">฿${price(l)}</span><button data-a="rm" data-i="${i}" aria-label="remove">🗑️</button></div></div></div>` }).join('') +
-    `<div class="tot"><span>${t('sub')}</span><span>฿${sum()}</span></div><div class="tot"><span>${t('svc')}</span><span>฿0</span></div><div class="tot b"><span>${t('total')}</span><span>฿${sum()}</span></div><button class="btn" data-a="modal" data-m="review">${t('place')}</button><button class="btn alt" data-a="nav" data-v="menu">+ ${t('back')}</button>`
+  if (!S.cart.length) return `<div class="empty"><i>${ic('cart', 28)}</i>${t('cartE')}<button class="btn" data-a="nav" data-v="menu">${t('back')}</button></div>`;
+  return `<div class="opt"><span style="align-self:center;font-weight:700">${t('setAll')}:</span><button data-a="allot" data-v="dine">${ic('utensils', 16)}${t('dine')}</button><button data-a="allot" data-v="take">${ic('bag', 16)}${t('take')}</button></div>` + S.cart.map((l, i) => { const m = byId(l.id); return `<div class="ci"><div class="img">${m.img ? `<img data-c="${m.c[0]}" src="${m.img}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:14px">` : ''}</div><div style="flex:1"><b>${tr(m.n)}</b>${warn(m)}<div style="font-size:12px;color:var(--sub)">${[l.spice != null ? tr(SP[l.spice]) : '', ...l.mods.map(k => tr(MODS[k]))].filter(Boolean).join(' · ')}${l.note ? '<br><span class="nl">' + ic('note', 13) + l.note.replace(/</g, '&lt;') + '</span>' : ''}</div><button class="tag" data-a="lt" data-i="${i}">${l.ot == 'take' ? ic('bag', 14) + t('take') : ic('utensils', 14) + t('dine')}${ic('swap', 13)}</button><div class="row" style="margin-top:6px"><div class="qt"><button data-a="cq" data-i="${i}" data-d="-1" aria-label="-">${ic('minus', 16)}</button><span>${l.qty}</span><button data-a="cq" data-i="${i}" data-d="1" aria-label="+">${ic('plus', 16)}</button></div><span class="pr" style="text-align:right">฿${price(l)}</span><button class="rmv" data-a="rm" data-i="${i}" aria-label="remove">${ic('trash', 18)}</button></div></div></div>` }).join('') +
+    `<div class="tot"><span>${t('sub')}</span><span>฿${sum()}</span></div><div class="tot"><span>${t('svc')}</span><span>฿0</span></div><div class="tot b"><span>${t('total')}</span><span>฿${sum()}</span></div><button class="btn" data-a="modal" data-m="review">${t('place')}</button><button class="btn alt" data-a="nav" data-v="menu">${t('back')}</button>`
 }
 
 // moreV() = "More" tab: allergy settings · call staff · check bill · placed orders
 function moreV() {
-  return `<button class="li" data-a="modal" data-m="al"><span>🥜</span>${t('alg')}${S.al.length || S.other ? ` <span class="tag">${S.al.length + (S.other ? 1 : 0)}</span>` : ''}</button><button class="li" data-a="modal" data-m="staff"><span>🛎️</span>${t('staff')}</button><button class="li" data-a="modal" data-m="bill"><span>🧾</span>${t('bill')}</button>
+  return `<button class="li" data-a="modal" data-m="al"><span>${ic('shield', 22)}</span>${t('alg')}${S.al.length || S.other ? ` <span class="tag">${S.al.length + (S.other ? 1 : 0)}</span>` : ''}</button><button class="li" data-a="modal" data-m="staff"><span>${ic('bell', 22)}</span>${t('staff')}</button><button class="li" data-a="modal" data-m="bill"><span>${ic('receipt', 22)}</span>${t('bill')}</button>
 <h2>${t('orders')}</h2>${S.orders.length ? S.orders.map(o => `<div class="ci"><div style="flex:1"><b>#${o.no}</b> · ${o.items.length} ${'items'}<br><small>${stOf(o)}</small></div><b>฿${o.total}</b></div>`).join('') : `<p style="color:var(--sub)">${t('noOrd')}</p>`}`
 }
 
 // confirmV() = post-order success screen: order number · shop/table · status · estimated time · items and total
-function confirmV() { const o = S.orders[S.orders.length - 1]; return `<div class="ok"><i>✅</i><h2>${t('done')}</h2></div><div class="ci" style="display:block"><div class="tot"><span>${t('ono')}</span><b>#${o.no}</b></div><div class="tot"><span>${REST}</span><b>${t('table')} ${TABLE}</b></div><div class="tot"><span>${t('st')}</span><b>${stOf(o)}</b></div><div class="tot"><span></span><small>${t('eta')}</small></div><hr>${o.items.map(l => `<div class="tot"><span>${byId(l.id).e} ${tr(byId(l.id).n)} ×${l.qty}${l.ot == 'take' ? ' 🥡' : ''}</span><span>฿${price(l)}</span></div>`).join('')}<div class="tot b"><span>${t('total')}</span><span>฿${o.total}</span></div></div><button class="btn" data-a="nav" data-v="menu">${t('back')}</button>` }
+function confirmV() { const o = S.orders[S.orders.length - 1]; return `<div class="ok"><i>${ic('checkCircle', 56)}</i><h2>${t('done')}</h2></div><div class="ci" style="display:block"><div class="tot"><span>${t('ono')}</span><b>#${o.no}</b></div><div class="tot"><span>${REST}</span><b>${t('table')} ${TABLE}</b></div><div class="tot"><span>${t('st')}</span><b>${stOf(o)}</b></div><div class="tot"><span></span><small>${t('eta')}</small></div><hr>${o.items.map(l => `<div class="tot"><span>${tr(byId(l.id).n)} ×${l.qty}${l.ot == 'take' ? ' ' + ic('bag', 14) : ''}</span><span>฿${price(l)}</span></div>`).join('')}<div class="tot b"><span>${t('total')}</span><span>฿${o.total}</span></div></div><button class="btn" data-a="nav" data-v="menu">${t('back')}</button>` }
 
 /* =====================================================================
  * ▌Section 11 — UI: menu details and pop-up windows
@@ -216,13 +216,13 @@ function confirmV() { const o = S.orders[S.orders.length - 1]; return `<div clas
 //   dine-in/takeaway → spice (only for m.sp) → customization options + special requests (only for m.cz) →
 //   quantity + total → add-to-cart button
 function detail() {
-  const D = S.D, m = byId(D.id), tot = m.p * D.qty; return `<div class="ov" data-a="closeM"><div class="sh"><div class="big">${m.img ? `<img src="${m.img}" alt="${esc(tr(m.n))}">` : ''}</div><div class="pad"><div class="row"><h2 style="margin:0;flex:1">${tr(m.n)}</h2><span class="pr" style="flex:none">฿${m.p}</span></div><p style="color:var(--sub);font-size:14px;margin:6px 0">${tr(m.d)}</p>${warn(m)}
+  const D = S.D, m = byId(D.id), tot = m.p * D.qty; return `<div class="ov${fresh.ov ? ' in' : ''}" data-a="closeM"><div class="sh"><div class="big">${m.img ? `<img data-c="${m.c[0]}" src="${m.img}" alt="${esc(tr(m.n))}">` : ''}</div><div class="pad"><div class="row"><h2 style="margin:0;flex:1">${tr(m.n)}</h2><span class="pr" style="flex:none">฿${m.p}</span></div><p style="color:var(--sub);font-size:14px;margin:6px 0">${tr(m.d)}</p>${warn(m)}
 <h2>${t('ing')}</h2>${m.ing.length ? m.ing.map(i => `<span class="tag">${tr(ingA(i))}</span>`).join('') : `<span class="tag">${t('noIng')}</span>`}
-<p style="margin-top:8px;font-size:13px">🥗 ${t('diet')}: <b>${vegT(m)}</b> · 🚫 ${t('al')}: <b>${m.al.length ? m.al.map(k => tr(AL[k])).join(', ') : t('none')}</b></p>
-<h2>🍽️ ${t('otype')}</h2><div class="opt"><button class="${D.ot == 'dine' ? 'on' : ''}" data-a="dot" data-v="dine">🍽️ ${t('dine')}</button><button class="${D.ot == 'take' ? 'on' : ''}" data-a="dot" data-v="take">🥡 ${t('take')}</button></div>
-${m.sp ? `<h2>🌶️ ${t('spice')}</h2><div class="opt">${SP.map((s, i) => `<button class="${D.spice == i ? 'on' : ''}" data-a="spice" data-i="${i}">${tr(s)}</button>`).join('')}</div>` : ''}
+<p class="facts"><span>${ic('leaf', 15)}${t('diet')}: <b>${vegT(m)}</b></span><span>${ic('shield', 15)}${t('al')}: <b>${m.al.length ? m.al.map(k => tr(AL[k])).join(', ') : t('none')}</b></span></p>
+<h2>${t('otype')}</h2><div class="opt"><button class="${D.ot == 'dine' ? 'on' : ''}" data-a="dot" data-v="dine">${ic('utensils', 16)}${t('dine')}</button><button class="${D.ot == 'take' ? 'on' : ''}" data-a="dot" data-v="take">${ic('bag', 16)}${t('take')}</button></div>
+${m.sp ? `<h2 class="hd">${ic('flame', 17)}${t('spice')}</h2><div class="opt">${SP.map((s, i) => `<button class="${D.spice == i ? 'on' : ''}" data-a="spice" data-i="${i}">${tr(s)}</button>`).join('')}</div>` : ''}
 <h2>${t('note')}</h2><textarea rows="2" id="note" placeholder="${t('note')}">${D.note}</textarea>
-<div class="row" style="margin-top:14px"><div class="qt"><button data-a="dq" data-d="-1">−</button>${D.qty}<button data-a="dq" data-d="1">+</button></div><span class="pr" style="text-align:right;font-size:20px">฿${tot}</span></div>
+<div class="row" style="margin-top:14px"><div class="qt"><button data-a="dq" data-d="-1" aria-label="-">${ic('minus', 16)}</button><span>${D.qty}</span><button data-a="dq" data-d="1" aria-label="+">${ic('plus', 16)}</button></div><span class="pr" style="text-align:right;font-size:20px">฿${tot}</span></div>
 <button class="btn" data-a="addD">${t('add')} · ฿${tot}</button><button class="btn alt" data-a="closeM">${t('close')}</button></div></div></div>`
 }
 
@@ -231,11 +231,11 @@ ${m.sp ? `<h2>🌶️ ${t('spice')}</h2><div class="opt">${SP.map((s, i) => `<bu
 //   'bill' → request bill check | 'review' → confirm order before placing
 function modal() {
   const M = S.modal; if (!M) return ''; if (M == 'detail') return detail();
-  let b = ''; if (M == 'al') b = `<h2 style="margin-top:0">🥜 ${t('alg')}</h2><div class="opt">${Object.keys(AL).map(k => `<button class="${S.al.includes(k) ? 'on' : ''}" data-a="algT" data-k="${k}">${tr(AL[k])}</button>`).join('')}</div><input class="in" id="oth" value="${S.other}" placeholder="${t('other')}"><p style="font-size:12px;color:var(--sub);margin-top:8px">${t('algNote')}</p><button class="btn" data-a="algS">${t('algS')}</button>`;
-  if (M == 'staff') b = `<h2 style="margin-top:0">🛎️ ${t('staff')}</h2><p>${t('staffQ')}</p><p style="color:var(--sub);font-size:13px">${REST} · ${t('table')} ${TABLE}</p><button class="btn" data-a="staffGo">${t('confirm')}</button><button class="btn alt" data-a="closeM">${t('cancel')}</button>`;
-  if (M == 'bill') { const tt = S.orders.reduce((a, o) => a + o.total, 0); b = `<h2 style="margin-top:0">🧾 ${t('bill')}</h2>${S.orders.length ? S.orders.map(o => `<div class="tot"><span>#${o.no}</span><span>฿${o.total}</span></div>`).join('') + `<div class="tot b"><span>${t('total')}</span><span>฿${tt}</span></div><p>${t('billQ')}</p><button class="btn" data-a="billGo">${t('confirm')}</button>` : `<p>${t('noOrd')}</p>`}<button class="btn alt" data-a="closeM">${t('cancel')}</button>` }
-  if (M == 'review') b = `<h2 style="margin-top:0">${t('review')}</h2><p><b>${REST}</b> · ${t('table')} ${TABLE}</p>${S.cart.map(l => `<div class="tot"><span>${byId(l.id).e} ${tr(byId(l.id).n)} ×${l.qty}${l.ot == 'take' ? ' 🥡' : ''}</span><span>฿${price(l)}</span></div>`).join('')}<div class="tot b"><span>${t('total')}</span><span>฿${sum()}</span></div><button class="btn" data-a="placeGo" ${S.busy ? 'disabled' : ''}>${S.busy ? '⏳ ...' : t('confirm')}</button><button class="btn alt" data-a="closeM">${t('cancel')}</button>`;
-  return `<div class="ov c" data-a="closeM"><div class="sh">${b}</div></div>`
+  let b = ''; if (M == 'al') b = `<h2 class="hd" style="margin-top:0">${ic('shield', 20)}${t('alg')}</h2><div class="opt">${Object.keys(AL).map(k => `<button class="${S.al.includes(k) ? 'on' : ''}" data-a="algT" data-k="${k}">${tr(AL[k])}</button>`).join('')}</div><input class="in" id="oth" value="${S.other}" placeholder="${t('other')}"><p style="font-size:12px;color:var(--sub);margin-top:8px">${t('algNote')}</p><button class="btn" data-a="algS">${t('algS')}</button>`;
+  if (M == 'staff') b = `<h2 class="hd" style="margin-top:0">${ic('bell', 20)}${t('staff')}</h2><p>${t('staffQ')}</p><p style="color:var(--sub);font-size:13px">${REST} · ${t('table')} ${TABLE}</p><button class="btn" data-a="staffGo">${t('confirm')}</button><button class="btn alt" data-a="closeM">${t('cancel')}</button>`;
+  if (M == 'bill') { const tt = S.orders.reduce((a, o) => a + o.total, 0); b = `<h2 class="hd" style="margin-top:0">${ic('receipt', 20)}${t('bill')}</h2>${S.orders.length ? S.orders.map(o => `<div class="tot"><span>#${o.no}</span><span>฿${o.total}</span></div>`).join('') + `<div class="tot b"><span>${t('total')}</span><span>฿${tt}</span></div><p>${t('billQ')}</p><button class="btn" data-a="billGo">${t('confirm')}</button>` : `<p>${t('noOrd')}</p>`}<button class="btn alt" data-a="closeM">${t('cancel')}</button>` }
+  if (M == 'review') b = `<h2 style="margin-top:0">${t('review')}</h2><p><b>${REST}</b> · ${t('table')} ${TABLE}</p>${S.cart.map(l => `<div class="tot"><span>${tr(byId(l.id).n)} ×${l.qty}${l.ot == 'take' ? ' ' + ic('bag', 14) : ''}</span><span>฿${price(l)}</span></div>`).join('')}<div class="tot b"><span>${t('total')}</span><span>฿${sum()}</span></div><button class="btn" data-a="placeGo" ${S.busy ? 'disabled' : ''}>${S.busy ? '<span class="spin" aria-hidden="true"></span>' : t('confirm')}</button><button class="btn alt" data-a="closeM">${t('cancel')}</button>`;
+  return `<div class="ov c${fresh.ov ? ' in' : ''}" data-a="closeM"><div class="sh">${b}</div></div>`
 }
 
 /* =====================================================================
@@ -245,17 +245,20 @@ function modal() {
  * ===================================================================== */
 
 // nav() = bottom menu bar: home · menu · AI assistant (highlighted round button) · cart · more
-function nav() { const n = (v, i, l, c = '') => `<button class="${c} ${S.view == v ? 'on' : ''}" data-a="nav" data-v="${v}"><span>${i}</span>${l}</button>`; return `<nav>${n('home', '🏠', t('home'))}${n('menu', '📖', t('menu'))}${n('ai', '✨', t('ai'), 'aib')}${n('cart', '🛒', t('cart'))}${n('more', '☰', t('more'))}</nav>` }
+function nav() { const n = (v, i, l, c = '') => `<button class="${c} ${S.view == v ? 'on' : ''}" data-a="nav" data-v="${v}"><span>${i}</span>${l}</button>`; return `<nav>${n('home', ic('home', 22), t('home'))}${n('menu', ic('menu', 22), t('menu'))}${n('ai', ic('sparkle', 24), t('ai'), 'aib')}${n('cart', ic('cart', 22) + (cnt() ? `<b class="bd">${cnt()}</b>` : ''), t('cart'))}${n('more', ic('more', 22), t('more'))}</nav>` }
 
 // render() = compose screen: header + content based on S.view + (AI page: suggested questions + input) + nav + modal + toast
+// fresh = what appeared in this render (a sheet, a toast, a chat message). Only those play an entrance; everything else is rebuilt silently.
+let fresh = {}, _modal = null, _toast = '', _chatN = 0;
 function render() {
+  fresh = { ov: !!S.modal && S.modal != _modal, toast: !!S.toast && S.toast != _toast, chat: S.chat.length != _chatN }; _modal = S.modal; _toast = S.toast; _chatN = S.chat.length;
   const _cs = document.querySelector(".chips"), _sx = _cs ? _cs.scrollLeft : 0; const v = S.view, bd = v == 'home' ? disc(1) : v == 'menu' ? disc(0) : v == 'ai' ? chatV() : v == 'cart' ? cartV() : v == 'more' ? moreV() : confirmV();
-  const ai = v == 'ai'; $('#app').innerHTML = header() + `<main ${ai ? 'style="padding-bottom:8px"' : ''}>${bd}</main>` + (ai ? `<div style="padding-bottom:90px;background:#fff"><div class="sg" style="padding:6px 12px">${SG.map(r => r[I[S.lang]]).filter(Boolean).map(x => `<button data-a="ask" data-t="${x.replace(/"/g, '&quot;')}">${x}</button>`).join('')}</div><div class="inb"><input id="ci" placeholder="${t('ph')}"><button data-a="send" aria-label="send">➤</button></div></div>` : '') + nav() + modal() + (S.toast ? `<div class="toast" role="status">${S.toast}</div>` : '');
+  const ai = v == 'ai'; $('#app').innerHTML = header() + `<main ${ai ? 'style="padding-bottom:8px"' : ''}>${bd}</main>` + (ai ? `<div style="padding-bottom:90px;background:#fff"><div class="sg" style="padding:6px 12px">${SG.map(r => r[I[S.lang]]).filter(Boolean).map(x => `<button data-a="ask" data-t="${x.replace(/"/g, '&quot;')}">${x}</button>`).join('')}</div><div class="inb"><input id="ci" placeholder="${t('ph')}"><button data-a="send" aria-label="send">${ic('send', 19)}</button></div></div>` : '') + nav() + modal() + (S.toast ? `<div class="toast${fresh.toast ? ' in' : ''}" role="status">${S.toast}</div>` : '');
   document.documentElement.lang = S.lang; { const c = document.querySelector(".chips"); if (c) { c.style.scrollSnapType = "none"; c.scrollLeft = _sx; const on = c.querySelector(".chip.on"); if (on && (on.offsetLeft < c.scrollLeft || on.offsetLeft + on.offsetWidth > c.scrollLeft + c.clientWidth)) c.scrollTo({ left: on.offsetLeft - (c.clientWidth - on.offsetWidth) / 2, behavior: "smooth" }); requestAnimationFrame(() => { c.style.scrollSnapType = "" }) } } if (ai) { const m = $('main'); m.scrollTop = m.scrollHeight } save()
 }
 
 // toast(message) = short notification for 2.2 seconds
-const toast = x => { S.toast = x; render(); setTimeout(() => { S.toast = ''; render() }, 2200) };
+const toast = (x, k = 'checkCircle') => { S.toast = ic(k, 18) + '<span>' + x + '</span>'; render(); setTimeout(() => { S.toast = ''; render() }, 2200) };
 
 /* =====================================================================
  * ▌Section 13 — ACTIONS: all button actions
@@ -271,10 +274,10 @@ const toast = x => { S.toast = x; render(); setTimeout(() => { S.toast = ''; ren
 const A = {
   lang: e => { S.lang = e.l; render() }, nav: e => { S.view = e.v; S.modal = null; render() }, cat: e => { S.cat = e.c; render() },
   open: e => { S.D = { ...defL(e.id) }; S.modal = 'detail'; render() }, closeM: () => { S.modal = null; render() }, modal: e => { S.modal = e.m; render() },
-  quick: e => { if (byId(e.id).s) return toast('⛔ ' + t('soldT')); addLine(defL(e.id)); toast('✅ ' + tr(byId(e.id).n)) },
-  aiadd: e => { if (byId(e.id).s) return toast('⛔ ' + t('soldT')); addLine(defL(e.id)); S.chat.push({ r: 'a', t: t('added'), qa: [['nav', 'cart', '🛒 ' + t('goC')]] }); render() },
+  quick: e => { if (byId(e.id).s) return toast(t('soldT'), 'ban'); addLine(defL(e.id)); toast(tr(byId(e.id).n)) },
+  aiadd: e => { if (byId(e.id).s) return toast(t('soldT'), 'ban'); addLine(defL(e.id)); S.chat.push({ r: 'a', t: t('added'), qa: [['nav', 'cart', t('goC')]] }); render() },
   spice: e => { S.D.spice = S.D.spice == +e.i ? null : +e.i; render() }, dot: e => { S.D.ot = e.v; render() }, lt: e => { const l = S.cart[e.i]; l.ot = l.ot == 'take' ? 'dine' : 'take'; l.k = keyOf(l); render() }, allot: e => { S.cart.forEach(l => { l.ot = e.v; l.k = keyOf(l) }); render() }, mod: e => { const m = S.D.mods, i = m.indexOf(e.k); i < 0 ? m.push(e.k) : m.splice(i, 1); render() },
-  dq: e => { S.D.qty = Math.max(1, S.D.qty + +e.d); render() }, addD: () => { if (byId(S.D.id).s) return toast('⛔ ' + t('soldT')); const nt = $('#note'); if (nt) S.D.note = nt.value; addLine(S.D); S.modal = null; toast('✅ ' + t('add')) },
+  dq: e => { S.D.qty = Math.max(1, S.D.qty + +e.d); render() }, addD: () => { if (byId(S.D.id).s) return toast(t('soldT'), 'ban'); const nt = $('#note'); if (nt) S.D.note = nt.value; addLine(S.D); S.modal = null; toast(t('add')) },
   cq: e => { const l = S.cart[e.i]; l.qty += +e.d; if (l.qty < 1) S.cart.splice(e.i, 1); render() }, rm: e => { S.cart.splice(e.i, 1); render() },
   algT: e => { const i = S.al.indexOf(e.k); i < 0 ? S.al.push(e.k) : S.al.splice(i, 1); S.other = $('#oth').value; render() }, algS: () => { S.other = $('#oth').value; S.modal = null; toast(t('saved')) },
   staffGo: () => { if (Date.now() - S.staffAt < 60000) { S.modal = null; return toast(t('wait')) } S.staffAt = Date.now(); Store.update(d => { if (!d.calls.some(c => c.table == TABLE && !c.done)) d.calls.push({ id: Date.now().toString(36), table: TABLE, t: Date.now(), done: 0 }) }); S.modal = null; toast(t('staffOk')) },
@@ -291,6 +294,8 @@ const A = {
 document.addEventListener('click', ev => { const el = ev.target.closest('[data-a]'); if (el && A[el.dataset.a]) { if (el.classList.contains('ov') && ev.target !== el) return; ev.stopPropagation(); A[el.dataset.a](el.dataset) } });
 document.addEventListener('input', e => { if (e.target.id == 'note' && S.D) S.D.note = e.target.value; if (e.target.id == 'q') { S.q = e.target.value; $('#list').innerHTML = listH() } });
 document.addEventListener('keydown', e => { if (e.key == 'Enter' && e.target.id == 'ci') A.send() });
+// A dish photo that cannot load (offline, a dead link) is swapped for a tinted tile with the category icon instead of broken-image text
+document.addEventListener('error', e => { const i = e.target; if (i.tagName != 'IMG' || !i.dataset.c) return; const ph = document.createElement('span'); ph.className = 'ph'; ph.style.cssText = i.style.cssText; ph.innerHTML = ic((CATS.find(c => c[0] == i.dataset.c) || CATS[0])[1], i.closest('.big') ? 48 : i.closest('.card') ? 32 : 18); i.replaceWith(ph) }, true);
 /* Desktop horizontal scroll for category chips / featured row: mouse-wheel + click-drag (touch scrolls natively) */
 (() => {
   const SEL = ".chips,.feat"; let el = null, x0 = 0, s0 = 0, moved = false;
@@ -320,8 +325,8 @@ if (!window.STAFF_MODE) {
   if (window.APP_VIEW !== 'staff') return;   // only run on index.html?view=staff
   const PIN = { waiter: '1111', chef: '2222' };   // demo PINs (client-side only — move to a backend for production)
   const TABS = {
-    waiter: [['calls', '🛎️', 'Calls'], ['orders', '📋', 'Orders'], ['ready', '🍽️', 'Serve'], ['bills', '🧾', 'Bills'], ['menu', '📖', 'Menu']],
-    chef: [['todo', '📥', 'To cook'], ['cook', '🔥', 'Cooking'], ['menu', '📖', 'Menu']]
+    waiter: [['calls', 'bell', 'Calls'], ['orders', 'clipboard', 'Orders'], ['ready', 'utensils', 'Serve'], ['bills', 'receipt', 'Bills'], ['menu', 'menu', 'Menu']],
+    chef: [['todo', 'inbox', 'To cook'], ['cook', 'flame', 'Cooking'], ['menu', 'menu', 'Menu']]
   };
   const ST = { new: 'New', accepted: 'Waiting for chef', cooking: 'Cooking', ready: 'Ready to serve', served: 'Served', paid: 'Paid' };
   const root = document.getElementById('app');
@@ -335,32 +340,32 @@ if (!window.STAFF_MODE) {
   const beep = () => { try { ac = ac || new (window.AudioContext || webkitAudioContext)(); ac.resume(); const o = ac.createOscillator(); o.connect(ac.destination); o.frequency.value = 880; o.start(); o.stop(ac.currentTime + .3) } catch (e) { } };
 
   /* ---- components ---- */
-  const tags = l => [l.spice != null ? '🌶️ ' + SP[l.spice][1] : '', ...(l.mods || []).map(k => MODS[k][1]), l.ot == 'take' ? '🥡 Takeaway' : '🍽️ Dine in'].filter(Boolean).map(x => `<span class="tag">${x}</span>`).join('');
-  const line = l => { const m = byId(l.id) || { img: '', n: ['', '(removed dish)'] }; return `<div class="ln"><b>${m.img ? `<img src="${m.img}" alt="" style="width:20px;height:20px;object-fit:cover;border-radius:4px;vertical-align:middle;margin-right:6px">` : ''}${esc(m.n[1])}</b> <span class="q">×${l.qty}</span><div>${tags(l)}</div>${l.note ? `<div class="nt">📝 ${esc(l.note)}</div>` : ''}</div>` };
+  const tags = l => [l.spice != null ? ic('flame', 13) + SP[l.spice][1] : '', ...(l.mods || []).map(k => MODS[k][1]), l.ot == 'take' ? ic('bag', 13) + 'Takeaway' : ic('utensils', 13) + 'Dine in'].filter(Boolean).map(x => `<span class="tag">${x}</span>`).join('');
+  const line = l => { const m = byId(l.id) || { img: '', n: ['', '(removed dish)'] }; return `<div class="ln"><b>${m.img ? `<img data-c="${m.c[0]}" src="${m.img}" alt="" style="width:20px;height:20px;object-fit:cover;border-radius:4px;vertical-align:middle;margin-right:6px">` : ''}${esc(m.n[1])}</b> <span class="q">×${l.qty}</span><div>${tags(l)}</div>${l.note ? `<div class="nt">${ic('note', 14)}<span>${esc(l.note)}</span></div>` : ''}</div>` };
   const btn = (a, id, txt, c = '') => `<button class="btn ${c}" data-s="${a}" data-id="${id}">${txt}</button>`;
-  const oc = (o, act, showSt) => `<div class="ci os ${o.status}"><div style="flex:1;min-width:0"><div class="top"><b style="font-size:18px">Table ${esc(o.table)}</b><span class="tag">#${esc(o.no)}</span>${showSt ? `<span class="tag st">${ST[o.status]}</span>` : ''}<small class="ago">${ago(o.t)}</small></div>${o.al && o.al.length ? `<div class="warn" style="margin:6px 0">⚠️ Customer allergy: ${o.al.map(esc).join(', ')}</div>` : ''}${o.items.map(line).join('')}<div class="tot b"><span>Total</span><span>฿${o.total}</span></div>${act || ''}</div></div>`;
-  const list = (a, f, em) => a.length ? a.map(f).join('') : `<div class="empty"><i>${em[0]}</i>${em[1]}</div>`;
+  const oc = (o, act, showSt) => `<div class="ci os ${o.status}"><div style="flex:1;min-width:0"><div class="top"><b style="font-size:18px">Table ${esc(o.table)}</b><span class="tag">#${esc(o.no)}</span>${showSt ? `<span class="tag st">${ST[o.status]}</span>` : ''}<small class="ago">${ago(o.t)}</small></div>${o.al && o.al.length ? `<div class="warn" style="margin:6px 0">${ic('alert', 16)}<span>Customer allergy: ${o.al.map(esc).join(', ')}</span></div>` : ''}${o.items.map(line).join('')}<div class="tot b"><span>Total</span><span>฿${o.total}</span></div>${act || ''}</div></div>`;
+  const list = (a, f, em) => a.length ? a.map(f).join('') : `<div class="empty"><i>${ic(em[0], 28)}</i>${em[1]}</div>`;
 
-  const ml = () => { const q = U.q.trim().toLowerCase(); return MENU.filter(m => (U.cat == 'all' || m.c.includes(U.cat)) && (!q || m.n.some(x => x.toLowerCase().includes(q)))).map(m => { const x = D.soldout.includes(m.id); return `<div class="ci mr ${x ? 'x' : ''}">${m.img ? `<img src="${m.img}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:8px;margin-right:10px">` : ''}<div style="flex:1;min-width:0"><b>${esc(m.n[1])}</b><br><small>฿${m.p}</small></div><button class="swt ${x ? 'x' : ''}" data-s="sold" data-id="${m.id}">${x ? '❌ Sold out' : '✅ In stock'}</button></div>` }).join('') || '<div class="empty"><i>🔍</i>No dishes found</div>' };
+  const ml = () => { const q = U.q.trim().toLowerCase(); return MENU.filter(m => (U.cat == 'all' || m.c.includes(U.cat)) && (!q || m.n.some(x => x.toLowerCase().includes(q)))).map(m => { const x = D.soldout.includes(m.id); return `<div class="ci mr ${x ? 'x' : ''}">${m.img ? `<img data-c="${m.c[0]}" src="${m.img}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:8px;margin-right:10px">` : ''}<div style="flex:1;min-width:0"><b>${esc(m.n[1])}</b><br><small>฿${m.p}</small></div><button class="swt ${x ? 'x' : ''}" data-s="sold" data-id="${m.id}">${x ? ic('xCircle', 16) + 'Sold out' : ic('checkCircle', 16) + 'In stock'}</button></div>` }).join('') || `<div class="empty"><i>${ic('search', 28)}</i>No dishes found</div>` };
 
   /* ---- screens (tab key → HTML) ---- */
   const V = {
-    calls: () => list(D.calls.filter(c => !c.done).sort((a, b) => a.t - b.t), c => `<div class="ci os new"><div style="flex:1"><div class="top"><b style="font-size:20px">🛎️ Table ${esc(c.table)}</b><small class="ago">${ago(c.t)}</small></div><p>Customer is calling for staff</p>${btn('callDone', c.id, '✅ Acknowledged')}</div></div>`, ['😌', 'No tables are calling right now']),
-    orders: () => { const n = byS('new'), p = [...byS('accepted'), ...byS('cooking')]; return `<h2>🆕 New orders (${n.length})</h2>` + list(n, o => oc(o, btn('accept', o.id, '👍 Accept order → send to chef')), ['📋', 'No new orders']) + `<h2>👨‍🍳 In the kitchen (${p.length})</h2>` + list(p, o => oc(o, '', 1), ['🍳', 'No orders in the kitchen']) },
-    ready: () => list(byS('ready'), o => oc(o, btn('serve', o.id, '🍽️ Mark as served', 'dk')), ['🍽️', 'Nothing waiting to be served']),
-    bills: () => list(D.bills.filter(b => !b.done).sort((a, b) => a.t - b.t), b => { const os = D.orders.filter(o => o.table == b.table && o.status != 'paid'), tt = os.reduce((a, o) => a + o.total, 0), pend = os.filter(o => o.status != 'served'); return `<div class="ci os ready"><div style="flex:1"><div class="top"><b style="font-size:20px">🧾 Table ${esc(b.table)}</b><small class="ago">${ago(b.t)}</small></div>${os.map(o => `<div class="tot"><span>#${esc(o.no)}</span><span>฿${o.total}</span></div>`).join('')}<div class="tot b"><span>Amount to collect</span><span>฿${tt}</span></div>${pend.length ? `<div class="warn">⚠️ ${pend.length} order(s) not served yet</div>` : ''}${btn('paid', b.id, '💵 Payment received')}</div></div>` }, ['🧾', 'No bill requests']),
-    todo: () => list(byS('accepted'), o => oc(o, btn('start', o.id, '🔥 Start cooking')), ['📥', 'No orders waiting to cook']),
-    cook: () => list(byS('cooking'), o => oc(o, btn('done', o.id, '✅ Ready to serve', 'dk')), ['🔥', 'No orders being cooked']),
-    menu: () => { const n = D.soldout.length; return `<div class="sb">🔍<input id="sq" value="${esc(U.q)}" placeholder="Search dishes..."></div><div class="chips">${CATS.map(c => `<button class="chip ${U.cat == c[0] ? 'on' : ''}" data-s="cat" data-c="${c[0]}"><span>${c[1]}</span>${c[2][1]}</button>`).join('')}</div><div class="top" style="margin:4px 0 8px"><b style="flex:1">Sold-out items: ${n}</b>${n ? '<button class="tag" data-s="reset">Clear all</button>' : ''}</div><div id="ml">${ml()}</div>` }
+    calls: () => list(D.calls.filter(c => !c.done).sort((a, b) => a.t - b.t), c => `<div class="ci os new"><div style="flex:1"><div class="top"><b class="tn">${ic('bell', 20)}Table ${esc(c.table)}</b><small class="ago">${ago(c.t)}</small></div><p>Customer is calling for staff</p>${btn('callDone', c.id, ic('check', 18) + 'Acknowledged')}</div></div>`, ['smile', 'No tables are calling right now']),
+    orders: () => { const n = byS('new'), p = [...byS('accepted'), ...byS('cooking')]; return `<h2 class="hd">${ic('inbox', 18)}New orders (${n.length})</h2>` + list(n, o => oc(o, btn('accept', o.id, ic('thumbUp', 18) + 'Accept and send to chef')), ['clipboard', 'No new orders']) + `<h2 class="hd">${ic('chefHat', 18)}In the kitchen (${p.length})</h2>` + list(p, o => oc(o, '', 1), ['flame', 'No orders in the kitchen']) },
+    ready: () => list(byS('ready'), o => oc(o, btn('serve', o.id, ic('utensils', 18) + 'Mark as served', 'dk')), ['utensils', 'Nothing waiting to be served']),
+    bills: () => list(D.bills.filter(b => !b.done).sort((a, b) => a.t - b.t), b => { const os = D.orders.filter(o => o.table == b.table && o.status != 'paid'), tt = os.reduce((a, o) => a + o.total, 0), pend = os.filter(o => o.status != 'served'); return `<div class="ci os ready"><div style="flex:1"><div class="top"><b class="tn">${ic('receipt', 20)}Table ${esc(b.table)}</b><small class="ago">${ago(b.t)}</small></div>${os.map(o => `<div class="tot"><span>#${esc(o.no)}</span><span>฿${o.total}</span></div>`).join('')}<div class="tot b"><span>Amount to collect</span><span>฿${tt}</span></div>${pend.length ? `<div class="warn">${ic('alert', 16)}<span>${pend.length} order(s) not served yet</span></div>` : ''}${btn('paid', b.id, ic('cash', 18) + 'Payment received')}</div></div>` }, ['receipt', 'No bill requests']),
+    todo: () => list(byS('accepted'), o => oc(o, btn('start', o.id, ic('flame', 18) + 'Start cooking')), ['inbox', 'No orders waiting to cook']),
+    cook: () => list(byS('cooking'), o => oc(o, btn('done', o.id, ic('check', 18) + 'Ready to serve', 'dk')), ['flame', 'No orders being cooked']),
+    menu: () => { const n = D.soldout.length; return `<div class="sb">${ic('search', 18)}<input id="sq" value="${esc(U.q)}" placeholder="Search dishes..."></div><div class="chips">${CATS.map(c => `<button class="chip ${U.cat == c[0] ? 'on' : ''}" data-s="cat" data-c="${c[0]}"><span>${ic(c[1], 18)}</span>${c[2][1]}</button>`).join('')}</div><div class="top" style="margin:4px 0 8px"><b style="flex:1">Sold-out items: ${n}</b>${n ? '<button class="tag" data-s="reset">Clear all</button>' : ''}</div><div id="ml">${ml()}</div>` }
   };
   const cnt = k => ({ calls: () => D.calls.filter(c => !c.done).length, orders: () => byS('new').length, ready: () => byS('ready').length, bills: () => D.bills.filter(b => !b.done).length, todo: () => byS('accepted').length, cook: () => byS('cooking').length }[k] || (() => 0))();
-  const toastH = () => U.toast ? `<div class="toast" role="status">${U.toast}</div>` : '';
+  const toastH = () => U.toast ? `<div class="toast in" role="status">${U.toast}</div>` : '';
 
-  const login = () => `<main style="display:flex;flex-direction:column;justify-content:center;padding-bottom:24px"><div style="text-align:center"><div class="logo" style="display:inline-block;font-size:22px;padding:6px 16px">ShopAI</div><h2 style="margin-top:12px">${REST} · Staff login</h2></div><div class="lang" style="margin:12px auto">${['waiter', 'chef'].map(r => `<button data-s="pick" data-v="${r}" class="${U.pick == r ? 'on' : ''}">${r == 'waiter' ? '🧑‍🍽️ Waiter' : '👨‍🍳 Chef'}</button>`).join('')}</div><p style="text-align:center;color:var(--sub)">Enter your 4-digit PIN</p><div class="pin">${[0, 1, 2, 3].map(i => `<i class="${i < U.pin.length ? 'f' : ''}"></i>`).join('')}</div><div class="kp">${[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map(k => k === '' ? '<span></span>' : `<button data-s="k" data-v="${k}">${k}</button>`).join('')}</div></main>` + toastH();
+  const login = () => `<main style="display:flex;flex-direction:column;justify-content:center;padding-bottom:24px"><div style="text-align:center"><div class="logo" style="display:inline-block;font-size:22px;padding:6px 16px">ShopAI</div><h2 style="margin-top:12px">${REST} · Staff login</h2></div><div class="lang" style="margin:12px auto">${['waiter', 'chef'].map(r => `<button data-s="pick" data-v="${r}" class="${U.pick == r ? 'on' : ''}">${r == 'waiter' ? ic('user', 16) + 'Waiter' : ic('chefHat', 16) + 'Chef'}</button>`).join('')}</div><p style="text-align:center;color:var(--sub)">Enter your 4-digit PIN</p><div class="pin">${[0, 1, 2, 3].map(i => `<i class="${i < U.pin.length ? 'f' : ''}"></i>`).join('')}</div><div class="kp">${[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, 'back'].map(k => k === '' ? '<span></span>' : `<button data-s="k" data-v="${k}"${k == 'back' ? ' aria-label="Delete"' : ''}>${k == 'back' ? ic('backspace', 24) : k}</button>`).join('')}</div></main>` + toastH();
 
   const app = () => {
     const tb = TABS[U.role]; if (!tb.some(x => x[0] == U.tab)) U.tab = tb[0][0];
-    return `<header><div class="top"><div class="logo">ShopAI</div><div class="tt"><b>${REST}</b><small>${U.role == 'waiter' ? '🧑‍🍽️ Waiter' : '👨‍🍳 Chef'}</small></div><button class="ib" data-s="logout" aria-label="Log out">🔒</button></div></header><main>${V[U.tab]()}</main><nav>${tb.map(x => { const n = cnt(x[0]); return `<button class="${U.tab == x[0] ? 'on' : ''}" data-s="tab" data-v="${x[0]}"><span>${x[1]}</span>${x[2]}${n ? `<b class="bd">${n}</b>` : ''}</button>` }).join('')}</nav>` + toastH()
+    return `<header><div class="top"><div class="logo">ShopAI</div><div class="tt"><b>${REST}</b><small>${U.role == 'waiter' ? 'Waiter' : 'Chef'}</small></div><button class="ib" data-s="logout" aria-label="Log out">${ic('lock', 20)}</button></div></header><main>${V[U.tab]()}</main><nav>${tb.map(x => { const n = cnt(x[0]); return `<button class="${U.tab == x[0] ? 'on' : ''}" data-s="tab" data-v="${x[0]}"><span>${ic(x[1], 22)}</span>${x[2]}${n ? `<b class="bd">${n}</b>` : ''}</button>` }).join('')}</nav>` + toastH()
   };
 
   function R() {
@@ -368,11 +373,11 @@ if (!window.STAFF_MODE) {
     root.innerHTML = U.role ? app() : login();
     const m2 = root.querySelector('main'), c2 = root.querySelector('.chips'); if (m2) m2.scrollTop = sy; if (c2) c2.scrollLeft = sx
   }
-  const say = x => { U.toast = x; R(); clearTimeout(tm); tm = setTimeout(() => { U.toast = ''; R() }, 2200) };
+  const say = (x, k = 'checkCircle') => { U.toast = ic(k, 18) + '<span>' + x + '</span>'; R(); clearTimeout(tm); tm = setTimeout(() => { U.toast = ''; R() }, 2200) };
 
   /* ---- realtime: "new" items for the current role (used for beep + toast) ---- */
   const keys = () => new Set((U.role == 'chef' ? D.orders.filter(o => o.status == 'accepted') : [...D.calls.filter(c => !c.done), ...D.orders.filter(o => o.status == 'new' || o.status == 'ready'), ...D.bills.filter(b => !b.done)]).map(x => x.id + (x.status || '')));
-  Store.on(d => { D = d; applyMenu(); if (!U.role) return; const k = keys(), fresh = [...k].some(x => !seen.has(x)); seen = k; if (fresh) beep(); if (!typing()) fresh ? say('🔔 New activity') : R() });
+  Store.on(d => { D = d; applyMenu(); if (!U.role) return; const k = keys(), fresh = [...k].some(x => !seen.has(x)); seen = k; if (fresh) beep(); if (!typing()) fresh ? say('New activity', 'bell') : R() });
   setInterval(() => { if (U.role && !typing()) R() }, 30000);   // refresh "x minutes ago"
 
   /* ---- actions ---- */
@@ -380,8 +385,8 @@ if (!window.STAFF_MODE) {
   const H = {
     pick: e => { U.pick = e.v; U.pin = ''; R() },
     k: e => {
-      if (e.v == '⌫') U.pin = U.pin.slice(0, -1); else if (U.pin.length < 4) U.pin += e.v;
-      if (U.pin.length == 4) { if (Store.get().staff.some(a => a.role == U.pick && a.pass == U.pin)) { U.role = U.pick; U.tab = ''; U.pin = ''; sessionStorage.setItem('shopai_staff', U.role); D = Store.get(); seen = keys(); beep() } else { U.pin = ''; return say('❌ Wrong PIN') } } R()
+      if (e.v == 'back') U.pin = U.pin.slice(0, -1); else if (U.pin.length < 4) U.pin += e.v;
+      if (U.pin.length == 4) { if (Store.get().staff.some(a => a.role == U.pick && a.pass == U.pin)) { U.role = U.pick; U.tab = ''; U.pin = ''; sessionStorage.setItem('shopai_staff', U.role); D = Store.get(); seen = keys(); beep() } else { U.pin = ''; return say('Wrong PIN', 'xCircle') } } R()
     },
     logout: () => { U.role = ''; sessionStorage.removeItem('shopai_staff'); R() },
     tab: e => { U.tab = e.v; keep = false; R() }, cat: e => { U.cat = e.c; R() },

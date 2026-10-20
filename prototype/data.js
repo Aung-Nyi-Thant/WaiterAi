@@ -1,7 +1,7 @@
 /* data.js — all data of the prototype. Loaded after i18n.js.
  *  1  Store            shared data layer between customer / staff / owner (browser storage + "storage" event = realtime between tabs)
  *  2  Reference tables allergens (AL), ingredients (ING), categories (CATS)
- *  3  Menu data        RAW menu table + VERIFIED + the MENU builder (★ edit menu items / prices / ingredients here)
+ *  3  Menu data        RAW menu table + VERIFIED + the MENU builder (* edit menu items / prices / ingredients here)
  * Order matters: Section 3 calls applyMenu() / syncSold(), which use Store. */
 
 // Mock data and traceability map for the M4 clickable prototype (eval/menu.json, "Golden Lotus Kitchen").
@@ -156,29 +156,29 @@ const ING = {
 // If the key is not in ING, treat it as a free-form ingredient name (works in all 3 languages)
 const ingA = i => ING[i] || [i, i, i];
 
-// Categories: [key, emoji, [Thai, English, Myanmar]]  ('all' and 'rec' are special categories)
+// Categories: [key, icon name (see icons.js), [Thai, English, Myanmar]]  ('all' and 'rec' are special categories)
 const CATS = [
-  ["all", "🍽️", ["ทั้งหมด", "All", "အားလုံး"]],
-  ["rec", "⭐", ["แนะนำ", "Recommended", "အကြံပြု"]],
-  ["set", "🍱", ["เซ็ต/โปรโมชัน", "Sets & Combos", "ဆက်များ"]],
-  ["sashimi", "🐟", ["ซาซิมิ", "Sashimi", "ဆာရှီမီ"]],
-  ["sushi", "🍣", ["ซูชิ", "Sushi", "ဆူရှီ"]],
-  ["app", "🥗", ["ของทานเล่น", "Appetizers", "အစာငယ်များ"]],
-  ["grill", "🍢", ["ของย่าง/เสียบไม้", "Grilled Skewers", "ကင်စားစရာများ"]],
-  ["don", "🍚", ["ข้าว/ข้าวหน้า", "Rice & Don", "ထမင်းများ"]],
-  ["noodle", "🍜", ["เส้น", "Noodles", "ခေါက်ဆွဲ"]],
-  ["soup", "🥣", ["ซุป", "Soup", "ဟင်းချို"]],
-  ["drink", "🥤", ["เครื่องดื่ม", "Drinks", "အဖျော်ယမကာ"]],
+  ["all", "utensils", ["ทั้งหมด", "All", "အားလုံး"]],
+  ["rec", "star", ["แนะนำ", "Recommended", "အကြံပြု"]],
+  ["set", "combo", ["เซ็ต/โปรโมชัน", "Sets & Combos", "ဆက်များ"]],
+  ["sashimi", "fish", ["ซาซิมิ", "Sashimi", "ဆာရှီမီ"]],
+  ["sushi", "sushi", ["ซูชิ", "Sushi", "ဆူရှီ"]],
+  ["app", "salad", ["ของทานเล่น", "Appetizers", "အစာငယ်များ"]],
+  ["grill", "skewer", ["ของย่าง/เสียบไม้", "Grilled Skewers", "ကင်စားစရာများ"]],
+  ["don", "rice", ["ข้าว/ข้าวหน้า", "Rice & Don", "ထမင်းများ"]],
+  ["noodle", "noodle", ["เส้น", "Noodles", "ခေါက်ဆွဲ"]],
+  ["soup", "bowl", ["ซุป", "Soup", "ဟင်းချို"]],
+  ["drink", "cup", ["เครื่องดื่ม", "Drinks", "အဖျော်ယမကာ"]],
 ];
 
 /* =====================================================================
- * ▌Section 3 — menu data ★ edit menu items/prices/ingredients here
+ * ▌Section 3 — menu data * edit menu items/prices/ingredients here
  * Restaurant menu data (names + real prices)
- * ★ Edit menu items/prices/ingredients here — no other app code needs changing
+ * * Edit menu items/prices/ingredients here — no other app code needs changing
  * ===================================================================== */
 
 // ----- RAW menu table (1 row = 1 menu item) -----
-// Each row: [Thai name, English name, price, category (comma-separated; first is main category), emoji, ingredients (keys in ING)]
+// Each row: [Thai name, English name, price, category (comma-separated; first is main category), photo URL, ingredients (keys in ING)]
 // Note: ingredients below are only the items clearly implied by the dish name (for example Salmon Sushi → rice, salmon)
 // Hidden sauces/stock/seasonings are unknown; allergen data (al) is calculated from these ingredients (see ALMAP)
 // Menu items that cannot be inferred from name alone (assorted sashimi, combo sets, clear soup, Japanese pizza) are left blank
@@ -318,7 +318,7 @@ const RAW = [
   ["น้ำแดง","Red Soda",30,"drink","https://img.wongnai.com/p/256x256/2021/08/31/04c0d65ac759457e9ee40811c54c5c16.jpg",["redsoda"]]
 ];
 
-// Background color of the emoji image based on the main category
+// Tile colour behind a dish photo (shown while it loads or when it cannot load), by main category
 const CBG = { set: '#FFE08A', sashimi: '#FFD6D0', sushi: '#FFE3DC', app: '#FFE9A8', grill: '#FFE0B2', don: '#FFF1C1', noodle: '#FFEBC2', soup: '#FFD9B0', drink: '#FFD59A' };
 
 // ALMAP: ingredient → allergen (used to calculate al for each menu item automatically)
@@ -329,12 +329,12 @@ const NOCZ = ['ข้าวญี่ปุ่น', 'ผักกาดหอม'
 
 // ----- Data confirmed by the restaurant (fill in only information the restaurant has verified) -----
 // key = Thai menu name exactly as in RAW | ing = ingredient key (or free-form text) | al = allergen key in AL
-// Menu items listed here show the badge "✅ Verified by the restaurant"
+// Menu items listed here show the badge "Verified by the restaurant"
 // Example: VERIFIED['Salmon Sushi']={ing:['rice','salmon','rice vinegar'],al:['fish']};
 const VERIFIED = {};
 
 // ----- Build menu objects from RAW -----
-// Fields: id, e(emoji), bg(color), n[Thai,English], d(category name), p(price), c(all categories), ing(ingredients),
+// Fields: id, img(photo URL), bg(color), n[Thai,English], d(category name), p(price), c(all categories), ing(ingredients),
 //        al(allergens), v(1=restaurant verified / 0=not yet),
 //        cz(customizable: options + special requests — no customization for drinks/sushi/sashimi/soups),
 //        sp(has spice level — specifically for basil, gochujang, yum, lab, kimchi)
