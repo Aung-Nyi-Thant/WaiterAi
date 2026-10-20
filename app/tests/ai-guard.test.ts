@@ -2,7 +2,7 @@
 // Questions here are open ones ("what do you recommend?") that the rules do not handle.
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { aiCtx, mockModel } from "./helpers";
-import { answer } from "@/modules/ai/ai";
+import { answer, CHAT_MAX_TOKENS, CHAT_TIMEOUT_MS } from "@/modules/ai/ai";
 
 afterEach(() => { vi.unstubAllGlobals(); });
 const OPEN = "What would you recommend on a hot day?";
@@ -38,8 +38,17 @@ describe("AI-9 / ST-3 open questions go to the model, with the restaurant's data
     const { calls } = await ask("ok", OPEN, { history });
     const msgs = calls[0].body.messages;
     expect(msgs.map((m: any) => m.content).slice(1)).toEqual(["turn 3", "turn 4", OPEN]);
-    expect(calls[0].body.options).toMatchObject({ temperature: 0.2, num_predict: 220 });
+    expect(calls[0].body.options).toMatchObject({ temperature: 0.2, num_predict: 130 });
     expect(calls[0].body.stream).toBe(false);
+  });
+  it("gives Thai and Burmese a smaller token budget than English, so a long reply still finishes inside the 15 s limit", async () => {
+    const budget = async (lang: "en" | "th" | "my", msg: string) => { const calls = mockModel("ok"); await answer(msg, lang, await aiCtx()); return calls[0].body.options.num_predict; };
+    expect(await budget("en", OPEN)).toBe(130);
+    expect(await budget("th", "ร้านนี้มีอะไรแนะนำสำหรับเด็กไหม")).toBe(115);
+    expect(await budget("my", "ဒီနေ့ ပူလွန်းတယ် ဘာသောက်သင့်လဲ")).toBe(100);
+    // the budget in time: ~1 s to read the prompt + tokens at the measured ~12 tokens a second, for a reply that uses all of it
+    for (const t of Object.values(CHAT_MAX_TOKENS)) expect(1 + t / 12).toBeLessThan(12);
+    expect(CHAT_TIMEOUT_MS).toBe(15_000);
   });
   it("tells the model the owner's voice and rules", async () => {
     const c = await aiCtx();

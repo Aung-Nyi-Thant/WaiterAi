@@ -9,7 +9,11 @@
 //
 // Env: EVAL_BASE_URL, EVAL_SLUG, EVAL_LABEL (text printed in the report, e.g. the model name),
 //      EVAL_QUESTIONS (file in eval/, default questions.json; questions_natural.json = the harder, natural-wording set).
-// Questions are sent with preview:true, so nothing is stored or counted in the restaurant's insights.
+//      EVAL_OWNER_EMAIL / EVAL_OWNER_PASSWORD (default: the demo owner of the restaurant; see below).
+// Questions are sent with preview:true, which the server honours ONLY for the signed-in owner of that restaurant: then nothing is stored,
+// counted in the insights or taken from the monthly chat quota. So the script signs in as the owner first. (Without it every question is
+// stored as a real chat and counted: a few hundred questions use up the monthly quota and the answers become "limit reached".)
+// If the sign-in fails the script stops; set EVAL_ALLOW_STORED=1 to run anyway on a throw-away database.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -24,12 +28,25 @@ const extended = process.argv.includes("--extended");
 const questions: EvalQuestion[] = JSON.parse(fs.readFileSync(path.join(evalDir, process.env.EVAL_QUESTIONS || (extended ? "model_questions.json" : "questions.json")), "utf8"));
 const T = JSON.parse(fs.readFileSync(path.join(evalDir, "thresholds.json"), "utf8"));
 
+const DEMO_OWNER: Record<string, [string, string]> = { "golden-lotus": ["demo@shop.ai", "demo1234"], "hachi-kyu": ["hachi@shop.ai", "demo1234"] };
+const [ownerEmail, ownerPassword] = [process.env.EVAL_OWNER_EMAIL || DEMO_OWNER[slug]?.[0] || "", process.env.EVAL_OWNER_PASSWORD || DEMO_OWNER[slug]?.[1] || ""];
+let cookie = "";
+{
+  const res = await fetch(`${base}/api/auth/login`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email: ownerEmail, password: ownerPassword }) }).catch(() => null);
+  cookie = (res?.headers.getSetCookie() || []).map((c) => c.split(";")[0]).join("; ");
+  if (!res?.ok || !cookie) {
+    const msg = `Could not sign in as the owner of "${slug}" (${ownerEmail || "no email"}): the questions would be stored as real chats and counted against the monthly quota. Set EVAL_OWNER_EMAIL and EVAL_OWNER_PASSWORD.`;
+    if (process.env.EVAL_ALLOW_STORED !== "1") { console.error(msg + " (EVAL_ALLOW_STORED=1 runs anyway.)"); process.exit(2); }
+    console.warn("WARNING: " + msg);
+  }
+}
+
 const rows = [];
 for (const q of questions) {
   const t0 = Date.now();
   let reply = "";
   try {
-    const res = await fetch(`${base}/api/public/${slug}/chat`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ message: q.question, preview: true, table: "5" }), signal: AbortSignal.timeout(180_000) });
+    const res = await fetch(`${base}/api/public/${slug}/chat`, { method: "POST", headers: { "content-type": "application/json", ...(cookie ? { cookie } : {}) }, body: JSON.stringify({ message: q.question, preview: true, table: "5" }), signal: AbortSignal.timeout(180_000) });
     reply = String((await res.json()).reply ?? "");
   } catch (e: any) { console.error(`  ${q.id}: request failed (${e?.message})`); }
   const s = scoreReply(q, reply);

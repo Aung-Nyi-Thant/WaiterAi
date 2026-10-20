@@ -688,7 +688,8 @@ button, a, [role="button"], .sa-tab, .sa-chip { touch-action: manipulation; }
 .sa-bump { display: inline-block; animation: sa-bump .36s var(--ease-out); }
 .sa-tick { display: inline-block; animation: sa-tick .22s var(--ease-out); }
 /* Feedback for a message. */
-.toast { animation: sa-pop .22s var(--ease-out); display: flex; align-items: center; gap: 8px; }
+/* left: 50% leaves only half the screen to shrink into, so a long message (the allergy warning) wrapped into a tall circle: size it to its text, up to the screen, with corners that stay corners when it wraps. */
+.toast { animation: sa-pop .22s var(--ease-out); display: flex; align-items: center; gap: 8px; width: max-content; max-width: calc(100vw - 32px); border-radius: 24px; text-align: left; }
 .toast--warn { background: var(--allergy); color: var(--on-allergy); border: 2px solid var(--on-allergy); }
 /* Something new arrived for the staff (an order, a call): it rises in and glows once. */
 .sa-fresh { animation: sa-rise .32s var(--ease-out), sa-glow 1.4s var(--ease-out); }

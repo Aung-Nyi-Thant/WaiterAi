@@ -6,7 +6,23 @@
 export type Msg = { role: "system" | "user" | "assistant"; content: string; images?: string[] };
 // timeoutMs: how long the model may work on this request once it has started.
 // maxWaitMs: how long the request may wait in line for its turn (none = wait as long as it takes).
-export type Opts = { temperature: number; maxTokens: number; json?: boolean; timeoutMs: number; maxWaitMs?: number };
+// fitMs: the time the reply should fit in. When the model's measured speed says maxTokens would not finish by then, fewer tokens are asked for.
+export type Opts = { temperature: number; maxTokens: number; json?: boolean; timeoutMs: number; maxWaitMs?: number; fitMs?: number };
+
+// The model's speed in tokens per second, from Ollama's own numbers (eval_count / eval_duration), smoothed. It is NOT constant: a laptop
+// slows to about half after a minute of continuous answers (measured on gemma4:12b: 11.8 tokens/s at first, 6 tokens/s from the 9th
+// answer on), and an answer that is not finished when the time limit ends is thrown away. So the length of a reply follows the speed.
+const PROMPT_READ_S = 1.5, MIN_TOKENS = 60;
+export const modelSpeed = (): number | undefined => (globalThis as any).__aiSpeed;
+export function tokenBudget(maxTokens: number, fitMs: number | undefined, speed = modelSpeed()): number {
+  if (!fitMs || !speed) return maxTokens;
+  return Math.min(maxTokens, Math.max(Math.min(MIN_TOKENS, maxTokens), Math.floor((fitMs / 1000 - PROMPT_READ_S) * speed)));
+}
+function noteSpeed(tokens: number, ns: number) {
+  if (tokens < 20 || !(ns > 0)) return;                       // a short reply gives a noisy figure
+  const s = tokens / (ns / 1e9), old = modelSpeed();
+  (globalThis as any).__aiSpeed = old ? (old + s) / 2 : s;
+}
 
 // SRS FR-6: a menu photo is shown for review within 120 seconds, so the model gets at most that long.
 export const IMPORT_TIMEOUT_MS = 120_000;
@@ -43,13 +59,29 @@ async function viaOllama(messages: Msg[], o: Opts): Promise<string> {
       // Keep the model in memory while the restaurant is open: after an idle gap Ollama needs ~15 s to load it again,
       // and the first diner would get the "AI unavailable" message because of the 15 s limit (SRS NFR-1).
       keep_alive: process.env.OLLAMA_KEEP_ALIVE || "12h",
-      options: { temperature: o.temperature, num_ctx: NUM_CTX, num_predict: o.maxTokens },
+      options: { temperature: o.temperature, num_ctx: NUM_CTX, num_predict: tokenBudget(o.maxTokens, o.fitMs) },
       messages: messages.map((m) => ({ role: m.role, content: m.content, ...(m.images?.length ? { images: m.images } : {}) })),
     }),
     signal: AbortSignal.timeout(o.timeoutMs),
   });
   if (!res.ok) throw new Error(`Ollama ${res.status}`);
-  return String((await res.json()).message?.content ?? "");
+  const j = await res.json();
+  noteSpeed(Number(j.eval_count), Number(j.eval_duration));
+  const text = String(j.message?.content ?? "");
+  // The model hit the token cap (num_predict): the reply ends mid-sentence. Keep what it said up to the last full sentence instead of
+  // showing a cut-off word. (JSON answers are not trimmed: they are parsed whole.)
+  return j.done_reason === "length" && !o.json ? trimToSentence(text) : text;
+}
+
+// A reply cut off by the token cap, cut back to its last complete sentence (English . ! ?, Burmese ။, or a line break). Thai has no
+// full stop, so it is cut back to the last space (the partial last word is dropped). The cut is only used when it keeps at least
+// 40% (60% for the space) of the text; otherwise the reply is returned as it is.
+export function trimToSentence(text: string): string {
+  const t = text.trimEnd();
+  const end = [...t.matchAll(/[.!?\u2026\u104B]+(?=\s|$)|\n/g)].pop();
+  if (end?.index !== undefined) { const cut = t.slice(0, end.index + end[0].length).trimEnd(); if (cut.length >= t.length * 0.4) return cut; }
+  const sp = t.lastIndexOf(" ");
+  return sp > 0 && sp >= t.length * 0.6 ? t.slice(0, sp).trimEnd() : t;
 }
 
 // Asks for a JSON answer (menu photo import, name suggestions). Temperature 0: extraction should be repeatable.

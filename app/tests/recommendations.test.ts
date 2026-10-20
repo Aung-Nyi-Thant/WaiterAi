@@ -86,6 +86,13 @@ describe("type of dish and diet", () => {
     expect(shown(r)).toEqual(expected);
     expect(r.reply).toContain(cat as string);                       // the category's own name is shown
   });
+  it("a dessert asked for in Thai ('ของหวาน', 'ขนมหวาน') or Burmese ('အချို', found by the live eval: it went to the model, which suggested a drink) is answered from the menu", async () => {
+    for (const q of ["ขอของหวานหน่อย", "มีขนมหวานไหม", "ထမင်းစားပြီး အချိုတစ်ခုခု", "အချိုပွဲ ရှိလား"]) {
+      const r = await rec(q);
+      expect(shown(r), q).toEqual(["Mango Sticky Rice"]);
+      expect(r.usedModel, q).toBe(false);
+    }
+  });
   it("'vegetarian, not spicy' combines both", async () => {
     const r = await rec("vegetarian and not spicy");
     expect(shown(r)).toEqual(["Vegetable Tofu Stir-fry", "Mango Sticky Rice", "Thai Iced Tea"]);

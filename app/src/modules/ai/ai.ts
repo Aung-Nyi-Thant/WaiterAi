@@ -78,6 +78,15 @@ export function allergensMentioned(text: string): string[] {
 const STOP = new Set(["curry", "fried", "rice", "fresh", "with", "lime", "thai", "salad", "grilled", "steamed", "sticky", "iced", "cream", "spring", "soup", "stir", "fry"]);
 const isAllergenWord = (w: string) => Object.values(ALLERGEN_WORDS).some((ws) => ws.some((a) => w.includes(a) || a.includes(w)));
 const THAI_PROTEINS = ["เนื้อ", "ไก่", "หมู", "กุ้ง", "ปลา", "ปู", "หมึก", "ไข่"];
+// A one-word nickname ("steak" for "Chicken Steak") right after another descriptive word ("wagyu steak") means the diner named a DIFFERENT
+// dish. Answering with the nickname's dish would attach the wrong price or allergens to it ("How much is the Wagyu Steak?" -> "Chicken Steak is 128"),
+// which is worse than "that is not on our menu". Articles, verbs and other filler before it do not count ("the steak", "have steak", "much is steak").
+const FILLER = new Set(["the", "your", "some", "this", "that", "these", "those", "have", "like", "want", "would", "could", "should", "please", "order", "with", "much", "cost", "costs", "price", "does", "what", "whats", "about", "also", "just", "give", "need", "take", "more", "another", "extra", "tell", "show", "here", "there", "which", "where", "when", "then", "than", "from", "into", "only", "other", "both", "each", "every", "they", "them", "were", "will", "your", "ours", "mine", "best", "good", "nice"]);
+function namesAnotherDish(t: string, at: number, variant: string): boolean {
+  if (variant.includes(" ")) return false;
+  const w = t.slice(0, at).trimEnd().match(/([a-z]+)$/)?.[1];
+  return !!w && w.length >= 4 && !FILLER.has(w);
+}
 // The names a dish is really called, in each language, with and without a bracketed part and without spaces (Thai and Burmese).
 function fullNames(item: Item): Set<string> {
   const out = new Set<string>();
@@ -162,9 +171,10 @@ export function matchDishes(text: string, items: Item[]): { item: Item; qty: num
   const found: { item: Item; len: number; at: number; exact: boolean }[] = [];
   for (const it of items) {
     let best = 0, at = -1, bestV = "";
+    const full = fullNames(it);
     for (const v of variantsOf(it, items)) {
       const i = t.indexOf(v);
-      if (i >= 0 && v.length > best) { best = v.length; at = i; bestV = v; }
+      if (i >= 0 && v.length > best && (full.has(v) || !namesAnotherDish(t, i, v))) { best = v.length; at = i; bestV = v; }
     }
     if (best) found.push({ item: it, len: best, at, exact: fullNames(it).has(bestV) });
   }
@@ -177,6 +187,10 @@ export function matchDishes(text: string, items: Item[]): { item: Item; qty: num
     // ("Salmon Sushi" is a dish, and also what "Seared Salmon Sushi" is shortened to)
     if (found.some((b) => b !== a && b.at <= a.at && b.at + b.len >= a.at + a.len && (b.len > a.len || (b.len === a.len && b.at === a.at && b.exact && !a.exact)))) found.splice(k, 1);
   }
+  // A generic word ("sashimi", "sushi", "soup") that three or more dishes share and that is nobody's full name is not a choice of dish:
+  // "I'll have the sashimi" must not add all fourteen. Nothing is matched, so the diner is asked / shown the menu instead.
+  const generic = found.filter((a) => !a.exact && found.filter((b) => b.at === a.at && b.len === a.len).length >= 3 && !found.some((b) => b.at === a.at && b.len === a.len && b.exact));
+  for (const g of generic) found.splice(found.indexOf(g), 1);
   const used: [number, number][] = [];                                    // character ranges of numbers already read as a quantity
   const free = (a: number, b: number) => !used.some(([x, y]) => a < y && b > x);
   const out: { item: Item; qty: number; len: number }[] = [];
@@ -291,6 +305,8 @@ export const unavailableReply = (l: Lang, p: string) =>
 export const limitReply = (l: Lang, p: string) =>
   l === "en" ? "The assistant has reached its chat limit for this month. Please browse the menu or ask the staff." : l === "th" ? `ผู้ช่วยใช้ครบโควต้าเดือนนี้แล้ว${p} ดูเมนูหรือถามพนักงานได้${p}` : `ဒီလအတွက် AI စားပွဲထိုး အသုံးပြုမှု ပြည့်သွားပါပြီ${p}။ မီနူးကို ကြည့်ပါ၊ ဝန်ထမ်းကို မေးပါ${p}။`;
 
+// Topics no menu data can answer. A word may start inside Thai and Burmese text (no spaces); English words must start a word.
+const NO_DATA_TOPIC = /(?<![a-z])(?:discounts?|promotions?|promo|coupons?|vouchers?|loyalty|membership|happy hour|reservations?|reserve a table|book a table)|ส่วนลด|ลดราคา|โปรโมชั่น|โปรโมชัน|คูปอง|บัตรสมาชิก|แฮปปี้อาวร์|จองโต๊ะ|လျှော့ပေး|လျှော့ဈေး|လျှော့ရင်|ဒစ်စကောင့်|ပရိုမိုးရှင်း|ကူပွန်|စားပွဲကြိုတင်|စားပွဲ ကြိုတင်/;
 // ------------------------------------------------------------------ intents
 const W = {
   price: ["how much", "price", "cost", "ราคา", "เท่าไหร่", "เท่าไร", "กี่บาท", "ဘယ်လောက်", "ဈေး", "စျေး"],
@@ -387,7 +403,7 @@ const HOT = ["spicy", "เผ็ด", "စပ်"];
 const POPULAR = ["popular", "best seller", "bestseller", "best-seller", "most ordered", "famous", "signature", "must try", "must-try", "surprise me", "chef's pick", "chefs pick", "ยอดนิยม", "ขายดี", "ชื่อดัง", "เมนูเด็ด", "เมนูเด่น", "สุ่ม", "เซอร์ไพรส์", "လူကြိုက်များ", "လူကြိုက်အများဆုံး", "နာမည်ကြီး", "နာမည်ကျော်", "ရောင်းအား"];
 // [the word in the category's English name, words a diner uses for it]
 const CATEGORY_WORDS: [string, string[]][] = [
-  ["drink", ["drink", "beverage", "เครื่องดื่ม", "ของดื่ม", "သောက်စရာ"]], ["dessert", ["dessert", "sweet", "ของหวาน", "အချိုပွဲ"]],
+  ["drink", ["drink", "beverage", "เครื่องดื่ม", "ของดื่ม", "သောက်စရာ"]], ["dessert", ["dessert", "sweet", "ของหวาน", "ขนมหวาน", "အချိုပွဲ", "အချို"]],
   ["starter", ["starter", "appetizer", "appetiser", "snack", "ของทานเล่น", "အစာစား"]], ["salad", ["salad", "สลัด", "သုပ်"]],
   ["curr", ["curry", "curries", "แกง", "ဟင်းချို"]], ["main", ["main course", "mains", "จานหลัก", "ပင်မဟင်း"]],
 ];
@@ -688,9 +704,14 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
     return done(cantConfirmReply(lang, p), { type: "none" }, { answered: false });
   }
 
+  // 6c. things the data never holds (discounts, promotions, coupons, membership, reservations): say we do not know and send the diner to the
+  // staff, instead of letting the model make up a policy ("prices cannot be reduced", found by the live eval). The owner's FAQs still win:
+  // when one of them mentions the topic, the question goes on to the model, which has the FAQs.
+  if (NO_DATA_TOPIC.test(t) && !ctx.faqs.some((f) => NO_DATA_TOPIC.test(norm(`${f.q} ${f.a}`)))) return done(dontKnow(lang, p), { type: "none" }, { answered: false, topic: "other" });
+
   // 7. everything else goes to the language model, with checks on its output
   try {
-    const raw = await askModel(message, ctx);
+    const raw = await askModel(message, ctx, lang);
     return checkModelReply(raw, lang, p, ctx, topic, mentioned, message);
   } catch {
     return done(unavailableReply(lang, p), { type: "show_menu" }, { answered: false });
@@ -698,7 +719,7 @@ export async function answer(message: string, lang: Lang, ctx: Ctx): Promise<Cha
 }
 
 // ------------------------------------------------------------------ language model
-function systemPrompt(ctx: Ctx): string {
+export function systemPrompt(ctx: Ctx): string {
   const { restaurant: r, items, faqs, specials } = ctx;
   const pr = r.persona, male = pr.gender !== "female";
   const data = {
@@ -714,7 +735,7 @@ function systemPrompt(ctx: Ctx): string {
 ${pr.greeting ? `Greeting to use when the customer says hello: ${pr.greeting}\n` : ""}
 RULES
 1. Answer only from the data. Never invent dishes, prices, ingredients, allergens or opening hours. If the data does not contain the answer, say you don't have that information and ask the customer to check with the staff.
-2. Reply in the SAME language as the customer's last message (English, Thai or Burmese). Keep replies short (max 4 sentences). Do not add information that was not asked for. Do not greet or welcome the customer unless they greeted you first. In Burmese answer in at most two short sentences and write each dish name only once, in Burmese, without the English name in brackets (Burmese text is slow to generate).
+2. Reply in the SAME language as the customer's last message (English, Thai or Burmese). Keep replies short (max 3 short sentences, under 60 words). Do not add information that was not asked for. Do not greet or welcome the customer unless they greeted you first. In Burmese answer in at most two short sentences and write each dish name only once, in Burmese, without the English name in brackets (Burmese text is slow to generate).
 3. Never say a dish is "safe", "allergy-free" or guaranteed. Only state allergens listed in the data. For any allergy question, tell the customer to confirm with the staff.
 4. Dishes with "available": false are sold out today; say so and suggest an alternative.
 5. Prices are in ${r.currency}. Copy prices and opening hours exactly from the data.
@@ -733,18 +754,23 @@ RESTAURANT DATA (JSON)
 ${JSON.stringify(data)}`;
 }
 
-async function askModel(message: string, ctx: Ctx): Promise<string> {
+async function askModel(message: string, ctx: Ctx, lang: Lang): Promise<string> {
   // Only the last couple of turns are kept: these questions are answered from a fresh read of the
   // menu each time, not from a long conversation, and every extra message is more tokens to read
   // before the model can start answering.
   const messages = [{ role: "system", content: systemPrompt(ctx) }, ...ctx.history.slice(-2).map((m) => ({ role: m.role, content: m.text })), { role: "user", content: message }];
-  // num_predict (maxTokens) caps a reply at ~220 tokens (well over the "max 4 sentences" rule) so one
-  // unusually long answer cannot make a diner wait far longer than the rest.
+  // num_predict (maxTokens) caps a reply so one unusually long answer cannot make a diner wait far longer than the rest.
+  // It must fit the time limit below: the laptop generates ~12 tokens a second (measured, gemma4:12b), plus ~1 s to read the prompt.
+  // The old flat 220 took ~17 s: a long answer was cut off by the timeout and thrown away, and the diner got "AI unavailable"
+  // (7 of 65 model answers in the 126-question eval; 150 still left 5 Burmese ones at 13-15 s). Burmese needs more tokens per word, so
+  // each language has its own cap (see CHAT_MAX_TOKENS). And the speed is not constant: after a minute of continuous answers the laptop runs
+  // at half speed (11.8 -> 6 tokens/s measured), so the provider also shortens the reply to what the measured speed can finish in 85% of the
+  // time limit (fitMs). A reply cut by the cap is trimmed to its last full sentence by the provider.
   // SRS FR-2 / NFR-1: once an answer is started it takes at most 15 seconds; a slower model is cut off and the
   // diner gets the "AI unavailable" message with the menu and staff call still at hand, not a long wait.
   // SRS NFR-7: with several diners at once the answers are made one at a time, and nobody waits more than
   // 14 seconds for a turn (15 s of work + 14 s of waiting + request overhead stays under the 30 s of NFR-7).
-  return complete(messages as Msg[], { temperature: 0.2, maxTokens: 220, timeoutMs: CHAT_TIMEOUT_MS, maxWaitMs: CHAT_QUEUE_WAIT_MS });
+  return complete(messages as Msg[], { temperature: 0.2, maxTokens: CHAT_MAX_TOKENS[lang], fitMs: CHAT_TIMEOUT_MS * 0.85, timeoutMs: CHAT_TIMEOUT_MS, maxWaitMs: CHAT_QUEUE_WAIT_MS });
 }
 // Warm-up (see ai/warmup.ts). The first time Ollama reads a long system prompt it needs 30-60 s, far more than the 15 s limit,
 // but it keeps the evaluated prompt and reuses it for every later question with the same system prompt. So the server sends each
@@ -754,6 +780,8 @@ export async function warmUpPrompt(ctx: Ctx): Promise<void> {
   await complete([{ role: "system", content: systemPrompt(ctx) }, { role: "user", content: "Hi" }] as Msg[], { temperature: 0.2, maxTokens: 1, timeoutMs: 180_000 });
 }
 export const CHAT_TIMEOUT_MS = 15_000;
+// ~1 s to read the prompt + tokens / 12 per second stays under 12 s even when a reply uses its whole budget.
+export const CHAT_MAX_TOKENS: Record<Lang, number> = { en: 130, th: 115, my: 100 };
 export const CHAT_QUEUE_WAIT_MS = 14_000;
 
 // FR-7: the owner's voice setting decides how a Thai or Burmese reply ends. The model is told this in its

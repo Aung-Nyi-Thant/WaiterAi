@@ -1,7 +1,7 @@
 // The rule-based part of the AI waiter. Every question here must be answered from the database
 // WITHOUT calling the language model (noModel() makes any model call fail the test).
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { aiCtx, noModel } from "./helpers";
+import { aiCtx, noModel, mockModel } from "./helpers";
 import { answer, detectLang, allergensMentioned, topicOf, matchDishes } from "@/modules/ai/ai";
 
 let modelCalls: unknown[];
@@ -452,6 +452,21 @@ describe("matching a dish on a big menu: one typed name is one dish", () => {
     const added = [...before, ...(await mk("Tuna Sushi")).map((i) => ({ ...i, id: 999 }))];
     expect(names(matchDishes("tuna sushi please", added))).toEqual(["Tuna Sushi"]);
   });
+  it("a word that many dishes share is not a choice of dish: 'the sashimi' matches none, 'the salmon sashimi' matches one", async () => {
+    const items = await mk("Salmon Sashimi", "Tuna Sashimi", "Squid Sashimi", "Miso Soup");
+    expect(names(matchDishes("I'll have the sashimi", items))).toEqual([]);
+    expect(names(matchDishes("I'll have the salmon sashimi", items))).toEqual(["Salmon Sashimi"]);
+    expect(names(matchDishes("salmon sashimi and tuna sashimi", items))).toEqual(["Salmon Sashimi", "Tuna Sashimi"]);
+    const r = await answer("I'll have the sashimi", "en", (await aiCtx({ items })) as any);
+    expect(r.action.type).not.toBe("add_to_picks");                  // never all three at once
+  });
+  it("a one-word nickname after another descriptive word names a different dish: 'wagyu steak' is not the 'Chicken Steak'", async () => {
+    const items = await mk("Chicken Steak", "Salmon Sushi");
+    expect(names(matchDishes("How much is the Wagyu Steak?", items))).toEqual([]);
+    expect(names(matchDishes("How much is the steak?", items))).toEqual(["Chicken Steak"]);          // filler before it does not count
+    expect(names(matchDishes("how much is the chicken steak", items))).toEqual(["Chicken Steak"]);
+    expect(names(matchDishes("I want steak please", items))).toEqual(["Chicken Steak"]);
+  });
   it("ordering one dish adds one dish with the quantity asked, never its look-alikes", async () => {
     const ctx = await aiCtx({ items: await mk("Squid Sushi", "Salmon Sushi", "Tuna Sushi") });
     const r = await answer("I'll have 2 Squid Sushi", "en", ctx as any);
@@ -464,5 +479,31 @@ describe("matching a dish on a big menu: one typed name is one dish", () => {
     const r = await answer("I'm allergic to fish. Can I eat the Squid Sushi?", "en", (await aiCtx({ items })) as any);
     expect(r.reply).toContain("Squid Sushi");
     expect(r.reply).not.toContain("Salmon Sushi");
+  });
+});
+
+describe("topics the data never holds (discounts, promotions, coupons, reservations) are not left to the model", () => {
+  it("says it does not know and points to the staff, in all three languages, without calling the model", async () => {
+    for (const q of ["Can I get a discount?", "Do you have any promotions today?", "Can I reserve a table for six?", "มีส่วนลดไหม", "จองโต๊ะได้ไหม", "လျှော့ပေးလို့ရလား", "ကူပွန် ရှိလား"]) {
+      const r = await ask(q);
+      expect(r.usedModel, q).toBe(false);
+      expect(r.answered, q).toBe(false);
+      expect(r.reply, q).toMatch(/staff|พนักงาน|ဝန်ထမ်း/);
+      expect(r.reply, q).not.toMatch(/\b(yes|no discount|cannot be reduced)\b/i);
+    }
+    expect(modelCalls.length).toBe(0);
+  });
+  it("an owner's FAQ about the topic still reaches the model, which has the FAQs", async () => {
+    const calls = mockModel("Yes, 10% off for students.");
+    const faqs = [{ q: "Do you have a student discount?", a: "Yes, 10% off for students with a student card." }];
+    const r = await answer("Can I get a discount?", "en", await aiCtx({ faqs }));
+    expect(calls.length).toBe(1);
+    expect(r.reply).toContain("10%");
+  });
+  it("ordinary questions are not caught: a dish, a price, a birthday, 'reduce the spice'", async () => {
+    for (const q of ["How much is the Tom Yum Goong?", "I'm celebrating a birthday, any suggestion?", "Can you make it less spicy?"]) {
+      const r = await ask(q).catch(() => null);
+      expect(r === null || !/^.{0,5}(don't|do not) know/i.test(r.reply), q).toBe(true);
+    }
   });
 });
