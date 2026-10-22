@@ -12,6 +12,7 @@
     "test:e2e": "vitest run --config vitest.e2e.config.mts",
     "typecheck": "tsc --noEmit",
     "eval:live": "node --experimental-strip-types --no-warnings scripts/eval-live.mts",
+    "eval:smooth": "node --experimental-strip-types --no-warnings scripts/eval-smooth.mts",
     "lint": "biome lint .",
     "load-test": "node --experimental-strip-types --no-warnings scripts/load-test.mts",
     "db:seed:hachi": "node --experimental-strip-types --no-warnings scripts/seed-hachi-kyu.mts",

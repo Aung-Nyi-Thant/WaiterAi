@@ -80,6 +80,19 @@ describe("AI-16 / NFR-PR1 every question is stored with its language, topic and 
     expect(r.status).toBe(200);
     expect([count("chat_messages"), count("chat_sessions")]).toEqual(before);
   });
+  it("only the owner's test chat is told whether the model answered (the smooth-response eval needs it); a diner's reply has no such field", async () => {
+    noModel();
+    await ownerLogin();
+    const preview = await say("How much is the Massaman curry?", { preview: true });
+    signOut();
+    expect(preview.data.usedModel).toBe(false);                            // a database answer
+    const diner = await say("How much is the Massaman curry?");
+    expect(diner.data).not.toHaveProperty("usedModel");
+    mockModel("A light dish is the fresh spring rolls.\nACTION: none");
+    await ownerLogin();
+    expect((await say("What would you recommend on a hot day?", { preview: true })).data.usedModel).toBe(true);
+    signOut();
+  });
 });
 
 describe("AI-7 asking for the bill or staff creates a call for that table", () => {
@@ -145,13 +158,13 @@ describe("AI-15 / BR-3 monthly chat limit", () => {
     run("UPDATE restaurants SET chat_cap = 2 WHERE slug = ?", slug);
     const used = get("SELECT COUNT(*) AS n FROM chat_messages WHERE role = 'user' AND created_at >= date('now','start of month')")!.n;
     run("UPDATE restaurants SET chat_cap = ? WHERE slug = ?", used + 1, slug);
-    expect((await say("What would you recommend?")).data.reply).toBe("model answer");
-    const r = await say("What would you recommend?");
+    expect((await say("What would you recommend on a hot day?")).data.reply).toBe("model answer");
+    const r = await say("What would you recommend on a hot day?");
     expect(r.data.reply).toMatch(/reached its chat limit/);
     expect(r.data.action.type).toBe("show_menu");
     expect(calls.length).toBe(1);
     await ownerLogin();
-    expect((await say("What would you recommend?", { preview: true })).data.reply).toBe("model answer");   // the owner's test chat is not limited
+    expect((await say("What would you recommend on a hot day?", { preview: true })).data.reply).toBe("model answer");   // the owner's test chat is not limited
     signOut();
     run("UPDATE restaurants SET chat_cap = 300 WHERE slug = ?", slug);
   });

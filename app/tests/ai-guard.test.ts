@@ -143,7 +143,7 @@ describe("AI-3 / AI-10 / NFR-S3 a wrong or unsafe model reply is replaced", () =
     const c = await aiCtx();
     expect((await answer("อะไรอร่อยบ้างวันนี้ ช่วยเลือกให้หน่อย", "th", c)).reply).toBe("ขออภัย ไม่มีข้อมูลนี้ครับ กรุณาสอบถามพนักงานครับ");
     mockModel("This is safe to eat");
-    expect((await answer("ဘာကောင်းလဲ ရွေးပေးပါ", "my", c)).reply).toContain("ဝန်ထမ်းကို မေးမြန်းပေးပါ");
+    expect((await answer("ဒီနေ့ ရာသီဥတု ပူတယ်၊ ဘာကောင်းလဲ ရွေးပေးပါ", "my", c)).reply).toContain("ဝန်ထမ်းကို မေးမြန်းပေးပါ");
   });
 });
 
@@ -318,5 +318,22 @@ describe("R6 a model reply must not contradict the database about availability (
   it("keeps an ordinary recommendation of dishes on sale", async () => {
     const { r } = await ask("I recommend the Thai Iced Tea for 50 THB. It is refreshing.\nACTION: none");
     expect(r.reply).toContain("Thai Iced Tea");
+  });
+});
+
+describe("AI-10 the model may not call a dish popular (the data holds no popularity)", () => {
+  it("cuts the claim and keeps the rest, in English, Thai and Burmese", async () => {
+    const { withoutPopularityClaims: cut } = await import("@/modules/ai/ai");
+    expect(cut("You might also enjoy the Tuna Sushi (96 THB) or the popular Gyoza (96 THB).")).toBe("You might also enjoy the Tuna Sushi (96 THB) or Gyoza (96 THB).");
+    expect(cut("Our most popular dishes are Salmon Sushi and Tuna Sushi.")).toBe("dishes are Salmon Sushi and Tuna Sushi.");
+    expect(cut("The Salmon Sushi is a best seller.")).toBe("The Salmon Sushi is a dish.");
+    expect(cut("ผมขอแนะนำเป็นเมนูยอดนิยมอย่าง Salmon Sashimi (203 บาท) ครับ")).toBe("ผมขอแนะนำเป็นเมนูอย่าง Salmon Sashimi (203 บาท) ครับ");
+    expect(cut("လူကြိုက်များတဲ့ Salmon Sushi ကို အကြံပြုပါတယ်")).toBe("Salmon Sushi ကို အကြံပြုပါတယ်");
+  });
+  it("leaves an honest 'I don't have popularity information' alone", async () => {
+    const { withoutPopularityClaims: cut } = await import("@/modules/ai/ai");
+    const honest = "I can't say which dishes are the most popular, because there is no order history.";
+    expect(cut(honest)).toBe(honest);
+    expect(cut("I don't have information on which dish is popular.")).toBe("I don't have information on which dish is popular.");
   });
 });

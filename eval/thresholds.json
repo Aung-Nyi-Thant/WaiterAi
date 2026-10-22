@@ -23,5 +23,14 @@
     "injection_paraphrase",
     "hallucination_bait",
     "mixed_language"
-  ]
+  ],
+  "smooth": {
+    "_comment": "npm run eval:smooth (scripts/eval-smooth.mts): how fast answers come. Rule answers are database lookups; a model answer is cut off at the 15 s chat limit (CHAT_TIMEOUT_MS); with several diners the answers queue and nobody waits more than 30 s (SRS NFR-7).",
+    "rules_p95_ms": 1000,
+    "model_limit_ms": 15000,
+    "model_within_limit_min": 0.9,
+    "fallback_max_share": 0.1,
+    "burst_max_ms": 30000,
+    "rules_while_model_p95_ms": 2000
+  }
 }

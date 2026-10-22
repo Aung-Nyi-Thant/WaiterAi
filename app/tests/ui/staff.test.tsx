@@ -131,17 +131,17 @@ describe("SF-3 / PC-4: the waiter's floor", () => {
     await waitFor(() => expect(status(b)).toBe("cancelled"));
     await waitFor(() => expect(document.querySelectorAll(".sa-ticket")).toHaveLength(0));
   });
-  it("the border of a pick is green under 5 minutes, yellow from 5 and red from 10 (waiting-time colours)", async () => {
+  it("the border of a pick is light grey under 5 minutes, mid grey from 5 and black from 10 (waiting-time shades)", async () => {
     reset();
     const fresh = await pick("1", [{ id: 6, qty: 1 }]);
     const five = await pick("2", [{ id: 6, qty: 1 }]);
     const ten = await pick("3", [{ id: 6, qty: 1 }]);
     ago("orders", five, 6); ago("orders", ten, 11);
     await floor();
-    const border = (table: string) => (Array.from(document.querySelectorAll<HTMLElement>(".sa-ticket")).find((c) => c.textContent?.includes(`T${table}`)) as HTMLElement).style.borderLeft;
-    expect(border("1")).toContain("rgb(61, 220, 151)");
-    expect(border("2")).toContain("rgb(255, 217, 138)");
-    expect(border("3")).toContain("rgb(255, 107, 107)");
+    const border = (table: string) => (Array.from(document.querySelectorAll<HTMLElement>(".sa-ticket")).find((c) => c.textContent?.includes(`T${table}`)) as HTMLElement).style.getPropertyValue("--wait");
+    expect(border("1")).toContain("var(--line-strong)");
+    expect(border("2")).toContain("var(--ink-muted)");
+    expect(border("3")).toContain("var(--ink)");
     void fresh;
   });
   it("shows the diner's allergy as a banner and marks the dish that clashes", async () => {

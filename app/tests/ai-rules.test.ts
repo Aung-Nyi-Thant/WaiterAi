@@ -545,3 +545,62 @@ describe("topics the data never holds (discounts, promotions, coupons, reservati
     }
   });
 });
+
+describe("a bare request for a recommendation is answered from the data, not by the model", () => {
+  const BARE = ["What do you recommend?", "what would you recommend", "Recommend something", "Can you suggest something?", "any suggestions?", "What's good here?", "What should I order?", "recommend", "Hello, what do you recommend for us?",
+    "แนะนำหน่อย", "แนะนำเมนูหน่อยครับ", "มีอะไรแนะนำไหม", "อะไรอร่อย", "အကြံပြုပေးပါ", "ဘာစားသင့်လဲ"];
+  it.each(BARE)("%s", async (q) => {
+    const r = await ask(q);
+    expect(r.usedModel).toBe(false);
+    expect(r.topic).toBe("recommend");
+    expect(r.action.type).toBe("show_dishes");
+    expect(r.action.ids!.length).toBeGreaterThan(1);
+    expect(modelCalls.length).toBe(0);
+  });
+  it("with no order history, offers one dish from each of the largest categories, says it cannot name the most popular, and never calls a dish popular or the best", async () => {
+    const r = await ask("What do you recommend?");
+    const ctx = await aiCtx();
+    const picked = r.action.ids!.map((id) => ctx.items.find((i: any) => i.id === id)!);
+    expect(new Set(picked.map((i: any) => i.category_id)).size).toBe(picked.length);          // different categories
+    expect(picked.every((i: any) => i.available)).toBe(true);
+    for (const i of picked) expect(r.reply).toContain(`${i.name.en} (฿${i.price})`);
+    expect(r.reply).toMatch(/can't say which dishes are the most popular/);
+    expect(r.reply.replace("can't say which dishes are the most popular", "")).not.toMatch(/\b(?:best|most popular|famous|favourite|signature)\b/i);
+    expect(r.reply).toMatch(/spicy or mild, a budget, a type of dish, vegetarian/);
+  });
+  it("never offers a sold-out dish, and a dish that clashes with the diner's allergy profile is left out, with the usual note", async () => {
+    const ctx = await aiCtx();
+    const r = await ask("recommend something", { profile: ["peanut"] });
+    for (const id of r.action.ids!) { const i = ctx.items.find((x: any) => x.id === id)!; expect(i.available).toBe(true); expect(i.allergens === null || !i.allergens.includes("peanut")).toBe(true); }
+    expect(r.reply).toMatch(/peanut/i);
+  });
+  it("with an order history, answers with the dishes ordered most (the existing 'popular' answer), not the spread", async () => {
+    const ctx = await aiCtx();
+    const second = ctx.items[1];
+    const r = await ask("What do you recommend?", { popular: { [second.id]: 5 } });
+    expect(r.action.ids![0]).toBe(second.id);
+    expect(r.reply).toContain("ordered 5×");
+    expect(r.reply).not.toMatch(/can't say/);
+  });
+  it("is in Thai and Burmese for a Thai or Burmese question, in the voice of the waiter", async () => {
+    const th = await ask("แนะนำหน่อย");
+    expect(th.reply).toMatch(/^ยังไม่มีข้อมูลการสั่ง/);
+    expect(th.reply).toMatch(/ครับ$/);
+    const my = await ask("ဘာစားသင့်လဲ");
+    expect(my.reply).toMatch(/^ဘယ်ဟင်းလျာက/);
+    expect(my.reply).not.toMatch(/သည်|ရှင်|ကျွန်မ/);
+    const f = await ask("แนะนำหน่อย", await female());
+    expect(f.reply).toMatch(/ค่ะ$/);
+  });
+  it("is not used when the diner says something more (a budget, spice, a type of dish, the weather, a number of people): those keep their own answers", async () => {
+    for (const q of ["What would you recommend on a hot day?", "recommend something spicy", "recommend something under 100 baht", "recommend a dessert", "what do you recommend for two people?", "recommend a vegetarian dish"]) {
+      const r = await ask(q);
+      expect(r.reply, q).not.toMatch(/can't say which dishes are the most popular/);
+    }
+  });
+  it("a menu with nothing available has nothing to offer: the question falls through to the usual path", async () => {
+    const ctx = await aiCtx();
+    const r = await ask("What do you recommend?", { items: ctx.items.map((i: any) => ({ ...i, available: false })) });
+    expect(r.reply).not.toMatch(/can't say which dishes are the most popular/);
+  });
+});
