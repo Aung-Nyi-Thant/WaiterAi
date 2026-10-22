@@ -24,7 +24,7 @@ export default function Home() {
     <div className="sa-app center-screen" data-theme="night">
       <main style={{ maxWidth: 880, width: "100%" }}>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <h1 style={{ fontSize: 48, lineHeight: "56px" }}>Shop AI</h1>
+          <h1 className="home-brand">Shop AI</h1>
           <p className="muted" style={{ fontSize: 18, margin: "8px 0 0" }}>An AI Waiter that knows your menu. Chat in Thai, Burmese and English.</p>
         </div>
         {shops.map((s) => (

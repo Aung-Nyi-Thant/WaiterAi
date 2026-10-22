@@ -18,7 +18,7 @@ const open = async (url = "/?t=5") => {
   await waitFor(() => expect(dishNames()).toHaveLength(13));
 };
 const motion = (reduce: boolean) => { window.matchMedia = ((q: string) => ({ matches: reduce, media: q, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} })) as any; };
-const openChat = async () => { fireEvent.click(within(document.querySelector(".diner-nav") as HTMLElement).getByRole("button", { name: T("navAi") })); await screen.findByRole("log"); };
+const openChat = async () => { fireEvent.click(screen.getByRole("button", { name: T("heroBar") })); await screen.findByRole("log"); };
 const ask = (text: string) => {
   fireEvent.change(screen.getByLabelText(T("typeQ")), { target: { value: text } });
   fireEvent.click(screen.getByRole("button", { name: "Send" }));
@@ -143,7 +143,7 @@ describe("using the chat", () => {
   it("Escape closes the chat", async () => {
     await open();
     await openChat();
-    fireEvent.keyDown(document.querySelector(".chat-inline") as HTMLElement, { key: "Escape" });
+    fireEvent.keyDown(document.querySelector(".ai-panel") as HTMLElement, { key: "Escape" });
     await waitFor(() => expect(screen.queryByRole("log")).toBeNull());
   });
   it("a dish card in an answer adds that dish, with the usual toast", async () => {
@@ -155,13 +155,12 @@ describe("using the chat", () => {
     await waitFor(() => expect(document.querySelector(".picks-bar__line")?.textContent).toBe("Beef Massaman Curry"));
     expect((await screen.findByRole("status")).textContent).toContain(`${T("added")}: Beef Massaman Curry`);
   });
-  it("with dishes in My picks, the chat has a 'Send to staff' button with the count, which sends the order", async () => {
+  it("with dishes in My picks, the picks bar is still there on the AI page, and its 'Send to staff' button sends the order", async () => {
     await open("/?t=3");
     fireEvent.click(screen.getByRole("button", { name: `${T("add")} Tom Yum Goong` }));
     fireEvent.click(screen.getByRole("button", { name: `${T("add")} Papaya Salad` }));
     await openChat();
-    const inChat = within(document.querySelector(".chat-inline") as HTMLElement);
-    fireEvent.click(inChat.getByRole("button", { name: new RegExp(`${T("showToWaiter")} · 2`) }));
+    fireEvent.click(screen.getByRole("button", { name: T("showToWaiter") }));                // the picks bar stays above the navigation while the AI page is open
     const dlg = await screen.findByRole("dialog", { name: T("sent") });
     expect(within(dlg).getByText(priceLabel("en", 250).replace(/ /g, " "))).toBeTruthy();
     expect(all("SELECT table_no FROM orders")).toEqual([{ table_no: "3" }]);

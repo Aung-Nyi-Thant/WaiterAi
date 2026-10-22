@@ -27,102 +27,110 @@ const navBtn = (name: RegExp | string) => within(nav()).getByRole("button", { na
 const escapeClosesDialog = () => waitFor(() => { fireEvent.keyDown(document, { key: "Escape" }); expect(screen.queryByRole("dialog")).toBeNull(); });
 const addBtn = (name: string) => screen.getByRole("button", { name: `${T("add")} ${name}` });
 
+const langBtn = () => document.querySelector(".sa-langbtn") as HTMLElement;
+const langGroup = () => screen.getByRole("group", { name: "Language" });
+const openPicks = () => { if (!screen.queryByRole("dialog", { name: T("myPicks") })) fireEvent.click(document.querySelector("[data-cart]") as HTMLElement); };
+
 describe("the header", () => {
-  it("shows the ShopAI logo, the restaurant, the city and table, and a language switch with the current language pressed", async () => {
+  it("shows Shop AI, the language button, the restaurant name big, and the table and city under it", async () => {
     await open("/?t=5");
-    expect(document.querySelector(".sa-logo")?.textContent).toBe("ShopAI");
+    expect(document.querySelector(".sa-logo")?.textContent).toBe("Shop AI");
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Golden Lotus Kitchen");
-    expect(document.querySelector(".sa-sign__meta")?.textContent).toBe(`Bangkok · ${T("table")} 5`);
-    const lang = screen.getByRole("group", { name: "Language" });
-    expect(within(lang).getAllByRole("button").map((b) => b.textContent)).toEqual(["TH", "MY", "EN"]);
-    expect(within(lang).getByRole("button", { name: "EN" }).getAttribute("aria-pressed")).toBe("true");
+    expect(document.querySelector(".sa-sign__meta")?.textContent).toBe(`${T("table")} 5 / Bangkok`);
+    expect(langBtn().textContent).toBe("EN");
+    expect(langBtn().querySelector("svg")).toBeTruthy();
   });
-  it("switching the language changes the labels, the navigation, the page language and is remembered on the phone", async () => {
+  it("the search field has a filter button, and a row under the categories opens the allergy profile", async () => {
     await open();
-    fireEvent.click(within(screen.getByRole("group", { name: "Language" })).getByRole("button", { name: "TH" }));
+    expect(screen.getByRole("button", { name: T("filters") }).getAttribute("aria-expanded")).toBe("false");
+    expect(screen.getByRole("button", { name: T("setAllergies") }).textContent).toContain(T("allergyProfile"));
+  });
+});
+
+describe("the language list (the EN button in the header)", () => {
+  it("lists English, Thai and Burmese with the current one checked, and closes with Escape", async () => {
+    await open();
+    expect(screen.queryByRole("group", { name: "Language" })).toBeNull();
+    fireEvent.click(langBtn());
+    const rows = within(langGroup()).getAllByRole("button");
+    expect(rows.map((b) => b.textContent)).toEqual(["English", "ไทย", "မြန်မာ"]);
+    expect(rows.map((b) => b.getAttribute("aria-pressed"))).toEqual(["true", "false", "false"]);
+    expect(rows[0].querySelector("svg")).toBeTruthy();                                 // the check mark
+    fireEvent.keyDown(document, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("group", { name: "Language" })).toBeNull());
+  });
+  it("choosing a language changes the labels, the page language and is remembered on the phone, and closes the list", async () => {
+    await open();
+    fireEvent.click(langBtn());
+    fireEvent.click(within(langGroup()).getByRole("button", { name: "ไทย" }));
     await waitFor(() => expect(document.documentElement.lang).toBe("th"));
     expect(localStorage.getItem("lang")).toBe("th");
+    expect(langBtn().textContent).toBe("TH");
+    expect(screen.queryByRole("group", { name: "Language" })).toBeNull();
     expect(within(nav()).getByText(T("navMenu", "th"))).toBeTruthy();
-    expect(within(nav()).getByText(T("callStaff", "th"))).toBeTruthy();
-    expect(screen.getByText(T("heroEyebrow", "th"))).toBeTruthy();                   // the AI banner is Thai too, not English
+    expect(screen.getByText(T("allergyProfile", "th"))).toBeTruthy();
   });
-  it("a Burmese phone starts in Burmese, with Burmese navigation labels and the AI banner in Burmese", async () => {
+  it("a Burmese phone starts in Burmese, with Burmese labels on the navigation", async () => {
     setPhoneLanguage("my-MM");
     await open();
     expect(document.documentElement.lang).toBe("my");
-    for (const k of ["navMenu", "navAi", "navAllergy", "tableBill", "callStaff"]) expect(within(nav()).getByText(T(k, "my"))).toBeTruthy();
-    expect(screen.getByText(T("heroEyebrow", "my"))).toBeTruthy();
+    for (const k of ["navMenu", "navBills", "myPicks", "navStaff"]) expect(within(nav()).getByText(T(k, "my")), k).toBeTruthy();
   });
 });
 
 describe("the bottom navigation", () => {
-  it("has five buttons in a fixed order: menu, allergies, AI, table bill, call staff", async () => {
+  it("has four labelled buttons in a fixed order: menu, bills, My picks, staff", async () => {
     await open();
-    expect(within(nav()).getAllByRole("button").map((b) => b.textContent)).toEqual([T("navMenu"), T("navAllergy"), T("navAi"), T("tableBill"), T("callStaff")]);
+    expect(within(nav()).getAllByRole("button").map((b) => b.textContent)).toEqual([T("navMenu"), T("navBills"), T("myPicks"), T("navStaff")]);
   });
-  it("every button has a drawn icon (no glyph) and the menu starts as the current view", async () => {
+  it("every button has a drawn icon and the menu starts as the current view", async () => {
     await open();
     for (const b of within(nav()).getAllByRole("button")) {
       expect(b.querySelector("svg"), b.textContent || "").toBeTruthy();
       expect(b.textContent).not.toMatch(/[←-⇿⌀-⏿☀-➿\u{1F000}-\u{1FAFF}]/u);
     }
     expect(navBtn(T("navMenu")).className).toContain("on");
-    expect(navBtn(T("navAi")).getAttribute("aria-pressed")).toBe("false");
   });
-  it("the AI button opens the chat in place and closes it again; the menu button is the current view only while the chat is closed", async () => {
+  it("My picks shows how many dishes are picked and opens the My picks page", async () => {
     await open();
-    fireEvent.click(navBtn(T("navAi")));
+    fireEvent.click(addBtn("Tom Yum Goong"));
+    const cart = navBtn(new RegExp(T("myPicks")));
+    expect(cart.querySelector(".nav-badge")?.textContent).toBe("1");
+    fireEvent.click(cart);
+    expect(screen.getByRole("dialog", { name: T("myPicks") })).toBeTruthy();
+    await escapeClosesDialog();
+  });
+  it("the AI is the bar at the top of the menu: it opens in place and its arrow closes it; the menu button also closes it and scrolls to the top", async () => {
+    await open();
+    fireEvent.click(screen.getByRole("button", { name: T("heroBar") }));
     await screen.findByRole("log");
-    expect(navBtn(T("navAi")).getAttribute("aria-pressed")).toBe("true");
-    expect(navBtn(T("navAi")).className).toContain("on");
-    expect(navBtn(T("navMenu")).className).not.toContain("on");
-    fireEvent.click(navBtn(T("navAi")));
-    await waitFor(() => expect(screen.queryByRole("log")).toBeNull());
     expect(navBtn(T("navMenu")).className).toContain("on");
-  });
-  it("the menu button closes an open chat and scrolls the page back to the top", async () => {
-    await open();
-    fireEvent.click(navBtn(T("navAi")));
+    fireEvent.click(screen.getByRole("button", { name: T("close") }));
+    await waitFor(() => expect(screen.queryByRole("log")).toBeNull());
+    fireEvent.click(screen.getByRole("button", { name: T("heroBar") }));
     await screen.findByRole("log");
     fireEvent.click(navBtn(T("navMenu")));
     await waitFor(() => expect(screen.queryByRole("log")).toBeNull());
     expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
   });
-  it("the allergies button is named 'Set my allergies' until a profile exists, then names the allergens and shows how many", async () => {
+  it("Bills opens the table bill (empty before anything was sent, with no 'ask for the bill' button), and the My picks page has no bill row", async () => {
     await open();
-    const first = within(nav()).getByRole("button", { name: T("setAllergies") });
-    expect(first.querySelector(".nav-badge")).toBeNull();
-    fireEvent.click(first);
-    const dlg = screen.getByRole("dialog", { name: T("myAllergies") });
-    fireEvent.click(within(dlg).getByRole("button", { name: /^peanut$/i }));
-    fireEvent.click(within(dlg).getByRole("button", { name: /^egg$/i }));
-    fireEvent.click(within(dlg).getByRole("button", { name: T("done") }));
-    const named = within(nav()).getByRole("button", { name: new RegExp(`^${T("myAllergies")}: `) });
-    expect(named.getAttribute("aria-label")).toContain("peanut");
-    expect(named.querySelector(".nav-badge")?.textContent).toBe("2");
-    expect(screen.getByText(new RegExp(`${T("myAllergies")}: .*peanut`))).toBeTruthy();       // and the page says it above the list too
-  });
-  it("the saved allergy profile is still on the nav after a reload", async () => {
-    localStorage.setItem("allergyProfile", JSON.stringify(["soy"]));
-    await open();
-    await waitFor(() => expect(within(nav()).getByRole("button", { name: new RegExp(T("myAllergies")) }).querySelector(".nav-badge")?.textContent).toBe("1"));
-  });
-  it("the table bill button opens an empty bill before anything was sent, with no 'ask for the bill' button", async () => {
-    await open();
-    fireEvent.click(navBtn(T("tableBill")));
+    fireEvent.click(navBtn(new RegExp(T("tableBill"))));
     const dlg = await screen.findByRole("dialog", { name: T("tableBill") });
     expect(within(dlg).getByText(T("billEmpty"))).toBeTruthy();
     expect(within(dlg).queryByRole("button", { name: new RegExp(T("askBill")) })).toBeNull();
     await escapeClosesDialog();
+    openPicks();
+    const picks = await screen.findByRole("dialog", { name: T("myPicks") });
+    expect(within(picks).queryByRole("button", { name: new RegExp(T("tableBill")) })).toBeNull();
+    await escapeClosesDialog();
   });
-  it("the call button calls the staff for this table, rings for a second, and says so", async () => {
+  it("the staff button calls the staff for this table, rings, and says so", async () => {
     run("DELETE FROM calls");
     await open("/?t=9");
     fireEvent.click(navBtn(T("callStaff")));
-    expect(navBtn(T("callStaff")).className).toContain("is-ringing");
     await screen.findByText(T("staffCalled"));
     expect(all("SELECT table_no, kind FROM calls")).toEqual([{ table_no: "9", kind: "help" }]);
-    await waitFor(() => expect(navBtn(T("callStaff")).className).not.toContain("is-ringing"), { timeout: 3000 });
   });
   it("when the call cannot be sent the diner is told, and no call is stored", async () => {
     run("DELETE FROM calls");
@@ -132,7 +140,32 @@ describe("the bottom navigation", () => {
     await waitFor(() => expect(screen.getByRole("status").textContent).toContain("forced failure"));
     expect(all("SELECT id FROM calls")).toEqual([]);
   });
-  it("the bill button shows the table's total once the staff have taken an order, and asking for the bill calls the staff", async () => {
+});
+
+describe("the allergy profile row", () => {
+  it("is named 'Set my allergies' until a profile exists, then names the allergens and shows how many", async () => {
+    await open();
+    const first = screen.getByRole("button", { name: T("setAllergies") });
+    expect(first.querySelector(".allergy-row__count")).toBeNull();
+    fireEvent.click(first);
+    const dlg = screen.getByRole("dialog", { name: T("myAllergies") });
+    fireEvent.click(within(dlg).getByRole("button", { name: /^peanut$/i }));
+    fireEvent.click(within(dlg).getByRole("button", { name: /^egg$/i }));
+    fireEvent.click(within(dlg).getByRole("button", { name: T("applyProfile") }));
+    const named = screen.getByRole("button", { name: new RegExp(`^${T("myAllergies")}: `) });
+    expect(named.getAttribute("aria-label")).toContain("peanut");
+    expect(named.querySelector(".allergy-row__count")?.textContent).toBe("2");
+    expect(named.querySelector(".allergy-row__list")?.textContent).toContain("peanut");
+  });
+  it("the saved allergy profile is still there after a reload", async () => {
+    localStorage.setItem("allergyProfile", JSON.stringify(["soy"]));
+    await open();
+    await waitFor(() => expect(screen.getByRole("button", { name: new RegExp(T("myAllergies")) }).querySelector(".allergy-row__count")?.textContent).toBe("1"));
+  });
+});
+
+describe("the table bill", () => {
+  it("shows the table's total once the staff have taken an order, and asking for the bill calls the staff", async () => {
     run("DELETE FROM calls");
     await open("/?t=12");
     fireEvent.click(addBtn("Papaya Salad"));
@@ -142,13 +175,12 @@ describe("the bottom navigation", () => {
     const id = (all("SELECT id FROM orders WHERE table_no = '12'")[0] as any).id;
     await staffLogin("1111");
     await fetch(`/api/staff/orders/${id}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "take" }) });
-    fireEvent.click(screen.getByRole("button", { name: T("done") }));
-    fireEvent.click(navBtn(T("tableBill")));                                          // opens the sheet, which loads the bill again
+    fireEvent.click(screen.getByRole("button", { name: T("backMenu") }));
+    fireEvent.click(navBtn(new RegExp(T("tableBill"))));                              // opens the sheet, which loads the bill again
     const dlg = await screen.findByRole("dialog", { name: T("tableBill") });
     await within(dlg).findByText("1× Papaya Salad");
     fireEvent.click(within(dlg).getByRole("button", { name: new RegExp(T("askBill")) }));
     await waitFor(() => expect(all("SELECT kind FROM calls WHERE table_no = '12'")).toEqual([{ kind: "bill" }]));
-    await waitFor(() => expect(within(nav()).getByRole("button", { name: new RegExp(T("tableBill")) }).textContent).toContain(priceLabel("en", 70)));
   });
 });
 
@@ -156,9 +188,9 @@ describe("the dish grid", () => {
   it("lists the dishes in one grid, with the special across the whole row", async () => {
     run("INSERT INTO specials (restaurant_id, title, text) VALUES (1, 'Mango week', 'Two for one')");
     await open();
-    const list = document.querySelector(".diner-list") as HTMLElement;
-    expect(list.querySelectorAll(".sa-dish")).toHaveLength(13);
-    expect(list.querySelector(".diner-special")?.textContent).toContain("Mango week");
+    expect(document.querySelectorAll(".diner-section .sa-dish")).toHaveLength(13);
+    expect(document.querySelectorAll(".diner-section").length).toBeGreaterThan(1);          // one section per category
+    expect(document.querySelector(".diner-special")?.textContent).toContain("Mango week");
   });
   it("a card's add button is only an icon, but has a name that says which dish it adds", async () => {
     await open();
@@ -195,7 +227,7 @@ describe("the dish sheet", () => {
     expect(within(dlg).getAllByText(B(120)).length).toBeGreaterThan(0);               // beside the name, and as the total next to the quantity
     for (const a of ["peanut", "shellfish", "egg", "fish"]) expect(within(dlg).getAllByText(a).length).toBeGreaterThan(0);      // an allergen tag (and an ingredient of the same name)
     expect(within(dlg).getByText(T("ingredients"))).toBeTruthy();
-    expect(within(dlg).getByRole("button", { name: T("askWaiter") })).toBeTruthy();
+    expect(within(dlg).getByRole("button", { name: T("askAbout") })).toBeTruthy();
     expect(within(dlg).getByRole("button", { name: new RegExp(`^${T("add")}`) })).toBeTruthy();
   });
   it("the quantity control changes the total price next to it and on the add button, within 1 to 20", async () => {
@@ -242,7 +274,7 @@ describe("the dish sheet", () => {
   it("'Ask AI' in the sheet closes it, opens the chat and asks about that dish", async () => {
     await open();
     const dlg = await openDish("Tom Yum Goong");
-    fireEvent.click(within(dlg).getByRole("button", { name: T("askWaiter") }));
+    fireEvent.click(within(dlg).getByRole("button", { name: T("askAbout") }));
     await screen.findByRole("log");
     await waitFor(() => expect(apiCalls.some((c) => c.url.endsWith("/chat") && /Tom Yum Goong/.test(c.body?.message))).toBe(true));
     expect(screen.queryByRole("dialog", { name: "Tom Yum Goong" })).toBeNull();
@@ -256,9 +288,9 @@ describe("My picks and the sheets", () => {
     fireEvent.click(addBtn("Tom Yum Goong"));
     fireEvent.click(document.querySelector(".picks-bar__open") as HTMLElement);
     const dlg = screen.getByRole("dialog", { name: T("myPicks") });
-    expect(within(dlg).getByText(B(360))).toBeTruthy();
+    expect(within(dlg).getAllByText(B(360)).length).toBeGreaterThan(0);
     fireEvent.click(within(dlg).getByRole("button", { name: "-" }));
-    expect(within(dlg).getByText(B(180))).toBeTruthy();
+    expect(within(dlg).getAllByText(B(180)).length).toBeGreaterThan(0);
     fireEvent.click(within(dlg).getByRole("button", { name: T("remove") }));
     expect(within(dlg).getByText(T("picksEmpty"))).toBeTruthy();
     await escapeClosesDialog();

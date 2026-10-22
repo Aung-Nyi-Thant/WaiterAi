@@ -31,13 +31,14 @@ function lum(hex: string) {
 const contrast = (a: string, b: string) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
 
 describe("the palette", () => {
-  it("is the prototype's: yellow on warm white, dark ink, soft sand panels", () => {
-    expect(token("mustard")).toBe("#ffc928");
-    expect(token("surface-page")).toBe("#fffdf5");
+  it("is the monochrome design: a light grey canvas, white cards, a near-black ink, and no colour at all", () => {
+    expect(token("mustard")).toBe("#141414");
+    expect(token("cherry")).toBe("#141414");
+    expect(token("surface-page")).toBe("#f5f5f5");
     expect(token("surface-card")).toBe("#ffffff");
-    expect(token("surface-sunk")).toBe("#f6f1e1");
-    expect(token("ink")).toBe("#1f1b13");
-    expect(token("line")).toBe("#ebe4cf");
+    expect(token("surface-sunk")).toBe("#e8e8e8");
+    expect(token("ink")).toBe("#141414");
+    expect(token("line")).toBe("#dedede");
   });
   it("has one theme: the staff, kitchen and home screens that ask for the night theme get the same palette", () => {
     expect(css).toMatch(/:root, \[data-theme\] \{/);
@@ -45,24 +46,24 @@ describe("the palette", () => {
   });
   it("keeps every text and background pair readable (WCAG AA, 4.5 : 1)", () => {
     const pairs: [string, string, string][] = [
-      ["ink", "surface-page", "text on the page"], ["ink", "surface-card", "text on a card"], ["ink", "surface-sunk", "text on a sand panel"],
-      ["ink-muted", "surface-page", "grey text on the page"], ["ink-muted", "surface-card", "grey text on a card"], ["ink-muted", "surface-sunk", "grey text on a sand panel"],
+      ["ink", "surface-page", "text on the page"], ["ink", "surface-card", "text on a card"], ["ink", "surface-sunk", "text on a grey panel"],
+      ["ink-muted", "surface-page", "grey text on the page"], ["ink-muted", "surface-card", "grey text on a card"], ["ink-muted", "surface-sunk", "grey text on a grey panel"],
       ["on-mustard", "mustard", "text on a yellow button"], ["ink", "mustard-soft", "text on the special's card"],
-      ["on-teal", "ink", "yellow on the dark AI button"], ["on-cherry", "cherry", "white on the red calling table"],
+      ["on-teal", "ink", "white on the dark AI button"], ["on-cherry", "cherry", "white on the red calling table"],
       ["cherry-text", "cherry-soft", "red allergen tag"], ["cherry-text", "surface-card", "red text on a card"], ["on-allergy", "allergy", "allergy banner"],
       ["on-ok", "ok", "white on the green button"], ["on-ok", "ok", "ready status"],
     ];
     for (const [fg, bg, what] of pairs) expect(contrast(token(fg), token(bg)), `${what}: ${fg} on ${bg}`).toBeGreaterThanOrEqual(4.5);
   });
-  it("uses white on the dark chat bubble and ink on the yellow one", () => {
+  it("uses white on the ink bubble (the diner's) and ink on the grey one (the AI's)", () => {
     expect(contrast("#ffffff", token("ink"))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(token("ink"), token("mustard"))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(token("ink"), token("surface-sunk"))).toBeGreaterThanOrEqual(4.5);
   });
 });
 
 describe("the type", () => {
-  it("is one family that carries Latin, Thai and Burmese, with tabular numbers and looser lines for Thai and Burmese", () => {
-    expect(css).toMatch(/--font-sans: "Noto Sans Thai", "Noto Sans Myanmar"/);
+  it("is the rounded Apple font for Latin (Nunito where there is none, then the Apple system font and Arial) with Noto Sans for Thai and Burmese, with tabular numbers and looser lines for Thai and Burmese", () => {
+    expect(css).toMatch(/--font-sans: ui-rounded, "SF Pro Rounded", "Nunito", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, "Noto Sans Thai", "Noto Sans Myanmar"/);
     expect(css).toMatch(/--font-display: var\(--font-sans\)/);
     expect(css).toMatch(/font-variant-numeric: tabular-nums/);
     expect(css).toMatch(/\.sa-app :lang\(th\)[^{]*\{ line-height: 1\.6/);
@@ -72,8 +73,9 @@ describe("the type", () => {
     for (const f of ["Righteous", "Yellowtail", "Archivo", "Courier Prime"]) expect(css).not.toContain(f);
     expect(css).not.toMatch(/font: 400 [^;]*var\(--font-display\)/);
   });
-  it("loads only the Noto Sans Thai and Myanmar fonts, and sets the browser's theme colour to the page colour", () => {
+  it("loads Nunito and the Noto Sans Thai and Myanmar fonts, and sets the browser's theme colour to the page colour", () => {
     const html = renderToStaticMarkup(<RootLayout><p>x</p></RootLayout>);
+    expect(html).toContain("family=Nunito");
     expect(html).toContain("family=Noto+Sans+Thai");
     expect(html).toContain("family=Noto+Sans+Myanmar");
     for (const f of ["Righteous", "Yellowtail", "Archivo", "Courier"]) expect(html).not.toContain(f);
@@ -115,14 +117,14 @@ describe("the stylesheet and the screens agree", () => {
 });
 
 describe("the diner layout rules", () => {
-  it("shows dishes in two columns on a phone, with the card photo on top at 4 : 3", () => {
-    expect(css).toMatch(/\.diner-list \{ display: grid; grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
-    expect(css).toMatch(/\.sa-dish__plate \{[^}]*aspect-ratio: 4 \/ 3/);
+  it("shows the dishes as rows: a square photo on the left, the name, a line, the price and a black plus", () => {
+    expect(css).toMatch(/\.sa-dish \{[^}]*grid-template-columns: 112px minmax\(0, 1fr\)/);
+    expect(css).toMatch(/\.sa-dish__top \{[^}]*width: 112px; height: 112px/);
   });
   it("keeps the navigation pill, the picks bar and the toast clear of each other", () => {
-    expect(css).toMatch(/\.diner-nav \{ display: grid; grid-template-columns: repeat\(5, 1fr\)/);
-    expect(css).toMatch(/\.diner \{[^}]*padding: 0 0 168px/);                             // room under the last card for the picks bar and the pill
-    expect(css).toMatch(/\.toast \{[^}]*bottom: calc\(112px/);
+    expect(css).toMatch(/\.diner-nav \{[^}]*display: grid; grid-template-columns: repeat\(4, 1fr\)/);
+    expect(css).toMatch(/\.diner \{[^}]*padding: 0 0 180px/);                             // room under the last card for the picks bar and the pill
+    expect(css).toMatch(/\.toast \{[^}]*bottom: calc\(176px/);
   });
   it("asks for 44 px touch targets on the buttons, chips and tabs", () => {
     expect(css).toMatch(/--tap-min: 44px/);

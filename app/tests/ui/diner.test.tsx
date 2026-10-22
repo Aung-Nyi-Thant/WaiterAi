@@ -12,6 +12,12 @@ import { apiCalls, failNext, flush, setModel, setPhoneLanguage, withRealApi } fr
 withRealApi();
 const B = (n: number) => priceLabel("en", n).replace(/\u2009/g, " ");   // "฿ 180": the page has a thin space after the sign, Testing Library reads it as a normal space
 const T = (k: string, l: "en" | "th" | "my" = "en") => tr(l, k);
+// The allergy profile and Call staff are buttons now (the row under the categories, the Staff tab); the language list opens from "EN" in the header.
+const moreItem = (name: RegExp | string) => screen.getByRole("button", { name });
+const pickLang = (code: string) => { fireEvent.click(document.querySelector(".sa-langbtn") as HTMLElement); fireEvent.click(within(screen.getByRole("group", { name: "Language" })).getByRole("button", { name: code === "TH" ? "ไทย" : code === "MY" ? "မြန်မာ" : "English" })); };
+// My picks opens as a page; the table bill is a row on it
+const openPicks = () => { if (!screen.queryByRole("dialog", { name: T("myPicks") })) fireEvent.click(document.querySelector("[data-cart]") as HTMLElement); };
+const openBillRow = async () => screen.findByRole("button", { name: new RegExp(T("tableBill")) });         // the Bills button of the bottom bar
 const open = async (url = "/?t=5", firstDish = "Tom Yum Goong") => {
   window.history.replaceState({}, "", url);
   const view = render(<Diner slug="golden-lotus" />);
@@ -91,7 +97,7 @@ describe("DM-3 / DM-4: search and filters", () => {
     expect(dishNames().sort()).toEqual(["Chicken Green Curry", "Papaya Salad", "Steamed Fish with Lime", "Tom Yum Goong"]);
     fireEvent.click(screen.getByRole("button", { name: T("under100") }));
     expect(dishNames()).toEqual(["Papaya Salad"]);
-    expect(screen.getByRole("button", { name: new RegExp(`${T("filters")} · 2`) })).toBeTruthy();
+    expect(document.querySelector(".diner-search__count")?.textContent).toBe("2");
   });
   it("'No peanuts' hides dishes that list peanuts AND dishes with no allergen data", async () => {
     await open();
@@ -108,11 +114,11 @@ describe("DM-3 / DM-4: search and filters", () => {
 describe("DM-5: language", () => {
   it("switching to Thai or Burmese changes the labels and dish names at once, and is remembered", async () => {
     const { unmount } = await open();
-    fireEvent.click(screen.getByRole("button", { name: "TH" }));
+    pickLang("TH");
     expect(screen.getByLabelText(T("search", "th"))).toBeTruthy();
     expect(dishNames()).toContain("ต้มยำกุ้ง");
     expect(document.documentElement.lang).toBe("th");
-    fireEvent.click(screen.getByRole("button", { name: "MY" }));
+    pickLang("MY");
     expect(screen.getByLabelText(T("search", "my"))).toBeTruthy();
     expect(document.documentElement.lang).toBe("my");
     expect(localStorage.getItem("lang")).toBe("my");
@@ -189,11 +195,11 @@ describe("PC-1: My picks", () => {
     await open();
     fireEvent.click(addBtn("Tom Yum Goong"));
     fireEvent.click(addBtn("Tom Yum Goong"));
-    fireEvent.click(screen.getByRole("button", { name: new RegExp(T("myPicks")) }));
+    openPicks();
     const dlg = screen.getByRole("dialog", { name: T("myPicks") });
-    expect(within(dlg).getByText(B(360))).toBeTruthy();
+    expect(within(dlg).getAllByText(B(360)).length).toBeGreaterThan(0);
     fireEvent.click(within(dlg).getByRole("button", { name: "-" }));
-    expect(within(dlg).getByText(B(180))).toBeTruthy();
+    expect(within(dlg).getAllByText(B(180)).length).toBeGreaterThan(0);
     fireEvent.click(within(dlg).getByRole("button", { name: "+" }));
     fireEvent.click(within(dlg).getByRole("button", { name: "-" }));
     fireEvent.click(within(dlg).getByRole("button", { name: T("remove") }));   // quantity 1 shows the bin
@@ -226,7 +232,7 @@ describe("PC-2 / PC-5: sending the order and the table bill", () => {
     // the phone saves its picks from an effect that runs just after the state changes: on a slow machine that is a moment later than the dialog
     await waitFor(() => expect(JSON.parse(localStorage.getItem("picks:golden-lotus") || "x")).toEqual([]));
     expect(all("SELECT table_no FROM orders").map((r: any) => r.table_no)).toEqual(["7"]);
-    fireEvent.click(within(dlg).getByRole("button", { name: T("done") }));
+    fireEvent.click(within(dlg).getByRole("button", { name: T("backMenu") }));
     expect(screen.queryByRole("dialog")).toBeNull();
   });
   it("the table number survives a reload without the QR parameter", async () => {
@@ -242,15 +248,15 @@ describe("PC-2 / PC-5: sending the order and the table bill", () => {
     fireEvent.click(addBtn("Papaya Salad"));
     fireEvent.click(screen.getByRole("button", { name: T("showToWaiter") }));
     await screen.findByRole("dialog", { name: T("sent") });
-    fireEvent.click(screen.getByRole("button", { name: T("done") }));
+    fireEvent.click(screen.getByRole("button", { name: T("backMenu") }));
     expect(localStorage.getItem("receipt:golden-lotus:11")).toBeTruthy();         // the code the server issued to this phone
     const orderId = get("SELECT id FROM orders WHERE table_no = '11'").id;
     await staffLogin("1111");
     await fetch(`/api/staff/orders/${orderId}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "take" }) });
     first.unmount();
     await open("/?t=11");                                                            // a fresh visit asks for the bill with the saved code
-    const billBtn = await screen.findByRole("button", { name: new RegExp(T("tableBill")) });
-    expect(billBtn.textContent).toContain(priceLabel("en", 70));
+    const billBtn = await openBillRow();
+    expect(billBtn.getAttribute("aria-label")).toContain(priceLabel("en", 70));
     fireEvent.click(billBtn);
     const bill = await screen.findByRole("dialog", { name: T("tableBill") });
     expect(within(bill).getByText("1× Papaya Salad")).toBeTruthy();
@@ -258,7 +264,7 @@ describe("PC-2 / PC-5: sending the order and the table bill", () => {
     fireEvent.click(within(bill).getByRole("button", { name: new RegExp(T("askBill")) }));
     await waitFor(() => expect(apiCalls.filter((c) => c.url.endsWith("/calls") && c.body?.kind === "bill")).toHaveLength(1));
     await waitFor(() => expect(all("SELECT kind, status FROM calls")).toEqual([{ kind: "bill", status: "open" }]));
-    fireEvent.click(await screen.findByRole("button", { name: new RegExp(T("tableBill")) }));
+    fireEvent.click(await openBillRow());
     const again = await screen.findByRole("dialog", { name: T("tableBill") });
     const requested = within(again).getByRole("button", { name: new RegExp(T("billRequested")) }) as HTMLButtonElement;
     expect(requested.disabled).toBe(true);                                           // a second tap cannot send it again
@@ -273,7 +279,7 @@ describe("PC-2 / PC-5: sending the order and the table bill", () => {
     await screen.findByRole("dialog", { name: T("sent") });
     first.unmount();
     await open("/?t=12");
-    fireEvent.click(await screen.findByRole("button", { name: new RegExp(T("tableBill")) }));
+    fireEvent.click(await openBillRow());
     const bill = await screen.findByRole("dialog", { name: T("tableBill") });
     expect(within(bill).getByText(T("billEmpty"))).toBeTruthy();
     expect(within(bill).getByText(T("billPending"))).toBeTruthy();
@@ -310,11 +316,11 @@ describe("PC-3: call the staff", () => {
 describe("DM-11: allergy profile", () => {
   it("choosing peanut is saved on the phone, marks the dishes that list it, and adds a 'without my allergens' filter that also hides dishes with no data", async () => {
     await open();
-    fireEvent.click(screen.getByRole("button", { name: new RegExp(T("setAllergies")) }));
+    fireEvent.click(moreItem(new RegExp(T("setAllergies"))));
     const dlg = screen.getByRole("dialog", { name: T("myAllergies") });
     fireEvent.click(within(dlg).getByRole("button", { name: /^peanut$/i }));
     expect(JSON.parse(localStorage.getItem("allergyProfile") || "[]")).toEqual(["peanut"]);
-    fireEvent.click(within(dlg).getByRole("button", { name: T("done") }));
+    fireEvent.click(within(dlg).getByRole("button", { name: T("applyProfile") }));
     const tag = within(cardOf("Papaya Salad")).getByText("peanut");                  // the allergen the diner chose is marked with a drawn alert icon, not a glyph
     expect(tag.className).toContain("sa-tag--alert");
     expect(tag.querySelector("svg")).toBeTruthy();
@@ -347,7 +353,7 @@ describe("DM-11: allergy profile", () => {
   it("'Clear' removes the profile and the filter", async () => {
     localStorage.setItem("allergyProfile", JSON.stringify(["peanut", "egg"]));
     await open();
-    fireEvent.click(screen.getByRole("button", { name: new RegExp(T("myAllergies")) }));
+    fireEvent.click(moreItem(new RegExp(T("myAllergies"))));
     fireEvent.click(screen.getByRole("button", { name: T("clearAll") }));
     expect(JSON.parse(localStorage.getItem("allergyProfile") || "x")).toEqual([]);
   });
@@ -392,7 +398,7 @@ describe("FR-2 / AI-13: the AI waiter chat on the phone", () => {
   };
   it("opens in place with the greeting, answers a rule question from the data (no model needed), and shows dish cards with an Add button", async () => {
     await open("/?t=5");
-    fireEvent.click(screen.getByRole("button", { name: T("askWaiter") }));
+    fireEvent.click(screen.getByRole("button", { name: T("heroBar") }));
     expect(await screen.findByText(T("hello"))).toBeTruthy();
     await ask("How much is the Massaman curry?");
     expect(await screen.findByText(/฿\s160/)).toBeTruthy();
@@ -402,7 +408,7 @@ describe("FR-2 / AI-13: the AI waiter chat on the phone", () => {
   });
   it("an allergen question is answered from the database and never says 'safe'", async () => {
     await open();
-    fireEvent.click(screen.getByRole("button", { name: T("askWaiter") }));
+    fireEvent.click(screen.getByRole("button", { name: T("heroBar") }));
     await ask("I'm allergic to peanuts. Can I eat the Pad Thai?");
     expect(await screen.findByText(/peanut/i, { selector: ".sa-msg__text, .sa-msg p, div" })).toBeTruthy();
     expect(document.body.textContent).not.toMatch(/\bis safe\b|safe to eat/i);
@@ -410,7 +416,7 @@ describe("FR-2 / AI-13: the AI waiter chat on the phone", () => {
   it("a question for the model shows the model's checked answer; the AI being off shows the unavailable notice and the menu stays usable", async () => {
     setModel("We do not make birthday cakes, but the Mango Sticky Rice is a lovely dessert.");
     await open();
-    fireEvent.click(screen.getByRole("button", { name: T("askWaiter") }));
+    fireEvent.click(screen.getByRole("button", { name: T("heroBar") }));
     await ask("do you do birthday cakes?");
     expect(await screen.findByText(/lovely dessert/)).toBeTruthy();
     setModel(new Error("down"));
@@ -420,7 +426,7 @@ describe("FR-2 / AI-13: the AI waiter chat on the phone", () => {
   });
   it("'Helpful' sends feedback", async () => {
     await open();
-    fireEvent.click(screen.getByRole("button", { name: T("askWaiter") }));
+    fireEvent.click(screen.getByRole("button", { name: T("heroBar") }));
     await ask("What time do you close?");
     await screen.findByText(/22:00/);
     fireEvent.click(await screen.findByRole("button", { name: T("helpful") }));
@@ -429,14 +435,15 @@ describe("FR-2 / AI-13: the AI waiter chat on the phone", () => {
   it("saying 'add the Tom Yum' puts it in My picks", async () => {
     window.matchMedia = ((q: string) => ({ matches: true, media: q, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} })) as any;   // reduced motion: no animated cursor
     await open();
-    fireEvent.click(screen.getByRole("button", { name: T("askWaiter") }));
+    fireEvent.click(screen.getByRole("button", { name: T("heroBar") }));
     await ask("I'll have the Tom Yum Goong please");
     await waitFor(() => expect(document.querySelector(".picks-bar__line")?.textContent).toBe("Tom Yum Goong"));
   });
   it("a quick-ask chip opens the chat and asks", async () => {
     await open();
-    fireEvent.click(screen.getByRole("button", { name: T("heroChip2") }));        // "Vegan options?"
+    fireEvent.click(screen.getByRole("button", { name: T("heroBar") }));
+    fireEvent.click(await screen.findByRole("button", { name: T("chips1") }));        // "Vegetarian options"
     await waitFor(() => expect(apiCalls.some((c) => c.url.endsWith("/chat"))).toBe(true), { timeout: 3000 });
-    expect(await screen.findByText(/Vegan dishes/)).toBeTruthy();
+    expect((await screen.findAllByText(/Vegetarian|Vegan/)).length).toBeGreaterThan(0);
   });
 });
