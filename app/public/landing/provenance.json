@@ -1,0 +1,54 @@
+{
+  "date": "2026-10-22",
+  "generated_images": false,
+  "assets": [
+    {
+      "file": "salmon-sushi.jpg",
+      "origin": "https://img.wongnai.com/p/256x256/2020/03/25/3488a09942a04c009e3b8e42ac30b822.jpg",
+      "source": "app/scripts/seed-data/hachi-kyu.json",
+      "use": "reference food photograph in concept",
+      "sha256": "4cd964dda3c3d0a7c34823a94207b06a325ea5f83912d47e59b498f53c768f1c",
+      "source_sha256": "77f19ff0e4cdd31597f9795282e0bc2096bcbedb27e07d554e31e0cffa559888"
+    },
+    {
+      "file": "seared-salmon-sushi.jpg",
+      "origin": "https://img.wongnai.com/p/256x256/2020/03/25/074fce62cbe74e45a79dca4e776dbaad.jpg",
+      "source": "app/scripts/seed-data/hachi-kyu.json",
+      "use": "reference food photograph in concept",
+      "sha256": "a185169411bb0cdd9b45c4e014befa7e64dc4ae76f0e4a9d512a2489cc9525d7",
+      "source_sha256": "76f1819428921746b8eab2abbbe837795d287ca749da90374385dfccee41dc5d"
+    },
+    {
+      "file": "tuna-sushi.jpg",
+      "origin": "https://img.wongnai.com/p/256x256/2020/03/25/487ea551c03b43a893d7d7f8d7b61f22.jpg",
+      "source": "app/scripts/seed-data/hachi-kyu.json",
+      "use": "reference food photograph in concept",
+      "sha256": "26afa820036260123494335d88e4f61249156b94e51f65040d465571183d4c5b",
+      "source_sha256": "dea8a0c26a0633cea5f2f7cd9bb30ff4ba2bd3dbdd3fda67b032ec6a39560da7"
+    },
+    {
+      "file": "edamame.jpg",
+      "origin": "https://img.wongnai.com/p/256x256/2020/03/25/a7194bbee4e349d49afa6888d1f8d566.jpg",
+      "source": "app/scripts/seed-data/hachi-kyu.json",
+      "use": "reference food photograph in concept",
+      "sha256": "acd3f79940eebe0701e1736ad66a2974794228a1ff4827e6de664fc48c67da08",
+      "source_sha256": "38bb8c13c030794537a764258f1beb916f612125d94f0d0c85bda21e05faf51f"
+    },
+    {
+      "file": "gyoza.jpg",
+      "origin": "https://img.wongnai.com/p/256x256/2020/03/25/0c02c814888f477d9b59b7a1a6b626e8.jpg",
+      "source": "app/scripts/seed-data/hachi-kyu.json",
+      "use": "reference food photograph in concept",
+      "sha256": "42a96328cf02445eb4757a0134475b247fa3af3c3cc818d3b05719d1d07329e3",
+      "source_sha256": "e1eeaff97f482792a49b6ed6be4afb988e335d5b122e67dab7be734642f7ad4e"
+    },
+    {
+      "file": "miso-soup.jpg",
+      "origin": "https://img.wongnai.com/p/256x256/2020/03/25/7a7a1a05673a46a1b0627d6a881b9bf9.jpg",
+      "source": "app/scripts/seed-data/hachi-kyu.json",
+      "use": "reference food photograph in concept",
+      "sha256": "88d09ad264e83efd291cbee1c615b7e1dfb78fdf922430c68edd767539aabc68",
+      "source_sha256": "73a172fa0ffde65871427853c479a01d6a11fd1e9598b061de3541dd2a71e398"
+    }
+  ]
+}

@@ -22,11 +22,19 @@ describe("NFR-5: no customer data goes to a cloud AI service (checked in the sou
     expect(callers.map((f) => path.relative(process.cwd(), f).split(path.sep).join("/"))).toEqual(["src/modules/ai/provider.ts"]);   // "/" on every system, Windows too
     expect(fs.readFileSync(callers[0], "utf8")).toContain('process.env.OLLAMA_URL || "http://localhost:11434"');
   });
-  it("the only external web address in the whole app is the font stylesheet loaded by the browser", () => {
-    const hosts = new Set<string>();
-    for (const f of files) for (const m of fs.readFileSync(f, "utf8").matchAll(/https?:\/\/([a-z0-9.-]+)/gi)) hosts.add(m[1]);
-    for (const ok of ["localhost", "127.0.0.1", "test.local", "www.w3.org"]) hosts.delete(ok);
-    expect([...hosts].filter((h) => !/^\$|^\d/.test(h))).toEqual(["fonts.googleapis.com"]);
+  it("external addresses are limited to the font stylesheet and named public landing references", () => {
+    const hostsByFile: Record<string, string[]> = {};
+    for (const f of files) {
+      const hosts = new Set([...fs.readFileSync(f, "utf8").matchAll(/https?:\/\/([a-z0-9.-]+)/gi)].map(m => m[1]));
+      for (const local of ["localhost", "127.0.0.1", "test.local", "www.w3.org"]) hosts.delete(local);
+      const external = [...hosts].filter(h => !/^\$|^\d/.test(h)).sort();
+      if (external.length) hostsByFile[path.relative(process.cwd(), f).split(path.sep).join("/")] = external;
+    }
+    expect(hostsByFile).toEqual({
+      "src/app/layout.tsx": ["fonts.googleapis.com"],
+      "src/modules/landing/Landing.tsx": ["github.com"],
+      "src/modules/landing/photos.ts": ["img.wongnai.com"],
+    });
   });
 });
 

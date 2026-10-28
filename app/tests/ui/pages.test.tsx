@@ -22,14 +22,14 @@ import { router, withRealApi } from "./harness";
 withRealApi();
 
 describe("home page", () => {
-  it("offers the three ways in, with the demo menu at table 5, and the demo logins", () => {
+  it("offers the real menu at table 5 and owner, staff and registration entry points", () => {
     render(<Home />);
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Shop AI");
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Every table.In good hands.");
     const hrefs = screen.getAllByRole("link").map((a) => a.getAttribute("href"));
     expect(hrefs).toEqual(expect.arrayContaining(["/r/golden-lotus?t=5", "/login", "/staff", "/register"]));
-    expect(screen.getByText("demo@shop.ai")).toBeTruthy();
-    expect(screen.getByText("1111")).toBeTruthy();
-    expect(screen.getByText("2222")).toBeTruthy();
+    expect(screen.getAllByRole("link", { name: /Try the menu/ })[0].getAttribute("href")).toBe("/r/golden-lotus?t=5");
+    expect(screen.queryByText("demo@shop.ai")).toBeNull();
+    expect(screen.queryByText("demo1234")).toBeNull();
   });
 });
 
@@ -41,6 +41,32 @@ describe("home page with more than one restaurant", () => {
     return { uid, rid };
   };
   const removeShop = ({ uid, rid }: { uid: number; rid: number }) => { run("DELETE FROM menu_items WHERE restaurant_id = ?", rid); run("DELETE FROM restaurants WHERE id = ?", rid); run("DELETE FROM users WHERE id = ?", uid); };
+  it.each(["constructor", "toString", "__proto__"])("keeps an unexpected photo address %s as a string instead of an inherited object property", (photo) => {
+    const hachi = addShop("hachi-kyu", "HaChi Kyu", 1);
+    try {
+      run("UPDATE menu_items SET photo_url = ? WHERE restaurant_id = ?", photo, hachi.rid);
+      render(<Home />);
+      const preview = screen.getByRole("heading", { name: "Find your next favorite" }).parentElement!;
+      expect(preview.querySelector("img")?.getAttribute("src")).toBe(photo);
+      expect(within(preview).getByRole("link", { name: "View the full menu" }).getAttribute("href")).toBe("/r/hachi-kyu?t=5");
+    } finally { removeShop(hachi); }
+  });
+  it("previews available photo-backed dishes from the selected restaurant using local reference photos", () => {
+    const hachi = addShop("hachi-kyu", "HaChi Kyu", 2);
+    try {
+      const photo = "https://img.wongnai.com/p/256x256/2020/03/25/3488a09942a04c009e3b8e42ac30b822.jpg";
+      run("UPDATE menu_items SET photo_url = ? WHERE restaurant_id = ?", photo, hachi.rid);
+      const item = get("SELECT id FROM menu_items WHERE restaurant_id = ? ORDER BY id LIMIT 1", hachi.rid)!;
+      run("UPDATE menu_items SET available = 0 WHERE restaurant_id = ? AND id != ?", hachi.rid, item.id);
+      render(<Home />);
+      expect(screen.getByRole("link", { name: /Try the menu/ }).getAttribute("href")).toBe("/r/hachi-kyu?t=5");
+      const preview = screen.getByRole("heading", { name: "Find your next favorite" }).parentElement!;
+      const dishes = within(preview).getAllByRole("link").filter(link => link.getAttribute("href")?.includes("&dish="));
+      expect(dishes).toHaveLength(1);
+      expect(dishes[0].getAttribute("href")).toBe(`/r/hachi-kyu?t=5&dish=${item.id}`);
+      expect(dishes[0].querySelector("img")?.getAttribute("src")).toBe("/landing/salmon-sushi.jpg");
+    } finally { removeShop(hachi); }
+  });
   it("gives each demo restaurant its own door with its name and dish count, so HaChi Kyu can be reached from the site", () => {
     const hachi = addShop("hachi-kyu", "HaChi Kyu", 3);
     try {
@@ -66,14 +92,11 @@ describe("home page with more than one restaurant", () => {
       expect(within(small).getAllByRole("link").filter((a) => /dish=/.test(a.getAttribute("href") || ""))).toHaveLength(3);
     } finally { removeShop(hachi); }
   });
-  it("lists the demo logins of each demo restaurant", () => {
+  it("does not publish sample passwords, emails or staff PINs on the public landing page", () => {
     const hachi = addShop("hachi-kyu", "HaChi Kyu", 1);
     try {
       render(<Home />);
-      expect(screen.getByText("demo@shop.ai")).toBeTruthy();
-      expect(screen.getByText("hachi@shop.ai")).toBeTruthy();
-      expect(screen.getAllByText("1111")).toHaveLength(2);
-      expect(screen.getByText("hachi-kyu")).toBeTruthy();
+      for (const value of ["demo@shop.ai", "hachi@shop.ai", "demo1234", "1111", "2222"]) expect(screen.queryByText(value)).toBeNull();
     } finally { removeShop(hachi); }
   });
   it("says '1 dish' for one dish", () => {
