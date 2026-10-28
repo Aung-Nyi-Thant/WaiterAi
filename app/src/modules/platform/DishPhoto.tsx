@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Icon from "@/modules/platform/Icon";
 
 // A dish photo that cannot load (a dead link, offline) must not show broken-image text: it falls back to the same plate the dish
@@ -13,9 +13,14 @@ export function useImageOk(src: string): [boolean, () => void] {
 
 export default function DishPhoto({ src, className = "", style }: { src: string; className?: string; style?: React.CSSProperties }) {
   const [ok, fail] = useImageOk(src);
+  const image = useRef<HTMLImageElement>(null);
+  useEffect(() => {
+    // A server-rendered image can fail before React attaches its error handler.
+    if (image.current?.complete && image.current.naturalWidth === 0) fail();
+  }, [fail]);
   return (
     <div className={`sa-dish__plate${ok ? "" : " sa-dish__plate--empty"}${className ? ` ${className}` : ""}`} aria-hidden="true" style={style}>
-      {ok ? <img src={src} alt="" onError={fail} /> : <Icon name="utensils" size={28} />}
+      {ok ? <img ref={image} src={src} alt="" onError={fail} /> : <Icon name="utensils" size={28} />}
     </div>
   );
 }

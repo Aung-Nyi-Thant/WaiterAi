@@ -18,6 +18,8 @@ npm run dev          # http://localhost:3000  (also on your Wi-Fi address, port 
 Needs Node 22.13+ (uses the built-in SQLite). The open-question chat and the menu photo import need a model: Ollama with `ollama pull gemma4:12b`. Allergen, price, hours and order answers need none.
 The database (`data/shop.db`) is created on first start; delete it to reset. Docker: see the README in the repository root.
 
+The public homepage at `/` introduces the service and opens the real restaurant menu. Its menu preview switches between English, Thai and Burmese using saved dish translations, with links to individual dishes. Owner and staff sign-in stay at `/login` and `/staff`; public demo credentials are documented below rather than printed on the homepage. The page explains database-backed answers and staff confirmation, and ends with feedback contacts for MFU 888. Landing styles and components live in `src/modules/landing/`.
+
 ## Logins (development only)
 `npm run dev` creates the sample restaurant with **public** logins. They are never created when `NODE_ENV=production`.
 
