@@ -20,9 +20,9 @@ export default function Home() {
   const shops = (demo.length ? demo : restaurants.slice(0, 1)).map(shop => ({ ...shop, menu: showcaseDishes(shop.id) }));
   const primary = shops.find(shop => shop.menu.some(dish => dish.photo_url)) || shops[0];
   const available = primary ? itemsOf(primary.id).filter(dish => dish.available) : [];
-  const cached = available.filter(dish => landingPhotos[dish.photo_url]);
+  const cached = available.filter(dish => landingPhotos.has(dish.photo_url));
   const preview = (cached.length ? cached : available).slice(0, 4).map(({ id, name, price, photo_url }) => ({
-    id, name, price, photo_url: landingPhotos[photo_url] || photo_url,
+    id, name, price, photo_url: landingPhotos.get(photo_url) || photo_url,
   }));
   return <Landing shops={shops} primary={primary} preview={preview} />;
 }

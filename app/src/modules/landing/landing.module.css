@@ -27,8 +27,8 @@
 .navigation { display: flex; gap: 32px; margin-left: 40px; font-size: 14px; }
 .navigation a, .signIn { display: inline-flex; align-items: center; min-height: 44px; }
 .signIn { font-size: 14px; gap: 12px; }
-.primary { display: inline-flex; align-items: center; justify-content: center; gap: 28px; min-height: 54px; padding: 14px 24px; border-radius: 8px; background: var(--landing-ink); color: #fff !important; font-size: 15px; font-weight: 700; transition: transform 180ms var(--landing-ease); }
-.primary:hover { text-decoration: none !important; transform: translateY(-2px); }
+.page .primary { display: inline-flex; align-items: center; justify-content: center; gap: 28px; min-height: 54px; padding: 14px 24px; border-radius: 8px; background: var(--landing-ink); color: #fff; font-size: 15px; font-weight: 700; transition: transform 180ms var(--landing-ease); }
+.page .primary:hover { text-decoration: none; transform: translateY(-2px); }
 .primary:active { transform: scale(.98); }
 .textLink { display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; }
 .hero { display: grid; grid-template-columns: 1.04fr 1fr; align-items: center; gap: 8%; padding: 40px var(--landing-pad) 64px; }
@@ -48,7 +48,7 @@
 .previewTop b { font-weight: 750; }
 .previewTop > span { color: var(--landing-muted); white-space: nowrap; }
 .page .previewTitle { font-size: 22px; line-height: 1.6; letter-spacing: -.025em; }
-.languages { display: flex; align-items: center; gap: 4px; margin: 14px 0 8px; }
+.languages { display: flex; align-items: center; gap: 4px; min-width: 0; border: 0; padding: 0; margin: 14px 0 8px; }
 .languages button { min-height: 44px; padding: 7px 12px; color: var(--landing-muted); background: none; border: 0; border-radius: 6px; font-size: 13px; }
 .languages button[aria-pressed="true"] { background: var(--landing-field); color: var(--landing-ink); font-weight: 750; }
 .previewDishes { list-style: none; padding: 0; }

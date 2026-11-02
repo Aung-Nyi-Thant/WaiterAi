@@ -21,12 +21,19 @@ describe("the real landing-page menu preview", () => {
     fireEvent.click(within(languages).getByRole("button", { name: "မြန်မာ" }));
     expect(screen.getByText("ဆော်လမွန် ဆူရှီ")).toBeTruthy();
     expect(screen.getByText("Miso Soup")).toBeTruthy();
+    expect(screen.getByText("Miso Soup").getAttribute("lang")).toBe("en");
     expect(screen.getByRole("link", { name: /ဆော်လမွန် ဆူရှီ/ }).getAttribute("href")).toBe("/r/hachi-kyu?t=5&dish=42");
   });
   it("keeps an honest empty state and a real full-menu link when dishes are unavailable", () => {
     render(<MenuPreview name="HaChi Kyu" slug="hachi-kyu" dishes={[]} />);
     expect(screen.getByText(/restaurant is preparing its menu/)).toBeTruthy();
     expect(screen.getByRole("link", { name: "View the full menu" }).getAttribute("href")).toBe("/r/hachi-kyu?t=5");
+  });
+  it("tags English fallback names correctly after the database helper fills a missing translation", () => {
+    const dish = { ...dishes[1], name: { ...dishes[1].name, my: "Miso Soup" } };
+    render(<MenuPreview name="HaChi Kyu" slug="hachi-kyu" dishes={[dish]} />);
+    fireEvent.click(screen.getByRole("button", { name: "မြန်မာ" }));
+    expect(screen.getByText("Miso Soup").getAttribute("lang")).toBe("en");
   });
   it.each([["hachi-kyu", true], ["neighborhood-kitchen", false]] as const)("labels seeded menus without mislabeling %s", (slug, sample) => {
     const shop = { id: 1, slug, name: "Restaurant", dishes: 0, menu: [] };

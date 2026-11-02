@@ -41,6 +41,32 @@ describe("home page with more than one restaurant", () => {
     return { uid, rid };
   };
   const removeShop = ({ uid, rid }: { uid: number; rid: number }) => { run("DELETE FROM menu_items WHERE restaurant_id = ?", rid); run("DELETE FROM restaurants WHERE id = ?", rid); run("DELETE FROM users WHERE id = ?", uid); };
+  it.each(["constructor", "toString", "__proto__"])("keeps an unexpected photo address %s as a string instead of an inherited object property", (photo) => {
+    const hachi = addShop("hachi-kyu", "HaChi Kyu", 1);
+    try {
+      run("UPDATE menu_items SET photo_url = ? WHERE restaurant_id = ?", photo, hachi.rid);
+      render(<Home />);
+      const preview = screen.getByRole("heading", { name: "Find your next favorite" }).parentElement!;
+      expect(preview.querySelector("img")?.getAttribute("src")).toBe(photo);
+      expect(within(preview).getByRole("link", { name: "View the full menu" }).getAttribute("href")).toBe("/r/hachi-kyu?t=5");
+    } finally { removeShop(hachi); }
+  });
+  it("previews available photo-backed dishes from the selected restaurant using local reference photos", () => {
+    const hachi = addShop("hachi-kyu", "HaChi Kyu", 2);
+    try {
+      const photo = "https://img.wongnai.com/p/256x256/2020/03/25/3488a09942a04c009e3b8e42ac30b822.jpg";
+      run("UPDATE menu_items SET photo_url = ? WHERE restaurant_id = ?", photo, hachi.rid);
+      const item = get("SELECT id FROM menu_items WHERE restaurant_id = ? ORDER BY id LIMIT 1", hachi.rid)!;
+      run("UPDATE menu_items SET available = 0 WHERE restaurant_id = ? AND id != ?", hachi.rid, item.id);
+      render(<Home />);
+      expect(screen.getByRole("link", { name: /Try the menu/ }).getAttribute("href")).toBe("/r/hachi-kyu?t=5");
+      const preview = screen.getByRole("heading", { name: "Find your next favorite" }).parentElement!;
+      const dishes = within(preview).getAllByRole("link").filter(link => link.getAttribute("href")?.includes("&dish="));
+      expect(dishes).toHaveLength(1);
+      expect(dishes[0].getAttribute("href")).toBe(`/r/hachi-kyu?t=5&dish=${item.id}`);
+      expect(dishes[0].querySelector("img")?.getAttribute("src")).toBe("/landing/salmon-sushi.jpg");
+    } finally { removeShop(hachi); }
+  });
   it("gives each demo restaurant its own door with its name and dish count, so HaChi Kyu can be reached from the site", () => {
     const hachi = addShop("hachi-kyu", "HaChi Kyu", 3);
     try {

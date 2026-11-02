@@ -17,7 +17,7 @@ export default function DishPhoto({ src, className = "", style }: { src: string;
   useEffect(() => {
     // A server-rendered image can fail before React attaches its error handler.
     if (image.current?.complete && image.current.naturalWidth === 0) fail();
-  }, [src, fail]);
+  }, [fail]);
   return (
     <div className={`sa-dish__plate${ok ? "" : " sa-dish__plate--empty"}${className ? ` ${className}` : ""}`} aria-hidden="true" style={style}>
       {ok ? <img ref={image} src={src} alt="" onError={fail} /> : <Icon name="utensils" size={28} />}

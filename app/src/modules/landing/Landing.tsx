@@ -70,7 +70,7 @@ export default function Landing({ shops, primary, preview }: { shops: Shop[]; pr
           {shops.map(shop => <section key={shop.slug} className={styles.restaurant} aria-label={shop.name}>
             <div className={styles.restaurantHeading}><h3>{shop.name}</h3><Link href={`/r/${shop.slug}?t=5`} className={styles.menuAction}>Open the menu · {shop.dishes} {shop.dishes === 1 ? "dish" : "dishes"}<Icon name="arrowRight" size={18} /></Link></div>
             <ul className={styles.dishList} data-ui>{shop.menu.map(dish => <li key={dish.id}><Link href={`/r/${shop.slug}?t=5&dish=${dish.id}`} className={styles.dish}>
-              <DishPhoto src={landingPhotos[dish.photo_url] || dish.photo_url} /><span className={styles.dishName}><b>{dish.name}</b><small lang={dish.name_th && dish.name_th !== dish.name ? "th" : "en"}>{dish.name_th && dish.name_th !== dish.name ? dish.name_th : dish.category}</small></span><span className={styles.dishPrice}>{priceLabel("en", dish.price)}</span>
+              <DishPhoto src={landingPhotos.get(dish.photo_url) || dish.photo_url} /><span className={styles.dishName}><b>{dish.name}</b><small lang={dish.name_th && dish.name_th !== dish.name ? "th" : "en"}>{dish.name_th && dish.name_th !== dish.name ? dish.name_th : dish.category}</small></span><span className={styles.dishPrice}>{priceLabel("en", dish.price)}</span>
             </Link></li>)}</ul>
             {!shop.menu.length && <p className={styles.emptyMenu}>The restaurant is preparing its menu. Check back for available dishes.</p>}
           </section>)}
