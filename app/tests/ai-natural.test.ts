@@ -11,6 +11,7 @@ afterEach(() => { vi.unstubAllGlobals(); });
 type L = "en" | "th" | "my";
 const name = (id: number) => itemsOf(1).find((i) => i.id === id)!.name.en;
 const shown = (r: { action: { ids?: number[] } }) => (r.action.ids ?? []).map(name);
+const checked = () => itemsOf(1).map((i) => i.allergens === null ? i : { ...i, allergen_status: "verified" as const });
 // answered by the rules: the model is switched off and must not be called
 const rules = async (msg: string, lang: L = "en", over: Record<string, unknown> = {}) => {
   const calls = noModel();
@@ -50,14 +51,17 @@ describe("a Thai request that starts with ขอ is not 'show me the menu'", () 
 });
 
 describe("paying", () => {
-  it("'Can I pay by credit card?' is a question, not a call for the bill", async () => {
-    const r = await viaModel("Can I pay by credit card?", "I don't have that information. Please ask the staff.");
+  it("'Can I pay by credit card?' is a question, not a call for the bill: the staff sentence and the Call staff button, nothing called", async () => {
+    const r = await rules("Can I pay by credit card?");
     expect(r.action.type).not.toBe("call_staff");
-    expect(r.reply).not.toContain("called the staff");
+    expect(r.offer).toBe("help");
+    expect(r.reply).toMatch(/staff/);
+    expect(r.reply).not.toMatch(/called the staff|don't have that information/);
   });
-  it.each(["I want to pay", "Check please", "bill please"])("'%s' still calls the staff for the bill", async (q) => {
+  it.each(["I want to pay", "Check please", "bill please"])("'%s' offers the bill button; the staff are called only when the diner presses it", async (q) => {
     const r = await rules(q);
-    expect(r.action).toEqual({ type: "call_staff", kind: "bill" });
+    expect(r.action).toEqual({ type: "none" });
+    expect(r.offer).toBe("bill");
   });
 });
 
@@ -79,7 +83,7 @@ describe("cheapest / most expensive, sorted from the real prices", () => {
     expect(shown(await rules("What's the cheapest dessert?"))).toEqual(["Mango Sticky Rice"]);
   });
   it("the allergy profile is applied (shellfish: no Papaya Salad; dishes without allergen data are left out)", async () => {
-    const r = await rules("What's the cheapest dish?", "en", { profile: ["shellfish"] });
+    const r = await rules("What's the cheapest dish?", "en", { profile: ["shellfish"], items: checked() });
     expect(shown(r)).toEqual(["Thai Iced Tea", "Grilled Pork Skewers", "Chicken Fried Rice"]);
     expect(r.reply).toContain("allergy profile");
   });
@@ -151,7 +155,7 @@ describe("'... without shrimp' is a change for the kitchen, not a list of other 
     expect(r.reply).toContain("พนักงานยืนยัน");
   });
   it("'dishes without peanuts' (no dish named) is still the list", async () => {
-    expect((await rules("Which dishes are without peanuts?")).reply).toContain("Dishes that do not list peanut");
+    expect((await rules("Which dishes are without peanuts?")).reply).toContain("can't suggest a restaurant-checked dish for peanut");
   });
 });
 
@@ -185,7 +189,7 @@ describe("what is done to a model reply", () => {
   });
   it("a remark about a NAMED dish is still replaced by that dish's stored allergen data (the one in the sentence, not the first dish in the reply)", async () => {
     const r = await viaModel("what soup do you have", "Our soup is the Tom Yum Goong, a hot and sour shrimp soup. Would you like a Mango Sticky Rice after it?");
-    expect(r.reply.endsWith("Tom Yum Goong lists these allergens: shellfish, fish. Please confirm with the staff before ordering.")).toBe(true);   // the sentence without a claim may come first
+    expect(r.reply.endsWith("Tom Yum Goong lists these allergens: shellfish, fish. This list is an estimate; the kitchen recipe and supplier labels are not confirmed. Please confirm with the staff before ordering.")).toBe(true);   // the sentence without a claim may come first
     expect(r.reply).not.toMatch(/shrimp/);
     expect(shown(r)).toEqual(["Tom Yum Goong"]);
   });
@@ -196,11 +200,13 @@ describe("what is done to a model reply", () => {
   it("'answered' is true for an answer that sends the diner to the staff for a detail, false when the information is missing", async () => {
     expect((await viaModel("is there wifi", "Yes, free Wi-Fi. Please ask the staff for the password.")).answered).toBe(true);
     expect((await viaModel("มี wifi ไหม", "มี Wi-Fi ฟรีครับ กรุณาสอบถามรหัสผ่านจากพนักงานครับ", "th")).answered).toBe(true);
-    expect((await viaModel("how long does the food take", "I'm sorry, I don't have that information. Please ask the staff.")).answered).toBe(false);
+    const wait = await rules("how long does the food take");                  // a shop fact the owner never entered: the staff sentence and the button
+    expect(wait.answered).toBe(false);
+    expect(wait.offer).toBe("help");
   });
   it("the prompt tells the model not to guess times, portion sizes, payment methods or popularity", async () => {
     const calls = mockModel("Hello!");
-    await answer("tell me a joke", "en", await aiCtx({ categories: categoriesOf(1), popular: {} }));
+    await answer("Tell me about this place", "en", await aiCtx({ categories: categoriesOf(1), popular: {} }));
     const system = String(calls[0].body.messages[0].content);
     expect(system).toContain("NO information about waiting or cooking times");
     expect(system).toContain("Do not greet or welcome the customer unless they greeted you first");
@@ -211,17 +217,15 @@ describe("'gluten-free' asks for dishes WITHOUT gluten, and no answer reads as a
   const UNSAFE = /\b(is safe|safe to eat|safe for you|allergy-free|allergen-free|no allergens|guarantee[sd]?)\b|ปลอดภัย|รับประกัน/i;
   it.each(["Do you have gluten-free dishes?", "any gluten free options", "I need something without gluten"])("'%s' lists the dishes that do not list gluten, from the data only", async (q) => {
     const r = await rules(q);
-    expect(r.reply).toMatch(/^Dishes that do not list gluten: /);
-    expect(r.reply).toContain("which can be incomplete");
+    expect(r.reply).toMatch(/^I can't suggest a restaurant-checked dish for gluten/);
     expect(r.reply).toContain("Allergen information is not provided for: Fresh Spring Rolls");
     expect(r.reply).toContain("confirm with the staff");
     expect(r.reply).not.toMatch(UNSAFE);
-    expect(shown(r).length).toBeGreaterThan(0);
+    expect(shown(r)).toEqual([]);
   });
   it("in Thai, 'ปลอดกลูเตน' means without gluten, but 'ปลอดภัย' (safe) is not read that way", async () => {
     const free = await rules("มีเมนูปลอดกลูเตนไหม", "th");
-    expect(free.reply).toContain("เมนูที่ไม่ได้ระบุว่ามี");
-    expect(free.reply).toContain("ซึ่งอาจไม่ครบถ้วน");
+    expect(free.reply).toContain("ยังแนะนำเมนูที่ร้านตรวจสอบแล้วสำหรับ กลูเตน ไม่ได้");
     expect(free.reply).not.toMatch(UNSAFE);
   });
   it("when no dish lists the allergen at all, it says the data can be incomplete (so it never sounds like 'all free')", async () => {
@@ -234,7 +238,7 @@ describe("'gluten-free' asks for dishes WITHOUT gluten, and no answer reads as a
   });
   it("another '-free' request works the same way (dairy)", async () => {
     const r = await rules("dairy-free please");
-    expect(r.reply).toMatch(/^Dishes that do not list milk: /);
+    expect(r.reply).toMatch(/^I can't suggest a restaurant-checked dish for milk/);
   });
   it("'Is the Papaya Salad free of peanuts?' is still about that one dish", async () => {
     const r = await rules("Is the Papaya Salad free of peanuts?");

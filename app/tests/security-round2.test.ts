@@ -91,7 +91,7 @@ describe("AI-15 / ST-5 the chat 'preview' flag is only honoured for the signed-i
     run("UPDATE restaurants SET chat_cap = ? WHERE slug = ?", used(), slug);
     await ownerLogin();
     const before = used();
-    expect((await say("What would you recommend on a hot day?", { preview: true })).data.reply).toBe("model answer");
+    expect((await say("Tell me about this place", { preview: true })).data.reply).toBe("model answer");
     expect(used()).toBe(before);
   });
 });

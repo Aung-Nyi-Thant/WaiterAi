@@ -113,15 +113,23 @@ const bump = (key: string, max: number, now: number) => {
   fails.set(key, f);
   if (fails.size > 5000) for (const [k, v] of fails) if (v.until <= now && now - v.last > LOCK_MS) fails.delete(k);
 };
-export function pinGate(req: Request, restaurantId: number): { waitSec: number; fail: () => void; ok: () => void } {
+// PINs being checked right now count toward both ceilings: bcrypt is slow, so a burst of parallel requests would otherwise all pass the
+// check below while the failure counters are still at zero. They are not failures: begin() only holds a place until fail() or ok().
+const inflight = new Map<string, number>();
+export function pinGate(req: Request, restaurantId: number): { waitSec: number; begin: () => void; end: () => void; fail: () => void; ok: () => void } {
   const ip = clientIp(req);
   const caller = `${restaurantId}|${ip ?? "any"}`, whole = `${restaurantId}|all`;
   const wholeMax = setting("RATE_LIMIT_PIN_RESTAURANT_MAX", 20);
   const now = Date.now();
+  const full = (key: string, max: number) => max > 0 && (fails.get(key)?.n ?? 0) + (inflight.get(key) ?? 0) >= max;
+  let begun = false;
+  const end = () => { if (!begun) return; begun = false; for (const k of [caller, whole]) { const n = (inflight.get(k) ?? 1) - 1; if (n > 0) inflight.set(k, n); else inflight.delete(k); } };
   return {
-    waitSec: Math.max(lockLeft(caller, now), wholeMax > 0 ? lockLeft(whole, now) : 0),
-    fail: () => { const t = Date.now(); bump(caller, MAX_FAILS, t); bump(whole, wholeMax, t); },
-    ok: () => { fails.delete(caller); },
+    waitSec: Math.max(lockLeft(caller, now), wholeMax > 0 ? lockLeft(whole, now) : 0, full(caller, MAX_FAILS) || full(whole, wholeMax) ? 60 : 0),
+    end,
+    begin: () => { begun = true; for (const k of [caller, whole]) inflight.set(k, (inflight.get(k) ?? 0) + 1); },
+    fail: () => { end(); const t = Date.now(); bump(caller, MAX_FAILS, t); bump(whole, wholeMax, t); },
+    ok: () => { end(); fails.delete(caller); },
   };
 }
 export const clearPinLocks = () => fails.clear();

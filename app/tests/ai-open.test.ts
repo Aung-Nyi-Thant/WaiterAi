@@ -34,8 +34,9 @@ describe("a question word is not 'show me the menu'", () => {
     expect((await rules("I want to order")).action.type).toBe("show_menu");
   });
   it("a question about reserving a table is not 'show me the menu' either (Burmese 'ကြိုမှာ' contains 'order')", async () => {
-    const r = await viaModel("စားပွဲ ကြိုမှာလို့ရလား", "ကျွန်တော် အဲဒီအချက်အလက် မသိပါဘူးခင်ဗျာ။", "my");
+    const r = await rules("စားပွဲ ကြိုမှာလို့ရလား", "my");
     expect(r.action.type).not.toBe("show_menu");
+    expect(r.offer).toBe("help");
   });
 });
 
@@ -131,11 +132,13 @@ describe("a complaint gets an apology and the staff, not a dish recommendation",
   it.each([["My food is cold", "en", "I'm sorry"], ["I've been waiting too long", "en", "I'm sorry"], ["อาหารของฉันเย็นแล้ว", "th", "ขออภัย"], ["รอนานมากแล้ว", "th", "ขออภัย"], ["ကျွန်တော့်အစားအစာ အေးနေပြီ", "my", "တောင်းပန်"], ["ကြာနေပြီ", "my", "တောင်းပန်"]] as [string, L, string][])("'%s'", async (q, l, word) => {
     const r = await rules(q, l);
     expect(r.reply).toContain(word);
-    expect(r.action).toEqual({ type: "call_staff", kind: "help" });
+    expect(r.action).toEqual({ type: "none" });              // the staff are called when the diner presses the button, not before
+    expect(r.offer).toBe("help");
   });
   it("'How long does the food take?' is a question, not a complaint", async () => {
-    const r = await viaModel("How long does the food take?", "I'm sorry, I don't have that information. Please ask the staff.");
+    const r = await rules("How long does the food take?");
     expect(r.action.type).not.toBe("call_staff");
+    expect(r.answered).toBe(false);
   });
 });
 
@@ -191,10 +194,11 @@ describe("what is kept when the model's answer is partly an allergen claim", () 
 });
 
 describe("a reply that is only 'how can I help?' does not count as an answer", () => {
-  it.each([["Do you do catering for big parties?", "How can I help you today?", "en"], ["ဆိုင်ကို ဘယ်လိုလာရမလဲ", "ဘာများ ကူညီပေးရမလဲခင်ဗျာ။", "my"]] as [string, string, L][])("'%s'", async (q, reply, l) => {
+  it.each([["What makes this place special?", "How can I help you today?", "en"], ["ဆိုင်ကို ဘယ်လိုလာရမလဲ", "ဘာများ ကူညီပေးရမလဲခင်ဗျာ။", "my"]] as [string, string, L][])("'%s'", async (q, reply, l) => {
     const r = await viaModel(q, reply, l);
     expect(r.answered).toBe(false);
-    expect(r.reply).toMatch(/don't have that information|ไม่มีข้อมูล|အချက်အလက် မရှိ/);
+    expect(r.reply).toMatch(/staff|พนักงาน|ဝန်ထမ်း/);
+    expect(r.offer).toBe("help");
   });
   it("but it is the right answer to a greeting", async () => {
     const r = await viaModel("Hello!", "Hello! How can I help you today?");

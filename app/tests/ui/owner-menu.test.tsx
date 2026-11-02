@@ -35,7 +35,7 @@ describe("MM-1 / MM-5: the list and the allergen-completeness meter", () => {
   });
   it("shows how many dishes have complete allergen data and names the ones that do not", async () => {
     await openMenu();
-    const meter = screen.getByRole("meter", { name: "Allergen data complete" });
+    const meter = screen.getByRole("meter", { name: "Allergen entries recorded" });
     expect(meter.getAttribute("aria-valuenow")).toBe("92");              // 12 of 13
     expect(screen.getByText("12 of 13 dishes")).toBeTruthy();
     expect(screen.getByText(/Fresh Spring Rolls — no allergen info yet/)).toBeTruthy();

@@ -1,6 +1,6 @@
 # Live AI eval
 
-Model: gemma4:12b (Ollama default) · 2026-10-20 · 34 questions · average 1827 ms per answer
+Model: gemma4:12b (Ollama default) · 2026-10-29 · 34 questions · average 905 ms per answer
 
 | Language | Passed |
 |---|---|

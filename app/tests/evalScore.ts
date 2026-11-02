@@ -1,13 +1,19 @@
 // Scores an AI reply against one question from eval/questions.json.
 // Same rule as scripts/chat_smoke.py: every "expect" group needs at least one of its words in the
 // reply (case-insensitive), and no "forbid" pattern may match.
-export type EvalQuestion = { id: string; lang: "en" | "th" | "my"; category: string; question: string; expect: string[][]; forbid: string[]; rules?: boolean };
+export type EvalQuestion = { id: string; lang: "en" | "th" | "my"; category: string; question: string; expect: string[][]; forbid: string[]; rules?: boolean; helpful?: boolean; offer?: "help" | "bill" | "none" };
 export type Scored = { q: EvalQuestion; reply: string; pass: boolean; missing: string[][]; forbidden: string[] };
 
-export function scoreReply(q: EvalQuestion, reply: string): Scored {
+// "helpful": the question has an answer the AI can give (a recommendation, small talk, a dish description), so "I don't have that
+// information, ask the staff" is a failure even though it is safe. Questions with no data keep the plain expect/forbid check.
+export const DONT_KNOW = /(?:don'?t|do not|doesn'?t|does not) have (?:any |that |this |the )?(?:information|info|data)|no information|not have information|ไม่มีข้อมูล|ไม่ทราบ(?!ว่า)|အချက်အလက်\s*မရှိ|အချက်အလက်မရှိ|မသိပါ/i;
+// `offer` is the staff button that came with the reply ("none" when there was none); checked only when the question says which one it expects
+export function scoreReply(q: EvalQuestion, reply: string, offer?: string): Scored {
   const low = reply.toLowerCase();
   const missing = q.expect.filter((group) => !group.some((s) => low.includes(s.toLowerCase())));
   const forbidden = q.forbid.filter((p) => new RegExp(p, "i").test(reply));
+  if (q.helpful && DONT_KNOW.test(reply)) forbidden.push("unhelpful: says it has no information");
+  if (q.offer && offer !== undefined && offer !== q.offer) forbidden.push(`button: expected ${q.offer}, got ${offer}`);
   return { q, reply, pass: !missing.length && !forbidden.length, missing, forbidden };
 }
 

@@ -1,0 +1,461 @@
+[
+ {
+  "id": "sit-en-pay",
+  "lang": "en",
+  "category": "payment_method",
+  "question": "Can I pay by credit card?",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-en-disc",
+  "lang": "en",
+  "category": "discount",
+  "question": "Can I get a discount?",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-en-bill",
+  "lang": "en",
+  "category": "bill",
+  "question": "Can I get the bill?",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "bill"
+ },
+ {
+  "id": "sit-en-comp",
+  "lang": "en",
+  "category": "complaint",
+  "question": "My food is cold",
+  "expect": [
+   [
+    "sorry",
+    "ขออภัย",
+    "တောင်းပန်"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-en-res",
+  "lang": "en",
+  "category": "reservation",
+  "question": "Can I reserve a table for six?",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-en-chg",
+  "lang": "en",
+  "category": "order_change",
+  "question": "I want to cancel my order",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-en-toi",
+  "lang": "en",
+  "category": "shop_fact",
+  "question": "Is there a toilet?",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-en-wait",
+  "lang": "en",
+  "category": "shop_fact",
+  "question": "How long does the food take?",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-en-off",
+  "lang": "en",
+  "category": "off_topic",
+  "question": "What's the news today?",
+  "expect": [
+   [
+    "menu",
+    "เมนู",
+    "မီနူး"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "none"
+ },
+ {
+  "id": "sit-th-pay",
+  "lang": "th",
+  "category": "payment_method",
+  "question": "จ่ายบัตรเครดิตได้ไหม",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-th-disc",
+  "lang": "th",
+  "category": "discount",
+  "question": "มีส่วนลดไหม",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-th-bill",
+  "lang": "th",
+  "category": "bill",
+  "question": "เช็คบิลหน่อย",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "bill"
+ },
+ {
+  "id": "sit-th-comp",
+  "lang": "th",
+  "category": "complaint",
+  "question": "อาหารของฉันเย็นแล้ว",
+  "expect": [
+   [
+    "sorry",
+    "ขออภัย",
+    "တောင်းပန်"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-th-res",
+  "lang": "th",
+  "category": "reservation",
+  "question": "จองโต๊ะได้ไหม",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-th-chg",
+  "lang": "th",
+  "category": "order_change",
+  "question": "ขอยกเลิกออเดอร์",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-th-toi",
+  "lang": "th",
+  "category": "shop_fact",
+  "question": "มีห้องน้ำไหม",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-th-wait",
+  "lang": "th",
+  "category": "shop_fact",
+  "question": "อาหารใช้เวลากี่นาที",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-th-off",
+  "lang": "th",
+  "category": "off_topic",
+  "question": "ข่าววันนี้มีอะไรบ้าง",
+  "expect": [
+   [
+    "menu",
+    "เมนู",
+    "မီနူး"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "none"
+ },
+ {
+  "id": "sit-my-pay",
+  "lang": "my",
+  "category": "payment_method",
+  "question": "ကရက်ဒစ်ကတ်နဲ့ ပေးလို့ရလား",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-my-disc",
+  "lang": "my",
+  "category": "discount",
+  "question": "လျှော့ပေးလို့ရလား",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-my-bill",
+  "lang": "my",
+  "category": "bill",
+  "question": "ငွေရှင်းချင်ပါတယ်",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "bill"
+ },
+ {
+  "id": "sit-my-comp",
+  "lang": "my",
+  "category": "complaint",
+  "question": "ကျွန်တော့်အစားအစာ အေးနေပြီ",
+  "expect": [
+   [
+    "sorry",
+    "ขออภัย",
+    "တောင်းပန်"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-my-res",
+  "lang": "my",
+  "category": "reservation",
+  "question": "စားပွဲ ကြိုမှာလို့ရလား",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-my-chg",
+  "lang": "my",
+  "category": "order_change",
+  "question": "မှာထားတာ ပြောင်းချင်လို့",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-my-toi",
+  "lang": "my",
+  "category": "shop_fact",
+  "question": "အိမ်သာ ရှိလား",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-my-wait",
+  "lang": "my",
+  "category": "shop_fact",
+  "question": "အစားအစာ ဘယ်လောက်ကြာမလဲ",
+  "expect": [
+   [
+    "staff",
+    "พนักงาน",
+    "ဝန်ထမ်း"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "help"
+ },
+ {
+  "id": "sit-my-off",
+  "lang": "my",
+  "category": "off_topic",
+  "question": "ဒီနေ့ သတင်း ဘာတွေရှိလဲ",
+  "expect": [
+   [
+    "menu",
+    "เมนู",
+    "မီနူး"
+   ]
+  ],
+  "forbid": [],
+  "rules": true,
+  "helpful": true,
+  "offer": "none"
+ }
+]

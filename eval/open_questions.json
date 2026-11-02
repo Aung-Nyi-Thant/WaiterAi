@@ -20,7 +20,8 @@
     "Steamed Fish"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oen-r2",
@@ -43,7 +44,8 @@
     "Steamed Fish"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oen-r3",
@@ -66,7 +68,8 @@
     "Steamed Fish"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oen-r4",
@@ -83,7 +86,8 @@
     "ရေခဲမုန့်"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oen-r5",
@@ -106,7 +110,8 @@
     "Steamed Fish"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oen-r6",
@@ -129,7 +134,8 @@
     "Steamed Fish"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oen-d1",
@@ -143,7 +149,8 @@
     "တွမ်ယမ်"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oen-d2",
@@ -157,7 +164,8 @@
     "မတ်စမန်"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oen-d3",
@@ -175,7 +183,8 @@
     "ပါဝင်"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oen-d4",
@@ -207,7 +216,8 @@
     "Vegan"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oen-c1",
@@ -221,7 +231,8 @@
     "သင်္ဘောသီးသုပ်"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oen-c2",
@@ -235,7 +246,8 @@
     "ထမင်းကြော်"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oen-t1",
@@ -260,7 +272,8 @@
   ],
   "forbid": [
    "recommend[^.]*massaman|แนะนำ[^.]*มัสมั่น"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "oen-t2",
@@ -279,7 +292,8 @@
   ],
   "forbid": [
    "yes, it is vegetarian"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "oen-t3",
@@ -297,7 +311,8 @@
   "forbid": [
    "no pork",
    "does not contain pork"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "oen-t4",
@@ -316,7 +331,8 @@
     "ကောက်ညှင်း"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oen-f1",
@@ -439,8 +455,10 @@
    ]
   ],
   "forbid": [
-   "recommend the pizza"
-  ]
+   "recommend the pizza",
+   "i'?m sorry|unfortunately|does not serve|do not serve"
+  ],
+  "helpful": true
  },
  {
   "id": "oen-o2",
@@ -457,7 +475,10 @@
     "not serve"
    ]
   ],
-  "forbid": []
+  "forbid": [
+   "i'?m sorry|unfortunately|does not serve|do not serve"
+  ],
+  "helpful": true
  },
  {
   "id": "oen-o3",
@@ -479,8 +500,10 @@
    ]
   ],
   "forbid": [
-   "yes, we"
-  ]
+   "yes, we",
+   "i'?m sorry|unfortunately|does not serve|do not serve"
+  ],
+  "helpful": true
  },
  {
   "id": "oen-s1",
@@ -488,7 +511,8 @@
   "category": "smalltalk",
   "question": "Hi there",
   "expect": [],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oen-s2",
@@ -504,7 +528,8 @@
     "assistant"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oen-s3",
@@ -523,7 +548,8 @@
   "forbid": [
    "yes, i am a real",
    "yes i am a real"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "oen-s4",
@@ -531,7 +557,8 @@
   "category": "smalltalk",
   "question": "Tell me a joke",
   "expect": [],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oen-m1",
@@ -565,7 +592,8 @@
   "category": "vague",
   "question": "food",
   "expect": [],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oen-a2",
@@ -573,7 +601,8 @@
   "category": "vague",
   "question": "How much?",
   "expect": [],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oen-p1",
@@ -748,7 +777,8 @@
     "ปลานึ่ง"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oth-r2",
@@ -771,7 +801,8 @@
     "ปลานึ่ง"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oth-r3",
@@ -794,7 +825,8 @@
     "ปลานึ่ง"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oth-r4",
@@ -811,7 +843,8 @@
     "ရေခဲမုန့်"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oth-r5",
@@ -834,7 +867,8 @@
     "ปลานึ่ง"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oth-r6",
@@ -857,7 +891,8 @@
     "ปลานึ่ง"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oth-d1",
@@ -871,7 +906,8 @@
     "တွမ်ယမ်"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oth-d2",
@@ -885,7 +921,8 @@
     "မတ်စမန်"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oth-d3",
@@ -903,7 +940,8 @@
     "ပါဝင်"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oth-d4",
@@ -933,7 +971,8 @@
     "Vegan"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oth-c1",
@@ -947,7 +986,8 @@
     "သင်္ဘောသီးသုပ်"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oth-c2",
@@ -961,7 +1001,8 @@
     "ထမင်းကြော်"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oth-t1",
@@ -986,7 +1027,8 @@
   ],
   "forbid": [
    "recommend[^.]*massaman|แนะนำ[^.]*มัสมั่น"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "oth-t2",
@@ -1005,7 +1047,8 @@
   ],
   "forbid": [
    "yes, it is vegetarian"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "oth-t3",
@@ -1021,7 +1064,8 @@
   "forbid": [
    "no pork",
    "does not contain pork"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "oth-t4",
@@ -1040,7 +1084,8 @@
     "ကောက်ညှင်း"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oth-f1",
@@ -1153,7 +1198,8 @@
   ],
   "forbid": [
    "recommend the pizza"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "oth-o2",
@@ -1167,7 +1213,8 @@
     "ไม่ขาย"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oth-o3",
@@ -1185,7 +1232,8 @@
   ],
   "forbid": [
    "yes, we"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "oth-s1",
@@ -1193,7 +1241,8 @@
   "category": "smalltalk",
   "question": "สวัสดี",
   "expect": [],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oth-s2",
@@ -1208,7 +1257,8 @@
     "พนักงาน"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oth-s3",
@@ -1226,7 +1276,8 @@
   "forbid": [
    "yes, i am a real",
    "yes i am a real"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "oth-s4",
@@ -1234,7 +1285,8 @@
   "category": "smalltalk",
   "question": "เล่าเรื่องตลกหน่อย",
   "expect": [],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oth-m1",
@@ -1268,7 +1320,8 @@
   "category": "vague",
   "question": "อาหาร",
   "expect": [],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oth-a2",
@@ -1276,7 +1329,8 @@
   "category": "vague",
   "question": "เท่าไหร่",
   "expect": [],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "oth-p1",
@@ -1447,7 +1501,8 @@
     "ငါး"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "omy-r2",
@@ -1470,7 +1525,8 @@
     "ငါး"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "omy-r3",
@@ -1493,7 +1549,8 @@
     "ငါး"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "omy-r4",
@@ -1510,7 +1567,8 @@
     "ရေခဲမုန့်"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "omy-r5",
@@ -1533,7 +1591,8 @@
     "ငါး"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "omy-r6",
@@ -1556,7 +1615,8 @@
     "ငါး"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "omy-d1",
@@ -1570,7 +1630,8 @@
     "တွမ်ယမ်"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "omy-d2",
@@ -1584,7 +1645,8 @@
     "မတ်စမန်"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "omy-d3",
@@ -1602,7 +1664,8 @@
     "ပါဝင်"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "omy-d4",
@@ -1632,7 +1695,8 @@
     "Vegan"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "omy-c1",
@@ -1646,7 +1710,8 @@
     "သင်္ဘောသီးသုပ်"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "omy-c2",
@@ -1660,7 +1725,8 @@
     "ထမင်းကြော်"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "omy-t1",
@@ -1685,7 +1751,8 @@
   ],
   "forbid": [
    "recommend[^.]*massaman|แนะนำ[^.]*มัสมั่น"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "omy-t2",
@@ -1704,7 +1771,8 @@
   ],
   "forbid": [
    "yes, it is vegetarian"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "omy-t3",
@@ -1720,7 +1788,8 @@
   "forbid": [
    "no pork",
    "does not contain pork"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "omy-t4",
@@ -1739,7 +1808,8 @@
     "ကောက်ညှင်း"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "omy-f1",
@@ -1846,12 +1916,14 @@
   "expect": [
    [
     "မရောင်း",
-    "မရှိ"
+    "မရှိ",
+    "မပါ"
    ]
   ],
   "forbid": [
    "recommend the pizza"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "omy-o2",
@@ -1861,10 +1933,12 @@
   "expect": [
    [
     "မရောင်း",
-    "မရှိ"
+    "မရှိ",
+    "မပါ"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "omy-o3",
@@ -1876,12 +1950,14 @@
     "မရောင်း",
     "မရှိ",
     "ဝန်ထမ်း",
-    "မရှိ"
+    "မရှိ",
+    "မပါ"
    ]
   ],
   "forbid": [
    "yes, we"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "omy-s1",
@@ -1889,7 +1965,8 @@
   "category": "smalltalk",
   "question": "မင်္ဂလာပါ",
   "expect": [],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "omy-s2",
@@ -1903,7 +1980,8 @@
     "အကူ"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "omy-s3",
@@ -1920,7 +1998,8 @@
   "forbid": [
    "yes, i am a real",
    "yes i am a real"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "omy-s4",
@@ -1928,7 +2007,8 @@
   "category": "smalltalk",
   "question": "ရယ်စရာ တစ်ခုပြောပြပါ",
   "expect": [],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "omy-m1",
@@ -1962,7 +2042,8 @@
   "category": "vague",
   "question": "အစားအစာ",
   "expect": [],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "omy-a2",
@@ -1970,7 +2051,8 @@
   "category": "vague",
   "question": "ဘယ်လောက်လဲ",
   "expect": [],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "omy-p1",

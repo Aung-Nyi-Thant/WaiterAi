@@ -7,7 +7,8 @@
  * Loaded last in index.html. Styles live in Part 4 of proto.css (.pt-bar). */
 (() => {
     // Views available in the prototype: [?view= value, button label, icon name (see icons.js)]
-    const VIEWS = [['customer', 'Diner', 'utensils'], ['staff', 'Staff', 'chefHat'], ['owner', 'Owner', 'store']];
+    if (window.APP_VIEW === 'landing') return;
+    const VIEWS = [['landing', 'Home', 'home'], ['customer', 'Diner', 'utensils'], ['staff', 'Staff', 'chefHat'], ['owner', 'Owner', 'store']];
 
     // Storage keys used by the prototype (see data.js Store, app.js save(), staff login, owner login)
     const LOCAL_KEYS = ['shopai_db'];                                  // shared demo database (orders / calls / bills / menu edits)
@@ -17,10 +18,11 @@
     const cur = window.APP_VIEW || 'customer';
 
     // Build a URL for the target view: keep existing query params, only change "view"
-    // (the diner screen is the default, so its ?view= parameter is removed)
+    // Explicit views keep the diner separate from the landing-page default.
     const urlFor = v => {
         const u = new URL(location.href);
-        if (v === 'customer') u.searchParams.delete('view'); else u.searchParams.set('view', v);
+        u.searchParams.set('view', v);
+        u.searchParams.delete('v');
         return u.href;
     };
 

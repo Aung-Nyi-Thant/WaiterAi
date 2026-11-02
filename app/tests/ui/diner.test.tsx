@@ -107,7 +107,7 @@ describe("DM-3 / DM-4: search and filters", () => {
     expect(names).not.toContain("Papaya Salad");
     expect(names).not.toContain("Shrimp Pad Thai");
     expect(names).not.toContain("Fresh Spring Rolls");                // no data: never assumed to be fine
-    expect(names).toContain("Tom Yum Goong");
+    expect(names).toEqual([]); // the demo menu has no restaurant-verified allergen lists
   });
 });
 
@@ -329,7 +329,7 @@ describe("DM-11: allergy profile", () => {
     fireEvent.click(screen.getByRole("button", { name: new RegExp(T("filters")) }));
     fireEvent.click(screen.getByRole("button", { name: T("mine") }));
     const names = dishNames();
-    expect(names).toContain("Tom Yum Goong");
+    expect(names).toEqual([]);
     for (const hidden of ["Papaya Salad", "Shrimp Pad Thai", "Beef Massaman Curry", "Fresh Spring Rolls"]) expect(names).not.toContain(hidden);
   });
   it("adding a dish that lists the diner's allergen is allowed but warned", async () => {
@@ -347,6 +347,10 @@ describe("DM-11: allergy profile", () => {
     await open("/?t=8");
     fireEvent.click(addBtn("Papaya Salad"));
     fireEvent.click(screen.getByRole("button", { name: T("showToWaiter") }));
+    const review = await screen.findByRole("dialog", { name: T("myPicks") });
+    expect(within(review).getByText(/This dish lists your allergen: peanut/i)).toBeTruthy();
+    expect(within(review).getByText(T("checkWithStaffBeforeOrder"))).toBeTruthy();
+    fireEvent.click(within(review).getByRole("button", { name: new RegExp(T("sendForCheck")) }));
     await screen.findByRole("dialog", { name: T("sent") });
     expect(sentOrders().at(-1)?.body.profile).toEqual(["peanut"]);
   });
@@ -417,12 +421,32 @@ describe("FR-2 / AI-13: the AI waiter chat on the phone", () => {
     setModel("We do not make birthday cakes, but the Mango Sticky Rice is a lovely dessert.");
     await open();
     fireEvent.click(screen.getByRole("button", { name: T("heroBar") }));
-    await ask("do you do birthday cakes?");
+    await ask("what makes this place special?");
     expect(await screen.findByText(/lovely dessert/)).toBeTruthy();
     setModel(new Error("down"));
     await ask("anything good for a hot day?");
     expect(await screen.findByText(/unavailable/i)).toBeTruthy();
     expect(dishNames()).toHaveLength(13);
+  });
+  it("a question the AI leaves to the staff shows the staff sentence and a Call staff button; nothing is called until the diner presses it", async () => {
+    await open();
+    fireEvent.click(screen.getByRole("button", { name: T("heroBar") }));
+    await ask("Can I pay by credit card?");
+    expect(await screen.findByText(/handled by our staff/)).toBeTruthy();
+    const staffCalls = () => apiCalls.filter((c) => c.url.endsWith("/calls"));
+    expect(staffCalls()).toHaveLength(0);
+    const log = within(screen.getByRole("log"));
+    fireEvent.click(await log.findByRole("button", { name: new RegExp(`^${T("callStaff")}`) }));
+    await waitFor(() => expect(staffCalls().map((c) => c.body?.kind)).toEqual(["help"]));
+    await waitFor(() => expect((log.getByRole("button", { name: new RegExp(T("staffCalled")) }) as HTMLButtonElement).disabled).toBe(true));   // pressed: shown as done, cannot be pressed again
+  });
+  it("asking for the bill in the chat offers the bill button, which asks for the bill", async () => {
+    await open();
+    fireEvent.click(screen.getByRole("button", { name: T("heroBar") }));
+    await ask("Can I get the bill?");
+    expect(apiCalls.filter((c) => c.url.endsWith("/calls"))).toHaveLength(0);
+    fireEvent.click(await within(screen.getByRole("log")).findByRole("button", { name: new RegExp(T("askBill")) }));
+    await waitFor(() => expect(apiCalls.filter((c) => c.url.endsWith("/calls")).map((c) => c.body?.kind)).toEqual(["bill"]));
   });
   it("'Helpful' sends feedback", async () => {
     await open();

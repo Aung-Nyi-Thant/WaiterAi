@@ -2,11 +2,12 @@ import { restaurantBySlug, itemsOf, faqsOf, specialsOf, categoriesOf, popularDis
 import { all, get, run } from "@/modules/platform/db";
 import { json, bad, body, tooMany } from "@/modules/platform/http";
 import { hit, setting, clientIp } from "@/modules/platform/rateLimit";
-import { answer, detectLang, limitReply, type ChatResult } from "@/modules/ai/ai";
+import { answer, detectLang, type ChatResult } from "@/modules/ai/ai";
 import type { Lang } from "@/modules/platform/menu";
 import { cleanProfile } from "@/modules/platform/constants";
 import { ownerSession } from "@/modules/platform/auth";
 import crypto from "node:crypto";
+import { pruneExpiredChatsIfDue } from "@/modules/platform/chatRetention";
 
 export async function POST(req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -18,12 +19,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   // "preview" (the owner's test chat: nothing stored, no monthly limit) is only honoured for the signed-in owner of THIS restaurant;
   // from anyone else the flag is ignored, so a diner cannot use it to dodge the monthly chat limit or to hide their messages.
   const preview = !!b.preview && (await ownerSession())?.restaurantId === r.id;
-  const sessionId = String(b.sessionId || "").slice(0, 60) || crypto.randomUUID();
+  let sessionId = String(b.sessionId || "").slice(0, 60) || crypto.randomUUID();
   const table = String(b.table || "").slice(0, 10);
   const uiLang = (["en", "th", "my"].includes(b.lang) ? b.lang : "en") as Lang;
   const lang = detectLang(message, uiLang);
   const p = r.persona.gender === "female" ? "female" : "male";
   const profile = cleanProfile(b.profile);        // the allergies the diner chose once on their phone
+  pruneExpiredChatsIfDue();
 
   // rate limits: every model answer costs seconds of the shop's one computer, so a runaway client must not be able to queue them up
   const win = setting("RATE_LIMIT_CHAT_WINDOW_SEC", 60), ip = clientIp(req);
@@ -35,24 +37,24 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   }
 
   if (!preview) {
+    // a session id already used by another restaurant is never shared: this caller gets a fresh one
+    const owner = get("SELECT restaurant_id AS rid FROM chat_sessions WHERE id = ?", sessionId);
+    if (owner && owner.rid !== r.id) sessionId = crypto.randomUUID();
     run("INSERT OR IGNORE INTO chat_sessions (id, restaurant_id, table_no, lang) VALUES (?,?,?,?)", sessionId, r.id, table, lang);
     run("UPDATE chat_sessions SET profile = ? WHERE id = ? AND restaurant_id = ?", JSON.stringify(profile), sessionId, r.id);
   }
   const used = get("SELECT COUNT(*) AS n FROM chat_messages m JOIN chat_sessions s ON s.id = m.session_id WHERE m.restaurant_id = ? AND m.role = 'user' AND m.created_at >= date('now','start of month')", r.id)!.n;
 
   const items = itemsOf(r.id);
-  let result: ChatResult;
-  if (used >= r.chat_cap && !preview) {
-    result = { reply: limitReply(lang, p === "female" ? "ค่ะ" : ""), action: { type: "show_menu" as const }, topic: "other", allergens: [], answered: false, usedModel: false };
-  } else {
-    const history = preview || !b.sessionId ? [] : all("SELECT role, text FROM chat_messages WHERE session_id = ? AND restaurant_id = ? ORDER BY id DESC LIMIT 8", sessionId, r.id).reverse();
-    result = await answer(message, lang, { restaurant: r, items, faqs: faqsOf(r.id) as any, specials: specialsOf(r.id), history: history as any, profile, categories: categoriesOf(r.id), popular: popularDishes(r.id) });
-  }
+  // past the monthly limit only the language model is switched off: allergen, price, hours and order answers come from the rules (AI_SAFETY R10)
+  const history = preview || !b.sessionId ? [] : all("SELECT role, text FROM chat_messages WHERE session_id = ? AND restaurant_id = ? ORDER BY id DESC LIMIT 8", sessionId, r.id).reverse();
+  const result: ChatResult = await answer(message, lang, { restaurant: r, items, faqs: faqsOf(r.id) as any, specials: specialsOf(r.id), history: history as any, profile, categories: categoriesOf(r.id), popular: popularDishes(r.id), noModel: used >= r.chat_cap && !preview });
 
   let messageId = 0;
   if (!preview) {
-    run("INSERT INTO chat_messages (session_id, restaurant_id, role, text, lang, topic, allergens, answered) VALUES (?,?,?,?,?,?,?,?)",
-      sessionId, r.id, "user", message, lang, result.topic, JSON.stringify(result.allergens), result.answered ? 1 : 0);
+    // source = where the answer came from, so the insights can tell the rules from the language model
+    run("INSERT INTO chat_messages (session_id, restaurant_id, role, text, lang, topic, allergens, answered, source) VALUES (?,?,?,?,?,?,?,?,?)",
+      sessionId, r.id, "user", message, lang, result.topic, JSON.stringify(result.allergens), result.answered ? 1 : 0, result.usedModel ? "model" : "rules");
     messageId = run("INSERT INTO chat_messages (session_id, restaurant_id, role, text, lang, topic, action_json, answered) VALUES (?,?,?,?,?,?,?,?)",
       sessionId, r.id, "assistant", result.reply, lang, result.topic, JSON.stringify(result.action), result.answered ? 1 : 0).id;
     if (result.action.type === "call_staff") {
@@ -65,5 +67,5 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   const ids = result.action.ids || [];       // the dish cards below follow this order: it is the AI's ranking (for example by orders)
   // "answered" lets the diner UI notice two unhelpful replies in a row and offer to call staff
   // proactively, instead of only reacting if the diner happens to spot the bell icon themselves.
-  return json({ sessionId, messageId, reply: result.reply, action: result.action, dishes: ids.map((id) => items.find((i) => i.id === id)).filter(Boolean), lang, answered: result.answered, ...(preview ? { usedModel: result.usedModel } : {}), ...(result.ingredients ? { lead: result.lead, ingredients: result.ingredients } : {}) });
+  return json({ sessionId, messageId, reply: result.reply, action: result.action, ...(result.offer ? { offer: result.offer } : {}), dishes: ids.map((id) => items.find((i) => i.id === id)).filter(Boolean), lang, answered: result.answered, ...(preview ? { usedModel: result.usedModel } : {}), ...(result.ingredients ? { lead: result.lead, ingredients: result.ingredients } : {}) });
 }

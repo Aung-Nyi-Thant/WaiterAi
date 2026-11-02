@@ -43,12 +43,13 @@ export default function SwipeCard({
     dxRef.current = delta;
     setDx(delta);
   };
-  const finish = () => {
+  const finish = (cancelled = false) => {
     pressed.current = false;
     setDragging(false);
     const d = dxRef.current;
     dxRef.current = 0;
     setDx(0);
+    if (cancelled) return;   // the browser took the gesture away (scroll, call): spring back, do nothing
     if (d > THRESHOLD && onSwipeRight) onSwipeRight();
     else if (d < -THRESHOLD && onSwipeLeft) onSwipeLeft();
   };
@@ -76,8 +77,8 @@ export default function SwipeCard({
       <div
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
-        onPointerUp={finish}
-        onPointerCancel={finish}
+        onPointerUp={() => finish()}
+        onPointerCancel={() => finish(true)}
         onClickCapture={onClickCapture}
         style={{ transform: `translateX(${dx}px)`, transition: dragging ? "none" : "transform .25s ease", touchAction: "pan-y", cursor: onSwipeRight || onSwipeLeft ? "grab" : undefined }}
       >

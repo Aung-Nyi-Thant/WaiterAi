@@ -12,7 +12,7 @@ import type { Item, Category, Lang } from "@/modules/platform/menu";
 import { ALLERGENS, allergenName, cleanProfile } from "@/modules/platform/constants";
 
 type Menu = { restaurant: { name: string; city: string; currency: string; hours: any; persona: { name: string; gender: string; greeting: string } }; categories: Category[]; items: Item[]; specials: { id: number; title: string; text: string }[] };
-type Msg = { id: string; role: "user" | "assistant"; text: string; lead?: string; ingredients?: string[]; dishes?: Item[]; topic?: string; messageId?: number; rated?: number; answered?: boolean };
+type Msg = { id: string; role: "user" | "assistant"; text: string; lead?: string; ingredients?: string[]; dishes?: Item[]; topic?: string; messageId?: number; rated?: number; answered?: boolean; offer?: "help" | "bill" };
 type Pick = { id: number; qty: number };
 type BillLine = { name: string; qty: number; price: number };
 type Bill = { table: string; lines: BillLine[]; total: number; pending: BillLine[]; asked: boolean };
@@ -169,19 +169,21 @@ export default function Diner({ slug }: { slug: string }) {
     } else {
       try { setTable(sessionStorage.getItem(`table:${slug}`) || ""); } catch { setTable(""); }
     }
-    const saved = localStorage.getItem("lang") as Lang | null;
+    let saved: Lang | null = null;
+    try { saved = localStorage.getItem("lang") as Lang | null; } catch {}
     const nav = navigator.language.toLowerCase();
     setLang(saved && ["en", "th", "my"].includes(saved) ? saved : nav.startsWith("th") ? "th" : nav.startsWith("my") ? "my" : "en");
     try { setPicks(JSON.parse(localStorage.getItem(`picks:${slug}`) || "[]")); } catch {}
     try { setFavs(JSON.parse(localStorage.getItem(`favs:${slug}`) || "[]")); } catch {}
     api<Menu>(`/api/public/${slug}/menu?open=1`)
-      .then((m) => { setMenu(m); localStorage.setItem(`menu:${slug}`, JSON.stringify(m)); })
+      .then((m) => { setMenu(m); try { localStorage.setItem(`menu:${slug}`, JSON.stringify(m)); } catch {} })
       .catch((e) => {
-        const cached = localStorage.getItem(`menu:${slug}`);
-        if (cached) { setMenu(JSON.parse(cached)); setOffline(true); } else setError(e.message);
+        let cached: Menu | null = null;
+        try { cached = JSON.parse(localStorage.getItem(`menu:${slug}`) || "null"); } catch {}
+        if (cached?.items) { setMenu(cached); setOffline(true); } else setError(e.message);
       });
   }, [slug]);
-  useEffect(() => { localStorage.setItem(`picks:${slug}`, JSON.stringify(picks)); }, [picks, slug]);
+  useEffect(() => { try { localStorage.setItem(`picks:${slug}`, JSON.stringify(picks)); } catch {} }, [picks, slug]);
   useEffect(() => { try { localStorage.setItem(`favs:${slug}`, JSON.stringify(favs)); } catch {} }, [favs, slug]);
   // WCAG 3.1.1: the page's language attribute must match what is actually on screen, not just React state.
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
@@ -215,7 +217,7 @@ export default function Diner({ slug }: { slug: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, table]);
 
-  const chooseLang = (l: Lang) => { setLang(l); localStorage.setItem("lang", l); };
+  const chooseLang = (l: Lang) => { setLang(l); try { localStorage.setItem("lang", l); } catch {} };
   const nm = (i: Item) => i.name[lang] || i.name.en;
   const byId = useMemo(() => new Map((menu?.items || []).map((i) => [i.id, i])), [menu]);
 
@@ -227,10 +229,11 @@ export default function Diner({ slug }: { slug: string }) {
 
   const addPick = (id: number, qty = 1) => setPicks((p) => (p.some((x) => x.id === id) ? p.map((x) => (x.id === id ? { ...x, qty: Math.min(20, x.qty + qty) } : x)) : [...p, { id, qty }]));
   const removePick = (id: number) => setPicks((p) => p.filter((x) => x.id !== id));
-  // "Added: X" and, when the dish lists one of the diner's allergens (or has no allergen data), a warning. The diner may still pick it.
-  const addMsg = (i: Item): [string, boolean] => { const c = clash(i, profile); return [`${t("added")}: ${i.name[lang] || i.name.en}${c === "unknown" ? ` · ${t("allergenUnknown")}` : c ? ` · ${c.map((a) => allergenName(a, lang)).join(", ")} ${t("conflictToast")}` : ""}`, !!c]; };
+  // The diner may still pick a dish, but an unverified list needs staff review too.
+  const addMsg = (i: Item): [string, boolean] => { const c = clash(i, profile); return [`${t("added")}: ${i.name[lang] || i.name.en}${c === "unknown" ? ` · ${t("allergenUnknown")}` : c === "estimated" ? ` · ${t("allergenEstimated")}` : c ? ` · ${c.map((a) => allergenName(a, lang)).join(", ")} ${t("conflictToast")}` : ""}`, !!c]; };
   const valid = picks.filter((p) => byId.get(p.id)?.available);
   const total = valid.reduce((s, p) => s + p.qty, 0);
+  const needsAllergyReview = valid.some((p) => clash(byId.get(p.id)!, profile));
 
   async function callStaff() {
     setRinging(true); setTimeout(() => setRinging(false), 1000);
@@ -242,7 +245,10 @@ export default function Diner({ slug }: { slug: string }) {
     try { await api(`/api/public/${slug}/calls`, { body: { table, kind: "bill" } }); say(t("billAsked")); } catch (e: any) { say(e.message); }
     loadBill();
   }
+  const sending = useRef(false);
   async function sendPicks() {
+    if (sending.current) return;   // a second tap while the first is on its way would send the order twice
+    sending.current = true;
     try {
       const itemsSent = valid.map((p) => { const it = byId.get(p.id)!; return { name: nm(it), qty: p.qty, price: it.price * p.qty }; });
       const orderTotal = itemsSent.reduce((s, i) => s + i.price, 0);
@@ -253,6 +259,7 @@ export default function Diner({ slug }: { slug: string }) {
       setConfirmedOrder({ table: table || "-", items: itemsSent, total: orderTotal });
       say(t("sent")); loadBill();
     } catch (e: any) { say(e.message); }
+    finally { sending.current = false; }
   }
 
   if (error) return <div className="sa-app"><div className="diner diner-pad" style={{ paddingTop: 48 }}><div className="sa-plate" style={{ padding: 24 }}><h2>Menu not found</h2><p className="muted">{error}</p></div></div></div>;
@@ -271,7 +278,7 @@ export default function Diner({ slug }: { slug: string }) {
     return rest.length ? [...list, { id: -1, name: t("otherDishes"), items: rest }] : list;
   })();
   const clearAll = () => { setQ(""); setCat(0); setF({ veg: false, noPeanut: false, u100: false, spicy: false, mine: false }); setSavedOnly(false); };
-  const reconnect = () => api<Menu>(`/api/public/${slug}/menu?open=1`).then((m) => { setMenu(m); setOffline(false); localStorage.setItem(`menu:${slug}`, JSON.stringify(m)); }).catch((e) => say(e.message));
+  const reconnect = () => api<Menu>(`/api/public/${slug}/menu?open=1`).then((m) => { setMenu(m); setOffline(false); try { localStorage.setItem(`menu:${slug}`, JSON.stringify(m)); } catch {} }).catch((e) => say(e.message));
   let rowNo = 0;
   return (
     <div className="sa-app">
@@ -326,7 +333,7 @@ export default function Diner({ slug }: { slug: string }) {
             )}
             <div className={`hero-expand${chatOpen ? " open" : ""}`}>
               <div className="hero-expand-inner">
-                <Presence>{chatOpen && <Chat slug={slug} table={table} lang={lang} sessionId={sessionId} msgs={msgs} setMsgs={setMsgs} profile={profile} addMsg={addMsg} menu={menu} t={t} onClose={() => setChatOpen(false)} addPick={addPick} aiAdd={aiAdd} say={say} callStaff={() => callStaff()} />}</Presence>
+                <Presence>{chatOpen && <Chat slug={slug} table={table} lang={lang} sessionId={sessionId} msgs={msgs} setMsgs={setMsgs} profile={profile} addMsg={addMsg} menu={menu} t={t} onClose={() => setChatOpen(false)} addPick={addPick} aiAdd={aiAdd} say={say} callStaff={() => callStaff()} askForBill={() => askForBill()} />}</Presence>
               </div>
             </div>
           </div>
@@ -374,8 +381,9 @@ export default function Diner({ slug }: { slug: string }) {
             <div className="state-card sa-empty">
               <Icon name="chat" size={22} />
               <h3>{t("none")}</h3>
-              <p>{t("noMatchHelp")}</p>
+              <p>{f.mine || f.noPeanut ? t("noVerifiedMatch") : t("noMatchHelp")}</p>
               <button type="button" className="sa-btn sa-btn--ink sa-btn--block" onClick={clearAll}>{t("clearFilters")}</button>
+              {(f.mine || f.noPeanut) && <button type="button" className="sa-btn sa-btn--quiet sa-btn--block" onClick={callStaff}>{t("callStaff")}</button>}
             </div>
           )}
           <div key={`cat-${cat}`}>
@@ -404,7 +412,7 @@ export default function Diner({ slug }: { slug: string }) {
                 <div className="sa-label">{t("myPicks")} · <span key={total} className="sa-bump">{total}</span> {total === 1 ? t("dish") : t("dishes")}</div>
                 <div className="picks-bar__line">{valid.map((p) => `${p.qty > 1 ? p.qty + "× " : ""}${nm(byId.get(p.id)!)}`).join(", ")}</div>
               </button>
-              <button type="button" className="sa-btn sa-btn--staff sa-btn--sm" onClick={sendPicks}><Icon name="send" />{t("showToWaiter")}</button>
+              <button type="button" className="sa-btn sa-btn--staff sa-btn--sm" onClick={() => needsAllergyReview ? setPicksOpen(true) : sendPicks()}><Icon name="send" />{t("showToWaiter")}</button>
             </div>
           )}
           {/* The navigation: the menu, the AI, the picks and the staff. */}
@@ -433,12 +441,13 @@ export default function Diner({ slug }: { slug: string }) {
               <p className="page-note">{t("notSent")}</p>
               {valid.length === 0 ? <div className="muted" style={{ margin: "16px 0" }}>{t("picksEmpty")}</div> : (
                 <div className="pick-list">
-                  {valid.map((p) => { const it = byId.get(p.id)!; return (
+                  {valid.map((p) => { const it = byId.get(p.id)!; const conflict = clash(it, profile); return (
                     <div key={p.id} className="pick-row">
-                      <DishPhoto src={it.photo_url} className="pick-row__img" />
+                      {it.photo_url && <DishPhoto src={it.photo_url} className="pick-row__img" />}
                       <div className="pick-row__main">
                         <div className="pick-row__top"><b>{nm(it)}</b><b className="pick-row__sum">{priceLabel(lang, it.price * p.qty)}</b></div>
                         <div className="pick-row__each">{priceLabel(lang, it.price)} {t("each")}</div>
+                        {conflict && <p className="pick-row__warning"><Icon name="alert" size={16} />{conflict === "unknown" ? t("allergenUnknownNote") : conflict === "estimated" ? t("allergenEstimated") : `${t("pickContains")}: ${conflict.map((a) => allergenName(a, lang)).join(", ")}.`}</p>}
                         <span className="sa-qty">
                           {p.qty > 1
                             ? <button type="button" aria-label="-" onClick={() => setPicks((x) => x.map((y) => (y.id === p.id ? { ...y, qty: y.qty - 1 } : y)))}><Icon name="minus" size={18} /></button>
@@ -457,6 +466,7 @@ export default function Diner({ slug }: { slug: string }) {
                   <button type="button" className="notice-box__link" onClick={() => setProfileOpen(true)}>{t("editProfile")}</button>
                 </div>
               )}
+              {needsAllergyReview && <p className="pick-review-note"><Icon name="alert" size={18} />{t("checkWithStaffBeforeOrder")}</p>}
               {valid.length > 0 && (
                 <div className="pick-total"><span>{total} {total === 1 ? t("item") : t("items")}</span><b>{priceLabel(lang, valid.reduce((s, p) => s + p.qty * (byId.get(p.id)?.price || 0), 0))}</b></div>
               )}
@@ -465,7 +475,7 @@ export default function Diner({ slug }: { slug: string }) {
             {valid.length > 0 && (
               <footer className="sa-page__foot sa-page__foot--stack">
                 <p className="sa-page__cap">{t("sendingTo")} {table ? `${t("table")} ${table}` : ""}</p>
-                <button type="button" className="sa-btn sa-btn--ink sa-btn--lg sa-btn--block sa-btn--split" onClick={() => { setPicksOpen(false); sendPicks(); }}><span>{t("showToWaiter")} · {priceLabel(lang, valid.reduce((s, p) => s + p.qty * (byId.get(p.id)?.price || 0), 0))}</span><Icon name="arrowRight" size={22} /></button>
+                <button type="button" className="sa-btn sa-btn--ink sa-btn--lg sa-btn--block sa-btn--split" onClick={sendPicks}><span>{needsAllergyReview ? t("sendForCheck") : t("showToWaiter")} · {priceLabel(lang, valid.reduce((s, p) => s + p.qty * (byId.get(p.id)?.price || 0), 0))}</span><Icon name="arrowRight" size={22} /></button>
               </footer>
             )}
           </section>
@@ -571,14 +581,14 @@ export default function Diner({ slug }: { slug: string }) {
 const DIET: Record<string, string> = { vegan: "sa-tag--veg", vegetarian: "sa-tag--veg", spicy: "sa-tag--spicy" };
 
 // The allergens a dish lists. The ones in the diner's profile come first and are marked, so they are never hidden behind "+2".
-function AllergenTags({ item, t, profile, max = 3 }: { item: Item; t: (k: string) => string; profile: string[]; max?: number }) {
+function AllergenTags({ item, t, lang, profile, max = 3 }: { item: Item; t: (k: string) => string; lang: Lang; profile: string[]; max?: number }) {
   if (item.allergens === null) return <span className={`sa-tag sa-tag--unknown${profile.length ? " sa-tag--alert" : ""}`}>{profile.length > 0 && <Icon name="alert" size={13} />}{t("allergenUnknown")}</span>;
   const sorted = [...item.allergens].sort((a, b) => Number(profile.includes(b)) - Number(profile.includes(a)));
   const shownN = Math.max(max, sorted.filter((a) => profile.includes(a)).length);
   const extra = sorted.length - shownN;
   return <>{sorted.slice(0, shownN).map((a) => profile.includes(a)
-    ? <span key={a} className="sa-tag sa-tag--alert" title={t("yourAllergen")}><Icon name="alert" size={13} />{a.replace("_", " ")}</span>
-    : <span key={a} className="sa-tag">{a.replace("_", " ")}</span>)}{extra > 0 && <span className="sa-tag">+{extra}</span>}</>;
+    ? <span key={a} className="sa-tag sa-tag--alert" title={t("yourAllergen")}><Icon name="alert" size={13} />{allergenName(a, lang)}</span>
+    : <span key={a} className="sa-tag">{allergenName(a, lang)}</span>)}{extra > 0 && <span className="sa-tag">+{extra}</span>}</>;
 }
 
 function Plate({ item }: { item: Item }) {
@@ -615,21 +625,22 @@ function IngredientPills({ list, en, listed, profile, t, label }: { list: string
 
 function DishCard({ item, lang, profile, onOpen, onAdd, t, n = 0 }: { item: Item; lang: Lang; profile: string[]; onOpen: () => void; onAdd: (from: HTMLElement) => void; t: (k: string) => string; n?: number }) {
   const nm = item.name[lang] || item.name.en;
-  const other = [...new Set((["th", "my", "en"] as Lang[]).filter((l) => l !== lang).map((l) => item.name[l]).filter((n) => n && n !== nm))];   // a dish with no Burmese name has its English one there: show it once
+  const other = [lang === "en" ? item.name.th : item.name.en].filter((name) => name && name !== nm);
   return (
-    <article className={`sa-dish sa-in${item.available ? "" : " sa-dish--soldout"}${clash(item, profile) ? " sa-dish--conflict" : ""}`} style={{ animationDelay: `${Math.min(n, 7) * 40}ms`, ...(item.photo_url ? ({ "--photo": `url("${item.photo_url}")` } as React.CSSProperties) : {}) }}>
-      <div className="sa-dish__top">
+    <article className={`sa-dish sa-in${item.photo_url ? "" : " sa-dish--text"}${item.available ? "" : " sa-dish--soldout"}${clash(item, profile) ? " sa-dish--conflict" : ""}`} style={{ animationDelay: `${Math.min(n, 7) * 40}ms`, ...(item.photo_url ? ({ "--photo": `url("${item.photo_url}")` } as React.CSSProperties) : {}) }}>
+      {item.photo_url && <div className="sa-dish__top">
         <Plate item={item} />
         {!item.available && <span className="sa-stamp">{t("soldOut")}</span>}
-      </div>
+      </div>}
       <div className="sa-dish__body">
+        {!item.photo_url && !item.available && <span className="sa-stamp sa-stamp--inline">{t("soldOut")}</span>}
         {/* The name's button stretches over the whole row, so tapping anywhere opens the dish. */}
         <h3 className="sa-dish__name"><button type="button" onClick={onOpen}>{nm}</button></h3>
         {other.length > 0 && <p className="sa-dish__alt">{other.join(" · ")}</p>}
         {item.desc[lang] && <p className="sa-dish__desc">{item.desc[lang]}</p>}
         <div className="sa-dish__tags">
           {item.tags.filter((x) => DIET[x]).slice(0, 2).map((x) => <span key={x} className={`sa-tag ${DIET[x]}`}>{x}</span>)}
-          <AllergenTags item={item} t={t} profile={profile} />
+          <AllergenTags item={item} t={t} lang={lang} profile={profile} />
         </div>
         <div className="sa-dish__foot">
           <span className="sa-price">{priceLabel(lang, item.price)}</span>
@@ -646,8 +657,9 @@ function Detail({ item, lang, profile, t, fav, onFav, onClose, onAdd, onAsk, cat
   useEscape(onClose);
   const [qty, setQty] = useState(1);
   const nm = item.name[lang] || item.name.en;
-  const other = [...new Set((["th", "my", "en"] as Lang[]).filter((l) => l !== lang).map((l) => item.name[l]).filter((n) => n && n !== nm))];   // a dish with no Burmese name has its English one there: show it once
+  const other = [lang === "en" ? item.name.th : item.name.en].filter((name) => name && name !== nm);
   const known = item.allergens !== null;
+  const conflict = clash(item, profile);
   const sum = priceLabel(lang, item.price * qty);
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: clicking outside is a mouse shortcut; keyboard users close this with Escape (useEscape)
@@ -659,7 +671,7 @@ function Detail({ item, lang, profile, t, fav, onFav, onClose, onAdd, onAsk, cat
             <button type="button" className="sa-round" aria-pressed={fav} aria-label={`${fav ? t("unsave") : t("save")}: ${nm}`} onClick={onFav}><Icon name={fav ? "heartFill" : "heart"} size={22} /></button>
           </div>
           <div className="sa-detail__card" style={item.photo_url ? ({ "--photo": `url("${item.photo_url}")` } as React.CSSProperties) : undefined}>
-            <div className="sa-detail__photo"><Plate item={item} /></div>
+            {item.photo_url && <div className="sa-detail__photo"><Plate item={item} /></div>}
             <div className="sa-detail__meta">
               <h3>{nm}</h3>
               <span className="sa-price">{priceLabel(lang, item.price)}</span>
@@ -670,18 +682,23 @@ function Detail({ item, lang, profile, t, fav, onFav, onClose, onAdd, onAsk, cat
             {item.desc[lang] && <p className="sa-page__desc">{item.desc[lang]}</p>}
             <hr className="sa-page__rule" />
             <IngredientPills list={ingredientList(item, lang)} en={splitIngredients(item.ingredients)} listed={item.allergens} profile={profile} t={t} label />
-            <div className="notice-box">
-              <p className="notice-box__title"><Icon name="alert" size={22} />{known ? t("estAllergens") : t("allergenUnknown")}</p>
-              {known && <div className="sa-dish__tags">{item.allergens && item.allergens.length === 0 ? <span className="sa-tag">{t("allergenNone")}</span> : <AllergenTags item={item} t={t} profile={profile} max={20} />}</div>}
-              <p>{known ? t("estNote1") : t("allergenUnknownNote")}</p>
-              <p>{t("estNote2")}</p>
-            </div>
+            {(!known || (item.allergens && item.allergens.length > 0)) && (
+              <div className="notice-box">
+                <p className="notice-box__title"><Icon name="alert" size={22} />{known ? t("estAllergens") : t("allergenUnknown")}</p>
+                {known && <div className="sa-dish__tags"><AllergenTags item={item} t={t} lang={lang} profile={profile} max={20} /></div>}
+                <p>{known ? t("estNote1") : t("allergenUnknownNote")}</p>
+              </div>
+            )}
+            {known && (item.allergen_status === "verified" && item.allergens_checked_at
+              ? <p className="sa-page__cap">{t("allergenChecked")} {new Date(item.allergens_checked_at.replace(" ", "T") + "Z").toLocaleDateString(lang === "th" ? "th-TH" : lang === "my" ? "my-MM" : "en-GB", { day: "numeric", month: "short", year: "numeric" })}.</p>
+              : <p className="sa-page__cap">{t("allergenEstimated")}</p>)}
             <button type="button" className="sa-btn sa-btn--quiet sa-btn--block sa-btn--ask" onClick={onAsk}><span aria-hidden="true" /><span>{t("askAbout")}</span><Icon name="chat" size={22} /></button>
           </div>
         </div>
         <footer className="sa-page__foot sa-page__foot--stack">
           {item.available ? (
             <>
+              {conflict && <p className="detail-conflict"><Icon name="alert" size={18} />{conflict === "unknown" ? t("allergenUnknownNote") : conflict === "estimated" ? t("allergenEstimated") : `${t("pickContains")}: ${conflict.map((a) => allergenName(a, lang)).join(", ")}. ${t("checkWithStaffBeforeOrder")}`}</p>}
               <div className="sa-page__buy">
                 <span className="sa-qty" role="group" aria-label={t("quantity")}>
                   <button type="button" aria-label="Decrease quantity" disabled={qty <= 1} onClick={() => setQty((q) => Math.max(1, q - 1))}><Icon name="minus" size={20} /></button>
@@ -745,21 +762,19 @@ function Typed({ text, go = true, ticks = 110, onDone, onTick }: { text: string;
   return <><span aria-hidden="true">{parts.slice(0, n).join("")}<span className="typing-caret" /></span><span className="sr">{text}</span></>;
 }
 
-// What the AI is and is not: it comes first in the chat, typed once per visit, line by line.
-let introSeen = false;
-function IntroCard({ title, lines }: { title: string; lines: string[] }) {
-  const typeIt = motionOk() && !introSeen;
-  const [step, setStep] = useState(typeIt ? 0 : lines.length);
-  useEffect(() => { if (step >= lines.length) introSeen = true; }, [step, lines.length]);
+// Keep the safety essentials visible while the longer explanation is available on demand.
+function IntroCard({ title, short, lines }: { title: string; short: string; lines: string[] }) {
   return (
-    <div className="ai-intro">
-      <p className="ai-intro__title"><Icon name="alert" size={20} />{title}</p>
-      <ul>{lines.map((l, i) => (i <= step ? <li key={l}>{i < step || !typeIt ? l : <Typed text={l} ticks={34} onDone={() => setStep(i + 1)} />}</li> : null))}</ul>
-    </div>
+    <details className="ai-intro">
+      <summary className="ai-intro__title"><Icon name="alert" size={18} /><span>{short}</span><span className="ai-intro__more">{title}</span></summary>
+      <ul>{lines.map((line) => <li key={line}>{line}</li>)}</ul>
+    </details>
   );
 }
 
-function Chat({ slug, table, lang, sessionId, msgs, setMsgs, profile, addMsg, menu, t, onClose, addPick, aiAdd, say, callStaff }: any) {
+function Chat({ slug, table, lang, sessionId, msgs, setMsgs, profile, addMsg, menu, t, onClose, addPick, aiAdd, say, callStaff, askForBill }: any) {
+  // the replies whose staff button was pressed (it then shows as done and cannot be pressed again)
+  const [called, setCalled] = useState<string[]>([]);
   const persona = menu.restaurant.persona;
   // the greeting only the first time the chat is ever opened; a reopened chat already has its messages
   // biome-ignore lint/correctness/useExhaustiveDependencies: runs once when the chat opens
@@ -805,7 +820,7 @@ function Chat({ slug, table, lang, sessionId, msgs, setMsgs, profile, addMsg, me
     try {
       const r = await api<any>(`/api/public/${slug}/chat`, { body: { message, sessionId, table, lang, profile } });
       const answered = r.answered !== false;
-      setMsgs((m) => [...m, { id: uid(), role: "assistant", text: r.reply, lead: r.lead, ingredients: r.ingredients, dishes: r.dishes, topic: r.action?.type === "show_dishes" ? "dishes" : undefined, messageId: r.messageId, answered }]);
+      setMsgs((m) => [...m, { id: uid(), role: "assistant", text: r.reply, lead: r.lead, ingredients: r.ingredients, dishes: r.dishes, topic: r.action?.type === "show_dishes" ? "dishes" : undefined, messageId: r.messageId, answered, offer: r.offer }]);
       setMissCount((n) => { const next = answered ? 0 : n + 1; setEscalate(next >= ESCALATE_AFTER_MISSES); return next; });
       const a = r.action || {};
       if (a.type === "add_to_picks") aiAdd(a.ids || [], a.qty);
@@ -821,23 +836,23 @@ function Chat({ slug, table, lang, sessionId, msgs, setMsgs, profile, addMsg, me
   });
   async function rateUp(m: Msg) {
     setMsgs((x) => x.map((y) => (y.id === m.id ? { ...y, rated: 1 } : y)));
-    if (m.messageId) api(`/api/public/${slug}/feedback`, { body: { messageId: m.messageId, value: 1 } }).then(() => say(t("thanks"))).catch(() => {});
+    if (m.messageId) api(`/api/public/${slug}/feedback`, { body: { messageId: m.messageId, sessionId, value: 1 } }).then(() => say(t("thanks"))).catch(() => {});
   }
   async function submitReason(m: Msg, reason: keyof typeof REASON_KEYS) {
     setReasonFor(null);
     setMsgs((x) => x.map((y) => (y.id === m.id ? { ...y, rated: -1 } : y)));
-    if (m.messageId) api(`/api/public/${slug}/feedback`, { body: { messageId: m.messageId, value: -1, reason } }).then(() => say(t("thanks"))).catch(() => {});
+    if (m.messageId) api(`/api/public/${slug}/feedback`, { body: { messageId: m.messageId, sessionId, value: -1, reason } }).then(() => say(t("thanks"))).catch(() => {});
   }
   const byId = new Map<number, Item>(menu.items.map((i: Item) => [i.id, i]));
   const last = msgs[msgs.length - 1];
   const lastQuestion = [...msgs].reverse().find((m) => m.role === "user")?.text.toLowerCase();
   const followUps = !busy && last?.role === "assistant" ? [t("chips1"), t("chips2"), t("chips3")].filter((c) => c.toLowerCase() !== lastQuestion) : [];
 
-  const introLines = [t("aiIntro1"), t("aiIntro2"), t("aiIntro3"), t("aiIntro4"), t("aiIntro5")];
+  const introLines = [t("aiIntro1"), t("aiIntro2"), t("aiIntro3"), t("aiIntro4"), t("aiIntro5"), t("aiIntro6")];
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: this container only receives the Escape key and focus (see onPanelKeyDown); it is not a control
     <div className="ai-panel" ref={dialogRef} tabIndex={-1} onKeyDown={onPanelKeyDown}>
-      <IntroCard title={t("aiIntroTitle")} lines={introLines} />
+      <IntroCard title={t("aiIntroTitle")} short={t("aiIntroShort")} lines={introLines} />
       <div ref={logRef} className="sa-chat" role="log" aria-live="polite" aria-atomic="false">
         {profile.length > 0 && <span className="ask-profile">{t("profileAvoiding")} {profile.map((a: string) => allergenName(a, lang)).join(", ")}</span>}
         {msgs.map((m: Msg) => m.role === "user" ? (
@@ -851,11 +866,18 @@ function Chat({ slug, table, lang, sessionId, msgs, setMsgs, profile, addMsg, me
                 {m.ingredients?.length ? (() => { const dish = m.dishes?.[0] && (byId.get(m.dishes[0].id) || m.dishes[0]); return <IngredientPills list={m.ingredients} en={dish ? splitIngredients(dish.ingredients) : undefined} listed={dish ? dish.allergens : null} profile={profile} t={t} />; })() : null}
                 {m.dishes && m.dishes.length > 0 && m.dishes.map((d) => { const cur = byId.get(d.id) || d; const name = cur.name[lang] || cur.name.en; return (
                   <div key={d.id} className="sa-mini">
-                    <DishPhoto src={cur.photo_url} />
+                    {cur.photo_url && <DishPhoto src={cur.photo_url} />}
                     <div className="sa-mini__txt">{name}<br /><span className="sa-dish__alt">{priceLabel(lang, cur.price)}</span></div>
                     <button type="button" className="sa-btn sa-btn--soft sa-btn--icon sa-add" aria-label={`${t("add")} ${name}`} onClick={(e) => { addPick(cur.id); say(...addMsg(cur)); dropInto(e.currentTarget, document.querySelector("[data-cart]")); }}><Icon name="plus" /></button>
                   </div>); })}
                 {m.dishes && m.dishes.length > 0 && <p className="sa-msg__foot">{t("estFoot")}</p>}
+                {/* the staff are called only when the diner presses this; shown under the latest reply only */}
+                {m.offer && m.id === last?.id && (
+                  <button type="button" className="sa-btn sa-btn--ink sa-btn--sm sa-msg__offer" disabled={called.includes(m.id)}
+                    onClick={() => { setCalled((c) => [...c, m.id]); if (m.offer === "bill") askForBill(); else callStaff(); }}>
+                    {called.includes(m.id) ? t(m.offer === "bill" ? "billAsked" : "staffCalled") : t(m.offer === "bill" ? "askBill" : "callStaff")}<Icon name="bell" size={18} />
+                  </button>
+                )}
                 {m.messageId && (
                   <>
                     <div className="sa-msg__rate">

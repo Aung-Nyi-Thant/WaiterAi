@@ -29,7 +29,9 @@ describe("AI-7 asking for the staff in Thai calls the staff (it used to be answe
   ])("%s", async (text, kind) => {
     const calls = noModel();
     const r = await answer(text, detectLang(text), await aiCtx());
-    expect(r.action).toEqual({ type: "call_staff", kind });
+    // asking for the staff calls them; asking for the bill offers the bill button (the diner presses it)
+    if (kind === "help") expect(r.action).toEqual({ type: "call_staff", kind });
+    else { expect(r.action).toEqual({ type: "none" }); expect(r.offer).toBe("bill"); }
     expect(r.allergens).toEqual([]);
     expect(r.reply).not.toMatch(/สารก่อภูมิแพ้|เมนูที่ระบุว่ามี|เมนูที่มี /);      // no allergen wording (the reply itself contains พนักงาน, so do not look for งา)
     expect(calls.length).toBe(0);

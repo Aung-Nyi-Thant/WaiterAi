@@ -5,7 +5,11 @@ export function ordersWith(rid: number, statuses: string[]) {
   const rows = all(`SELECT * FROM orders WHERE restaurant_id = ? AND status IN (${statuses.map(() => "?").join(",")}) ORDER BY id`, rid, ...statuses);
   return rows.map((o: any) => ({
     id: o.id, table: o.table_no, status: o.status, lang: o.lang, allergy: o.allergy_note, createdAt: iso(o.created_at), updatedAt: iso(o.updated_at),
-    items: all("SELECT name, qty, price, flag FROM order_items WHERE order_id = ?", o.id),
+    items: all(`SELECT i.name, i.qty, i.price, i.flag,
+      CASE WHEN m.allergens_json IS NULL THEN 'unknown'
+        WHEN m.allergen_status = 'verified' AND m.allergens_checked_at >= datetime('now','-180 day') THEN 'verified'
+        ELSE 'estimated' END AS allergenStatus
+      FROM order_items i LEFT JOIN menu_items m ON m.id = i.item_id AND m.restaurant_id = ? WHERE i.order_id = ?`, rid, o.id),
   }));
 }
 export const openCalls = (rid: number) =>

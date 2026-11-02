@@ -124,10 +124,10 @@ describe("the list's finer points", () => {
     run("UPDATE menu_items SET allergens_json = '[\"peanut\"]' WHERE name_en = 'Papaya Salad'");
     run("UPDATE menu_items SET allergens_json = '[]' WHERE name_en = 'Thai Iced Tea'");
   });
-  it("shows 'None listed' for a dish with an empty allergen list, and a vegan dish carries one tag, not two", async () => {
+  it("shows 'No allergens recorded' for an empty allergen list, and a vegan dish carries one tag, not two", async () => {
     await openMenu();
     const row = (n: string) => screen.getByLabelText(`Edit ${n}`).closest(".table-row") as HTMLElement;
-    expect(within(row("Thai Iced Tea")).getByText("None listed")).toBeTruthy();
+    expect(within(row("Thai Iced Tea")).getByText("No allergens recorded")).toBeTruthy();
     const tags = Array.from(row("Mango Sticky Rice").querySelectorAll(".chip-g")).map((e) => e.textContent);
     expect(tags.filter((t) => /vegan/i.test(t || ""))).toHaveLength(1);
     expect(tags.filter((t) => /vegetarian/i.test(t || ""))).toHaveLength(0);

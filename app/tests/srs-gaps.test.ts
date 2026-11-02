@@ -101,6 +101,7 @@ describe("FR-7: the owner's voice decides how a Thai or Burmese reply ends, what
     expect(withVoiceEnding("ผัดไทยอร่อยมากครับ", "th", "female")).toBe("ผัดไทยอร่อยมากค่ะ");   // wrong ending swapped
     expect(withVoiceEnding("ผัดไทยอร่อยมากค่ะ", "th", "female")).toBe("ผัดไทยอร่อยมากค่ะ");     // already right: untouched
     expect(withVoiceEnding("ผัดไทยอร่อยมากคะ", "th", "female")).toBe("ผัดไทยอร่อยมากคะ");
+    expect(withVoiceEnding("ได้ค่ะ แจ้งพนักงานก่อนชำระเงินได้เลยครับ", "th", "male")).toBe("ได้ครับ แจ้งพนักงานก่อนชำระเงินได้เลยครับ");
     expect(withVoiceEnding("ပတ်ထိုင်း ကောင်းပါတယ်။", "my", "male")).toBe("ပတ်ထိုင်း ကောင်းပါတယ်ခင်ဗျာ။");
     expect(withVoiceEnding("ပတ်ထိုင်း ကောင်းပါတယ်ခင်ဗျာ။", "my", "female")).toBe("ပတ်ထိုင်း ကောင်းပါတယ်ရှင်။");
     expect(withVoiceEnding("ပတ်ထိုင်း ကောင်းပါတယ်ရှင်။", "my", "female")).toBe("ပတ်ထိုင်း ကောင်းပါတယ်ရှင်။");

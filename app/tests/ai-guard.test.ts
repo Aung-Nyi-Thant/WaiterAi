@@ -1,17 +1,19 @@
 // The language model path: whatever the model says is checked before the diner sees it.
-// Questions here are open ones ("what do you recommend?") that the rules do not handle.
+// Questions here are open ones that the rules do not handle. They are not requests for a suggestion: a rejected reply to one of those is
+// replaced by dishes from the database, not by the refusal (see ai-helpful.test.ts).
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { aiCtx, mockModel } from "./helpers";
 import { answer, CHAT_MAX_TOKENS, CHAT_TIMEOUT_MS } from "@/modules/ai/ai";
 
 afterEach(() => { vi.unstubAllGlobals(); });
-const OPEN = "What would you recommend on a hot day?";
+const OPEN = "Tell me about this place";
 const ask = async (reply: string | Error, msg = OPEN, ctxOver: Record<string, unknown> = {}) => {
   const calls = mockModel(reply);
   const r = await answer(msg, "en", await aiCtx(ctxOver));
   return { r, calls };
 };
-const REFUSAL = "I don't have that information. Please ask the staff.";
+// what the diner sees when the model's reply is thrown away: the staff sentence (the app adds the Call staff button), never the model's words
+const REFUSAL = "That's best answered by our staff. Tap the button below and I'll call them for you.";
 
 describe("AI-9 / ST-3 open questions go to the model, with the restaurant's data (menu, hours, FAQs, owner rules) as the only source", () => {
   it("passes a good reply through and marks it answered", async () => {
@@ -103,8 +105,8 @@ describe("AI-3 / AI-10 / NFR-S3 a wrong or unsafe model reply is replaced", () =
   it("keeps amounts that are real menu prices (any language), and numbers the diner wrote themselves", async () => {
     expect((await ask("Try the Thai Iced Tea for 50 THB or the tofu for ฿90.")).r.reply).toBe("Try the Thai Iced Tea for 50 THB or the tofu for ฿90.");
     expect((await ask("ราคา 120 บาท ครับ")).r.reply).toBe("ราคา 120 บาท ครับ");
-    expect((await ask("Here is what fits under 150 baht: the Thai Iced Tea.", "I only have 150 baht, what can I eat?")).r.reply).toContain("under 150 baht");
-    expect((await ask("Here is what fits under 150 baht: the Thai Iced Tea.", "what can I eat?")).r.reply).toBe(REFUSAL);   // 150 is neither a menu price nor the diner's number
+    expect((await ask("Here is what fits under 150 baht: the Thai Iced Tea.", "I only have 150 baht, is that enough for lunch?")).r.reply).toContain("under 150 baht");
+    expect((await ask("Here is what fits under 150 baht: the Thai Iced Tea.", "is that enough?")).r.reply).toBe(REFUSAL);   // 150 is neither a menu price nor the diner's number
   });
   it.each([
     ["a price before the dish that belongs to a different dish", "For ฿50 you can get the Shrimp Pad Thai."],
@@ -126,9 +128,9 @@ describe("AI-3 / AI-10 / NFR-S3 a wrong or unsafe model reply is replaced", () =
     expect(r.reply).toBe(reply);
   });
   it("lets the diner's own budget be repeated next to a dish, but never as the dish's price", async () => {
-    const ok = await ask("With 150 baht you can have the Chicken Fried Rice (80 THB).", "I only have 150 baht, what can I eat?");
+    const ok = await ask("With 150 baht you can have the Chicken Fried Rice (80 THB).", "I only have 150 baht, is that enough for lunch?");
     expect(ok.r.reply).toContain("With 150 baht");
-    expect((await ask("The Chicken Fried Rice is 150 baht.", "I only have 150 baht, what can I eat?")).r.reply).toBe(REFUSAL);          // the diner's budget is never the dish's price
+    expect((await ask("The Chicken Fried Rice is 150 baht.", "I only have 150 baht, is that enough for lunch?")).r.reply).toBe(REFUSAL);          // the diner's budget is never the dish's price
   });
   it("accepts a correct price", async () => {
     const { r } = await ask("The Shrimp Pad Thai is ฿120 and very popular.");
@@ -141,9 +143,9 @@ describe("AI-3 / AI-10 / NFR-S3 a wrong or unsafe model reply is replaced", () =
   it("the replacement refusal is in the diner's language and voice", async () => {
     mockModel("This is safe to eat");
     const c = await aiCtx();
-    expect((await answer("อะไรอร่อยบ้างวันนี้ ช่วยเลือกให้หน่อย", "th", c)).reply).toBe("ขออภัย ไม่มีข้อมูลนี้ครับ กรุณาสอบถามพนักงานครับ");
+    expect((await answer("ร้านนี้เป็นยังไงบ้าง", "th", c)).reply).toBe("เรื่องนี้พนักงานตอบได้ดีที่สุดครับ กดปุ่มด้านล่างเพื่อเรียกพนักงานได้เลยครับ");
     mockModel("This is safe to eat");
-    expect((await answer("ဒီနေ့ ရာသီဥတု ပူတယ်၊ ဘာကောင်းလဲ ရွေးပေးပါ", "my", c)).reply).toContain("ဝန်ထမ်းကို မေးမြန်းပေးပါ");
+    expect((await answer("ဒီဆိုင်အကြောင်း ပြောပြပါ", "my", c)).reply).toContain("ဝန်ထမ်းက အကောင်းဆုံး ဖြေပေးနိုင်ပါတယ်");
   });
 });
 

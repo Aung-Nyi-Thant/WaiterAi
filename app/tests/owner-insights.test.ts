@@ -25,8 +25,8 @@ describe("IN-4 allergies diners have, and how many dishes serve them", () => {
     await say("hello");                                                       // a diner with no profile
     const d = await get();
     expect(d.allergyProfiles).toEqual([
-      { allergen: "peanut", label: "Peanut", diners: 4, dishes: 8 },        // 11 dishes on sale have data; 3 of them list peanut
-      { allergen: "shellfish", label: "Shellfish", diners: 1, dishes: 7 },  // 4 of them list shellfish
+      { allergen: "peanut", label: "Peanut", diners: 4, dishes: 0 },
+      { allergen: "shellfish", label: "Shellfish", diners: 1, dishes: 0 },
     ]);
   });
   it("lists the dishes with no allergen data: diners with a profile are never offered them", async () => {
@@ -40,8 +40,8 @@ describe("IN-4 allergies diners have, and how many dishes serve them", () => {
     await say("without peanuts please");
     const d = await get();
     expect(d.allergensAsked).toEqual([
-      { allergen: "peanut", label: "Peanut", n: 2, dishes: 8 },
-      { allergen: "shellfish", label: "Shellfish", n: 1, dishes: 7 },
+      { allergen: "peanut", label: "Peanut", n: 2, dishes: 0 },
+      { allergen: "shellfish", label: "Shellfish", n: 1, dishes: 0 },
     ]);
   });
   it("test chats from the owner dashboard (preview) and other restaurants are not counted", async () => {
@@ -54,10 +54,12 @@ describe("IN-4 allergies diners have, and how many dishes serve them", () => {
     expect(d.allergyProfiles.map((a: any) => a.allergen)).toEqual(["peanut", "shellfish"]);
   });
   it("a dish that fits fewer than 3 diners' needs is easy to spot (the page marks it), and sold-out dishes do not count as fitting", async () => {
+    run("UPDATE menu_items SET allergen_status = 'verified', allergens_checked_at = datetime('now') WHERE name_en = 'Chicken Fried Rice'");
+    expect((await get()).allergyProfiles.find((a: any) => a.allergen === "peanut").dishes).toBe(1);
     run("UPDATE menu_items SET available = 0 WHERE name_en = 'Chicken Fried Rice'");
     const d = await get();
-    expect(d.allergyProfiles.find((a: any) => a.allergen === "peanut").dishes).toBe(7);
-    run("UPDATE menu_items SET available = 1 WHERE name_en = 'Chicken Fried Rice'");
+    expect(d.allergyProfiles.find((a: any) => a.allergen === "peanut").dishes).toBe(0);
+    run("UPDATE menu_items SET available = 1, allergen_status = 'estimated', allergens_checked_at = NULL WHERE name_en = 'Chicken Fried Rice'");
   });
 });
 
@@ -69,8 +71,14 @@ describe("what was ordered most, and which questions keep coming back", () => {
     run("UPDATE orders SET status = 'cancelled' WHERE id = ?", cancelled.data.id);
     const old = await order([{ id: dish("Papaya Salad"), qty: 40 }]);
     run("UPDATE orders SET created_at = datetime('now','-3 day') WHERE id = ?", old.data.id);
+    run("UPDATE orders SET status = 'new' WHERE status = 'picked'");      // popularity counts orders staff accepted, not picks nobody has seen
     expect((await get(1)).topDishes).toEqual([{ name: "Mango Sticky Rice", n: 5 }, { name: "Thai Iced Tea", n: 1 }]);
     expect((await get(7)).topDishes[0]).toEqual({ name: "Papaya Salad", n: 20 });   // one order line holds at most 20 of a dish
+  });
+  it("a pick that staff have not accepted is not demand yet", async () => {
+    run("DELETE FROM order_items"); run("DELETE FROM orders");
+    await order([{ id: dish("Papaya Salad"), qty: 4 }]);
+    expect((await get(1)).topDishes).toEqual([]);
   });
   it("shows only questions asked more than once, most often first", async () => {
     noModel();

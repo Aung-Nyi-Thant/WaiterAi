@@ -27,11 +27,11 @@ describe("a big menu", () => {
     const p = systemPrompt(ctx);
     const d = dataOf(p);
     expect(d.items).toHaveLength(BIG_MENU + 5);
-    expect(d.items[1]).toEqual([1001, "Dish 1", "จาน 1", "", ctx.items[1].price, ctx.items[1].allergens, ctx.items[1].tags]);   // the Burmese name equals the English: left empty
+    expect(d.items[1]).toEqual([1001, "Dish 1", "จาน 1", "", ctx.items[1].price, ctx.items[1].allergens, ctx.items[1].allergen_status, ctx.items[1].tags]);   // the Burmese name equals the English: left empty
     expect(d.soldOut).toEqual(ctx.items.filter((i: any) => !i.available).map((i: any) => i.id));
     expect(d.soldOut.length).toBeGreaterThan(3);
     expect(p).toContain('Dishes whose id is in "soldOut" are sold out today');
-    expect(p).toContain("Each entry of \"items\" is [id, English name, Thai name, Burmese name, price, allergens, tags]");
+    expect(p).toContain("Each entry of \"items\" is [id, English name, Thai name, Burmese name, price, allergens, allergen_status, tags]");
     expect(p).toContain('"allergens": null means the allergen information was not provided');
   });
   it("is much shorter than the keyed form of the same dishes", async () => {
@@ -64,19 +64,19 @@ describe("a big menu with categories", () => {
     const p = systemPrompt(ctx);
     const d = dataOf(p);
     expect(d.categories).toEqual(["Sets & Combos", "Sushi"]);
-    expect(d.items[0][7]).toBe(1);                                                  // category_id 12 is the second category
-    expect(d.items[1][7]).toBe(0);
-    expect(p).toContain("allergens, tags, category]");
+    expect(d.items[0][8]).toBe(1);                                                  // category_id 12 is the second category
+    expect(d.items[1][8]).toBe(0);
+    expect(p).toContain("allergens, allergen_status, tags, category]");
     expect(p).toContain("what combos / sets / drinks / sushi / noodles do you have?");
     expect(p).toContain("The data does not say what a set or combo includes");
   });
-  it("a dish with no known category gets -1, and a menu without categories keeps the seven-field rows", async () => {
+  it("a dish with no known category gets -1, and a menu without categories keeps the eight-field rows", async () => {
     const base = (await aiCtx()).items;
     const items = (await bigItems(BIG_MENU + 1, base)).map((i: any) => ({ ...i, category_id: null }));
     const withCats = dataOf(systemPrompt(await aiCtx({ items, categories: [{ id: 1, name: { en: "Sushi", th: "ซูชิ", my: "ဆူရှီ" } }] })));
-    expect(withCats.items[0][7]).toBe(-1);
+    expect(withCats.items[0][8]).toBe(-1);
     const without = dataOf(systemPrompt(await aiCtx({ items })));
-    expect(without.items[0]).toHaveLength(7);
+    expect(without.items[0]).toHaveLength(8);
     expect(without.categories).toBeUndefined();
   });
 });

@@ -14,7 +14,7 @@ window.DISH_SEED = [
   { id: "chicken_rice", cat: 2, price: 80, name: { en: "Chicken Fried Rice", th: "ข้าวผัดไก่", my: "ကြက်သား ထမင်းကြော်" }, allergens: ["egg", "soy"], tags: [], available: true, desc: "Wok-fried rice with chicken and egg.", ingredients: "rice, chicken, egg, soy sauce" },
   { id: "massaman", cat: 3, price: 160, name: { en: "Beef Massaman Curry", th: "แกงมัสมั่นเนื้อ", my: "အမဲသား မတ်စမန်ကာရီ" }, allergens: ["peanut"], tags: [], available: true, desc: "Slow-cooked beef in a mild peanut curry.", ingredients: "beef, potato, peanuts, coconut milk, massaman paste" },
   { id: "som_tam", cat: 4, price: 70, name: { en: "Papaya Salad", th: "ส้มตำ", my: "သင်္ဘောသီးသုပ်" }, allergens: ["peanut", "shellfish"], tags: ["spicy"], available: true, desc: "Green papaya pounded with chili and lime.", ingredients: "green papaya, chili, lime, peanuts, dried shrimp" },
-  { id: "spring_rolls", cat: 1, price: 85, name: { en: "Fresh Spring Rolls", th: "ปอเปี๊ยะสด", my: "ဟင်းသီးဟင်းရွက် ကော်ပြန့်စိမ်း" }, allergens: null, tags: [], available: true, desc: "Rice paper rolls with vegetables and herbs.", ingredients: "rice paper, vegetables, herbs, dipping sauce (recipe not fully recorded)" },
+  { id: "spring_rolls", cat: 1, price: 85, name: { en: "Fresh Spring Rolls", th: "ปอเปี๊ยะสด", my: "ဟင်းသီးဟင်းရွက် ကော်ပြန့်စိမ်း" }, allergens: null, tags: [], available: true, desc: "Rice paper rolls with vegetables and herbs. The dipping sauce recipe is not recorded; please ask staff about allergens.", ingredients: "rice paper, vegetables, herbs, dipping sauce (recipe not fully recorded)" },
   { id: "thai_tea", cat: 6, price: 50, name: { en: "Thai Iced Tea", th: "ชาไทยเย็น", my: "ထိုင်းလက်ဖက်ရည်အေး" }, allergens: ["milk"], tags: ["vegetarian"], available: true, desc: "Sweet iced tea with milk.", ingredients: "black tea, sugar, evaporated milk, ice" },
   { id: "coconut_ice", cat: 5, price: 60, name: { en: "Coconut Ice Cream", th: "ไอศกรีมกะทิ", my: "အုန်းနို့ ရေခဲမုန့်" }, allergens: ["milk"], tags: ["vegetarian"], available: false, desc: "Creamy coconut ice cream.", ingredients: "coconut milk, cream, sugar" },
   { id: "pork_skewers", cat: 1, price: 60, name: { en: "Grilled Pork Skewers", th: "หมูปิ้ง", my: "ဝက်သားကင်" }, allergens: ["soy"], tags: ["contains_pork"], available: true, desc: "Marinated pork grilled over charcoal.", ingredients: "pork, soy sauce, garlic, coriander root" },
@@ -49,7 +49,7 @@ window.FR_MAP = [
  * ===================================================================== */
 const Store = (() => {
   const K = 'shopai_db', cbs = [];
-  const _ls = typeof window !== 'undefined' ? window['local' + 'Storage'] : null;
+  const _ls = typeof window !== 'undefined' ? window.localStorage : null;
   const blank = () => ({
     orders: [], calls: [], bills: [], soldout: [],
     menu: null,                       // owner-edited menu (null = use built-in menu from app.js)

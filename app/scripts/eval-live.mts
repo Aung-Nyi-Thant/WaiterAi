@@ -44,12 +44,13 @@ let cookie = "";
 const rows = [];
 for (const q of questions) {
   const t0 = Date.now();
-  let reply = "";
+  let reply = "", offer: string | undefined;
   try {
     const res = await fetch(`${base}/api/public/${slug}/chat`, { method: "POST", headers: { "content-type": "application/json", ...(cookie ? { cookie } : {}) }, body: JSON.stringify({ message: q.question, preview: true, table: "5" }), signal: AbortSignal.timeout(180_000) });
-    reply = String((await res.json()).reply ?? "");
+    const data = await res.json();
+    reply = String(data.reply ?? ""); offer = String(data.offer ?? "none");
   } catch (e: any) { console.error(`  ${q.id}: request failed (${e?.message})`); }
-  const s = scoreReply(q, reply);
+  const s = scoreReply(q, reply, offer);
   rows.push({ ...s, ms: Date.now() - t0 });
   console.log(`${s.pass ? "PASS" : "FAIL"} ${q.id.padEnd(4)} ${q.category.padEnd(16)} ${String(Date.now() - t0).padStart(6)} ms  ${reply.replace(/\s+/g, " ").slice(0, 80)}${s.pass ? "" : `   <- missing ${JSON.stringify(s.missing)} forbidden ${JSON.stringify(s.forbidden)}`}`);
 }

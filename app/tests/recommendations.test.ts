@@ -126,6 +126,7 @@ describe("popular: ranked by what diners really ordered here", () => {
     await call(orderAction, { method: "POST", params: { id: String(cancelled.data.id) }, body: { action: "later" } });
     const old = await send([{ id: dish("Papaya Salad"), qty: 50 }], "44");
     run("UPDATE orders SET created_at = datetime('now','-40 day') WHERE id = ?", old.data.id);
+    run("UPDATE orders SET status = 'new' WHERE status = 'picked'");      // only orders staff accepted count as demand
     const p = popularDishes(1);
     expect(p[dish("Mango Sticky Rice")]).toBeGreaterThanOrEqual(5);
     expect(p[dish("Thai Iced Tea")]).toBeGreaterThanOrEqual(1);
@@ -143,14 +144,14 @@ describe("popular: ranked by what diners really ordered here", () => {
 
 describe("the allergy profile applies to recommendations", () => {
   it("leaves out dishes with the diner's allergen or with no allergen data, and says so", async () => {
-    const r = await rec("What's spicy?", "en", { profile: ["shellfish"] });
+    const r = await rec("What's spicy?", "en", { profile: ["shellfish"], items: itemsOf(1).map((i) => i.allergens === null ? i : { ...i, allergen_status: "verified" as const }) });
     expect(shown(r)).toEqual(["Steamed Fish with Lime"]);
     expect(r.reply).toContain("Your allergy profile (shellfish) is applied");
     expect(r.reply).toContain("Please confirm with the staff");
     expect(r.reply).not.toMatch(/Tom Yum|Papaya|Green Curry/);
   });
   it("never recommends a dish with no allergen data to a diner with an allergy profile", async () => {
-    const r = await rec("a starter", "en", { profile: ["peanut"] });
+    const r = await rec("a starter", "en", { profile: ["peanut"], items: itemsOf(1).map((i) => i.allergens === null ? i : { ...i, allergen_status: "verified" as const }) });
     expect(r.reply).not.toContain("Fresh Spring Rolls");              // allergen data not provided
     expect(shown(r)).toEqual(["Grilled Pork Skewers"]);
   });

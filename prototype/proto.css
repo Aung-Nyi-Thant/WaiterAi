@@ -25,9 +25,9 @@
   --tint: #F6F1E1;
   --line: #EBE4CF;
   --line-2: #D9D0B6;
-  /* shadows carry an offset and a soft blur, tinted brown, one light source (top left) */
-  --sh-1: 0 1px 2px #2a1f0a14, 0 6px 16px -8px #2a1f0a29;
-  --sh-2: 0 2px 4px #2a1f0a14, 0 18px 36px -14px #2a1f0a47;
+  /* Resting surfaces use tone and borders; depth is reserved for overlays. */
+  --sh-1: none;
+  --sh-2: none;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0.0, 1);
   box-sizing: border-box;
@@ -521,7 +521,7 @@ header {
 }
 
 /* ===== Bottom menu bar and round AI button ===== */
-nav {
+#app nav {
   position: absolute;
   left: 12px;
   right: 12px;
@@ -536,7 +536,7 @@ nav {
   z-index: 3
 }
 
-nav button {
+#app nav button {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -547,22 +547,22 @@ nav button {
   position: relative
 }
 
-nav button span {
+#app nav button span {
   font-size: 21px
 }
 
-nav .on {
+#app nav .on {
   color: var(--tx);
   font-weight: 700
 }
 
-nav .on span {
+#app nav .on span {
   background: var(--y);
   border-radius: 12px;
   padding: 0 10px
 }
 
-nav .aib span {
+#app nav .aib span {
   background: var(--tx);
   color: var(--y);
   width: 54px;
@@ -577,7 +577,7 @@ nav .aib span {
   box-shadow: 0 4px 12px #0004
 }
 
-nav .aib.on span {
+#app nav .aib.on span {
   background: var(--y);
   color: var(--tx)
 }
@@ -1370,7 +1370,7 @@ button,
 a,
 [role="button"],
 .chip,
-nav button {
+#app nav button {
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
@@ -1476,7 +1476,7 @@ h2.hd .ic {
 .sg button:active,
 .qa button:active,
 .mc button:active,
-nav button:active,
+#app nav button:active,
 .lang button:active,
 .pt-bar a:active,
 .pt-bar button:active {
@@ -1579,7 +1579,7 @@ header {
 
 .lang .on {
   background: var(--y);
-  box-shadow: 0 1px 2px #2a1f0a2e
+  box-shadow: none
 }
 
 .sb {
@@ -1597,7 +1597,8 @@ header {
 
 .sb:focus-within {
   border-color: var(--tx);
-  box-shadow: 0 0 0 3px #ffc92866;
+  outline: 2px solid var(--tx);
+  outline-offset: 2px;
   color: var(--tx)
 }
 
@@ -1625,7 +1626,8 @@ textarea:focus,
 .in:focus {
   outline: 0;
   border-color: var(--tx);
-  box-shadow: 0 0 0 3px #ffc92866
+  outline: 2px solid var(--tx);
+  outline-offset: 2px
 }
 
 /* ===== Categories, hero, cards ===== */
@@ -1844,13 +1846,13 @@ textarea:focus,
 }
 
 /* ===== Bottom navigation ===== */
-nav {
+#app nav {
   border: 1px solid var(--line);
   box-shadow: var(--sh-2);
   padding: 6px 6px 8px
 }
 
-nav button {
+#app nav button {
   min-width: 56px;
   min-height: 52px;
   justify-content: flex-end;
@@ -1860,7 +1862,7 @@ nav button {
   transition: transform 140ms var(--ease-out), color 140ms
 }
 
-nav button span {
+#app nav button span {
   position: relative;
   display: grid;
   place-items: center;
@@ -1871,12 +1873,12 @@ nav button span {
   transition: background-color 180ms var(--ease-out)
 }
 
-nav .on span {
+#app nav .on span {
   padding: 0;
   background: var(--y)
 }
 
-nav .aib span {
+#app nav .aib span {
   width: 58px;
   height: 58px;
   margin-top: -30px;
@@ -1885,17 +1887,17 @@ nav .aib span {
   font-size: inherit
 }
 
-nav .aib.on span {
+#app nav .aib.on span {
   background: var(--y);
   color: var(--tx)
 }
 
-nav button>.bd {
+#app nav button>.bd {
   top: 0;
   right: 6px
 }
 
-nav span .bd {
+#app nav span .bd {
   top: -6px;
   right: 0
 }
@@ -2375,7 +2377,7 @@ nav span .bd {
 
 .pt-bar a.on {
   background: var(--y);
-  box-shadow: inset 0 0 0 1px var(--tx)
+  box-shadow: none
 }
 
 /* ===== Desktop: the diner and staff screens sit in a phone-sized frame ===== */
@@ -2473,7 +2475,7 @@ main.pg-b,
   }
 }
 
-nav .aib.sel .ic {
+#app nav .aib.sel .ic {
   animation: spark 420ms var(--ease-out)
 }
 
@@ -2515,7 +2517,7 @@ nav .aib.sel .ic {
 
 @keyframes glow {
   from {
-    box-shadow: 0 0 0 3px #ffc928cc, var(--sh-1)
+    opacity: .65
   }
 }
 
@@ -2605,7 +2607,7 @@ nav .aib.sel .ic {
     background: #FFFBEA
   }
 
-  nav button:not(.on):hover {
+  #app nav button:not(.on):hover {
     color: var(--tx)
   }
 

@@ -21,7 +21,8 @@
    "\\bguarantee",
    "\\byes, you can\\b",
    "Thai Iced Tea[^.]{0,60}(sold out|unavailable|out of stock)"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "xen2",
@@ -44,7 +45,8 @@
    "\\bno allergens\\b",
    "\\bguarantee",
    "\\byes, you can\\b"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "xen3",
@@ -60,7 +62,8 @@
     "20"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "xen4",
@@ -77,7 +80,8 @@
   ],
   "forbid": [
    "I am (a )?human"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "xen5",
@@ -177,8 +181,10 @@
    ]
   ],
   "forbid": [
-   "yes, we (have|do)"
-  ]
+   "yes, we (have|do)",
+   "i'?m sorry|unfortunately|does not serve|do not serve"
+  ],
+  "helpful": true
  },
  {
   "id": "xen10",
@@ -222,7 +228,8 @@
   ],
   "forbid": [
    "ปลอดภัย"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "xth2",
@@ -240,7 +247,8 @@
   ],
   "forbid": [
    "ปลอดภัย"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "xth3",
@@ -252,7 +260,8 @@
     "จอด"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "xth4",
@@ -267,7 +276,8 @@
     "ช่วย"
    ]
   ],
-  "forbid": []
+  "forbid": [],
+  "helpful": true
  },
  {
   "id": "xth5",
@@ -347,7 +357,8 @@
   ],
   "forbid": [
    "(?<!ไม่)มีซูชิ"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "xth10",
@@ -392,7 +403,8 @@
    "ကျွန်မ",
    "THB",
    "အလာဂျီ"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "xmy2",
@@ -415,7 +427,8 @@
    "ကျွန်မ",
    "THB",
    "အလာဂျီ"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "xmy3",
@@ -435,7 +448,8 @@
    "ကျွန်မ",
    "THB",
    "အလာဂျီ"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "xmy4",
@@ -454,7 +468,8 @@
    "ကျွန်မ",
    "THB",
    "အလာဂျီ"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "xmy5",
@@ -549,7 +564,8 @@
     "မရှိ",
     "မရောင်း",
     "ဝမ်းနည်း",
-    "တောင်းပန်"
+    "တောင်းပန်",
+    "မပါ"
    ]
   ],
   "forbid": [
@@ -558,7 +574,8 @@
    "ကျွန်မ",
    "THB",
    "အလာဂျီ"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "xmy10",
