@@ -2,7 +2,9 @@
 
 Menu-aware AI waiter for restaurants (Thai, Burmese, English). Diners scan a QR code, browse the menu and chat with the AI; owners manage the menu; waiters and chefs see live calls and orders.
 
-The AI never decides anything safety-critical: allergens, prices, opening hours, sold-out dishes, orders and the bill are answered from the database with fixed sentences. The language model only handles open questions, and its reply is checked before it is shown (details and tests: [`docs/AI_SAFETY.md`](docs/AI_SAFETY.md)).
+The AI never decides anything safety-critical: allergens, prices, opening hours, sold-out dishes, orders and the bill are answered from the database with fixed sentences. The language model only handles open questions, and its reply is checked before it is shown (details and tests: [`docs/AI_SAFETY.md`](docs/AI_SAFETY.md)). Allergy suggestions use **only restaurant-verified** allergen lists: an estimated or missing list is never recommended to a diner with an allergy profile, and "not listed" is never worded as "safe".
+
+**Status (2 Nov 2026):** demo-ready, not yet pilot-ready. None of the 145 demo dishes (Golden Lotus 13, HaChi Kyu 132) is restaurant-verified, and there has been no observed pilot, native-speaker review of every sentence, or real restore drill. Operating, backup/restore (`npm run db:backup`, `db:restore`), 30-day chat deletion (`db:prune-chat`) and the pilot checklist: [`docs/PILOT_RUNBOOK.md`](docs/PILOT_RUNBOOK.md).
 
 ## Live prototype: try it in your browser
 
@@ -25,7 +27,7 @@ A clickable prototype of Shop AI. No install, no server and no account needed: o
 | `app/src/modules/` | The code, split into 5 modules: `diner`, `ai`, `owner`, `staff`, `platform`. Each has its own README |
 | `eval/` | Test questions, sample menu and the model comparison scripts |
 | `docs/` | SRS, feature plan, project explanation, team work plan, measured results (`NFR_RESULTS.md`), and the product worksheet answers (`PRODUCT_IDEA_WORKSHEET.md`) |
-| `design/` | UI design generators (Art Deco and Glass mock-ups) |
+| `design/` | UI design work: the older Art Deco and Glass mock-ups, and `ui-ux-redesign/` (the monochrome glass redesign with its Figma handoff) |
 
 ## Run it on Windows (no programming needed)
 
@@ -126,8 +128,9 @@ Shop AI answers it with a QR menu and a menu-aware AI waiter (Thai, Burmese, Eng
 | `windows/` | Double-click setup, start, stop, check and offline-pack scripts for Windows laptops, with their own guide |
 | `eval/` | The 30 test questions, sample menu, pass thresholds, model comparison scripts and results |
 | `docs/deliverables/` | The course PDFs: the M1 charter, the M2 SRS as submitted and the corrected v1.1. Their FR numbers map to the IDs in `docs/TRACEABILITY.md` |
-| `docs/` | [SRS](docs/SRS_Shop_AI.md), [traceability](docs/TRACEABILITY.md), [AI safety](docs/AI_SAFETY.md), [AI usage log](docs/AI_USAGE_LOG.md), [performance](docs/PERFORMANCE.md), feature plan, project explanation, team work plan |
-| `design/` | UI design generators (Art Deco and Glass mock-ups) |
+| `docs/` | [SRS](docs/SRS_Shop_AI.md), [traceability](docs/TRACEABILITY.md), [AI safety](docs/AI_SAFETY.md), [AI usage log](docs/AI_USAGE_LOG.md), [performance](docs/PERFORMANCE.md), [pilot runbook](docs/PILOT_RUNBOOK.md), [allergen data research](docs/ALLERGEN_DATA_RESEARCH.md), [AI-use statement](docs/AI_USE_STATEMENT.md), feature plan, project explanation, team work plan |
+| `design/` | UI design work: the older Art Deco and Glass mock-ups, and `ui-ux-redesign/` (the monochrome glass redesign with its Figma handoff) |
+| `reports/`, `research_notes/` | Repository analysis, UI/UX audit, dish-data research, and the 9/10 roadmap with its progress record |
 | `Dockerfile`, `docker-compose.yml`, `.env.example` | One-command start (see above) |
 
 ## Team work
