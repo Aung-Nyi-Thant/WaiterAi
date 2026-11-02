@@ -2,7 +2,7 @@
  * All data lives in Store (store.js) so changes reach the customer + staff apps immediately. */
 (() => {
   if (window.APP_VIEW !== 'owner') return;   // only run on index.html?view=owner
-  const OWNER = { email: 'ownerhachi_kyu@gmail.com', pass: '1234' };   // demo login (client-side only)
+  const OWNER = { email: 'owner@hachi-kyu.example', pass: '1234' };   // demo login (client-side only)
   const PG = [['dash', 'chart', 'Dashboard'], ['menu', 'menu', 'Menu Items'], ['imp', 'inbox', 'Import Menu'], ['hf', 'clock', 'Hours & FAQ'], ['ai', 'sparkle', 'AI Settings'], ['qr', 'qr', 'QR Codes'], ['staff', 'chefHat', 'Staff'], ['ins', 'bulb', 'Insights']];
   const ST = { new: 'New', accepted: 'Accepted', cooking: 'Cooking', ready: 'Ready', served: 'Served', paid: 'Paid' };
   const CT = CATS.filter(c => c[0] != 'all' && c[0] != 'rec'), CZ = ['don', 'noodle', 'app', 'grill', 'set'];
@@ -91,11 +91,11 @@
       });
       say('Imported ' + n + ' dish(es)' + (bad ? ', skipped ' + bad + ' invalid row(s)' : ''))
     },
-    hsave: () => { const r = rows('.hr', x => x); up(d => { d.hours.forEach((h, i) => { h.o = r[i].querySelector('.ho').value; h.c = r[i].querySelector('.hc').value; h.closed = r[i].querySelector('.hx').checked ? 1 : 0 }) }); say('Hours saved') },
+    hsave: () => { const r = rows('.hr', x => x); if (r.some(x => !x.querySelector('.hx').checked && x.querySelector('.ho').value >= x.querySelector('.hc').value)) return say('Closing time must be after opening time', 'alert'); up(d => { d.hours.forEach((h, i) => { h.o = r[i].querySelector('.ho').value; h.c = r[i].querySelector('.hc').value; h.closed = r[i].querySelector('.hx').checked ? 1 : 0 }) }); say('Hours saved') },
     fadd: () => up(d => { d.faqs = grabF(); d.faqs.push({ q: '', a: '' }) }), fdel: e => up(d => { d.faqs = grabF(); d.faqs.splice(+e.i, 1) }),
     fsave: () => { up(d => { d.faqs = grabF().filter(f => f.q && f.a) }); say('FAQs saved') },
     asave: () => { up(d => { d.ai = { name: val('a_n').trim(), greet: val('a_g').trim(), tone: val('a_t'), rules: val('a_r').trim(), fallback: val('a_f').trim() } }); say('AI settings saved') },
-    tn: e => up(d => { d.tables = Math.max(1, Math.min(60, d.tables + +e.d)) }), gen: () => { U.qr = 1; R() }, print: () => print(),
+    tn: e => { const n = D.tables + +e.d; if (n < 1 || n > 60) return say('Tables must be between 1 and 60', 'alert'); up(d => { d.tables = n }) }, gen: () => { U.qr = 1; R() }, print: () => print(),
     sadd: () => up(d => { d.staff = grabS().map((s, i) => ({ ...s, id: d.staff[i] ? d.staff[i].id : 'n' + i })); d.staff.push({ id: 'n' + Date.now(), name: '', pass: '', role: 'waiter' }) }),
     sdel: e => up(d => { d.staff = grabS().map((s, i) => ({ ...s, id: i })); d.staff.splice(+e.i, 1) }),
     ssave: () => { const s = grabS(); if (s.some(x => !x.name || !/^\d{4}$/.test(x.pass))) return say('Every account needs a name and a 4-digit PIN', 'alert'); up(d => { d.staff = s.map((x, i) => ({ ...x, id: 's' + i })) }); say('Accounts saved') },
