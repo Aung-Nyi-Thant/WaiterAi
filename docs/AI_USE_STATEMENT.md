@@ -5,11 +5,11 @@
 ## Two different uses of AI
 
 1. **The product's own model.** `gemma4:12b`, run locally through Ollama, answers open questions for diners. It is part of the system, chosen with a comparison in `eval/` (SRS 4.5), and it is never the source of an allergen, price, hours or order answer: those come from the database (`docs/AI_SAFETY.md`).
-2. **AI tools used to build it.** Claude Code (Claude Sonnet 5 and 5.5), used by Aung Nyi Nyi Thant. The other members did not use an AI tool, so the log has no rows for them. **[team to confirm.]**
+2. **AI tools used to build it.** Claude Code (Claude Sonnet 5 and 5.5), used by Aung Nyi Nyi Thant; and Google Antigravity (Gemini 3.8 Flash), logged on 8 Oct for six diner tasks (translations, mobile layout, table number, quantity stepper, order confirmation, tests). Other members' use is not in the log. **[team to confirm.]**
 
 ## Where AI tools helped (from the log and `git`)
 
-On `main`, 11 of the 18 commits carry a `Co-Authored-By: Claude` trailer (the other 7 are the initial commit, the work-plan commits and merge commits). The areas, in the order they happened:
+On the current branch (`ui/liquid-glass-redesign`, 2 Nov 2026), 56 of the 84 non-merge commits (21 Sep to 23 Oct) carry a `Co-Authored-By: Claude` trailer. The other 28 have none, so the history cannot show how they were made (for example four prototype commits of 14 and 18 Oct by another member). About 130 files are uncommitted and have no trailer yet. The areas, in the order they happened:
 
 | When | Area | What the AI did | What was checked |
 |---|---|---|---|
@@ -20,6 +20,10 @@ On `main`, 11 of the 18 commits carry a `Co-Authored-By: Claude` trailer (the ot
 | 5 Oct | Merge of two parallel lines of AI-assisted work | a merge with 18 conflicts resolved by hand | tests, build and end-to-end tests on the merged result |
 | 5 Oct | Security round 2 | PIN lockout, preview flag, cookies, login timing, receipt code, history scope | every fix has a test that fails when the fix is reverted |
 | 5 Oct | M4 deliverables | the clickable prototype, the final report draft, these slides and this statement | a test ties the prototype to the SRS; the report cites only repository files |
+| 12 Oct | AI answers, tests | Rules for everyday questions; tests for every feature and screen; 126 open questions | native-question score 32% to 97-100%; statement coverage 53% to 92%; every reply read by hand, not only keyword-scored |
+| 19–21 Oct | Second restaurant and big menus | HaChi Kyu (132 dishes), a 16384-token context, a compact prompt, sushi-menu rules and question sets, latency eval | live evals 58/58, 17/17, 31/31, 30/30, 34/34, 124/126; found by reading the model server's log that the menu was being truncated |
+| 20–23 Oct | Look and feel | Drawn icons, motion, the prototype's look in the app, the liquid-glass redesign with a Figma concept | tests updated; the handoff says production accessibility, runtime blur and translations were **not** reviewed |
+| 28–30 Oct (uncommitted) | Allergen honesty, privacy, recovery, performance | Allergy suggestions only from restaurant-verified lists; waiter/chef acknowledgments; chat expiry, export and delete; backup and restore; allergen research; performance re-run | 1,311/1,311 unit and integration tests (re-run 2 Nov); live eval 28/30 and 34/34; 0 of 145 dishes are restaurant-verified yet, so the safe path excludes them; no real restore drill or observed pilot has been done |
 
 ## What worked
 

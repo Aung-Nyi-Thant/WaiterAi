@@ -749,10 +749,10 @@
   "question": "Which sushi has no fish?",
   "expect": [
    [
-    "do not list fish"
+   "can't suggest a restaurant-checked dish for fish"
    ],
    [
-    "Shrimp Roe Sushi"
+   "Please confirm with the staff"
    ]
   ],
   "forbid": [

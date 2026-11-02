@@ -28,7 +28,8 @@
    ]
   ],
   "forbid": [],
-  "rules": true
+  "rules": true,
+  "helpful": true
  },
  {
   "id": "ne3",
@@ -41,7 +42,8 @@
    ]
   ],
   "forbid": [],
-  "rules": true
+  "rules": true,
+  "helpful": true
  },
  {
   "id": "ne4",
@@ -93,7 +95,8 @@
   "forbid": [
    "menu"
   ],
-  "rules": true
+  "rules": true,
+  "helpful": true
  },
  {
   "id": "ne7",
@@ -125,7 +128,8 @@
   ],
   "forbid": [
    "mango sticky rice"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "ne9",
@@ -260,7 +264,8 @@
    "\\bsafe to eat\\b",
    "\\ballergen-free\\b",
    "\\bguarantee"
-  ]
+  ],
+  "helpful": true
  },
  {
   "id": "ne16",
@@ -294,7 +299,8 @@
   "forbid": [
    "เมนูของเรา"
   ],
-  "rules": true
+  "rules": true,
+  "helpful": true
  },
  {
   "id": "nt2",
@@ -360,7 +366,8 @@
    ]
   ],
   "forbid": [],
-  "rules": true
+  "rules": true,
+  "helpful": true
  },
  {
   "id": "nt6",
@@ -471,7 +478,8 @@
   "forbid": [
    "မလိုလားပါဘူး"
   ],
-  "rules": true
+  "rules": true,
+  "helpful": true
  },
  {
   "id": "nm2",
@@ -502,7 +510,8 @@
    ]
   ],
   "forbid": [],
-  "rules": true
+  "rules": true,
+  "helpful": true
  },
  {
   "id": "nm4",
