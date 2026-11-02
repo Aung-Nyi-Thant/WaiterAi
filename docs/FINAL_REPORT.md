@@ -36,7 +36,7 @@ Full list: `docs/SRS_Shop_AI.md`; each ID is traced to code and tests in `docs/T
 
 | NFR | Target | Measured (one laptop, `gemma4:12b`; `docs/PERFORMANCE.md`) |
 |---|---|---|
-| NFR-P1 open questions | 90% within 15 s | 100 questions (EN/TH/MY): median **5.5 s**, 90th percentile **10.7 s**, 0 errors |
+| NFR-P1 open questions | 90% within 15 s | 100 questions (re-run 28 Oct): median **4.4 s**, 90th percentile **12.2 s**, **99 of 100 within 15 s**, 0 errors |
 | NFR-P2 rule-based | within 1 s | median 17–22 ms, slowest 79 ms, with 30 diners at once |
 | NFR-P4 capacity | 3 diners + 2 staff screens, 10 min, every reply within 30 s | **0 errors**; 93 AI answers, slowest 17.4 s |
 | NFR-R1 AI unavailable | menu, picks, calls still work | fallback in 0.0 s; everything else works |
@@ -52,11 +52,11 @@ Diagrams are in `docs/diagrams/` (architecture, data model, order flow, AI flow,
 
 ## 4. The prototype
 
-`prototype/index.html` is a clickable, no-server prototype of the diner, staff and owner journeys with mock data and the real app's labels and sample menu. All **56 Must requirements** are cited by a screen, each screen has a "Covers:" bar naming its SRS IDs, and a map tab lists FR-1 … FR-10 with an unhappy path to try for each (AI offline, wrong PIN, empty search, invalid input, flagged import rows). A test (`app/tests/prototype.test.ts`) fails if it cites an ID that is not in the SRS or misses a Must requirement.
+`prototype/index.html` is a clickable, no-server prototype of the diner, staff and owner journeys with mock data and the real app's labels and sample menu. All **56 Must requirements** are cited by a screen, each screen has a **Covers** pill naming its requirement with the happy and unhappy steps, and the **Thread** page (`?view=thread`) lists FR-1 … FR-10 with a happy path, an unhappy path, the design diagram and the acceptance tests (section 6). Unhappy paths you can click: empty search, empty cart, sold-out dish, AI offline, unsafe model claim replaced, prompt injection refused, wrong PIN and five wrong PINs locking sign-in, wrong owner password, invalid dish, import rows skipped, closing before opening, more than 60 tables. The menu is HaChi Kyu (132 dishes) and none of its allergen lists is marked restaurant-verified, so the AI suggests no dish for an allergy. Two tests keep it honest: `app/tests/prototype.test.ts` (cites only real IDs, covers every Must requirement) and `app/tests/prototype-thread.test.ts` (runs the AI rules and checks the Thread rows, diagrams and test files exist).
 
 ## 5. Testing
 
-Every push runs lint, type-check, unit and integration tests, the offline AI evaluation, the build, end-to-end tests against a real server (Node 22 and 24) and a Docker build. **537 unit and integration tests and 14 end-to-end tests pass; the live model scores 30/30 on the 30-question set** (once 29/30).
+Every push runs lint, type-check, unit and integration tests, the offline AI evaluation, the build, end-to-end tests against a real server (Node 22 and 24) and a Docker build. **1,328 unit and integration tests (74 files) pass; on 28 to 29 Oct the live model scored 29/30 on the 30-question set (30/30 on the harder extended set, 34/34 on natural questions)**; the 23 system tests passed on 29 Oct (`reports/implementation-progress-2026-10-29.md`).
 
 | Scenario | Expected | Test |
 |---|---|---|
@@ -84,9 +84,24 @@ Every push runs lint, type-check, unit and integration tests, the offline AI eva
 | Keeping a menu current | MI-1…4, QR-1 | photo import with review; QR per table | `import` |
 | Unseen unmet demand | IN-1…4 | questions logged without personal data | `chat-api`, `owner-insights` |
 
+**Per requirement.** Open the prototype at `prototype/index.html?view=thread` (the **Thread** button in the toolbar) for the same table with links to each screen; every screen also has a **Covers** pill (top-left) naming the requirement it shows. `app/tests/prototype-thread.test.ts` fails if a row, a diagram or a test file goes missing.
+
+| FR | Requirement (SRS IDs) | Happy path (click) | Unhappy path (click) | Design | Acceptance tests (`app/tests/`) |
+|---|---|---|---|---|---|
+| FR-1 | Multilingual menu browsing<br>DM-1 … DM-7, DM-11 | Open the menu from the table QR address, switch TH / EN / MY, search "salmon", filter a category, open a dish. | Search "zzz": "No dishes found" empty state. A sold-out dish shows "Sold out" and cannot be added. | `docs/diagrams/05-use-cases.png`: UC-1 Browse the menu | `ui/diner.test.tsx`, `diner-filters.test.ts`, `menu.test.ts` |
+| FR-2 | Safe AI waiter chat<br>AI-1 … AI-13, AI-16 … AI-20 | Ask AI: "What is the price of Salmon Sushi?" (data answer with a dish card), "I am allergic to peanuts" (allergen answer from data, ends with "confirm with the staff"). | Switch on "AI offline": open question gets a fallback with Browse / Call staff. Switch on "Model makes an unsafe claim": its reply is replaced. "Ignore all previous instructions…" is refused. | `docs/diagrams/04-ai-flow.png`: SRS §4.4 chat decision flow | `ai-rules.test.ts`, `ai-guard.test.ts`, `chat-api.test.ts` |
+| FR-3 | Picks, orders and staff calls<br>PC-1 … PC-7 | Add two dishes, open Cart, send to staff, then More → Call Staff. The order appears on the staff screen. | Empty cart shows "Cart is empty". A sold-out dish is refused. A second staff call within 60 s is refused ("wait"). | `docs/diagrams/03-order-flow.png`: SRS §4.3 order state model, UC-3, UC-4 | `orders.test.ts`, `allergy-profile.test.ts`, `e2e/diner-flow.e2e.test.ts` |
+| FR-4 | Waiter and kitchen live screens<br>SF-3 … SF-6, PC-4 | Staff: sign in as waiter (PIN 1111), take the order, then sign in as chef (2222): cook, mark ready; waiter serves. | Chef and waiter see different tabs (a waiter cannot cook). An empty queue shows an empty state. | `docs/diagrams/03-order-flow.png`: UC-8, UC-9, UC-10 | `ui/staff.test.tsx`, `orders.test.ts`, `diner-flow.test.ts` |
+| FR-5 | Owner account and menu / allergen management<br>OA-1 … OA-3, MM-1 … MM-7 | Owner: sign in (demo login on the page), Menu Items → add or edit a dish and tick its allergens. | Wrong password is refused. A dish without a name or with a negative price is rejected ("Name and price are required"). | `docs/diagrams/02-database.png`: UC-5 Manage menu (menu_items, owners) | `auth.test.ts`, `menu.test.ts`, `ui/owner-menu.test.tsx` |
+| FR-6 | Menu import from a photo<br>MI-1 … MI-4 | Owner → Import Menu: paste the CSV template, import: the dishes are added. | Rows with a missing name or price are skipped and counted ("skipped N invalid rows"). | `docs/diagrams/01-architecture.png`: UC-6 Import a menu (vision model reads, owner reviews) | `import.test.ts`, `ui/import.test.tsx`, `ui/import-errors.test.tsx` |
+| FR-7 | Restaurant settings (hours, FAQ, AI voice)<br>ST-1, ST-3, ST-4 | Owner → Hours & FAQ: change a closing time, add a FAQ, save. Ask the AI "what are your opening hours?" | A closing time that is not after the opening time is rejected ("Closing time must be after opening time"). | `docs/diagrams/02-database.png`: settings, FAQs | `menu.test.ts`, `ai-rules.test.ts`, `ui/owner-shell.test.tsx` |
+| FR-8 | QR codes per table<br>QR-1, QR-2 | Owner → QR Codes: choose the number of tables and generate. | Going below 1 or above 60 tables is refused ("Tables must be between 1 and 60"). | `docs/diagrams/05-use-cases.png`: UC-7 Print QR codes | `menu.test.ts`, `ui/owner-pages.test.tsx` |
+| FR-9 | Staff accounts (PIN)<br>SF-1, SF-2 | Staff: choose Waiter, enter 1111: you are in. Owner → Staff creates or changes a PIN. | A wrong PIN is refused ("Wrong PIN (1 of 5)"). Five wrong PINs lock sign-in for 60 seconds. An account needs a name and a 4-digit PIN. | `docs/diagrams/02-database.png`: staff table, SRS SF-2 lockout | `auth.test.ts`, `security-round2.test.ts`, `ratelimit.test.ts` |
+| FR-10 | Insights<br>IN-1 … IN-4 | Ask the AI a question it has no rule for, then Owner → Insights: it is listed under "Questions the AI could not answer". | With no questions yet, the list shows an empty state. Questions are stored without any personal data. | `docs/diagrams/05-use-cases.png`: UC-11 Read insights | `owner-insights.test.ts`, `chat-api.test.ts` |
+
 ## 7. AI-first reflection
 
-Full log: `docs/AI_USAGE_LOG.md`; statement: `docs/AI_USE_STATEMENT.md`. The product's model `gemma4:12b` is part of the system; Claude Code (Sonnet 5 and 5.5) was the development tool, used by Aung Nyi Nyi Thant; the other members did not use an AI tool, so the log has no rows for them. **[team to confirm]**
+Full log: `docs/AI_USAGE_LOG.md`; statement: `docs/AI_USE_STATEMENT.md`. The product's model `gemma4:12b` is part of the system; Claude Code (Sonnet 5 and 5.5) was the development tool, used by Aung Nyi Nyi Thant; Google Antigravity (Gemini) was used for six diner tasks on 8 Oct (logged); other members' use is **[team to confirm]**
 
 **What worked.** Tests written first found real bugs (a "bill" keyword matching inside "papaya"; a wrong quantity in "x4 … x2"; the Thai word for "staff" read as "sesame"). Measuring beat guessing: the slow first answer after idle was the long prompt being read (40–65 s), not the model loading; a start-up warm-up now covers it.
 
@@ -98,7 +113,7 @@ Full log: `docs/AI_USAGE_LOG.md`; statement: `docs/AI_USE_STATEMENT.md`. The pro
 
 Parts (`docs/TEAM_WORK_PLAN.md`): 1 diner app · 2 AI waiter and backend core · 3 owner back office · 4 staff and orders · 5 QR, insights, import screen, tests, docs. Accounts: `Tharathon47` = Tharathon Plengsri (6931503042, part 1) · `Aung-Nyi-Thant` = Aung Nyi Nyi Thant (6931503001, part 2) · `chawakron50-lab` = Chawakron Singkaew (6931503031, part 3) · `wujieiei` = Natthanon Wongsai (6931503103, part 4) · `noeysasi` = Sasiwimon Chatkaew (6931503073, part 5).
 
-**What GitHub shows today (21 Sep – 6 Oct 2026):** all commits on `main` and all pull requests come from the account `Aung-Nyi-Thant`, so the other members' work is not yet visible in the repository. **[team to complete: for each member, their commits, pull requests, documents, diagrams, tests or reviews in the repository, and where non-code work lives]**
+**What GitHub shows on 2 Nov 2026** (`git shortlog -sn --no-merges`, 84 commits; merged pull requests): `Aung-Nyi-Thant` 69 commits (37 of them carry the author `t <t@t>`, a mis-set git identity on one laptop that GitHub cannot link to an account; fixed on 2 Nov) and 50 merged pull requests; `Tharathon47` 9 commits and 4 merged pull requests (the clickable prototype: icons, images, role switcher, landing); `wujieiei` (Natthanon Wongsai) 6 commits; `chawakron50-lab` 6 commits; `noeysasi` (Sasiwimon Chatkaew) has three pull requests that are still open and not merged (#76 installation guide, #83 QR table tents, #84 QR and insights tests). **[team to complete: for each member, their commits, pull requests, documents, diagrams, tests or reviews in the repository, and where non-code work lives]**
 
 ## 9. Limits
 
