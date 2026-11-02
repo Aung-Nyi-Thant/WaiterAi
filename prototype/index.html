@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>ShopAI – HaChi Kyu</title>
+  <title>Shop AI — Every table. In good hands.</title>
+  <meta name="description" content="A multilingual restaurant menu that connects diner picks, floor staff and the kitchen. Explore the Shop AI clickable prototype.">
   <!-- Thai/Burmese fonts (needs internet; offline, the system font is used). media="print" + onload makes the request non-blocking,
        so a slow or missing connection never delays the first paint of the app. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,17 +13,24 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;800&family=Noto+Sans+Myanmar:wght@400;700&display=swap"
     rel="stylesheet" media="print" onload="this.media='all'">
-  <meta name="theme-color" content="#FFFDF5">
+  <meta name="theme-color" content="#f5f5f5">
   <link rel="stylesheet" href="proto.css">
+  <link rel="stylesheet" href="design.css">
+  <link rel="stylesheet" href="landing.css">
+  <link rel="stylesheet" href="picker.css">
 </head>
 
 <body>
   <!-- The whole app is drawn into #app by the scripts below -->
   <div id="app"></div>
-  <!-- Which screen to show:  index.html = customer · index.html?view=staff = waiter / chef · index.html?view=owner = owner dashboard -->
+  <!-- Default: landing. Table links open the diner; explicit views open customer, staff or owner. -->
   <script>
-    window.APP_VIEW = new URLSearchParams(location.search).get('view') || 'customer';
+    const params = new URLSearchParams(location.search);
+    const requestedView = params.get('view');
+    window.APP_VIEW = ['customer', 'staff', 'owner', 'landing'].includes(requestedView)
+      ? requestedView : params.has('table') || params.has('restaurant') ? 'customer' : 'landing';
     window.STAFF_MODE = window.APP_VIEW !== 'customer';   // staff / owner: app.js loads only the menu data and does not draw the customer screen
+    document.body.className = 'view-' + window.APP_VIEW;
   </script>
   <script src="icons.js"></script> <!-- icon set: ic(name) + strip(text) -->
   <script src="motion.js"></script> <!-- entrance and feedback animations: fx.snap() -->
@@ -30,7 +38,13 @@
   <script src="data.js"></script> <!-- Store + allergens / ingredients / categories + menu -->
   <script src="app.js"></script> <!-- customer app + staff app + AI service -->
   <script src="owner.js"></script> <!-- owner dashboard -->
+  <script src="landing.js"></script>
+  <script src="landing-service.js"></script>
+  <script src="landing-table.js"></script>
+  <script src="landing-workspace.js"></script>
+  <script src="picker.js"></script>
   <script src="switcher.js"></script> <!-- prototype toolbar: Diner / Staff / Owner / Reset (demo only) -->
+  <noscript><p style="padding:32px">Shop AI is a clickable restaurant prototype. Enable JavaScript to explore the menu and team demos.</p></noscript>
 </body>
 
 </html>
