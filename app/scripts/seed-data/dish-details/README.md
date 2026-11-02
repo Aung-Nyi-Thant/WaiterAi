@@ -3,6 +3,7 @@
 The prototype's menu (`prototype/data.js`) has each dish's name, price, category and photo, and a short ingredient list that was a guess.
 This folder holds what was researched on top of that: what each dish is made of, a description, Burmese names, and where each claim comes from.
 `scripts/make-hachi-kyu-seed.mts` merges the two into `../hachi-kyu.json`, which the seed script loads.
+The current missing-data audit and its source links are in [`reports/dish-data-research-2026-10-23.md`](../../../../reports/dish-data-research-2026-10-23.md).
 
 ## What is and is not known
 
@@ -21,8 +22,9 @@ never as "none". This follows `docs/AI_SAFETY.md` R3.
 
 ## How a dish is built
 
-- Its ingredient lines (English, Thai, Burmese) are its parts in order. A part with no name (`unknownpart`) only marks "not everything is listed".
+- Its ingredient lines (English, Thai, Burmese) are its parts in order. `unknownpart` appears as "Other ingredients (not listed on this menu)" so a partial list never looks complete. Burmese uses the English wording until a native translation is checked.
 - Its allergens are the **union** of its parts' allergens. If any part is `unknown`, the allergens are `null` (not provided).
+- For an unknown dish, `estimated_allergens_from_listed_parts` preserves positive signals from the parts that *are* named. It is research metadata, not a complete allergen list or an allergen-free claim; the app still uses `allergens: null`.
 - `contains_pork` comes from a part marked `pork`; `vegetarian` only when every part is marked vegetarian and nothing is unknown.
 - A Burmese name is left empty where it is not certain; the app then shows the English one. Burmese descriptions are not written: the English
   description is shown. A native speaker should extend both.

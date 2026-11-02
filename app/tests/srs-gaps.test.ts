@@ -22,11 +22,11 @@ describe("NFR-5: no customer data goes to a cloud AI service (checked in the sou
     expect(callers.map((f) => path.relative(process.cwd(), f).split(path.sep).join("/"))).toEqual(["src/modules/ai/provider.ts"]);   // "/" on every system, Windows too
     expect(fs.readFileSync(callers[0], "utf8")).toContain('process.env.OLLAMA_URL || "http://localhost:11434"');
   });
-  it("the only external web address in the whole app is the font stylesheet loaded by the browser", () => {
+  it("external addresses in source are limited to the font, public contact link and photo attribution", () => {
     const hosts = new Set<string>();
     for (const f of files) for (const m of fs.readFileSync(f, "utf8").matchAll(/https?:\/\/([a-z0-9.-]+)/gi)) hosts.add(m[1]);
     for (const ok of ["localhost", "127.0.0.1", "test.local", "www.w3.org"]) hosts.delete(ok);
-    expect([...hosts].filter((h) => !/^\$|^\d/.test(h))).toEqual(["fonts.googleapis.com"]);
+    expect([...hosts].filter((h) => !/^\$|^\d/.test(h)).sort()).toEqual(["fonts.googleapis.com", "github.com", "img.wongnai.com"]);
   });
 });
 
@@ -93,6 +93,7 @@ describe("FR-7: the owner's voice decides how a Thai or Burmese reply ends, what
     expect(withVoiceEnding("ผัดไทยอร่อยมากครับ", "th", "female")).toBe("ผัดไทยอร่อยมากค่ะ");   // wrong ending swapped
     expect(withVoiceEnding("ผัดไทยอร่อยมากค่ะ", "th", "female")).toBe("ผัดไทยอร่อยมากค่ะ");     // already right: untouched
     expect(withVoiceEnding("ผัดไทยอร่อยมากคะ", "th", "female")).toBe("ผัดไทยอร่อยมากคะ");
+    expect(withVoiceEnding("ได้ค่ะ แจ้งพนักงานก่อนชำระเงินได้เลยครับ", "th", "male")).toBe("ได้ครับ แจ้งพนักงานก่อนชำระเงินได้เลยครับ");
     expect(withVoiceEnding("ပတ်ထိုင်း ကောင်းပါတယ်။", "my", "male")).toBe("ပတ်ထိုင်း ကောင်းပါတယ်ခင်ဗျာ။");
     expect(withVoiceEnding("ပတ်ထိုင်း ကောင်းပါတယ်ခင်ဗျာ။", "my", "female")).toBe("ပတ်ထိုင်း ကောင်းပါတယ်ရှင်။");
     expect(withVoiceEnding("ပတ်ထိုင်း ကောင်းပါတယ်ရှင်။", "my", "female")).toBe("ပတ်ထိုင်း ကောင်းပါတယ်ရှင်။");

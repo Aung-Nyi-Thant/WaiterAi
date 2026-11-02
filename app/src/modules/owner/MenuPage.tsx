@@ -8,6 +8,7 @@ import { api, useEscape } from "@/modules/platform/client";
 import { ALLERGENS, TAGS, ALLERGEN_LABEL, TAG_LABEL } from "@/modules/platform/constants";
 import type { Item, Category } from "@/modules/platform/menu";
 
+const checkedOn = (at?: string | null) => (at ? new Date(at.replace(" ", "T") + "Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "");
 const blank = (category_id: number | null): any => ({ category_id, name: { en: "", th: "", my: "" }, desc: { en: "", th: "", my: "" }, price: 0, ingredients: "", ingredients_tr: { th: "", my: "" }, allergens: null, tags: [], spice: 0, available: true, photo_url: "" });
 
 export default function MenuPage() {
@@ -17,6 +18,7 @@ export default function MenuPage() {
   const [tab, setTab] = useState(0);
   const [search, setSearch] = useState("");
   const [missingOnly, setMissingOnly] = useState(false);
+  const [uncheckedOnly, setUncheckedOnly] = useState(false);
   const [edit, setEdit] = useState<any | null>(null);
   const [editingDuplicate, setEditingDuplicate] = useState(false);
   const [catEdit, setCatEdit] = useState<any | null>(null);
@@ -32,9 +34,12 @@ export default function MenuPage() {
   const shown = items.filter((i) =>
     (!tab || i.category_id === tab) &&
     (!missingOnly || i.allergens === null) &&
+    (!uncheckedOnly || i.allergen_status !== "verified") &&
     (!query || [i.name.en, i.name.th, i.name.my, i.ingredients, i.ingredients_tr?.th || "", i.ingredients_tr?.my || ""].some((value) => value.toLowerCase().includes(query))),
   );
-  const complete = items.filter((i) => i.allergens !== null).length;
+  const recorded = items.filter((i) => i.allergens !== null).length;
+  const verified = items.filter((i) => i.allergen_status === "verified").length;
+  const estimated = items.filter((i) => i.allergen_status === "estimated").length;
   const toggle = async (i: Item) => { await api(`/api/owner/items/${i.id}`, { method: "PUT", body: { available: !i.available } }); load(); };
   const missing = items.filter((i) => i.allergens === null);
   const categoryItems = items.filter((i) => i.category_id === tab);
@@ -64,9 +69,10 @@ export default function MenuPage() {
       <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-end", gap: 20, flexWrap: "wrap" }}>
         <div><h1 style={{ fontSize: 28 }}>Menu items</h1><p className="soft-l" style={{ margin: "6px 0 0" }}>What diners see, and what the AI waiter is allowed to say.</p></div>
         <div className="sa-plate sa-meter" style={{ width: 320, padding: "14px 18px" }}>
-          <div className="sa-meter__row"><b>Allergen data complete</b><span>{complete} of {items.length} dishes</span></div>
+          <div className="sa-meter__row"><b>Allergen entries recorded</b><span>{recorded} of {items.length} dishes</span></div>
           {/* biome-ignore lint/a11y/useSemanticElements: <meter> has default browser styling that would change the design */}
-          <div className="sa-meter__bar" role="meter" aria-valuenow={items.length ? Math.round((complete / items.length) * 100) : 0} aria-valuemin={0} aria-valuemax={100} aria-label="Allergen data complete"><div className="sa-meter__fill" style={{ width: `${items.length ? (complete / items.length) * 100 : 0}%` }} /></div>
+          <div className="sa-meter__bar" role="meter" aria-valuenow={items.length ? Math.round((recorded / items.length) * 100) : 0} aria-valuemin={0} aria-valuemax={100} aria-label="Allergen entries recorded"><div className="sa-meter__fill" style={{ width: `${items.length ? (recorded / items.length) * 100 : 0}%` }} /></div>
+          <div className="soft-l" style={{ fontSize: 13 }}><b>{verified}</b> checked by you · <b>{estimated}</b> estimated · <b>{missing.length}</b> not provided. Only a list you have compared with the recipe and supplier labels counts as checked.</div>
           {missing.length > 0 && <div className="soft-l" style={{ fontSize: 13 }}>{missing.slice(0, 2).map((m) => m.name.en).join(", ")}{missing.length > 2 ? ` and ${missing.length - 2} more` : ""} — no allergen info yet.</div>}
         </div>
       </div>
@@ -102,6 +108,9 @@ export default function MenuPage() {
         >
           Missing allergen data · {missing.length}
         </button>
+        <button type="button" className={`pill pill-l ${uncheckedOnly ? "on" : ""}`} aria-pressed={uncheckedOnly} onClick={() => setUncheckedOnly((value) => !value)}>
+          Not checked yet · {items.length - verified}
+        </button>
       </div>
       <div className="sa-plate r-xl" style={{ overflow: "hidden" }}>
         <div className="table-head"><div>Dish</div><div>Price</div><div>Allergens</div><div>Tags</div><div>Today</div><div /></div>
@@ -113,7 +122,8 @@ export default function MenuPage() {
               <div style={{ minWidth: 0 }}><div style={{ fontWeight: 700 }}>{i.name.en}</div><div className="soft-l" style={{ fontSize: 12, lineHeight: 1.7 }}>{[i.name.th !== i.name.en && i.name.th, i.name.my !== i.name.en && i.name.my].filter(Boolean).join(" · ")}</div></div>
             </div>
             <div><span className="sa-price" style={{ fontSize: 17, lineHeight: "22px" }}>฿{i.price}</span></div>
-            <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>{i.allergens === null ? <span className="chip chip-l chip-r">Not provided</span> : i.allergens.length === 0 ? <span className="chip chip-l chip-y">None listed</span> : i.allergens.map((a) => <span key={a} className="chip chip-l">{ALLERGEN_LABEL[a] || a}</span>)}</div>
+            <div><div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>{i.allergens === null ? <span className="chip chip-l chip-r">Not provided</span> : i.allergens.length === 0 ? <span className="chip chip-l chip-y">No allergens recorded</span> : i.allergens.map((a) => <span key={a} className="chip chip-l">{ALLERGEN_LABEL[a] || a}</span>)}</div>
+              {i.allergens !== null && <div className="soft-l" style={{ fontSize: 11, marginTop: 4 }}>{i.allergen_status === "verified" ? `Checked ${checkedOn(i.allergens_checked_at)}` : i.allergens_checked_at ? `Recheck due (last ${checkedOn(i.allergens_checked_at)})` : "Estimated, not checked"}</div>}</div>
             <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>{i.tags.filter((t) => t !== "vegetarian" || !i.tags.includes("vegan")).map((t) => <span key={t} className="chip chip-l chip-g">{TAG_LABEL[t] || t}</span>)}</div>
             <div className="row" style={{ gap: 8, fontWeight: 700, fontSize: 13, color: i.available ? "var(--ok)" : "var(--cherry-text)" }}>
               <button type="button" className={`switch ${i.available ? "on" : ""}`} role="switch" aria-checked={i.available} aria-label={`${i.name.en} on sale`} onClick={() => toggle(i)} />{i.available ? "On sale" : "Sold out"}
@@ -122,6 +132,7 @@ export default function MenuPage() {
               <button type="button" className="btn btn-ol btn-icon" style={{ borderRadius: 14 }} aria-label={`Duplicate ${i.name.en}`} title="Duplicate dish" onClick={() => {
                 const copy = JSON.parse(JSON.stringify(i));
                 delete copy.id;
+                copy.allergen_check_note = "";
                 setEditingDuplicate(true);
                 setEdit(copy);
               }}><Icon name="copy" size={18} /></button>
@@ -143,7 +154,7 @@ function ItemForm({ item, cats, isDuplicate, onClose, onSaved }: { item: any; ca
   const [busy, setBusy] = useState(false);
   const isNew = !f.id;
   const set = (k: string, v: any) => {
-    setF((x: any) => ({ ...x, [k]: v }));
+    setF((x: any) => ({ ...x, [k]: v, ...(k === "allergens" || k === "ingredients" || k === "ingredients_tr" ? { verify: false, allergen_check_note: "" } : {}) }));   // a check belongs to the list it was made on
     if (k === "name" || k === "price" || k === "category_id") {
       setFieldErrors((current) => ({ ...current, [k]: undefined }));
     }
@@ -167,7 +178,7 @@ function ItemForm({ item, cats, isDuplicate, onClose, onSaved }: { item: any; ca
     if (Object.keys(errors).length) return;
     setBusy(true);
     try {
-      const body = { category_id: f.category_id, name: f.name, desc: f.desc, price: f.price, ingredients: f.ingredients, ingredients_tr: f.ingredients_tr || { th: "", my: "" }, allergens: f.allergens, tags: f.tags, spice: f.spice, available: f.available, photo_url: f.photo_url };
+      const body = { category_id: f.category_id, name: f.name, desc: f.desc, price: f.price, ingredients: f.ingredients, ingredients_tr: f.ingredients_tr || { th: "", my: "" }, allergens: f.allergens, tags: f.tags, spice: f.spice, available: f.available, photo_url: f.photo_url, ...(f.verify && f.allergens !== null ? { allergen_status: "verified", allergen_check_note: f.allergen_check_note || "" } : {}) };
       if (isNew) await api("/api/owner/items", { body }); else await api(`/api/owner/items/${f.id}`, { method: "PUT", body });
       onSaved();
     } catch (e: any) {
@@ -254,7 +265,17 @@ function ItemForm({ item, cats, isDuplicate, onClose, onSaved }: { item: any; ca
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", opacity: f.allergens === null ? 0.45 : 1 }}>
             {ALLERGENS.map((a) => <label key={a} className="check"><input type="checkbox" disabled={f.allergens === null} checked={(f.allergens || []).includes(a)} onChange={() => toggleIn("allergens", a)} />{ALLERGEN_LABEL[a]}</label>)}
           </div>
-          <div className="soft-l" style={{ fontSize: 12, marginTop: 6 }}>The AI waiter will never call a dish safe. Missing data shows as “not provided” to diners.</div>
+          <div className="soft-l" style={{ fontSize: 12, marginTop: 6 }}>Check the kitchen recipe and supplier labels before recording allergens. An empty list means none recorded, not verified safe. Missing data shows as “not provided” to diners.</div>
+          {f.allergens !== null && (
+            <div style={{ marginTop: 8 }}>
+              <label className="check"><input type="checkbox" checked={!!f.verify} onChange={(e) => set("verify", e.target.checked)} /><span>I compared this list with the kitchen recipe and the supplier labels today</span></label>
+              <label className="lbl" htmlFor="allergen-check-note">Recipe, supplier labels and cross-contact record</label>
+              <textarea id="allergen-check-note" className="inp" rows={3} maxLength={500} value={f.allergen_check_note || ""} onChange={(e) => set("allergen_check_note", e.target.value)} placeholder="Recipe/version, supplier label dates, and how cross-contact is handled" />
+              <div className="soft-l" style={{ fontSize: 12, marginTop: 4 }}>
+                {f.allergen_status === "verified" ? `Checked ${checkedOn(f.allergens_checked_at)}. Editing the allergens or ingredients removes this check.` : f.allergens_checked_at ? `Last checked ${checkedOn(f.allergens_checked_at)}: check again.` : "Diners see this list as an estimate until you tick the box."}
+              </div>
+            </div>
+          )}
         </div>
         <div><span className="lbl">Tags</span><div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>{TAGS.map((t) => <label key={t} className="check"><input type="checkbox" checked={(f.tags || []).includes(t)} onChange={() => toggleIn("tags", t)} />{TAG_LABEL[t]}</label>)}</div></div>
         <div className="row" style={{ gap: 14, flexWrap: "wrap" }}>

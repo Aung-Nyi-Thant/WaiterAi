@@ -26,6 +26,12 @@ const ask = (text: string) => {
 const chatCalls = () => apiCalls.filter((c) => c.url.endsWith("/chat"));
 
 describe("rating an answer", () => {
+  it("explains saved chat data before a diner sends a question", async () => {
+    await open();
+    await openChat();
+    fireEvent.click(screen.getByText(T("aiIntroShort")));
+    expect(screen.getByText(T("aiIntro6"))).toBeTruthy();
+  });
   it("'not helpful' asks what was wrong, and the chosen reason is sent with the rating", async () => {
     motion(true);
     await open();

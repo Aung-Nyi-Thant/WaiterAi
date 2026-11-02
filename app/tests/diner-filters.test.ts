@@ -4,7 +4,7 @@ import { filterMenu, type DinerFilters } from "@/modules/diner/filters";
 import { itemsOf } from "@/modules/platform/menu";
 
 const none: DinerFilters = { veg: false, noPeanut: false, u100: false, spicy: false };
-const menu = () => itemsOf(1);
+const menu = () => itemsOf(1).map((i) => i.allergens === null ? i : { ...i, allergen_status: "verified" as const });
 const names = (f: Partial<DinerFilters>, o: { cat?: number | null; q?: string } = {}) => filterMenu(menu(), { cat: o.cat ?? null, q: o.q ?? "", f: { ...none, ...f } }).map((i) => i.name.en);
 
 describe("DM-4 the 'No peanuts' filter never shows a dish with missing allergen data", () => {
@@ -20,7 +20,7 @@ describe("DM-4 the 'No peanuts' filter never shows a dish with missing allergen 
   });
   it("a dish with an empty allergen list ('none listed') is shown, 'not provided' (null) is not", () => {
     const [first] = menu();
-    const items = [{ ...first, id: 1, allergens: [] as string[] }, { ...first, id: 2, allergens: null }, { ...first, id: 3, allergens: ["peanut"] }, { ...first, id: 4, allergens: ["soy"] }];
+    const items = [{ ...first, id: 1, allergens: [] as string[] }, { ...first, id: 2, allergens: null }, { ...first, id: 3, allergens: ["peanut"] }, { ...first, id: 4, allergens: ["soy"] }, { ...first, id: 5, allergens: [] as string[], allergen_status: "estimated" as const }];
     expect(filterMenu(items, { cat: null, q: "", f: { ...none, noPeanut: true } }).map((i) => i.id)).toEqual([1, 4]);
   });
 });

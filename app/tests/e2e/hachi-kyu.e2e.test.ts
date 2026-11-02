@@ -69,7 +69,7 @@ describe("HaChi Kyu on the running server", () => {
     expect(floor.data.dishes).toHaveLength(132);                                   // only this restaurant's dishes on the waiter's sold-out list
     expect(JSON.stringify(floor.data)).not.toContain("Shrimp Pad Thai");
     // (the other restaurant's staff account is locked for a minute by diner-flow.e2e.test.ts, so isolation from its side is in tests/hachi-kyu.test.ts)
-    const act = (who: ReturnType<typeof person>, action: string) => who(`/api/staff/orders/${pickId}`, { action });
+    const act = (who: ReturnType<typeof person>, action: string) => who(`/api/staff/orders/${pickId}`, { action, allergyConfirmed: true });
     expect((await act(waiter, "take")).status).toBe(200);
 
     expect((await chef("/api/staff/login", { slug, pin: process.env.E2E_HACHI_CHEF_PIN, role: "chef" })).status).toBe(200);

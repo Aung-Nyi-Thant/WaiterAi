@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS menu_items (
   ingredients_th TEXT NOT NULL DEFAULT '',     -- the same ingredients in Thai / Burmese, in the same order (see platform/ingredients.ts)
   ingredients_my TEXT NOT NULL DEFAULT '',
   allergens_json TEXT,                 -- NULL = allergen info not provided
+  allergen_check_note TEXT NOT NULL DEFAULT '',
   tags_json TEXT NOT NULL DEFAULT '[]',
   spice INTEGER NOT NULL DEFAULT 0,
   available INTEGER NOT NULL DEFAULT 1,
@@ -101,6 +102,8 @@ CREATE TABLE IF NOT EXISTS orders (
   status TEXT NOT NULL DEFAULT 'picked' CHECK (status IN ('picked','new','cooking','ready','served','cancelled')),
   lang TEXT NOT NULL DEFAULT 'en',
   allergy_note TEXT NOT NULL DEFAULT '',
+  waiter_allergy_confirmed_at TEXT,
+  chef_allergy_confirmed_at TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now')),
   paid_at TEXT,
@@ -173,9 +176,19 @@ function open(): DB {
   addColumn(database, "ALTER TABLE order_items ADD COLUMN flag TEXT NOT NULL DEFAULT ''");
   // ...and before a diner's phone had to prove it ordered at a table before reading that table's bill
   addColumn(database, "ALTER TABLE orders ADD COLUMN receipt TEXT NOT NULL DEFAULT ''");
+  addColumn(database, "ALTER TABLE orders ADD COLUMN waiter_allergy_confirmed_at TEXT");
+  addColumn(database, "ALTER TABLE orders ADD COLUMN chef_allergy_confirmed_at TEXT");
   // ...and before a dish's ingredients could be written in Thai and Burmese too
   addColumn(database, "ALTER TABLE menu_items ADD COLUMN ingredients_th TEXT NOT NULL DEFAULT ''");
   addColumn(database, "ALTER TABLE menu_items ADD COLUMN ingredients_my TEXT NOT NULL DEFAULT ''");
+  // ...and before an allergen list could be marked as checked by the restaurant. 'estimated' is the safe default: nobody has checked an old list.
+  addColumn(database, "ALTER TABLE menu_items ADD COLUMN allergen_status TEXT NOT NULL DEFAULT 'estimated'");
+  addColumn(database, "ALTER TABLE menu_items ADD COLUMN allergens_checked_at TEXT");
+  addColumn(database, "ALTER TABLE menu_items ADD COLUMN allergens_checked_by TEXT NOT NULL DEFAULT ''");
+  addColumn(database, "ALTER TABLE menu_items ADD COLUMN allergen_check_note TEXT NOT NULL DEFAULT ''");
+  database.exec("UPDATE menu_items SET allergen_status = 'estimated' WHERE allergen_status = 'verified' AND allergen_check_note = ''");
+  // ...and before the insights could tell a rule answer from a model answer ('rules' or 'model'; '' = written before this existed)
+  addColumn(database, "ALTER TABLE chat_messages ADD COLUMN source TEXT NOT NULL DEFAULT ''");
   // The demo menu gets its Thai ingredient lines in a database made before they existed (only where the dish still has the demo's own English line).
   try { for (const row of ITEMS) database.prepare("UPDATE menu_items SET ingredients_th = ? WHERE name_en = ? AND ingredients = ? AND ingredients_th = '' AND restaurant_id IN (SELECT id FROM restaurants WHERE slug = 'golden-lotus')").run(ITEMS_ING_TH[row[1]] || "", row[1], row[6]); } catch {}
   // The demo accounts (demo@shop.ai / demo1234, PINs 1111 and 2222) are for local development only.
@@ -205,7 +218,7 @@ const ITEMS: [string, string, string, string, string, number, string, string[] |
   ["Mains", "Chicken Fried Rice", "ข้าวผัดไก่", "ကြက်သား ထမင်းကြော်", "Wok-fried rice with chicken and egg.", 80, "rice, chicken, egg, soy sauce", ["egg", "soy"], [], 0, "", true],
   ["Curries", "Beef Massaman Curry", "แกงมัสมั่นเนื้อ", "အမဲသား မတ်စမန်ကာရီ", "Mild curry with beef, potato and peanuts.", 160, "beef, potato, peanuts, coconut milk, massaman paste", ["peanut"], [], 0, "", true],
   ["Salads", "Papaya Salad", "ส้มตำ", "သင်္ဘောသီးသုပ်", "Green papaya salad with chili, lime and peanuts.", 70, "green papaya, chili, lime, peanuts, dried shrimp", ["peanut", "shellfish"], ["spicy"], 3, "", true],
-  ["Starters", "Fresh Spring Rolls", "ปอเปี๊ยะสด", "ဟင်းသီးဟင်းရွက် ကော်ပြန့်စိမ်း", "Rice-paper rolls with vegetables and herbs.", 85, "rice paper, vegetables, herbs, dipping sauce (recipe not fully recorded)", null, [], 0, "", true],
+  ["Starters", "Fresh Spring Rolls", "ปอเปี๊ยะสด", "ဟင်းသီးဟင်းရွက် ကော်ပြန့်စိမ်း", "Rice-paper rolls with vegetables and herbs. The dipping sauce recipe is not recorded; please ask staff about allergens.", 85, "rice paper, vegetables, herbs, dipping sauce (recipe not fully recorded)", null, [], 0, "", true],
   ["Drinks", "Thai Iced Tea", "ชาไทยเย็น", "ထိုင်းလက်ဖက်ရည်အေး", "Sweet iced tea with milk.", 50, "black tea, sugar, evaporated milk, ice", ["milk"], ["vegetarian"], 0, "", true],
   ["Desserts", "Coconut Ice Cream", "ไอศกรีมกะทิ", "အုန်းနို့ ရေခဲမုန့်", "Creamy coconut ice cream.", 60, "coconut milk, cream, sugar", ["milk"], ["vegetarian"], 0, "", false],
   ["Starters", "Grilled Pork Skewers", "หมูปิ้ง", "ဝက်သားကင်", "Marinated pork grilled over charcoal.", 60, "pork, soy sauce, garlic, coriander root", ["soy"], ["contains_pork"], 0, "", true],
@@ -241,6 +254,16 @@ function seedIfEmpty(d: DB) {
 function seedDemo(d: DB) {
   const uid = Number(d.prepare("INSERT INTO users (email, password_hash) VALUES (?, ?)").run("demo@shop.ai", bcrypt.hashSync("demo1234", 10)).lastInsertRowid);
   const rid = Number(d.prepare("INSERT INTO restaurants (owner_id, slug, name, city) VALUES (?, ?, ?, ?)").run(uid, "golden-lotus", "Golden Lotus Kitchen", "Bangkok").lastInsertRowid);
+  seedDemoMenu(d, rid);
+  [["Is there Wi-Fi?", "Yes, free Wi-Fi. Ask staff for the password."], ["Is there parking?", "Free parking behind the building, 20 spaces."], ["Do you give tax invoices?", "Yes, tell staff before paying."]].forEach(([q, a], i) => {
+    d.prepare("INSERT INTO faqs (restaurant_id, q, a, sort) VALUES (?,?,?,?)").run(rid, q, a, i);
+  });
+  d.prepare("INSERT INTO staff (restaurant_id, name, role, pin_hash) VALUES (?,?,?,?)").run(rid, "Waiter 1", "waiter", bcrypt.hashSync("1111", 8));
+  d.prepare("INSERT INTO staff (restaurant_id, name, role, pin_hash) VALUES (?,?,?,?)").run(rid, "Chef 1", "chef", bcrypt.hashSync("2222", 8));
+}
+
+// The Golden Lotus categories and dishes. Allergen lists here are 'estimated' (the column default): they are demo data, nobody checked a kitchen.
+function seedDemoMenu(d: DB, rid: number) {
   const cats: Record<string, number> = {};
   [["Starters", "ของทานเล่น", "အစာစား"], ["Mains", "จานหลัก", "ပင်မဟင်း"], ["Curries", "แกง", "ဟင်းချို/ကာရီ"], ["Salads", "ยำและสลัด", "သုပ်"], ["Desserts", "ของหวาน", "အချိုပွဲ"], ["Drinks", "เครื่องดื่ม", "သောက်စရာ"]].forEach(([en, th, my], i) => {
     cats[en] = Number(d.prepare("INSERT INTO categories (restaurant_id, name_en, name_th, name_my, sort) VALUES (?,?,?,?,?)").run(rid, en, th, my, i).lastInsertRowid);
@@ -249,11 +272,21 @@ function seedDemo(d: DB) {
     d.prepare(`INSERT INTO menu_items (restaurant_id, category_id, name_en, name_th, name_my, desc_en, price, ingredients, ingredients_th, allergens_json, tags_json, spice, available, photo_url, sort)
                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(rid, cats[cat], en, th, my, desc, price, ing, ITEMS_ING_TH[en] || "", al === null ? null : JSON.stringify(al), JSON.stringify(tags), spice, avail ? 1 : 0, photo, i);
   });
-  [["Is there Wi-Fi?", "Yes, free Wi-Fi. Ask staff for the password."], ["Is there parking?", "Free parking behind the building, 20 spaces."], ["Do you give tax invoices?", "Yes, tell staff before paying."]].forEach(([q, a], i) => {
-    d.prepare("INSERT INTO faqs (restaurant_id, q, a, sort) VALUES (?,?,?,?)").run(rid, q, a, i);
-  });
-  d.prepare("INSERT INTO staff (restaurant_id, name, role, pin_hash) VALUES (?,?,?,?)").run(rid, "Waiter 1", "waiter", bcrypt.hashSync("1111", 8));
-  d.prepare("INSERT INTO staff (restaurant_id, name, role, pin_hash) VALUES (?,?,?,?)").run(rid, "Chef 1", "chef", bcrypt.hashSync("2222", 8));
+}
+
+/** Puts the original 13-dish Golden Lotus menu back on the 'golden-lotus' restaurant (its other dishes and categories are removed).
+ *  Orders and chats stay: an order line keeps its own name and price. Used by scripts/restore-demo-menu.mts, which backs the database up first. */
+export function restoreDemoMenu(d: DB = db): number {
+  const r = d.prepare("SELECT id FROM restaurants WHERE slug = 'golden-lotus'").get() as any;
+  if (!r) throw new Error("There is no 'golden-lotus' restaurant.");
+  d.exec("BEGIN IMMEDIATE");
+  try {
+    d.prepare("DELETE FROM menu_items WHERE restaurant_id = ?").run(r.id);
+    d.prepare("DELETE FROM categories WHERE restaurant_id = ?").run(r.id);
+    seedDemoMenu(d, r.id);
+    d.exec("COMMIT");
+  } catch (e) { try { d.exec("ROLLBACK"); } catch {} throw e; }
+  return ITEMS.length;
 }
 
 // created last so that the demo data above is defined when seeding runs

@@ -70,6 +70,17 @@ describe("the HaChi Kyu data", () => {
     expect(nulls).toBeGreaterThan(20);
     expect(nulls).toBeLessThan(60);
   });
+  it("keeps partial allergen signals separate from an incomplete allergen list", () => {
+    for (const i of data.items) {
+      if (i.allergens !== null) {
+        expect(i.estimated_allergens_from_listed_parts).toBeUndefined();
+        continue;
+      }
+      const expected = new Set<string>(DETAILS[i.name.en].parts.flatMap((k: string) => COMP.components[k].allergens));
+      expect(i.estimated_allergens_from_listed_parts, i.name.en).toEqual(expect.arrayContaining([...expected]));
+      expect(i.estimated_allergens_from_listed_parts.length, i.name.en).toBe(expected.size);
+    }
+  });
   it("a dish's allergens are exactly the union of its parts' allergens (nothing added by hand, nothing dropped)", () => {
     for (const i of data.items) {
       if (i.allergens === null) continue;
@@ -196,8 +207,9 @@ describe("scripts/seed-hachi-kyu.mts", () => {
     const r = seed();
     const row = (await sql(r.dir, "SELECT ingredients, ingredients_th, ingredients_my FROM menu_items WHERE name_en = '[Coke Combo] Yakisoba with Coke'"))[0];
     expect(row).toEqual({ ingredients: "Yakisoba noodles (wheat), Pork, Cabbage, Yakisoba sauce (soy sauce, Worcestershire-style), Cola", ingredients_th: "เส้นยากิโซบะ (แป้งสาลี), หมู, กะหล่ำปลี, ซอสยากิโซบะ, น้ำอัดลมโคล่า", ingredients_my: "ခေါက်ဆွဲ, ဝက်သား, , , " });
-    const written = data.items.filter((i: any) => i.ingredients).length;                         // 6 dishes have no ingredient list at all
-    expect(written).toBe(126);
+    const written = data.items.filter((i: any) => i.ingredients).length;
+    expect(written).toBe(132);                                                              // even an unlisted recipe now says so visibly
+    expect(data.items.find((i: any) => i.name.en === "Clear Soup")!.ingredients).toBe("Other ingredients (not listed on this menu)");
     expect((await sql(r.dir, "SELECT COUNT(*) n FROM menu_items WHERE ingredients_th <> '' AND restaurant_id = (SELECT id FROM restaurants WHERE slug = 'hachi-kyu')"))[0].n).toBe(written);
   });
   it("on a restaurant seeded before the translations existed, a second run fills them in, and keeps an owner's own line", async () => {
@@ -208,7 +220,7 @@ describe("scripts/seed-hachi-kyu.mts", () => {
     d.exec("UPDATE menu_items SET ingredients_th = 'เส้น, น้ำ' WHERE name_en = '[Coke Combo] Yakisoba with Coke'");     // the owner already wrote this one
     d.close();
     const again = seed({}, r.dir);
-    expect(again.out).toMatch(/added the Thai and Burmese ingredient names to 125 dishes/);                 // 126 with a list, minus the one the owner wrote
+    expect(again.out).toMatch(/added the Thai and Burmese ingredient names to 131 dishes/);                 // 132 with a line, minus the one the owner wrote
     const rows = await sql(r.dir, "SELECT name_en, ingredients_th FROM menu_items WHERE name_en IN ('[Coke Combo] Yakisoba with Coke', 'Tuna Sashimi')");
     expect(rows.find((x) => x.name_en.startsWith("[Coke"))!.ingredients_th).toBe("เส้น, น้ำ");
     expect(rows.find((x) => x.name_en === "Tuna Sashimi")!.ingredients_th).toBe("ทูน่า");
@@ -459,12 +471,12 @@ describe("a diner orders from the big menu and the HaChi Kyu staff cook it (the 
     expect(pick, JSON.stringify(f.data.picks)).toBeTruthy();
     expect(pick.items.reduce((s: number, i: any) => s + i.qty, 0)).toBe(3);
     expect(pick.allergy).toBe("shellfish");
-    expect((await call(orderAction, { method: "POST", params: { id: String(pick.id) }, body: { action: "take" } })).status).toBe(200);
+    expect((await call(orderAction, { method: "POST", params: { id: String(pick.id) }, body: { action: "take", allergyConfirmed: true } })).status).toBe(200);
 
     await staffLogin("2222", hachi, "chef");
     const k = await call(kitchen);
     expect(k.data.tickets.new.some((t: any) => t.id === pick.id)).toBe(true);
-    for (const action of ["cooking", "ready"]) expect((await call(orderAction, { method: "POST", params: { id: String(pick.id) }, body: { action } })).status, action).toBe(200);
+    for (const action of ["cooking", "ready"]) expect((await call(orderAction, { method: "POST", params: { id: String(pick.id) }, body: { action, allergyConfirmed: true } })).status, action).toBe(200);
 
     await staffLogin("1111", hachi);
     expect((await call(orderAction, { method: "POST", params: { id: String(pick.id) }, body: { action: "served" } })).status).toBe(200);

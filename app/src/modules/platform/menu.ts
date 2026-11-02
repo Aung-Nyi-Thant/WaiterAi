@@ -9,7 +9,12 @@ export type Item = {
   price: number; ingredients: string;
   ingredients_tr?: { th: string; my: string };         // the same ingredients written in Thai / Burmese, in the same order (see ingredientList)
   allergens: string[] | null; tags: string[]; spice: number; available: boolean; photo_url: string;
+  // unknown = no list; estimated = a list nobody at the restaurant has checked (or whose check is older than ALLERGEN_RECHECK_DAYS, or was
+  // made before the list or ingredients changed); verified = the owner compared recipe and supplier labels, on allergens_checked_at
+  allergen_status?: AllergenStatus; allergens_checked_at?: string | null;     // always set by rowToItem; optional so hand-written sample dishes still type-check
 };
+export type AllergenStatus = "unknown" | "estimated" | "verified";
+export const ALLERGEN_RECHECK_DAYS = 180;
 export type Category = { id: number; name: Record<Lang, string>; sort: number };
 export type Restaurant = {
   id: number; slug: string; name: string; city: string; currency: string;
@@ -18,6 +23,8 @@ export type Restaurant = {
   chat_cap: number;
 };
 
+// SQLite's datetime('now') is UTC without a zone ("2026-10-28 14:03:00")
+const checkedRecently = (at: string | null) => !!at && Date.now() - Date.parse(at.replace(" ", "T") + "Z") < ALLERGEN_RECHECK_DAYS * 864e5;
 export function rowToItem(r: any): Item {
   return {
     id: r.id, category_id: r.category_id,
@@ -26,6 +33,8 @@ export function rowToItem(r: any): Item {
     price: r.price, ingredients: r.ingredients, ingredients_tr: { th: r.ingredients_th || "", my: r.ingredients_my || "" },
     allergens: r.allergens_json === null ? null : JSON.parse(r.allergens_json),
     tags: JSON.parse(r.tags_json || "[]"), spice: r.spice, available: !!r.available, photo_url: r.photo_url,
+    allergen_status: r.allergens_json === null ? "unknown" : r.allergen_status === "verified" && checkedRecently(r.allergens_checked_at) ? "verified" : "estimated",
+    allergens_checked_at: r.allergens_checked_at ?? null,
   };
 }
 export function rowToRestaurant(r: any): Restaurant {
@@ -53,7 +62,7 @@ export const categoriesOf = (rid: number): Category[] =>
 export const popularDishes = (rid: number): Record<number, number> =>
   Object.fromEntries(all(
     `SELECT i.item_id AS id, SUM(i.qty) AS n FROM order_items i JOIN orders o ON o.id = i.order_id
-     WHERE o.restaurant_id = ? AND o.status != 'cancelled' AND i.item_id IS NOT NULL AND o.created_at >= datetime('now','-30 day') GROUP BY i.item_id`, rid)
+     WHERE o.restaurant_id = ? AND o.status NOT IN ('cancelled','picked') AND i.item_id IS NOT NULL AND o.created_at >= datetime('now','-30 day') GROUP BY i.item_id`, rid)
     .map((r: any) => [r.id, Number(r.n)]));
 export const faqsOf =(rid: number) => all("SELECT id, q, a FROM faqs WHERE restaurant_id = ? ORDER BY sort, id", rid);
 export const specialsOf = (rid: number) => {

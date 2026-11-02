@@ -199,6 +199,14 @@ describe("QR codes (FR-8)", () => {
 });
 
 describe("insights (FR-10)", () => {
+  it("lets the owner delete chat history from the data panel", async () => {
+    await diner("privacy test question");
+    await page(<InsightsPage />, "/owner/insights", "What diners asked");
+    expect(screen.getByRole("button", { name: "Download chat data" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Delete chat history" }));
+    await waitFor(() => expect(get("SELECT COUNT(*) AS n FROM chat_sessions WHERE restaurant_id = 1").n).toBe(0));
+    expect(apiCalls.some((c) => c.method === "DELETE" && c.url === "/api/owner/chat-data")).toBe(true);
+  });
   it("with no chats yet it says so; the 1 / 7 / 30 day buttons reload the numbers", async () => {
     run("DELETE FROM chat_messages"); run("DELETE FROM chat_sessions"); run("DELETE FROM orders");
     await page(<InsightsPage />, "/owner/insights", "What diners asked");
@@ -210,7 +218,7 @@ describe("insights (FR-10)", () => {
   it("counts chats and questions, lists the topics, the languages and the questions the AI could not answer with 'Add FAQ'", async () => {
     await diner("What time do you close?");
     await diner("How much is the Massaman curry?");
-    await diner("Do you do birthday cakes?");                              // the model is off: could not answer
+    await diner("Is there a toilet?");                              // a shop fact the owner never entered: the staff are pointed to, and the owner sees it here
     await diner("ผมแพ้ถั่วลิสง", { lang: "th" });
     await page(<InsightsPage />, "/owner/insights", "What diners asked");
     await screen.findByText("Most asked");
@@ -218,9 +226,9 @@ describe("insights (FR-10)", () => {
     expect(screen.getByText("COULD NOT ANSWER").nextElementSibling?.textContent).not.toBe("0");
     expect(screen.getByText(/^Thai/)).toBeTruthy();
     const unanswered = screen.getByText("Could not answer").parentElement as HTMLElement;
-    expect(within(unanswered).getByText("Do you do birthday cakes?")).toBeTruthy();
+    expect(within(unanswered).getByText("Is there a toilet?")).toBeTruthy();
     const add = within(unanswered).getAllByRole("link").find((a) => a.getAttribute("href")?.includes("/owner/faq"))!;
-    expect(add.getAttribute("href")).toBe(`/owner/faq?q=${encodeURIComponent("Do you do birthday cakes?")}`);
+    expect(add.getAttribute("href")).toBe(`/owner/faq?q=${encodeURIComponent("Is there a toilet?")}`);
   });
   it("shows which allergies diners have, how many dishes fit them, and the dishes with no allergen data", async () => {
     await fetch("/api/public/golden-lotus/chat", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ message: "What can I eat?", table: "4", sessionId: "profile-1", profile: ["peanut", "shellfish"] }) });
@@ -232,6 +240,7 @@ describe("insights (FR-10)", () => {
   });
   it("lists the most ordered dishes", async () => {
     await fetch("/api/public/golden-lotus/orders", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ table: "5", items: [{ id: 3, qty: 2 }], sessionId: "o1", lang: "en" }) });
+    run("UPDATE orders SET status = 'new' WHERE status = 'picked'");      // popularity counts orders staff accepted
     await page(<InsightsPage />, "/owner/insights", "What diners asked");
     const top = (await screen.findByText("Most ordered dishes")).parentElement as HTMLElement;
     await waitFor(() => expect(within(top).getByText("Tom Yum Goong")).toBeTruthy());

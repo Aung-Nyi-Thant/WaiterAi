@@ -131,6 +131,15 @@ describe("SF-3 / PC-4: the waiter's floor", () => {
     await waitFor(() => expect(status(b)).toBe("cancelled"));
     await waitFor(() => expect(document.querySelectorAll(".sa-ticket")).toHaveLength(0));
   });
+  it("marks an old pick clearly and formats its age in hours", async () => {
+    reset();
+    const id = await pick("7", [{ id: 3, qty: 1 }]);
+    ago("orders", id, 125);
+    await floor();
+    const card = document.querySelector(".sa-ticket") as HTMLElement;
+    expect(card.textContent).toContain("Old picks");
+    expect(card.textContent).toMatch(/2 h [56] min ago/);
+  });
   it("the border of a pick is light grey under 5 minutes, mid grey from 5 and black from 10 (waiting-time shades)", async () => {
     reset();
     const fresh = await pick("1", [{ id: 6, qty: 1 }]);
@@ -152,10 +161,11 @@ describe("SF-3 / PC-4: the waiter's floor", () => {
     expect(banner.textContent).toContain("Peanut");
     expect(banner.textContent).toContain("Confirm with the kitchen before ordering.");
     const clash = screen.getByTitle("Clashes with the diner's allergy profile");   // drawn alert icon + the allergen name
-    expect(clash.textContent).toBe("Peanut");
+    expect(clash.textContent).toBe("Peanut · estimated list");
     expect(clash.querySelector("svg")).toBeTruthy();
     const mango = screen.getByText("Mango Sticky Rice").closest("li") as HTMLElement;
     expect(within(mango).queryByTitle("Clashes with the diner's allergy profile")).toBeNull();
+    expect(within(mango).getByText("Allergen list estimated")).toBeTruthy();
   });
   it("food that the kitchen marked ready appears in the feed; 'Served' finishes it", async () => {
     reset();
@@ -241,13 +251,13 @@ describe("SF-4 / SF-5: the chef's kitchen", () => {
     run("UPDATE orders SET status = 'new' WHERE id = ?", id);
     return id;
   };
-  it("has three columns with their counts and shows 'Empty' for a column with no tickets", async () => {
+  it("has three columns with their counts and names an empty column", async () => {
     reset();
     await newTicket("1");
     await kitchen();
     expect(within(col("New")).getByText("1")).toBeTruthy();
-    expect(within(col("Cooking")).getByText("Empty")).toBeTruthy();
-    expect(within(col("Ready")).getByText("Empty")).toBeTruthy();
+    expect(within(col("Cooking")).getByText("No cooking tickets")).toBeTruthy();
+    expect(within(col("Ready")).getByText("No ready tickets")).toBeTruthy();
     expect(within(col("New")).getByText("T1")).toBeTruthy();
     expect(within(col("New")).getByText("Chicken Fried Rice")).toBeTruthy();
   });
@@ -262,7 +272,7 @@ describe("SF-4 / SF-5: the chef's kitchen", () => {
     await waitFor(() => expect(within(col("Ready")).getByText("T2")).toBeTruthy());
     fireEvent.click(within(col("Ready")).getByRole("button", { name: /Served/ }));
     await waitFor(() => expect(status(id)).toBe("served"));
-    await waitFor(() => expect(within(col("Ready")).getByText("Empty")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("No accepted orders yet")).toBeTruthy());
   });
   it("'Recall to Cooking' moves a Ready ticket back", async () => {
     reset();
@@ -290,8 +300,8 @@ describe("SF-4 / SF-5: the chef's kitchen", () => {
     await kitchen();
     const banner = within(col("New")).getByRole("alert");
     expect(banner.textContent).toContain("Peanut");
-    expect(banner.textContent).toContain("Check before cooking.");
-    expect(within(col("New")).getByTitle("Clashes with the diner's allergy profile").textContent).toBe("Peanut");
+    expect(banner.textContent).toContain("Confirm the recipe, supplier labels and cross-contact before cooking.");
+    expect(within(col("New")).getByTitle("Clashes with the diner's allergy profile").textContent).toBe("Peanut · estimated list");
   });
   it("the sold-out panel is on the chef's screen too", async () => {
     await kitchen();

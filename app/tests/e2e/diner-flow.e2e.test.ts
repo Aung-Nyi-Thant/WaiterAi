@@ -87,8 +87,8 @@ describe("UC-1 / UC-2 / UC-3 / UC-8 / UC-9 / PC-2 / SF-2 / SF-3 / SF-5 diner flo
     const pick = (await waiter("/api/staff/floor")).data.picks.find((p: any) => p.id === orderId);
     expect(pick).toMatchObject({ table: "5", allergy: "peanut" });
     expect((await chef(`/api/staff/orders/${orderId}`, { action: "take" })).status).toBe(403);
-    expect((await waiter(`/api/staff/orders/${orderId}`, { action: "take" })).status).toBe(200);
-    expect((await chef(`/api/staff/orders/${orderId}`, { action: "cooking" })).status).toBe(200);
+    expect((await waiter(`/api/staff/orders/${orderId}`, { action: "take", allergyConfirmed: true })).status).toBe(200);
+    expect((await chef(`/api/staff/orders/${orderId}`, { action: "cooking", allergyConfirmed: true })).status).toBe(200);
     expect((await chef(`/api/staff/orders/${orderId}`, { action: "ready" })).status).toBe(200);
     expect((await waiter(`/api/staff/orders/${orderId}`, { action: "served" })).status).toBe(200);
     const bill = await diner(`/api/public/${slug}/bill?t=5&r=${receipt}`);
@@ -117,6 +117,29 @@ describe("NFR-SEC1 / NFR-SEC2 / NFR-SEC3 / NFR-R1 security of the running server
   it("only generated upload names are served", async () => {
     const r = await fetch(`${BASE}/api/uploads/..%2F..%2Fsecret`);
     expect(r.status).toBe(404);
+  });
+});
+
+describe("owner availability reaches the diner on the running server", () => {
+  it("a sold-out change appears in the public menu and the server rejects that pick", async () => {
+    const owner = person();
+    const diner = person();
+    expect((await owner("/api/auth/login", { email: process.env.E2E_OWNER_EMAIL, password: process.env.E2E_OWNER_PASSWORD })).status).toBe(200);
+    const dish = (await owner("/api/owner/items")).data.find((item: any) => item.name.en === "Tom Yum Goong");
+    expect(dish).toBeTruthy();
+    expect(dish.available).toBe(true);
+
+    try {
+      expect((await owner(`/api/owner/items/${dish.id}`, { available: false }, "PUT")).status).toBe(200);
+      const menu = await diner(`/api/public/${slug}/menu`);
+      expect(menu.status).toBe(200);
+      expect(menu.data.items.find((item: any) => item.id === dish.id).available).toBe(false);
+      const order = await diner(`/api/public/${slug}/orders`, { table: "5", items: [{ id: dish.id, qty: 1 }] });
+      expect(order.status).toBe(400);
+      expect(order.data.error).toMatch(/No available dishes/);
+    } finally {
+      expect((await owner(`/api/owner/items/${dish.id}`, { available: true }, "PUT")).status).toBe(200);
+    }
   });
 });
 

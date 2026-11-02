@@ -44,9 +44,9 @@ describe("every dish, asked about by name", () => {
     const failed: string[] = [];
     for (const d of ctx.items) {
       const r = await ask(`What is in the ${d.name.en}?`);
-      const has = d.ingredients.trim().length > 0;
+      const has = d.ingredients.replace("Other ingredients (not listed on this menu)", "").trim().length > 0;
       const first = d.ingredients.split(",")[0].trim();
-      if (r.usedModel || shown(r)[0] !== d.name.en || (has ? !r.reply.includes(first) : !/don't have the ingredients/.test(r.reply)) || /: \./.test(r.reply)) failed.push(`${d.name.en}: ${r.reply.slice(0, 100)}`);
+      if (r.usedModel || shown(r)[0] !== d.name.en || (has ? !r.reply.includes(first) : !/don't have the ingredients/.test(r.reply)) || (d.allergens === null && !/confirm with the staff/.test(r.reply)) || /: \./.test(r.reply)) failed.push(`${d.name.en}: ${r.reply.slice(0, 100)}`);
     }
     expect(failed, failed.join("\n")).toEqual([]);
   }, 120_000);
@@ -205,8 +205,9 @@ describe("everyday questions about the menu", () => {
     const r = await ask("Which sushi has no fish?");
     expect(r.usedModel).toBe(false);
     const sushiId = ctx.categories.find((c: any) => c.name.en === "Sushi").id;
-    expect(shown(r).length).toBeGreaterThan(0);
-    expect(shown(r).every((n: string) => dish(n).category_id === sushiId && !(dish(n).allergens ?? []).includes("fish"))).toBe(true);
+    expect(shown(r)).toEqual([]); // all 132 lists are estimates, so none qualifies for an allergy suggestion
+    expect(r.reply).toContain("can't suggest a restaurant-checked dish for fish");
+    expect(sushiId).toBeTruthy();
   });
   it("'I like salmon' is a liking, not an allergy: it lists the dishes with salmon in the name, and 'I'm allergic to salmon' still gives the allergen answer", async () => {
     const like = await ask("I like salmon. What can I eat?");
@@ -234,12 +235,15 @@ describe("a dish whose name is the start of another dish's name", () => {
     expect(r.reply).not.toMatch(/don't have that information/);
     // a real mismatch is still caught
     mockModel("You could try Yakisoba (99 THB) or Yakisoba with Onsen Egg (128 THB).\nACTION: none");
-    expect((await ask("I want something warm on a rainy day.")).reply).toMatch(/don't have that information/);
+    // the wrong-price reply is thrown away; a suggestion request gets real dishes from the database instead of a refusal
+    const bad = await ask("I want something warm on a rainy day.");
+    expect(bad.reply).not.toContain("Onsen Egg (128 THB)");
+    expect(bad.reply).toMatch(/good places to start/);
   });
   it("'I don't eat raw fish' asks for dishes without fish, and 'which is better, the salmon or the tuna?' is not an allergen list", async () => {
     noModel();
-    expect((await ask("I don't eat raw fish. What can I have?")).reply).toMatch(/^Dishes that do not list fish/);
-    expect((await ask("ไม่กินปลาดิบ มีอะไรแนะนำบ้าง", "th")).reply).toMatch(/^เมนูที่ไม่ได้ระบุว่ามี/);
+    expect((await ask("I don't eat raw fish. What can I have?")).reply).toMatch(/^I can't suggest a restaurant-checked dish for fish/);
+    expect((await ask("ไม่กินปลาดิบ มีอะไรแนะนำบ้าง", "th")).reply).toMatch(/^ยังแนะนำเมนูที่ร้านตรวจสอบแล้ว/);
     const calls = mockModel("I don't have information on taste, so I can't say which is better.\nACTION: none");
     const r = await ask("Which is better, the salmon or the tuna?");
     expect(calls).toHaveLength(1);                                          // it went to the model, not to the allergen rule
@@ -257,8 +261,12 @@ describe("what the guard lets through from the model on this menu", () => {
   });
   it("a made-up dish is still replaced, and a price on the wrong dish is still caught", async () => {
     mockModel("You should try the Lobster Thermidor Roll (250 THB).\nACTION: none");
-    expect((await ask("I'm hungry and have a big appetite. What should I order?")).reply).toMatch(/don't have that information/);
+    const made = await ask("I'm hungry and have a big appetite. What should I order?");
+    expect(made.reply).not.toContain("Lobster");
+    expect(made.reply).toMatch(/good places to start/);
     mockModel("You should try the Omori Set (499 THB).\nACTION: none");
-    expect((await ask("I'm hungry and have a big appetite. What should I order?")).reply).toMatch(/don't have that information/);
+    const wrong = await ask("I'm hungry and have a big appetite. What should I order?");
+    expect(wrong.reply).not.toContain("499 THB");
+    expect(wrong.reply).toMatch(/good places to start/);
   });
 });

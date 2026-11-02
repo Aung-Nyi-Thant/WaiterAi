@@ -17,6 +17,7 @@ export default function Chef() {
   const router = useRouter();
   const [d, setD] = useState<Kitchen | null>(null);
   const [err, setErr] = useState("");
+  const [allergyConfirmed, setAllergyConfirmed] = useState<Set<number>>(new Set());
   const [now, setNow] = useState("");
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   useEffect(() => { const t = () => setNow(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })); t(); const i = setInterval(t, 15000); return () => clearInterval(i); }, []);
@@ -36,10 +37,11 @@ export default function Chef() {
   }, [d]);
   const fresh = useFresh(d ? (["new", "cooking", "ready"] as const).flatMap((k) => d.tickets[k].map((o) => `${k}-${o.id}`)) : []);
   // A refused action refreshes the board first and shows its message after it (the refresh clears the old error).
-  const act = async (id: number, action: string) => { let msg = ""; try { await api(`/api/staff/orders/${id}`, { body: { action } }); } catch (e: any) { msg = e.message; } await load(); if (msg) setErr(msg); };
+  const act = async (id: number, action: string) => { let msg = ""; try { await api(`/api/staff/orders/${id}`, { body: { action, allergyConfirmed: allergyConfirmed.has(id) } }); } catch (e: any) { msg = e.message; } await load(); if (msg) setErr(msg); };
   const toggle = async (id: number, available: boolean) => { await api(`/api/staff/items/${id}`, { body: { available } }); load(); };
   const logout = async () => { await api("/api/auth/logout", { body: {} }); router.push("/staff"); };
   if (!d) return <div className="sa-app" data-theme="night" style={{ padding: 40 }}>{err || "Loading…"}</div>;
+  const hasTickets = COL.some(([key]) => d.tickets[key].length > 0);
 
   return (
     <div className="sa-app kitchen" data-theme="night">
@@ -48,7 +50,7 @@ export default function Chef() {
         <div className="row" style={{ gap: 20 }}>
           <div className="staff-live" role="status">
             <span className={`sa-status ${err ? "sa-status--offline" : "sa-status--live"}`}>{err ? (lastUpdated ? "Reconnecting" : "Offline") : "Live"}</span>
-            {lastUpdated && <span>as of {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>}
+            {err && lastUpdated && <span>Last update {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>}
           </div>
           <div className="kitchen-clock">{now}</div>
           <button type="button" className="sa-btn sa-btn--quiet sa-btn--icon sa-btn--sm" onClick={logout} aria-label="Sign out"><Icon name="logout" /></button>
@@ -56,15 +58,16 @@ export default function Chef() {
       </div>
       {err && <div className="err" role="alert">{err}</div>}
       <div className="kanban">
-        {COL.map(([key, title, next, btn]) => (
+        {!hasTickets && <div className="sa-plate kitchen-empty"><h2>No accepted orders yet</h2><p>New tickets appear here after floor staff confirm a diner's picks.</p></div>}
+        {hasTickets && COL.map(([key, title, next, btn]) => (
           <div key={key} className="col">
             <div className="col-head"><h2>{title}</h2><span className={`col-count col-count--${key}`}>{d.tickets[key].length}</span></div>
-            {d.tickets[key].length === 0 && <div className="sa-plate sa-empty">Empty</div>}
+            {d.tickets[key].length === 0 && <p className="kitchen-col-empty">No {title.toLowerCase()} tickets</p>}
             {d.tickets[key].map((o) => {
               const mins = Math.round((Date.now() - new Date(o.updatedAt).getTime()) / 60000);
               const late = key !== "ready" && mins >= LATE_AFTER_MIN;
               return (
-              <SwipeCard key={o.id} onSwipeRight={() => act(o.id, next)} rightLabel={`${btn} →`} rightColor={key === "new" ? "var(--cherry)" : "var(--ok)"}>
+              <SwipeCard key={o.id} onSwipeRight={() => key === "new" && o.allergy && !allergyConfirmed.has(o.id) ? setErr("Confirm the recipe and cross-contact before cooking.") : act(o.id, next)} rightLabel={`${btn} →`} rightColor={key === "new" ? "var(--cherry)" : "var(--ok)"}>
                 <article className={`sa-ticket${key === "cooking" ? " sa-ticket--cooking" : key === "ready" ? " sa-ticket--ready" : ""}${fresh.has(`${key}-${o.id}`) ? " sa-fresh" : ""}`}>
                   <div className="sa-ticket__head">
                     <div className="sa-ticket__table">T{o.table || "?"}</div>
@@ -72,10 +75,11 @@ export default function Chef() {
                   </div>
                   <ul className="sa-ticket__lines">{o.items.map((i: any, k: number) => (
                     // biome-ignore lint/suspicious/noArrayIndexKey: read-only list of order lines (the same dish can appear twice), never reordered
-                    <li key={k}><b>{i.qty}×</b><span>{i.name} <LineFlag flag={i.flag} /></span></li>
+                    <li key={k}><b>{i.qty}×</b><span>{i.name} <LineFlag flag={i.flag} status={i.allergenStatus} /></span></li>
                   ))}</ul>
-                                   {o.allergy && <AllergyBanner allergen={o.allergy} note="Staff confirmed with the diner. Check before cooking." />}
-                  <button type="button" className={`sa-btn sa-btn--lg sa-btn--block ${key === "new" ? "sa-btn--staff" : "sa-btn--ok"}`} onClick={() => act(o.id, next)}>{key !== "new" && <Icon name="check" />}{btn}</button>
+                  {o.allergy && <AllergyBanner allergen={o.allergy} note="Confirm the recipe, supplier labels and cross-contact before cooking." />}
+                  {key === "new" && o.allergy && <label className="sa-allergy-check"><input type="checkbox" checked={allergyConfirmed.has(o.id)} onChange={(e) => setAllergyConfirmed((old) => { const nextSet = new Set(old); if (e.target.checked) nextSet.add(o.id); else nextSet.delete(o.id); return nextSet; })} /> I checked the recipe, supplier labels and cross-contact with the kitchen.</label>}
+                  <button type="button" className={`sa-btn sa-btn--lg sa-btn--block ${key === "new" ? "sa-btn--staff" : "sa-btn--ok"}`} disabled={key === "new" && !!o.allergy && !allergyConfirmed.has(o.id)} onClick={() => act(o.id, next)}>{key !== "new" && <Icon name="check" />}{btn}</button>
                   {key === "ready" && <button type="button" className="sa-btn sa-btn--quiet sa-btn--block" onClick={() => act(o.id, "recall")}>Recall to Cooking</button>}
                 </article>
               </SwipeCard>); })}

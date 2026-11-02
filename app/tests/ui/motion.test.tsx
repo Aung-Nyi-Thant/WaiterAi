@@ -14,6 +14,15 @@ const css = fs.readFileSync(path.resolve(__dirname, "../../src/app/globals.css")
 const motion = (reduce: boolean) => vi.stubGlobal("matchMedia", (q: string) => ({ matches: reduce && q.includes("reduce"), media: q, addEventListener() {}, removeEventListener() {} }));
 
 describe("DishPhoto: a photo that cannot load never shows broken-image text", () => {
+  it("recovers when an image failed before hydration attached the error handler", () => {
+    const complete = vi.spyOn(HTMLImageElement.prototype, "complete", "get").mockReturnValue(true);
+    const width = vi.spyOn(HTMLImageElement.prototype, "naturalWidth", "get").mockReturnValue(0);
+    try {
+      const { container } = render(<DishPhoto src="/uploads/already-failed.jpg" />);
+      expect(container.querySelector("img")).toBeNull();
+      expect(container.querySelector(".sa-dish__plate--empty svg")).toBeTruthy();
+    } finally { complete.mockRestore(); width.mockRestore(); }
+  });
   it("shows the photo while it loads, then the plate with an icon when the file fails", () => {
     const { container } = render(<DishPhoto src="/uploads/missing.jpg" />);
     const img = container.querySelector("img")!;

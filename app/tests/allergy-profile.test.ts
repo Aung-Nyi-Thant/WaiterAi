@@ -19,6 +19,7 @@ const slug = "golden-lotus";
 const STAFF_EN = "Please confirm with the staff";
 const names = (r: { action: { ids?: number[] } }, items: { id: number; name: { en: string } }[]) => (r.action.ids ?? []).map((id) => items.find((i) => i.id === id)!.name.en);
 const ask = async (msg: string, profile: string[], lang: "en" | "th" | "my" = "en") => answer(msg, lang, await aiCtx({ profile }));
+const checked = () => itemsOf(1).map((i) => i.allergens === null ? i : { ...i, allergen_status: "verified" as const });
 
 describe("DM-11 / AI-18 the profile helpers", () => {
   it("cleanProfile keeps only known allergens, once each, and ignores anything else", () => {
@@ -29,10 +30,11 @@ describe("DM-11 / AI-18 the profile helpers", () => {
   it("a dish fits a profile only when it HAS allergen data and lists none of the allergens", async () => {
     const items = itemsOf(1);
     const dish = (n: string) => items.find((i) => i.name.en === n)!;
-    expect(fitsProfile(dish("Thai Iced Tea"), ["peanut"])).toBe(true);
+    expect(fitsProfile(dish("Thai Iced Tea"), ["peanut"])).toBe(false); // demo recipe is only estimated
+    expect(fitsProfile({ ...dish("Thai Iced Tea"), allergen_status: "verified" }, ["peanut"])).toBe(true);
     expect(fitsProfile(dish("Beef Massaman Curry"), ["peanut"])).toBe(false);
     expect(fitsProfile(dish("Fresh Spring Rolls"), ["peanut"])).toBe(false);     // allergen data not provided: never assumed fine
-    expect(fitsProfile(dish("Mango Sticky Rice"), ["peanut", "milk"])).toBe(true);   // data says no allergens
+    expect(fitsProfile(dish("Mango Sticky Rice"), ["peanut", "milk"])).toBe(false);
     expect(fitsProfile(dish("Fresh Spring Rolls"), [])).toBe(true);              // no profile: no filtering
   });
 });
@@ -40,12 +42,12 @@ describe("DM-11 / AI-18 the profile helpers", () => {
 describe("AI-18 / NFR-S5 'what can I eat?' with a profile is answered from the database", () => {
   it.each(["What can I eat with my allergies?", "what can I order?", "dishes for my profile please"])("%s", async (q) => {
     const noModelCalls = noModel();
-    const ctx = await aiCtx({ profile: ["peanut"] });
+    const ctx = await aiCtx({ profile: ["peanut"], items: checked() });
     const r = await answer(q, "en", ctx);
     expect(noModelCalls).toHaveLength(0);
     expect(r.usedModel).toBe(false);
     expect(r.topic).toBe("allergens");
-    expect(r.reply).toContain("Dishes that do not list peanut:");
+    expect(r.reply).toContain("Restaurant-checked dishes that do not list peanut:");
     for (const d of ["Beef Massaman Curry", "Papaya Salad", "Shrimp Pad Thai"]) expect(r.reply).not.toContain(d);
     expect(r.reply).toContain("Thai Iced Tea");
     expect(r.reply).toContain("Allergen information is not provided for: Fresh Spring Rolls");   // unknown data is named, not offered
@@ -55,7 +57,7 @@ describe("AI-18 / NFR-S5 'what can I eat?' with a profile is answered from the d
   });
   it("combines several allergens, and leaves out sold-out dishes", async () => {
     noModel();
-    const ctx = await aiCtx({ profile: ["peanut", "milk", "shellfish"] });
+    const ctx = await aiCtx({ profile: ["peanut", "milk", "shellfish"], items: checked() });
     const r = await answer("What can I eat with my allergies?", "en", ctx);
     for (const d of ["Thai Iced Tea", "Coconut Ice Cream", "Tom Yum Goong", "Chicken Green Curry"]) expect(r.reply.split("Allergen information")[0]).not.toContain(d);
     expect(r.reply).toContain("Mango Sticky Rice");
@@ -67,11 +69,11 @@ describe("AI-18 / NFR-S5 'what can I eat?' with a profile is answered from the d
   });
   it("works in Thai and Burmese, in the diner's language and voice", async () => {
     noModel();
-    const th = await ask("ฉันกินอะไรได้บ้าง ตามโปรไฟล์การแพ้", ["peanut"], "th");
-    expect(th.reply).toContain("เมนูที่ไม่ได้ระบุว่ามี ถั่วลิสง");
+    const th = await answer("ฉันกินอะไรได้บ้าง ตามโปรไฟล์การแพ้", "th", await aiCtx({ profile: ["peanut"], items: checked() }));
+    expect(th.reply).toContain("เมนูที่ร้านตรวจสอบแล้วและไม่ได้ระบุว่ามี ถั่วลิสง");
     expect(th.reply).toContain("กรุณายืนยันกับพนักงาน");
     expect(th.reply).not.toContain("แกงมัสมั่นเนื้อ");
-    const my = await ask("ကျွန်တော် စားလို့ရတဲ့ ဟင်းလျာတွေ ပြပါ", ["peanut"], "my");
+    const my = await answer("ကျွန်တော် စားလို့ရတဲ့ ဟင်းလျာတွေ ပြပါ", "my", await aiCtx({ profile: ["peanut"], items: checked() }));
     expect(my.reply).toContain("peanut");
     expect(my.reply).toContain("ဝန်ထမ်းကို မေးမြန်းပေးပါ");
     expect(my.reply).not.toContain("အမဲသား မတ်စမန်ကာရီ");
@@ -86,11 +88,11 @@ describe("the diner screen's allergy texts exist in every language, and its quic
   });
   it.each(["en", "th", "my"] as const)("the %s quick question 'what can I eat?' is answered from the data, not by the model", async (lang) => {
     const noModelCalls = noModel();
-    const r = await answer(DICT[lang].chipMyAllergies, lang, await aiCtx({ profile: ["peanut"] }));
+    const r = await answer(DICT[lang].chipMyAllergies, lang, await aiCtx({ profile: ["peanut"], items: checked() }));
     expect(noModelCalls).toHaveLength(0);
     expect(r.topic).toBe("allergens");
     expect(r.action.type).toBe("show_dishes");
-    expect(r.reply).toMatch(lang === "en" ? /Dishes that do not list peanut/ : lang === "th" ? /เมนูที่ไม่ได้ระบุว่ามี ถั่วลิสง/ : /peanut ပါဝင်တယ်လို့ မဖော်ပြထားတဲ့/);
+    expect(r.reply).toMatch(lang === "en" ? /Restaurant-checked dishes that do not list peanut/ : lang === "th" ? /เมนูที่ร้านตรวจสอบแล้วและไม่ได้ระบุว่ามี ถั่วลิสง/ : /ဆိုင်က စစ်ဆေးထားပြီး peanut/);
   });
   it("every allergen has a Thai name, and the English and Burmese screens use the English names", () => {
     for (const a of ALLERGENS) {
@@ -104,7 +106,7 @@ describe("the diner screen's allergy texts exist in every language, and its quic
 describe("the profile applies to every list of dishes the AI gives", () => {
   it("a vegetarian list leaves out vegetarian dishes that list the diner's allergen, and says so", async () => {
     noModel();
-    const ctx = await aiCtx({ profile: ["milk"] });
+    const ctx = await aiCtx({ profile: ["milk"], items: checked() });
     const r = await answer("vegetarian dishes please", "en", ctx);
     expect(r.reply).toContain("Mango Sticky Rice");
     expect(r.reply).toContain("Vegetable Tofu Stir-fry");
@@ -139,9 +141,9 @@ describe("picking a dish that conflicts with the profile: allowed, but the diner
     expect(r.action.type).toBe("add_to_picks");
     expect(r.reply).toContain("Allergen information is not provided for Fresh Spring Rolls");
   });
-  it("no warning for a dish that fits, and none without a profile", async () => {
+  it("an estimated dish is warned about, and there is no warning without a profile", async () => {
     noModel();
-    expect((await ask("I'll have the Thai Iced Tea", ["peanut"])).reply).not.toContain("Warning:");
+    expect((await ask("I'll have the Thai Iced Tea", ["peanut"])).reply).toContain("estimated allergen list");
     expect((await ask("I'll have the Beef Massaman Curry", [])).reply).not.toContain("Warning:");
   });
 });
@@ -168,7 +170,7 @@ describe("the language model with a profile", () => {
     expect(r.reply).toContain("Allergen information is not provided for Fresh Spring Rolls");
   });
   it("a fitting suggestion passes, and dish cards are limited to dishes that fit", async () => {
-    const ctx = await aiCtx({ profile: ["peanut"] });
+    const ctx = await aiCtx({ profile: ["peanut"], items: checked() });
     const id = (n: string) => ctx.items.find((i) => i.name.en === n)!.id;
     mockModel(`Try the Thai Iced Tea.\nACTION: {"type":"show_dishes","ids":[${id("Thai Iced Tea")},${id("Beef Massaman Curry")},${id("Fresh Spring Rolls")}]}`);
     const r = await answer(LUNCH, "en", ctx);
@@ -186,7 +188,7 @@ describe("the chat endpoint takes the profile", () => {
   it("applies it to the answer, keeps only known allergens, and stores them with the session (no personal data)", async () => {
     noModel();
     const r = await say("What can I eat with my allergies?", { sessionId: "prof-1", profile: ["peanut", "<script>", "peanut", "milk"] });
-    expect(r.data.reply).toContain("Dishes that do not list peanut / milk:");
+    expect(r.data.reply).toContain("I can't suggest a restaurant-checked dish for peanut / milk");
     expect(JSON.parse(get("SELECT profile FROM chat_sessions WHERE id = 'prof-1'")!.profile)).toEqual(["peanut", "milk"]);
     await say("hello", { sessionId: "prof-1" });                                          // a later message without a profile resets it
     expect(get("SELECT profile FROM chat_sessions WHERE id = 'prof-1'")!.profile).toBe("[]");
@@ -208,7 +210,7 @@ describe("PC-7 the profile reaches the waiter and the chef with the dish lines t
     expect(r.status).toBe(200);
     expect(get("SELECT allergy_note FROM orders WHERE id = ?", r.data.id)!.allergy_note).toBe("peanut, milk");
     const flags = Object.fromEntries(all("SELECT name, flag FROM order_items WHERE order_id = ?", r.data.id).map((x: any) => [x.name, x.flag]));
-    expect(flags).toEqual({ "Beef Massaman Curry": "peanut", "Thai Iced Tea": "milk", "Fresh Spring Rolls": "unknown", "Mango Sticky Rice": "" });
+    expect(flags).toEqual({ "Beef Massaman Curry": "peanut", "Thai Iced Tea": "milk", "Fresh Spring Rolls": "unknown", "Mango Sticky Rice": "estimated" });
   });
   it("merges the profile with allergens the diner mentioned in the chat", async () => {
     noModel();
@@ -226,11 +228,12 @@ describe("PC-7 the profile reaches the waiter and the chef with the dish lines t
     await staffLogin("1111");
     const pick = (await call(floor)).data.picks.find((o: any) => o.id === r.data.id);
     expect(pick.allergy).toBe("peanut");
-    expect(pick.items).toEqual([{ name: "Beef Massaman Curry", qty: 1, price: 160, flag: "peanut" }]);
-    expect((await call(orderAction, { method: "POST", params: { id: String(r.data.id) }, body: { action: "take" } })).status).toBe(200);
+    expect(pick.items).toEqual([{ name: "Beef Massaman Curry", qty: 1, price: 160, flag: "peanut", allergenStatus: "estimated" }]);
+    expect((await call(orderAction, { method: "POST", params: { id: String(r.data.id) }, body: { action: "take", allergyConfirmed: true } })).status).toBe(200);
     await staffLogin("2222");
     const ticket = (await call(kitchen)).data.tickets.new.find((o: any) => o.id === r.data.id);
     expect(ticket.allergy).toBe("peanut");
     expect(ticket.items[0].flag).toBe("peanut");
+    expect(ticket.items[0].allergenStatus).toBe("estimated");
   });
 });

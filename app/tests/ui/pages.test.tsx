@@ -22,14 +22,14 @@ import { router, withRealApi } from "./harness";
 withRealApi();
 
 describe("home page", () => {
-  it("offers the three ways in, with the demo menu at table 5, and the demo logins", () => {
+  it("offers the real menu at table 5 and owner, staff and registration entry points", () => {
     render(<Home />);
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Shop AI");
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Every table.In good hands.");
     const hrefs = screen.getAllByRole("link").map((a) => a.getAttribute("href"));
     expect(hrefs).toEqual(expect.arrayContaining(["/r/golden-lotus?t=5", "/login", "/staff", "/register"]));
-    expect(screen.getByText("demo@shop.ai")).toBeTruthy();
-    expect(screen.getByText("1111")).toBeTruthy();
-    expect(screen.getByText("2222")).toBeTruthy();
+    expect(screen.getAllByRole("link", { name: /Try the menu/ })[0].getAttribute("href")).toBe("/r/golden-lotus?t=5");
+    expect(screen.queryByText("demo@shop.ai")).toBeNull();
+    expect(screen.queryByText("demo1234")).toBeNull();
   });
 });
 
@@ -66,14 +66,11 @@ describe("home page with more than one restaurant", () => {
       expect(within(small).getAllByRole("link").filter((a) => /dish=/.test(a.getAttribute("href") || ""))).toHaveLength(3);
     } finally { removeShop(hachi); }
   });
-  it("lists the demo logins of each demo restaurant", () => {
+  it("does not publish sample passwords, emails or staff PINs on the public landing page", () => {
     const hachi = addShop("hachi-kyu", "HaChi Kyu", 1);
     try {
       render(<Home />);
-      expect(screen.getByText("demo@shop.ai")).toBeTruthy();
-      expect(screen.getByText("hachi@shop.ai")).toBeTruthy();
-      expect(screen.getAllByText("1111")).toHaveLength(2);
-      expect(screen.getByText("hachi-kyu")).toBeTruthy();
+      for (const value of ["demo@shop.ai", "hachi@shop.ai", "demo1234", "1111", "2222"]) expect(screen.queryByText(value)).toBeNull();
     } finally { removeShop(hachi); }
   });
   it("says '1 dish' for one dish", () => {

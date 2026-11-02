@@ -39,7 +39,16 @@ describe("AI-2 / UC-2 / BR-1 / NFR-S1 / NFR-S2 allergen questions are answered f
   it("answers about one dish from that dish's allergens", async () => {
     const r = await ask("Can I eat the Pad Thai? I'm allergic to peanuts");
     expect(r.reply).toContain("Shrimp Pad Thai lists these allergens: peanut, shellfish, egg, fish");
+    expect(r.reply).toContain("This list is an estimate");
     expect(r.action.ids).toHaveLength(1);
+  });
+  it("states when a restaurant checked the allergen list without promising safety", async () => {
+    const ctx = await aiCtx();
+    const items = ctx.items.map((item) => item.name.en === "Shrimp Pad Thai" ? { ...item, allergen_status: "verified" as const } : item);
+    const r = await ask("What allergens are in Shrimp Pad Thai?", { items });
+    expect(r.reply).toContain("The restaurant checked this ingredient list");
+    expect(r.reply).toContain("preparation can still introduce allergens");
+    expect(r.reply).toMatch(STAFF.en);
   });
   it("says 'not provided' for a dish with missing data, never 'no allergens' (BR-1, NFR-S2)", async () => {
     const r = await ask("Does the Fresh Spring Rolls contain any allergens?");
@@ -48,7 +57,7 @@ describe("AI-2 / UC-2 / BR-1 / NFR-S1 / NFR-S2 allergen questions are answered f
   });
   it("'without X' lists dishes that do not list X and still flags the unknown dish", async () => {
     const r = await ask("anything without shellfish?");
-    expect(r.reply).toMatch(/^Dishes that do not list shellfish: /);
+    expect(r.reply).toMatch(/^I can't suggest a restaurant-checked dish for shellfish/);
     expect(r.reply).not.toMatch(/Shrimp Pad Thai|Tom Yum/);
     expect(r.reply).toMatch(/not provided for: Fresh Spring Rolls/);
     expect(r.action.ids!.length).toBeLessThanOrEqual(4);
@@ -302,10 +311,9 @@ describe("AI-6 order wording adds dishes and quantities to the picks (never plac
 
 describe("AI-7 bill and staff requests create a staff call", () => {
   it("asks for the bill / for help", async () => {
-    expect((await ask("Can I get the bill?")).action).toEqual({ type: "call_staff", kind: "bill" });
+    // a bill request offers the button (the diner presses it); an explicit "call the staff" is a command and calls at once
+    for (const q of ["Can I get the bill?", "เช็คบิลหน่อย", "I want to pay"]) { const r = await ask(q); expect([q, r.action, r.offer]).toEqual([q, { type: "none" }, "bill"]); }
     expect((await ask("I need help, call the staff")).action).toEqual({ type: "call_staff", kind: "help" });
-    expect((await ask("เช็คบิลหน่อย")).action).toEqual({ type: "call_staff", kind: "bill" });
-    expect((await ask("I want to pay")).action).toEqual({ type: "call_staff", kind: "bill" });
   });
   it("does not mistake a dish name for a bill request (regression: 'pay' inside 'papaya')", async () => {
     const price = await ask("how much is the papaya salad");
@@ -410,6 +418,8 @@ describe("AI-2 all 14 allergens are recognised (EN, TH and, where there is a wor
   });
   it("words that merely contain an allergen word are not allergens", () => {
     expect(allergensMentioned("I like eggplant")).toEqual([]);
+    expect(allergensMentioned("can you code")).toEqual([]);                 // "cod" (fish) is not "code"
+    expect(allergensMentioned("I am allergic to cod")).toEqual(["fish"]);
     expect(allergensMentioned("coconut milk")).toEqual(["milk"]);      // deliberately still a milk mention: over-warning is the safe direction
     expect(allergensMentioned("a pinch of nutmeg")).toEqual([]);
     expect(allergensMentioned("แพ้ปลาหมึก")).toEqual(["molluscs"]);          // squid is a mollusc, not a fish
@@ -525,8 +535,9 @@ describe("topics the data never holds (discounts, promotions, coupons, reservati
     for (const q of ["Can I get a discount?", "Do you have any promotions today?", "Can I reserve a table for six?", "มีส่วนลดไหม", "จองโต๊ะได้ไหม", "လျှော့ပေးလို့ရလား", "ကူပွန် ရှိလား"]) {
       const r = await ask(q);
       expect(r.usedModel, q).toBe(false);
-      expect(r.answered, q).toBe(false);
+      expect(r.offer, q).toBe("help");
       expect(r.reply, q).toMatch(/staff|พนักงาน|ဝန်ထမ်း/);
+      expect(r.reply, q).not.toMatch(/don't have that information|ไม่มีข้อมูล|အချက်အလက် မရှိ/);
       expect(r.reply, q).not.toMatch(/\b(yes|no discount|cannot be reduced)\b/i);
     }
     expect(modelCalls.length).toBe(0);
@@ -571,7 +582,8 @@ describe("a bare request for a recommendation is answered from the data, not by 
   it("never offers a sold-out dish, and a dish that clashes with the diner's allergy profile is left out, with the usual note", async () => {
     const ctx = await aiCtx();
     const r = await ask("recommend something", { profile: ["peanut"] });
-    for (const id of r.action.ids!) { const i = ctx.items.find((x: any) => x.id === id)!; expect(i.available).toBe(true); expect(i.allergens === null || !i.allergens.includes("peanut")).toBe(true); }
+    for (const id of r.action.ids ?? []) { const i = ctx.items.find((x: any) => x.id === id)!; expect(i.available).toBe(true); expect(i.allergen_status).toBe("verified"); expect(i.allergens === null || !i.allergens.includes("peanut")).toBe(true); }
+    expect(r.action.ids).toEqual([]);
     expect(r.reply).toMatch(/peanut/i);
   });
   it("with an order history, answers with the dishes ordered most (the existing 'popular' answer), not the spread", async () => {

@@ -200,13 +200,15 @@ describe("the dish grid", () => {
     fireEvent.click(b);
     await waitFor(() => expect(document.querySelector(".picks-bar__line")?.textContent).toBe("Tom Yum Goong"));
   });
-  it("a card without a photo shows the plate icon, a sold-out card shows a badge and no add button", async () => {
+  it("a card without a photo uses a full-width text row, and a sold-out card keeps its badge", async () => {
     await open();
     const cards = Array.from(document.querySelectorAll(".sa-dish"));
-    expect(cards.every((c) => c.querySelector(".sa-dish__plate--empty svg") || c.querySelector("img"))).toBe(true);
+    expect(cards.every((c) => c.classList.contains("sa-dish--text") && !c.querySelector(".sa-dish__top"))).toBe(true);
     const sold = cards.find((c) => c.textContent?.includes("Coconut Ice Cream")) as HTMLElement;
     expect(sold.className).toContain("sa-dish--soldout");
     expect(sold.querySelector(".sa-stamp")?.textContent).toBe(T("soldOut"));
+    fireEvent.click(screen.getByRole("button", { name: "Fresh Spring Rolls" }));
+    expect((await screen.findByRole("dialog", { name: "Fresh Spring Rolls" })).querySelector(".sa-detail__photo")).toBeNull();
   });
   it("filters by category and by search, and says so when nothing matches", async () => {
     await open();

@@ -1,7 +1,7 @@
 {
   "_note": "The building blocks of the HaChi Kyu dishes (see ../dish-details/README.md for how they are used). Each has its name in English, Thai and Burmese (an empty Burmese name means: not translated yet, show the English one), the allergens a typical version of it contains, and whether it is vegetarian. allergens: [] means a typical version has none of the 14 allergens; unknown: true means what is in it is not known (a hidden sauce, a set whose contents are not listed), so a dish that uses it is stored as 'allergens not provided'. basis says where the claim comes from.",
   "sources": {
-    "S1": "Soy sauce is made from soybeans and usually wheat: Soy and wheat (gluten). Several recipe and product pages, e.g. https://www.chopstickchronicles.com/unagi-sauce-recipe/ and gyoza / karaage / miso product labels found by search.",
+    "S1": "Traditional Kikkoman soy sauce is made from soybeans and wheat; another brand or wheat-free tamari can differ, so the actual product label must be checked: https://www.kikkoman.com/en/cookbook/glossary/soysauce.html",
     "S2": "Kabayaki / unagi sauce is soy sauce, mirin, sugar and sake: https://www.napoleon.com/en/us/grills/recipes/unagi-don-japanese-style-grilled-eel-rice and https://www.chopstickchronicles.com/unagi-sauce-recipe/",
     "S3": "Tamagoyaki / tamago nigiri: eggs, dashi (bonito stock), soy sauce, mirin, sugar: https://izzycooking.com/tamago-sushi/ and https://1mal1japan.de/en/rezepte/tamagoyaki-made-easy-how-to-make-the-perfect-japanese-omelette-at-home/",
     "S4": "Takoyaki: wheat flour, egg, octopus, bonito (fish) and a soy-based sauce, usually with mayonnaise (egg): https://psinfoodservice.com/en/product/3118105-otafuku-takoyaki-sauce-300-g/ and https://yutaka.london/products/frozen/takoyaki-octopus-balls-300g/",
@@ -19,10 +19,13 @@
     "S16": "Japan's mandatory allergen labels are egg, milk, wheat, buckwheat, peanut, shrimp, crab and walnut (cashew added in 2026); the recommended ones include squid, salmon, salmon roe, mackerel, sesame, soybean, beef, chicken and pork: https://www.usdajapan.org/wpusda/wp-content/uploads/2017/05/An-Overview-of-the-New-Food-Labeling-Standard_Tokyo_Japan_5-16-2017.pdf",
     "S17": "Nam daeng (Thai red soda) is red sala syrup (sugar, flavour, colour E122, preservative) with soda water: https://hungryinthailand.com/nam-daeng-soda-recipe/",
     "S18": "Kani miso (crab innards) is the crab's brown paste, sold with crab as the only declared allergen: https://www.sayweee.com/vi/product/Maruha-Nichiro-Crab-Miso-with-Meat-Extreme-Flavor/2871834",
-    "S19": "General knowledge, not looked up: sushi rice is rice seasoned with vinegar, sugar and salt; tempura batter is wheat flour, egg and water; Japanese mayonnaise has egg; kimchi is made with fish sauce or salted shrimp; Thai basil-and-chilli stir fries use fish sauce, soy sauce and oyster sauce; cola, lemon-lime soda and red soda declare none of the 14 allergens."
+    "S19": "General knowledge, not looked up: sushi rice is rice seasoned with vinegar, sugar and salt; tempura batter is wheat flour, egg and water; Japanese mayonnaise has egg; kimchi is made with fish sauce or salted shrimp; Thai basil-and-chilli stir fries use fish sauce, soy sauce and oyster sauce; cola, lemon-lime soda and red soda declare none of the 14 allergens.",
+    "S20": "The UK Food Standards Agency lists the 14 allergens and explains why restaurant allergen records must reflect actual recipes, ingredient labels, and cross-contact: https://www.food.gov.uk/business-guidance/allergen-guidance-for-food-businesses and https://www.food.gov.uk/business-guidance/allergen-information-for-non-prepacked-foods-best-practice-voluntary-information",
+    "S21": "A standard sushi-rice recipe uses Japanese rice, rice vinegar, sugar, and salt; bottled seasoning can differ: https://www.justonecookbook.com/how-to-make-sushi-rice/",
+    "S22": "Kewpie mayonnaise is made with egg yolks, but the restaurant's actual brand and label are not known: https://www.kewpie.com/en/products/pdf/brochure_english_202412.pdf"
   },
   "components": {
-    "sushirice": { "en": "Sushi rice (vinegar, sugar, salt)", "th": "ข้าวซูชิ (น้ำส้มสายชู น้ำตาล เกลือ)", "my": "စူရှီထမင်း", "allergens": [], "vegetarian": true, "basis": "S19" },
+    "sushirice": { "en": "Sushi rice (vinegar, sugar, salt)", "th": "ข้าวซูชิ (น้ำส้มสายชู น้ำตาล เกลือ)", "my": "စူရှီထမင်း", "allergens": [], "vegetarian": true, "basis": "S21" },
     "rice": { "en": "Japanese rice", "th": "ข้าวญี่ปุ่น", "my": "ထမင်း", "allergens": [], "vegetarian": true, "basis": "S19" },
     "nori": { "en": "Nori seaweed", "th": "สาหร่ายโนริ", "my": "ပင်လယ်ရေညှိ", "allergens": [], "vegetarian": true, "basis": "S19" },
     "salmon": { "en": "Salmon", "th": "แซลม่อน", "my": "ဆော်လမွန်", "allergens": ["fish"], "basis": "S16" },
@@ -94,7 +97,7 @@
     "flourcoat": { "en": "Flour and starch coating", "th": "แป้งชุบทอด", "my": "", "allergens": ["gluten"], "basis": "S7" },
     "tempurabatter": { "en": "Tempura batter (wheat flour, egg)", "th": "แป้งเทมปุระ (แป้งสาลี ไข่)", "my": "", "allergens": ["gluten", "egg"], "basis": "S19" },
     "breading": { "en": "Breadcrumb coating (wheat, egg)", "th": "เกล็ดขนมปังชุบทอด (แป้งสาลี ไข่)", "my": "", "allergens": ["gluten", "egg"], "basis": "S19" },
-    "mayo": { "en": "Japanese mayonnaise", "th": "มายองเนสญี่ปุ่น", "my": "", "allergens": ["egg"], "basis": "S19" },
+    "mayo": { "en": "Japanese mayonnaise", "th": "มายองเนสญี่ปุ่น", "my": "", "allergens": ["egg"], "basis": "S22" },
     "takoyakisauce": { "en": "Takoyaki sauce and bonito flakes", "th": "ซอสทาโกะยากิและปลาโอแห้งไส", "my": "", "allergens": ["soy", "gluten", "fish"], "basis": "S4" },
     "batterball": { "en": "Wheat-flour and egg batter", "th": "แป้งสาลีและไข่", "my": "", "allergens": ["gluten", "egg"], "basis": "S4" },
     "noodles": { "en": "Yakisoba noodles (wheat)", "th": "เส้นยากิโซบะ (แป้งสาลี)", "my": "ခေါက်ဆွဲ", "allergens": ["gluten"], "basis": "S8" },
@@ -113,6 +116,6 @@
     "redsoda": { "en": "Red soda (sala syrup, soda water)", "th": "น้ำแดงโซดา (น้ำเชื่อมกลิ่นสละ)", "my": "", "allergens": [], "vegetarian": true, "basis": "S17" },
     "sweetsauce": { "en": "Sweet sauce (recipe not known)", "th": "ซอสหวาน (ไม่ทราบสูตร)", "my": "", "allergens": [], "unknown": true, "basis": "The kitchen's own sauce; no public recipe." },
     "specialsauce": { "en": "Special sauce (recipe not known)", "th": "ซอสพิเศษ (ไม่ทราบสูตร)", "my": "", "allergens": [], "unknown": true, "basis": "The kitchen's own sauce; no public recipe." },
-    "unknownpart": { "en": "", "th": "", "my": "", "allergens": [], "unknown": true, "basis": "What the dish is made of is not listed anywhere we could find; the dish says so and its allergens stay 'not provided'." }
+    "unknownpart": { "en": "Other ingredients (not listed on this menu)", "th": "ส่วนผสมอื่น (เมนูนี้ไม่ได้ระบุ)", "my": "", "allergens": [], "unknown": true, "basis": "The menu does not list the remaining ingredients and no restaurant recipe was available. Do not infer an allergen-free dish; see S20." }
   }
 }

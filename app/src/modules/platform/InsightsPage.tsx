@@ -7,6 +7,21 @@ import { api } from "@/modules/platform/client";
 export default function InsightsPage() {
   const [days, setDays] = useState(7);
   const [d, setD] = useState<any>(null);
+  const [privacyError, setPrivacyError] = useState("");
+  const exportChat = async () => {
+    try {
+      const data = await api("/api/owner/chat-data");
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+      link.download = `shop-ai-chat-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.append(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(link.href), 60_000);
+    } catch (e: any) { setPrivacyError(e.message); }
+  };
+  const deleteChat = async () => {
+    if (!window.confirm("Delete all chat questions, replies and allergy profiles for this restaurant? Orders will remain. This cannot be undone.")) return;
+    try { await api("/api/owner/chat-data", { method: "DELETE", body: { confirm: "DELETE CHAT" } }); setD(await api(`/api/owner/insights?days=${days}`)); } catch (e: any) { setPrivacyError(e.message); }
+  };
   useEffect(() => { api(`/api/owner/insights?days=${days}`).then(setD); }, [days]);
   if (!d) return <div className="soft-l">Loading…</div>;
   const max = Math.max(1, ...d.topics.map((t: any) => t.n));
@@ -21,7 +36,7 @@ export default function InsightsPage() {
       </div>
       <div className="grid4">
         <Tile label="CHATS" value={d.sessions} sub={`${d.tables} tables · ${d.questions} questions`} />
-        <Tile label="ANSWERED FROM MENU" value={d.answeredPct === null ? "—" : `${d.answeredPct}%`} sub={`${d.unanswered} sent to staff`} />
+        <Tile label="ANSWERED BY THE AI WAITER" value={d.answeredPct === null ? "—" : `${d.answeredPct}%`} sub={`${d.answeredByRules} from the menu rules · ${d.answeredByModel} by the language model · ${d.unanswered} sent to staff`} />
         <Tile label="COULD NOT ANSWER" value={d.unanswered} sub="add FAQs to fix" />
         <Tile label="MENU OPENS" value={d.opens} sub="from QR scans" />
       </div>
@@ -46,6 +61,7 @@ export default function InsightsPage() {
           <div className="sa-plate r-xl" style={{ padding: "18px 24px" }}>
             <div className="eyebrow soft-l" style={{ marginBottom: 4 }}>Could not answer</div>
             {d.cannot.length === 0 && <div className="soft-l" style={{ padding: "8px 0" }}>Nothing unanswered. Nice.</div>}
+            {d.cannot.length > 0 && <div className="soft-l" style={{ padding: "4px 0 8px", fontSize: 14 }}>The AI sent these diners to your staff because your menu and FAQs have no answer. Add an FAQ and it will answer next time.</div>}
             {d.cannot.map((c: any) => <div key={c.text} className="row" style={{ justifyContent: "space-between", gap: 10, padding: "8px 0", borderBottom: "1px solid var(--line)" }}><div style={{ fontWeight: 500 }}>{c.text}{c.n > 1 && <span className="soft-l"> ×{c.n}</span>}</div><Link className="btn btn-ol btn-sm" href={`/owner/faq?q=${encodeURIComponent(c.text)}`}>Add FAQ</Link></div>)}
           </div>
           {d.flagged.length > 0 && <div className="sa-plate r-xl" style={{ padding: "18px 24px" }}><div className="eyebrow soft-l" style={{ marginBottom: 4 }}>Answers diners marked “not right”</div>{d.flagged.map((f: any) => <div key={f.id} style={{ padding: "8px 0", borderBottom: "1px solid var(--line)", fontSize: 14 }}>{f.answer}</div>)}</div>}
@@ -66,6 +82,8 @@ export default function InsightsPage() {
             <div className="eyebrow soft-l" style={{ marginTop: 8 }}>Allergens diners asked about in the chat</div>
             <div className="soft-l">{d.allergensAsked.map((a: any) => `${a.label} ×${a.n}`).join(" · ")}</div>
           </>}
+          <div className="eyebrow soft-l" style={{ marginTop: 8 }}>How much allergen data the restaurant has checked (dishes on sale)</div>
+          <div className="soft-l"><b>{d.allergenQuality.verified}</b> checked by you · <b>{d.allergenQuality.estimated}</b> estimated, not checked · <b>{d.allergenQuality.unknown}</b> not provided. Allergy-profile suggestions use checked dishes only.</div>
           {d.noAllergenData.length > 0 && (
             <div className="sa-notice" role="status" style={{ marginTop: 8 }}>
               <div style={{ flex: 1 }}><b>{d.noAllergenData.length} {d.noAllergenData.length === 1 ? "dish has" : "dishes have"} no allergen data</b> ({d.noAllergenData.slice(0, 4).join(", ")}{d.noAllergenData.length > 4 ? "…" : ""}). The AI never suggests these to a diner with an allergy profile, so they are hidden from them.</div>
@@ -84,6 +102,12 @@ export default function InsightsPage() {
             {d.topQuestions.map((q: any) => <div key={q.text} className="row" style={{ justifyContent: "space-between", gap: 10, padding: "6px 0", borderBottom: "1px solid var(--line)" }}><span style={{ fontWeight: 500 }}>{q.text}</span><b>×{q.n}</b></div>)}
           </div>
         </div>
+      </div>
+      <div className="sa-plate r-xl" style={{ padding: "18px 24px", marginTop: 16 }}>
+        <div className="eyebrow soft-l">Chat data</div>
+        <p className="soft-l">Raw questions and replies are kept for 30 days. Download or delete this restaurant’s chat history here. Orders are separate.</p>
+        <div className="row" style={{ gap: 8, flexWrap: "wrap" }}><button type="button" className="sa-btn sa-btn--quiet" onClick={exportChat}>Download chat data</button><button type="button" className="sa-btn sa-btn--quiet" onClick={deleteChat}>Delete chat history</button></div>
+        {privacyError && <p className="err" role="alert">{privacyError}</p>}
       </div>
     </>
   );

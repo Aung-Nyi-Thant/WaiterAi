@@ -57,8 +57,8 @@ describe("chat endpoint basics", () => {
   });
 });
 
-describe("AI-16 / NFR-PR1 every question is stored with its language, topic and whether it was answered, without personal data", () => {
-  it("logs the question and the reply, without any personal data", async () => {
+describe("AI-16 / NFR-PR1 every question is stored with its language, topic and whether it was answered", () => {
+  it("logs the raw question and reply without separate name or contact fields", async () => {
     noModel();
     const r = await say("I'm allergic to peanuts", { sessionId: "log-1", table: "11" });
     const rows = all("SELECT role, text, lang, topic, allergens, answered FROM chat_messages WHERE session_id = 'log-1' ORDER BY id");
@@ -95,19 +95,24 @@ describe("AI-16 / NFR-PR1 every question is stored with its language, topic and 
   });
 });
 
-describe("AI-7 asking for the bill or staff creates a call for that table", () => {
-  it("asking twice reuses the open call, like the call button (PC-3)", async () => {
+describe("AI-7 asking the staff to come creates a call for that table; asking for the bill offers the button", () => {
+  it("asking twice reuses the open call, like the call button (PC-3); a bill request creates no call until the diner presses the button", async () => {
     noModel();
-    await say("Can I get the bill?", { table: "17" });
+    const b1 = await say("Can I get the bill?", { table: "17" });
     await say("bill please", { table: "17" });
+    expect(b1.data.offer).toBe("bill");
+    expect(all("SELECT kind FROM calls WHERE table_no = '17'")).toEqual([]);
     await say("I need help, call the staff", { table: "17" });
-    expect(all("SELECT kind FROM calls WHERE table_no = '17' AND status = 'open' ORDER BY id").map((c: any) => c.kind)).toEqual(["bill", "help"]);
+    await say("call the staff please", { table: "17" });
+    expect(all("SELECT kind FROM calls WHERE table_no = '17' AND status = 'open' ORDER BY id").map((c: any) => c.kind)).toEqual(["help"]);
   });
-  it("creates the call and not an order", async () => {
+  it("a bill request offers the Call staff / bill button: no call and no order is created by the chat itself", async () => {
     noModel();
     const orders = count("orders");
-    await say("Can I get the bill?", { table: "15" });
-    expect(get("SELECT kind, status FROM calls WHERE table_no = '15'")).toEqual({ kind: "bill", status: "open" });
+    const r = await say("Can I get the bill?", { table: "15" });
+    expect(r.data.offer).toBe("bill");
+    expect(r.data.action.type).toBe("none");
+    expect(get("SELECT kind, status FROM calls WHERE table_no = '15'")).toBeUndefined();
     expect(count("orders")).toBe(orders);
   });
   it("FR-3: asking for the bill twice (chat, then chat or button) leaves one open call per table and kind", async () => {
@@ -115,17 +120,19 @@ describe("AI-7 asking for the bill or staff creates a call for that table", () =
     const open = (kind: string) => get("SELECT COUNT(*) AS n FROM calls WHERE table_no = '17' AND kind = ? AND status = 'open'", kind)!.n;
     await say("Can I get the bill?", { table: "17" });
     await say("check please", { table: "17" });
+    expect(open("bill")).toBe(0);                                  // the chat only offers the button
     const { POST: button } = await import("@/modules/diner/api/calls");
+    await call(button, { method: "POST", params: { slug }, body: { table: "17", kind: "bill" } });
     await call(button, { method: "POST", params: { slug }, body: { table: "17", kind: "bill" } });
     expect(open("bill")).toBe(1);
     await say("I need help, call the staff", { table: "17" });
     await say("call the staff please", { table: "17" });
     expect(open("help")).toBe(1);
     // another table is not affected, and a closed call can be raised again
-    await say("Can I get the bill?", { table: "18" });
-    expect(get("SELECT COUNT(*) AS n FROM calls WHERE table_no = '18' AND kind = 'bill'")!.n).toBe(1);
+    await say("I need help, call the staff", { table: "18" });
+    expect(get("SELECT COUNT(*) AS n FROM calls WHERE table_no = '18' AND kind = 'help'")!.n).toBe(1);
     run("UPDATE calls SET status = 'done' WHERE table_no = '17' AND kind = 'bill'");
-    await say("Can I get the bill?", { table: "17" });
+    await call(button, { method: "POST", params: { slug }, body: { table: "17", kind: "bill" } });
     expect(open("bill")).toBe(1);
   });
 });
@@ -143,7 +150,7 @@ describe("AI-6 / AI-10 AI safety: the chat can never place an order by itself", 
     mockModel('Sure, ordered!\nACTION: {"type":"add_to_picks","ids":[1]}');
     const orders = count("orders"), calls = count("calls");
     const r = await say("What would you recommend on a hot day?");
-    expect(r.data.action.type).toBe("none");
+    expect(["add_to_picks", "call_staff", "place_order"]).not.toContain(r.data.action.type);   // dishes may be shown, nothing is ordered or called
     expect([count("orders"), count("calls")]).toEqual([orders, calls]);
   });
 });
@@ -158,13 +165,13 @@ describe("AI-15 / BR-3 monthly chat limit", () => {
     run("UPDATE restaurants SET chat_cap = 2 WHERE slug = ?", slug);
     const used = get("SELECT COUNT(*) AS n FROM chat_messages WHERE role = 'user' AND created_at >= date('now','start of month')")!.n;
     run("UPDATE restaurants SET chat_cap = ? WHERE slug = ?", used + 1, slug);
-    expect((await say("What would you recommend on a hot day?")).data.reply).toBe("model answer");
-    const r = await say("What would you recommend on a hot day?");
+    expect((await say("Tell me about this place")).data.reply).toBe("model answer");
+    const r = await say("Tell me about this place");
     expect(r.data.reply).toMatch(/reached its chat limit/);
     expect(r.data.action.type).toBe("show_menu");
     expect(calls.length).toBe(1);
     await ownerLogin();
-    expect((await say("What would you recommend on a hot day?", { preview: true })).data.reply).toBe("model answer");   // the owner's test chat is not limited
+    expect((await say("Tell me about this place", { preview: true })).data.reply).toBe("model answer");   // the owner's test chat is not limited
     signOut();
     run("UPDATE restaurants SET chat_cap = 300 WHERE slug = ?", slug);
   });
@@ -174,7 +181,7 @@ describe("AI-14 feedback on an answer", () => {
   it("a thumbs-down flags the answer for the owner with a reason; unknown reasons are dropped", async () => {
     noModel();
     const m = (await say("How much is the Massaman curry?", { sessionId: "fb" })).data.messageId;
-    const send = (b: object) => call(feedback, { method: "POST", params: { slug }, body: { messageId: m, ...b } });
+    const send = (b: object) => call(feedback, { method: "POST", params: { slug }, body: { messageId: m, sessionId: "fb", ...b } });
     await send({ value: -1, reason: "wrong" });
     expect(get("SELECT feedback, flagged, feedback_reason FROM chat_messages WHERE id = ?", m)).toEqual({ feedback: -1, flagged: 1, feedback_reason: "wrong" });
     await send({ value: -1, reason: "<script>" });
