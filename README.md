@@ -13,8 +13,8 @@ The AI never decides anything safety-critical: allergens, prices, opening hours,
 A clickable prototype of Shop AI. No install, no server and no account needed: open the link and click. (It is a separate, simplified implementation: its menu is the HaChi Kyu sushi menu, and it keeps its state in your browser.)
 
 - **What it is.** The three journeys of the product with mock data and the real app's own Thai, Burmese and English labels, on the HaChi Kyu sushi menu (about 130 dishes): **1 · Diner** (phone: menu, filters, allergy profile, AI chat, My picks, Send to staff, Call staff, table bill), **2 · Staff** (phone: PIN sign-in, waiter floor screen, chef board) and **3 · Owner** (laptop: menu and 14 allergens, import a menu from a photo, hours and FAQ, AI settings, QR codes, staff, insights). The tabs share one memory, so a dish added on the diner screen and sent to staff shows up on the waiter screen, then on the chef's board, and ends on the diner's bill.
-- **How to try it.** Each tab has a "Try this" panel with the steps. Staff PINs for the demo: `1111` (waiter), `2222` (chef). Owner sign-in: `ownerhachi_kyu@gmail.com` / `1234`. These are prototype-only hints, not real credentials, and differ from the real app's logins below.
-- **Every screen says which requirement it shows.** The green **Covers:** bar names the SRS IDs (for example `DM-11`, `AI-18`), and the **Requirements map** tab lists FR-1 … FR-10 with the screens and an unhappy path to try for each (AI offline, a wrong PIN, five wrong PINs locking sign-in, an empty search, a sold-out dish, invalid input, flagged import rows). All 56 Must requirements of the SRS are covered, and a test (`app/tests/prototype.test.ts`) fails if that stops being true.
+- **How to try it.** Each tab has a "Try this" panel with the steps. Staff PINs for the demo: `1111` (waiter), `2222` (chef). Owner sign-in: `owner@hachi-kyu.example` / `1234`. These are prototype-only hints, not real credentials, and differ from the real app's logins below.
+- **Every screen says which requirement it shows.** A **Covers** pill (top-left) names the requirement of the screen you are on, with its happy and unhappy steps, and the **Thread** button opens the Golden Thread table: FR-1 … FR-10 → happy path → unhappy path → diagram → acceptance tests. A test (`app/tests/prototype-thread.test.ts`) fails if a row, a diagram or a test file is missing, and `app/tests/prototype.test.ts` fails if a Must requirement is not mentioned.
 - **What is mock.** Data is saved only in your own browser (the Reset control clears it), and the AI is a scripted stand-in that follows the same rules for the sample questions: allergen answers come from the data and never say a dish is "safe". The real application in `app/` answers from the database and uses a local language model only for open questions, checking every model reply (`docs/AI_SAFETY.md`).
 - **Offline copy.** Open `prototype/index.html` in a browser (double-click). Details and the file list: [`prototype/README.md`](prototype/README.md). GitHub Pages republishes the page whenever `prototype/` changes on `main`.
 - **Design prototype.** The local prototype opens on a new landing page with **Service**, **Table** and **Workspace** layouts to compare. **Explore the demo** opens the redesigned diner menu; the toolbar connects the staff and owner journeys. See [`prototype/README.md`](prototype/README.md#landing-page-comparison) for controls and direct links. These changes remain separate from the production app until integrated and published.
@@ -127,11 +127,21 @@ Shop AI answers it with a QR menu and a menu-aware AI waiter (Thai, Burmese, Eng
 | `prototype/` | The clickable prototype (no server; also published by GitHub Pages, see above) |
 | `windows/` | Double-click setup, start, stop, check and offline-pack scripts for Windows laptops, with their own guide |
 | `eval/` | The 30 test questions, sample menu, pass thresholds, model comparison scripts and results |
-| `docs/deliverables/` | The course PDFs: the M1 charter, the M2 SRS as submitted and the corrected v1.1. Their FR numbers map to the IDs in `docs/TRACEABILITY.md` |
+| `docs/deliverables/` | The course PDFs: the M1 charter and the corrected M2 SRS (the as-submitted SRS is in git history, see `docs/PDF_CORRECTIONS.md`). Their FR numbers map to the IDs in `docs/TRACEABILITY.md` |
 | `docs/` | [SRS](docs/SRS_Shop_AI.md), [traceability](docs/TRACEABILITY.md), [AI safety](docs/AI_SAFETY.md), [AI usage log](docs/AI_USAGE_LOG.md), [performance](docs/PERFORMANCE.md), [pilot runbook](docs/PILOT_RUNBOOK.md), [allergen data research](docs/ALLERGEN_DATA_RESEARCH.md), [AI-use statement](docs/AI_USE_STATEMENT.md), feature plan, project explanation, team work plan |
 | `design/` | UI design work: the older Art Deco and Glass mock-ups, and `ui-ux-redesign/` (the monochrome glass redesign with its Figma handoff) |
 | `reports/`, `research_notes/` | Repository analysis, UI/UX audit, dish-data research, and the 9/10 roadmap with its progress record |
 | `Dockerfile`, `docker-compose.yml`, `.env.example` | One-command start (see above) |
 
 ## Team work
+Group 18, **MFU 888**.
+
+| Student ID | Name | GitHub |
+|---|---|---|
+| 6931503001 | Aung Nyi Nyi Thant | [@Aung-Nyi-Thant](https://github.com/Aung-Nyi-Thant) |
+| 6931503031 | Chawakron Singkaew | [@chawakron50-lab](https://github.com/chawakron50-lab) |
+| 6931503042 | Tharathon Plengsri | [@Tharathon47](https://github.com/Tharathon47) |
+| 6931503073 | Sasiwimon Chatkaew | [@noeysasi](https://github.com/noeysasi) |
+| 6931503103 | Natthanon Wongsai | [@wujieiei](https://github.com/wujieiei) |
+
 See `docs/TEAM_WORK_PLAN.md` (who owns what) and `CONTRIBUTING.md` (how to commit).

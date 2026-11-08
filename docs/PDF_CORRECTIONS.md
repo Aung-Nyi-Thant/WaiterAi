@@ -4,7 +4,7 @@
 
 ## Status (5 October 2026)
 
-`docs/deliverables/` holds the three PDFs: the M1 charter as submitted, the M2 SRS as submitted (`M2_SRS_Team18_submitted.pdf`), and **`M2_SRS_Team18_v1.1.pdf`**, the SRS with the corrections below applied. The v1.1 file was made by editing the submitted PDF in place (same pages, tables and typeface; two pages added); the charter was not touched because it was already submitted.
+`docs/deliverables/` holds two PDFs: the M1 charter as submitted, and **`M2_SRS_Team18.pdf`**, the SRS with the corrections below applied (one file per document; the M2 SRS exactly as submitted is in the git history, `git show 393aa8e:docs/deliverables/M2_SRS_Team18_submitted.pdf > srs-submitted.pdf`). The corrected file (marked v1.1 inside) was made by editing the submitted PDF in place (same pages, tables and typeface; two pages added); the charter was not touched because it was already submitted.
 
 | Item (section A) | In v1.1? |
 |---|---|

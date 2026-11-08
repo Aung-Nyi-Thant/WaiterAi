@@ -91,40 +91,45 @@
   <div class="kicker">4 · Live demo (3 minutes)</div>
   <h2>From the QR code to the kitchen</h2>
   <table>
-    <tr><th>#</th><th>Do</th><th>Show</th><th>Requirement</th></tr>
-    <tr><td>1</td><td>Open <code>/r/golden-lotus?t=5</code> on a phone; switch TH / MY / EN</td><td>names, labels and prices change at once</td><td>DM-1, DM-5</td></tr>
-    <tr><td>2</td><td>Set allergies: peanut + shellfish; open the spring rolls</td><td>dishes turn red; “allergen info not provided”</td><td>DM-11, DM-7</td></tr>
-    <tr><td>3</td><td>Ask “What can I eat?” then “Is the Pad Thai safe?”</td><td>list from data; never “safe”; “confirm with the staff”</td><td>AI-18, AI-2, AI-3</td></tr>
-    <tr><td>4</td><td>Add Pad Thai → Send to staff</td><td>warning that it lists the allergens</td><td>PC-1, PC-2</td></tr>
-    <tr><td>5</td><td>Waiter PIN: take order · chef: cook, ready · waiter: served</td><td>allergy banner and tag on the line; 3 s refresh</td><td>SF-3 … SF-5, PC-7</td></tr>
-    <tr><td>6</td><td>Owner: switch a dish off; open Insights</td><td>“sold out” for diner and AI at once; the question is logged</td><td>MM-4, IN-1</td></tr>
+    <tr><th>#</th><th>Do (prototype, no server)</th><th>Show: happy, then unhappy</th><th>Requirement</th></tr>
+    <tr><td>1</td><td>Diner: switch TH / MY / EN; search “salmon”, then “zzz”</td><td>names and prices change; “No dishes found”</td><td>FR-1 · DM-1, DM-5</td></tr>
+    <tr><td>2</td><td>Ask AI: “allergic to peanuts”; switch on “AI offline”</td><td>no dish suggested (none verified), “confirm with the staff”; fallback with buttons</td><td>FR-2 · AI-2, AI-3, AI-11</td></tr>
+    <tr><td>3</td><td>Add a dish, place the order; press Call Staff twice</td><td>order number; second call refused</td><td>FR-3 · PC-1, PC-4</td></tr>
+    <tr><td>4</td><td>Staff: wrong PIN ×5, then waiter 1111: accept; chef 2222: cook</td><td>locked for 60 s; order moves to the kitchen</td><td>FR-4, FR-9 · SF-2, SF-3</td></tr>
+    <tr><td>5</td><td>Owner: wrong password; edit a dish; import CSV with a bad row; hours; QR</td><td>refused; “skipped 1 invalid row”; closing before opening refused; tables 1–60</td><td>FR-5 … FR-8</td></tr>
+    <tr><td>6</td><td>Owner: Insights</td><td>the unanswered question is listed</td><td>FR-10 · IN-1</td></tr>
   </table>
-  <p style="margin-top:1.4vmin">No laptop or model? <b>Same story in <code>prototype/index.html</code>: no server needed.</b> It also shows the unhappy paths (AI offline, wrong PIN, empty search).</p>
-  <div class="foot"><span>Plan B: the clickable prototype</span><span>5</span></div>
+  <p style="margin-top:1.4vmin">Every screen has a <b>Covers</b> pill naming its requirement. The real app (<code>docker compose up</code>) runs the same story with the local model.</p>
+  <div class="foot"><span>The clickable prototype: prototype/index.html</span><span>5</span></div>
 </section>
 
 <section class="slide" data-notes="Show the Golden Thread: problem to requirement to design to feature to test. Point at one row and trace it fully: 'forgotten special requests' to FR-3 PC-7 to the allergy note on the order to the banner on the waiter and chef screens to allergy-profile.test.ts. The traceability table has 108 IDs and a test fails if an ID is missing, so it cannot go stale.">
   <div class="kicker">5 · Golden Thread</div>
   <h2>Every feature traces back to the problem and forward to a test</h2>
-  <table>
-    <tr><th>Pain</th><th>Requirement</th><th>Design</th><th>Feature</th><th>Test</th></tr>
-    <tr><td>Same questions all day</td><td>AI-5, AI-9</td><td>rules + checked local model</td><td>Ask AI</td><td>ai-rules, 30-question eval</td></tr>
-    <tr><td>Allergy and special requests forgotten</td><td>AI-2, AI-3, PC-2, PC-7</td><td>stored data only; allergy note travels with the order</td><td>profile, banner on staff screens</td><td>allergy-profile, ai-guard</td></tr>
-    <tr><td>Tables call at once; orders missed</td><td>PC-3, SF-3, SF-4, SF-6</td><td>live screens, 3 s refresh, one call per table</td><td>Floor and chef screens</td><td>orders, e2e</td></tr>
-    <tr><td>New staff do not know the menu</td><td>DM-1…7, MM-1, MM-2</td><td>QR menu in 3 languages</td><td>Menu, owner menu items</td><td>menu, diner-filters</td></tr>
-    <tr><td>Owners cannot keep a menu current</td><td>MI-1…4, QR-1</td><td>import from a photo with review</td><td>Import, QR codes</td><td>import</td></tr>
+  <table style="font-size:0.78em">
+    <tr><th>Pain</th><th>FR · SRS IDs</th><th>Design</th><th>Unhappy path</th><th>Tests</th></tr>
+    <tr><td>Same questions; new staff do not know the menu</td><td>FR-1 · DM-1 … DM-7, DM-11</td><td>UC-1 Browse the menu</td><td>Search "zzz": "No dishes found" empty state</td><td>ui/dinerx</td></tr>
+    <tr><td>Same questions all day; allergy risk</td><td>FR-2 · AI-1 … AI-13, AI-16 … AI-20</td><td>SRS §4.4 chat decision flow</td><td>Switch on "AI offline": open question gets a fallback with Browse / Call staff</td><td>ai-rules</td></tr>
+    <tr><td>Tables call at once; orders missed</td><td>FR-3 · PC-1 … PC-7</td><td>SRS §4.3 order state model, UC-3, UC-4</td><td>Empty cart shows "Cart is empty"</td><td>orders</td></tr>
+    <tr><td>Orders missed; special requests forgotten</td><td>FR-4 · SF-3 … SF-6, PC-4</td><td>UC-8, UC-9, UC-10</td><td>Chef and waiter see different tabs (a waiter cannot cook)</td><td>ui/staffx</td></tr>
+    <tr><td>Owner cannot keep the menu right</td><td>FR-5 · OA-1 … OA-3, MM-1 … MM-7</td><td>UC-5 Manage menu (menu_items, owners)</td><td>Wrong password is refused</td><td>auth</td></tr>
+    <tr><td>Menu changes often</td><td>FR-6 · MI-1 … MI-4</td><td>UC-6 Import a menu (vision model reads, owner reviews)</td><td>Rows with a missing name or price are skipped and counted ("skipped N invalid rows")</td><td>import</td></tr>
+    <tr><td>Same questions about hours</td><td>FR-7 · ST-1, ST-3, ST-4</td><td>settings, FAQs</td><td>A closing time that is not after the opening time is rejected ("Closing time must be after opening time")</td><td>menu</td></tr>
+    <tr><td>Diners cannot find the menu</td><td>FR-8 · QR-1, QR-2</td><td>UC-7 Print QR codes</td><td>Going below 1 or above 60 tables is refused ("Tables must be between 1 and 60")</td><td>menu</td></tr>
+    <tr><td>Only staff may take orders</td><td>FR-9 · SF-1, SF-2</td><td>staff table, SRS SF-2 lockout</td><td>A wrong PIN is refused ("Wrong PIN (1 of 5)")</td><td>auth</td></tr>
+    <tr><td>Unseen unmet demand</td><td>FR-10 · IN-1 … IN-4</td><td>UC-11 Read insights</td><td>With no questions yet, the list shows an empty state</td><td>owner-insights</td></tr>
   </table>
-  <p><b>108 requirement IDs</b> are traced to code and tests; a test fails if the table goes stale.</p>
-  <div class="foot"><span>docs/TRACEABILITY.md · docs/FINAL_REPORT.md section 6</span><span>6</span></div>
+  <p>Open <code>prototype/index.html?view=thread</code> for the full table (happy path, unhappy path, diagram, tests). <b>108 requirement IDs</b> are traced to code and tests; a test fails if a row goes stale.</p>
+  <div class="foot"><span>docs/FINAL_REPORT.md section 6 · docs/TRACEABILITY.md</span><span>6</span></div>
 </section>
 
-<section class="slide" data-notes="Evidence slide. Be precise and honest. 537 unit and integration tests and 14 end-to-end tests pass; CI runs them on every push on Node 22 and 24 plus a Docker build. The live model scores 30 of 30 on the 30-question set (once 29 of 30). For speed: 100 open questions, median 5.5 s, 90th percentile 10.7 s. Load: 3 diners and 2 staff screens for 10 minutes, 0 errors, every AI answer under 18 s. Say what is not measured: a phone over Wi-Fi, real owners, a restaurant's own computer.">
+<section class="slide" data-notes="Evidence slide. Be precise and honest. 1,328 unit and integration tests pass (23 system tests on 29 Oct); CI runs them on every push on Node 22 and 24 plus a Docker build. The live model scores 30 of 30 on the 30-question set (once 29 of 30). For speed: 100 open questions, median 5.5 s, 90th percentile 10.7 s. Load: 3 diners and 2 staff screens for 10 minutes, 0 errors, every AI answer under 18 s. Say what is not measured: a phone over Wi-Fi, real owners, a restaurant's own computer.">
   <div class="kicker">6 · Evidence</div>
   <h2>What we measured</h2>
   <div class="cols cols3">
-    <div class="card"><div class="big">537</div>unit and integration tests, plus <b>14</b> end-to-end tests through a real server (diner → waiter → chef → bill)</div>
-    <div class="card"><div class="big">30/30</div>AI safety and answer questions with the real model (once 29/30; thresholds met every time)</div>
-    <div class="card"><div class="big">5.5 s</div>median for 100 open questions (90th percentile 10.7 s; target: 90% within 15 s)</div>
+    <div class="card"><div class="big">1,328</div>unit and integration tests (74 files); 23 system tests through a real server passed on 29 Oct</div>
+    <div class="card"><div class="big">29/30</div>AI questions with the real model on 28 Oct (extended set 30/30, natural questions 34/34; thresholds met)</div>
+    <div class="card"><div class="big">4.4 s</div>median for 100 open questions (90th percentile 12.2 s; 99 of 100 within 15 s; target 90%)</div>
     <div class="card"><div class="big">0 errors</div>3 diners + 2 staff screens for 10 minutes; every AI answer within 17.4 s (target 30 s)</div>
     <div class="card"><div class="big">&lt; 80 ms</div>rule-based answers with 30 diners at once (target 1 s)</div>
     <div class="card"><div class="big">108</div>requirement IDs traced to code and tests; CI on Node 22 and 24 and a Docker build</div>
@@ -143,6 +148,7 @@
       <li>The first question after a restart or a menu edit can fall back for up to a minute while the prompt is read.</li>
     </ul>
     <ul>
+      <li>No dish has a <b>restaurant-verified</b> allergen list yet (145 dishes), so the AI suggests none for an allergy.</li>
       <li>New Thai and Burmese <b>allergen words need a native speaker</b>.</li>
       <li>Not tested on real phones, with real owners, or on a public HTTPS server.</li>
       <li>Out of scope by design: online payment, delivery, POS, cloud AI.</li>
@@ -158,7 +164,7 @@
     <div class="card"><h3>Worked</h3><ul><li>Tests written first found real bugs: “bill” inside “papaya”, “x4 … x2”, the Thai word for staff read as sesame.</li><li>Measuring beat guessing: the slow first answer was the prompt being read, not the model loading (40–65 s, now warmed at start-up).</li><li>A test keeps the requirements table honest.</li></ul></div>
     <div class="card"><h3>People decided</h3><ul><li>“AI” vs “staff” wording (corrected twice by a member).</li><li>Burmese replies: four native-speaker reviews.</li><li>No cloud AI, even though it was easier.</li><li>How to merge two lines of AI-assisted work.</li></ul></div>
   </div>
-  <p class="todo" style="margin-top:1.4vmin">[team to complete] what was changed or rejected in the AI's output (AI tools were used by one member) · docs/AI_USAGE_LOG.md</p>
+  <p class="todo" style="margin-top:1.4vmin">[team to complete] what was changed or rejected in the AI's output (Claude Code by one member; Antigravity logged for six tasks on 8 Oct) · docs/AI_USAGE_LOG.md</p>
   <div class="foot"><span>docs/AI_USAGE_LOG.md</span><span>9</span></div>
 </section>
 

@@ -15,13 +15,12 @@
  * ##################################################################### */
 
 /* =====================================================================
- * ▌Section 4 — AI SERVICE * the next dev must complete this
- * AI connection layer: chat UI is ready (see AI chat screen section); only the backend call in AIService.send() remains
+ * ▌Section 4 — AI SERVICE (scripted stand-in; the rules are in ai-rules.js)
+ * The real app answers from its database and a local model; this prototype answers with the same rules from the menu data, no server
  * ===================================================================== */
 
-/* ================= AI SERVICE LAYER — TODO (next developer) =================
- * UI is finished (chat, suggestions, menu cards, add-to-cart, loading/error/retry).
- * Only the backend call below is missing. Replace the body of AIService.send().
+/* ================= AI SERVICE LAYER =================
+ * Chat UI: suggestions, menu cards, add-to-cart, loading/error/retry. AIService.send() is a scripted stand-in for a backend.
  *
  * Contract:
  *   AIService.send(message, ctx) -> Promise<{ t, items?, qa? }>
@@ -45,10 +44,12 @@ const AIService = {
     // return await res.json();   // -> { t, items, qa }
     await new Promise(r => setTimeout(r, 400));
     // Until a real AI backend is connected: answer from the owner's FAQ / opening hours, otherwise log the question for Insights
+    const rule = AIRules.answer(message, ctx); if (rule) return rule;   // allergen / price / availability rules (ai-rules.js)
     const d = Store.get(), q = message.toLowerCase().trim(), w = s => s.toLowerCase().split(/[\s?,.!]+/).filter(x => x.length > 2);
     const f = (d.faqs || []).find(x => x.q && (q.includes(x.q.toLowerCase()) || x.q.toLowerCase().includes(q) || w(x.q).filter(k => q.includes(k)).length >= Math.max(1, w(x.q).length / 2)));
     if (f) return { t: f.a.replace(/</g, '&lt;') };
     if (/hours?|open|close|เปิด|ปิด/i.test(message) && d.hours) return { t: d.hours.map(h => h.d + ' ' + (h.closed ? 'Closed' : h.o + '–' + h.c)).join(' · ') };
+    const open = AIRules.open(ctx); if (open) return open;   // "model" stand-in: offline / unsafe-claim guard
     Store.update(x => x.unanswered.push({ q: message, t: Date.now() }));
     return { t: (aiS().fallback || t('aiTodo')).replace(/</g, '&lt;') };
   }
@@ -398,7 +399,11 @@ if (!window.STAFF_MODE) {
     pick: e => { U.pick = e.v; U.pin = ''; R() },
     k: e => {
       if (e.v == 'back') U.pin = U.pin.slice(0, -1); else if (U.pin.length < 4) U.pin += e.v;
-      if (U.pin.length == 4) { if (Store.get().staff.some(a => a.role == U.pick && a.pass == U.pin)) { U.role = U.pick; U.tab = ''; U.pin = ''; sessionStorage.setItem('shopai_staff', U.role); D = Store.get(); seen = keys(); beep() } else { U.pin = ''; return say('Wrong PIN', 'xCircle') } } R()
+      if (U.pin.length == 4) {
+        if (Date.now() < +sessionStorage.getItem('shopai_lock')) { U.pin = ''; return say('Locked: too many wrong PINs. Try again in a minute.', 'lock') }   // SF-2
+        if (Store.get().staff.some(a => a.role == U.pick && a.pass == U.pin)) { sessionStorage.removeItem('shopai_bad'); U.role = U.pick; U.tab = ''; U.pin = ''; sessionStorage.setItem('shopai_staff', U.role); D = Store.get(); seen = keys(); beep() }
+        else { U.pin = ''; const n = +sessionStorage.getItem('shopai_bad') + 1; sessionStorage.setItem('shopai_bad', n % 5); if (n >= 5) { sessionStorage.setItem('shopai_lock', Date.now() + 60000); return say('5 wrong PINs: sign-in locked for 60 seconds', 'lock') } return say('Wrong PIN (' + n + ' of 5)', 'xCircle') }
+      } R()
     },
     logout: () => { U.role = ''; sessionStorage.removeItem('shopai_staff'); R() },
     tab: e => { U.tab = e.v; keep = false; R() }, cat: e => { U.cat = e.c; R() },

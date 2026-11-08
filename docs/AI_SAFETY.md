@@ -64,6 +64,21 @@ A bug of this kind was found while writing these tests: the bill keyword `pay` m
 
 A second bug of the same kind (short Thai allergen words inside ordinary words) was found by a parallel review: in Thai, `เรียกพนักงาน` ("call the staff") contains `งา` (sesame), so the diner got a sesame allergen list and no staff call. Short Thai allergen words (`งา`, `ปู`, `ปลา`) no longer match inside `พนักงาน`, `งาน`, `ปูน`, `ปู่`, `ปลาย` (`app/tests/thai-keywords.test.ts`). Thai and Burmese have no spaces, so other short words may still hide inside longer ones; the native-speaker review sheet (`eval/native_review_allergens.html`) is the place to check.
 
+## "Local" is not "trusted": the model and the tools as supply chain (added 2026-11-02)
+
+The model runs on the restaurant's own computer, which stops customer questions leaving it. It does not make the model trustworthy: a model file or a build tool can carry a backdoor (a hidden way in or a trigger that changes behaviour). What the design does about it, checked against the code:
+
+| Route | Our position | Where |
+|---|---|---|
+| Hidden code in the model file | We do not load model files ourselves; Ollama does. We never use pickle files or `trust_remote_code`. **Limit:** the model is pulled by tag (`gemma4:12b`), not pinned by digest | `provider.ts` calls Ollama's `/api/chat` |
+| A trigger that makes the model lie | Every safety fact (allergens, prices, hours, sold-out dishes, orders, the bill) comes from rules and the database, not from the model. A reply that names a price that is not on the menu, calls a sold-out dish available, calls a dish "safe", or names a dish that does not exist is replaced by the staff sentence | `ai.ts` guards; `ai-guard.test.ts` uses a hostile model |
+| A triggered model that can act or send data out | The request has **no `tools`** and the model has no network access of its own: it returns text only. The chat shows it as plain text (no HTML, no Markdown images, no links it could load), so a reply cannot make the page fetch a URL | no `dangerouslySetInnerHTML` in `src/`; `provider.ts` |
+| The prompt carries other diners' data | One restaurant's data per prompt; chat history is scoped by restaurant and kept for 30 days | `security-round2.test.ts`, `chatRetention.ts` |
+
+**What is not covered, and what to do.** (1) A file scan cannot find behaviour learned in training; the guards above limit the damage but the model can still give a poor recommendation. (2) Before a pilot, record the model's digest (`ollama show gemma4:12b`) and compare it on every machine. (3) `OLLAMA_URL` can point at another computer; if it does, customer questions leave the restaurant, so keep it on `localhost`. (4) The demo logins (`demo@shop.ai`, PINs 1111 and 2222) are a known "backdoor shape": they are public, created only in development, refused when `NODE_ENV=production`, and tested (`seed.test.ts`).
+
+**Development tools are dependencies too.** The Oct 2026 incidents (a tampered AI-extension update; a poisoned package build) show that an official channel is not proof. Our rule: AI-written code is read and tested before it is committed (`docs/AI_USAGE_LOG.md`); installed AI-assistant skill folders (`.agents/`, `.codex/`, `.impeccable/`, `.github/skills`) are not part of the product and are not committed; no secrets are kept in the repository (`data/secret` is created at run time with mode 0600).
+
 ## Results
 
 Per-language accuracy on the 30 questions of `eval/questions.json`:

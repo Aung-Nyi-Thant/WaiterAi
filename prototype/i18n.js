@@ -604,7 +604,7 @@ const T = {
     added: ["เพิ่มลงตะกร้าให้แล้วค่ะ ต้องการตรวจสอบตะกร้าไหม?", "Added to your cart! Review your cart?", "ခြင်းထဲထည့်ပြီးပါပြီ။ စစ်ဆေးမလား?"],
     goC: ["ไปที่ตะกร้า", "Go to cart", "ခြင်းသို့"],
     hi: ["สวัสดีค่ะ! ฉันช่วยแนะนำเมนูที่เหมาะกับคุณได้ ลองถามได้เลย 😊", "Hi! I can recommend dishes that suit you. Just ask 😊", "မင်္ဂလာပါ! သင့်အတွက် ဟင်းလျာ အကြံပြုပေးနိုင်ပါတယ် 😊"],
-    aiTodo: ["ฟีเจอร์ AI ยังไม่เชื่อมต่อ (รอทีมพัฒนาเชื่อม backend)", "AI is not connected yet (pending backend integration).", "AI ကို မချိတ်ဆက်ရသေးပါ (backend ချိတ်ဆက်ရန်ကျန်သည်)"],
+    aiTodo: ["ยังตอบเรื่องนี้ไม่ได้ ฉันบันทึกคำถามไว้ให้ร้านแล้ว กรุณาถามพนักงาน", "I don't have an answer for that. I noted your question for the restaurant; please ask the staff.", "ဤမေးခွန်းကို မဖြေနိုင်သေးပါ။ ဆိုင်အတွက် မှတ်ထားပါသည်။ ဝန်ထမ်းကို မေးပါ။"],
 };
 
 // Suggested questions in the AI chat: each row is one language [Thai, English, Myanmar]; buttons display according to the selected language

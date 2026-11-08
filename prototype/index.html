@@ -27,7 +27,7 @@
   <script>
     const params = new URLSearchParams(location.search);
     const requestedView = params.get('view');
-    window.APP_VIEW = ['customer', 'staff', 'owner', 'landing'].includes(requestedView)
+    window.APP_VIEW = ['customer', 'staff', 'owner', 'landing', 'thread'].includes(requestedView)
       ? requestedView : params.has('table') || params.has('restaurant') ? 'customer' : 'landing';
     window.STAFF_MODE = window.APP_VIEW !== 'customer';   // staff / owner: app.js loads only the menu data and does not draw the customer screen
     document.body.className = 'view-' + window.APP_VIEW;
@@ -36,6 +36,7 @@
   <script src="motion.js"></script> <!-- entrance and feedback animations: fx.snap() -->
   <script src="i18n.js"></script> <!-- 3-language text -->
   <script src="data.js"></script> <!-- Store + allergens / ingredients / categories + menu -->
+  <script src="ai-rules.js"></script> <!-- AI waiter rules (FR-2) -->
   <script src="app.js"></script> <!-- customer app + staff app + AI service -->
   <script src="owner.js"></script> <!-- owner dashboard -->
   <script src="landing.js"></script>
@@ -43,6 +44,7 @@
   <script src="landing-table.js"></script>
   <script src="landing-workspace.js"></script>
   <script src="picker.js"></script>
+  <script src="thread.js"></script> <!-- Golden Thread page + Covers pill -->
   <script src="switcher.js"></script> <!-- prototype toolbar: Diner / Staff / Owner / Reset (demo only) -->
   <noscript><p style="padding:32px">Shop AI is a clickable restaurant prototype. Enable JavaScript to explore the menu and team demos.</p></noscript>
 </body>

@@ -22,13 +22,13 @@ It meets the M3 minimum bar:
 
 1. **Every Must requirement can be clicked through (happy path)**, and each journey also shows an unhappy path (empty, error or refused states).
 2. **It opens in a browser with no server or database.** The data is mock; buttons that would save only change the browser's own storage (`localStorage` for the shared data, `sessionStorage` for the open session). Nothing is sent anywhere.
-3. **You can point at a screen and say which requirement it is.** Every screen has a green **Covers:** bar naming the SRS IDs it demonstrates; the **Requirements map** tab lists FR-1 … FR-10 with the screens and the unhappy paths.
+3. **You can point at a screen and say which requirement it is.** Every screen has a **Covers** pill (top-left) naming the requirement it shows, with the happy and unhappy steps for that screen; the **Thread** button in the toolbar (`?view=thread`) opens the Golden Thread table: FR-1 … FR-10, happy path, unhappy path, design diagram and acceptance tests.
 
 ## Demo sign-ins (prototype only, written in `owner.js` and `app.js`, not real credentials)
 
 | Who | Sign-in |
 |---|---|
-| Owner | `ownerhachi_kyu@gmail.com` / `1234` |
+| Owner | `owner@hachi-kyu.example` / `1234` |
 | Waiter | PIN `1111` |
 | Chef | PIN `2222` |
 
@@ -38,18 +38,20 @@ The real application uses other, generated credentials (see the root README). A 
 
 | Tab | What you can do | Requirements |
 |---|---|---|
-| **1 · Diner (phone)** | menu by QR address, TH/MY/EN, search, filters, allergy profile, dish detail, AI chat (8 sample questions), My picks, Send to staff, Call staff, table bill | FR-1, FR-2, FR-3 |
+| **1 · Diner (phone)** | menu by QR address, TH/MY/EN, search, filters, allergy profile, dish detail, AI chat (allergen, price, availability, cheapest, recommended, spicy, hours and FAQ questions), My picks, Send to staff, Call staff, table bill | FR-1, FR-2, FR-3 |
 | **2 · Staff (phone)** | PIN sign-in (5 wrong PINs lock it), waiter floor screen (calls, picks with allergy banner, take order, ready, tables, bills, sold out), chef board (New / Cooking / Ready, late tickets) | FR-4, FR-9 |
 | **3 · Owner (laptop)** | sign in / register, menu items with the 14 allergens, import a menu photo, hours and FAQ, AI settings, QR codes, staff accounts, insights | FR-5 … FR-10 |
-| **Requirements map** | the Golden Thread table: course FR → SRS IDs → screen → unhappy path to try | all |
+| **Thread** (`?view=thread`) | the Golden Thread table: course FR → SRS IDs → happy path → unhappy path → diagram → acceptance tests, with a link to each screen | all |
 
 The three tabs share one memory, so the story runs end to end: a dish added on the diner screen and sent to staff appears on the waiter screen, goes to the chef, comes back as ready, and ends up on the diner's bill. A PIN the owner creates signs in on the staff tab; a dish the owner switches off is "sold out" for the diner and the AI at once.
 
 ## Unhappy paths (try them)
 
-- Diner: search "zzz" (empty state); "No peanuts" hides the dish with no allergen data; the sold-out dish cannot be added; press the bell twice (one open call per table); side panel switches for **AI offline**, **model makes an allergen claim** (the guard replaces it) and **no connection**.
-- Staff: wrong PIN, then five wrong PINs (locked); a chef-only button pressed by the waiter (403).
-- Owner: wrong password, a dish without a name or with a negative price, flagged import rows block publishing, invalid opening times, more than 60 tables, a duplicate or too-short PIN.
+Each is checked by hand in a browser; the same list is in the Thread table.
+
+- Diner: search "zzz" (empty state); an empty cart; a sold-out dish cannot be added (mark it sold out on the staff Menu tab); a second staff call within 60 seconds is refused. On the **Ask AI** screen the **Covers** pill has two switches: **AI model offline** (fallback with Browse / Call staff buttons) and **Model makes an unsafe claim** (the guard replaces its reply). "Ignore all previous instructions…" is refused.
+- Staff: a wrong PIN ("1 of 5"), then five wrong PINs lock sign-in for 60 seconds, even for the right PIN; waiter and chef see different tabs; empty queues show an empty state.
+- Owner: wrong password; a dish without a name or with a negative price; import rows with a missing name or price are skipped and counted; a closing time not after the opening time; fewer than 1 or more than 60 tables; an account without a name or a 4-digit PIN.
 
 ## What it is not
 
@@ -63,8 +65,10 @@ The AI here is a scripted stand-in with the same rules as the real one for the s
 | `landing.js`, `landing-service.js`, `landing-table.js`, `landing-workspace.js`, `landing.css` | shared landing interactions and three isolated layout directions |
 | `picker.js`, `picker.css` | landing-layout comparison controls |
 | `assets/` | six local menu reference photos and their provenance |
-| `app.js` | state, the scripted AI, the diner and staff journeys |
-| `owner.js` | the owner journey and the requirements map |
+| `app.js` | state, the diner and staff journeys |
+| `ai-rules.js` | the scripted AI waiter (FR-2): rules that answer from the menu data |
+| `thread.js` | the Golden Thread page (`?view=thread`) and the Covers pill |
+| `owner.js` | the owner journey |
 | `data.js` | the HaChi Kyu menu (`RAW`), ingredient and allergen tables, `VERIFIED`, the FR map, and the browser-storage `Store`. `DISH_SEED` (the 13-dish Golden Lotus demo from `eval/menu.json`) is kept for the test but is not shown |
 | `i18n.js` | **generated** from the app's labels: `cd app && node --experimental-strip-types --no-warnings ../prototype/make-i18n.mjs` |
 
