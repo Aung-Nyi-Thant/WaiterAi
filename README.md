@@ -127,11 +127,21 @@ Shop AI answers it with a QR menu and a menu-aware AI waiter (Thai, Burmese, Eng
 | `prototype/` | The clickable prototype (no server; also published by GitHub Pages, see above) |
 | `windows/` | Double-click setup, start, stop, check and offline-pack scripts for Windows laptops, with their own guide |
 | `eval/` | The 30 test questions, sample menu, pass thresholds, model comparison scripts and results |
-| `docs/deliverables/` | The course PDFs: the M1 charter, the M2 SRS as submitted and the corrected v1.1. Their FR numbers map to the IDs in `docs/TRACEABILITY.md` |
+| `docs/deliverables/` | The course PDFs: the M1 charter and the corrected M2 SRS (the as-submitted SRS is in git history, see `docs/PDF_CORRECTIONS.md`). Their FR numbers map to the IDs in `docs/TRACEABILITY.md` |
 | `docs/` | [SRS](docs/SRS_Shop_AI.md), [traceability](docs/TRACEABILITY.md), [AI safety](docs/AI_SAFETY.md), [AI usage log](docs/AI_USAGE_LOG.md), [performance](docs/PERFORMANCE.md), [pilot runbook](docs/PILOT_RUNBOOK.md), [allergen data research](docs/ALLERGEN_DATA_RESEARCH.md), [AI-use statement](docs/AI_USE_STATEMENT.md), feature plan, project explanation, team work plan |
 | `design/` | UI design work: the older Art Deco and Glass mock-ups, and `ui-ux-redesign/` (the monochrome glass redesign with its Figma handoff) |
 | `reports/`, `research_notes/` | Repository analysis, UI/UX audit, dish-data research, and the 9/10 roadmap with its progress record |
 | `Dockerfile`, `docker-compose.yml`, `.env.example` | One-command start (see above) |
 
 ## Team work
+Group 18, **MFU 888**.
+
+| Student ID | Name | GitHub |
+|---|---|---|
+| 6931503001 | Aung Nyi Nyi Thant | [@Aung-Nyi-Thant](https://github.com/Aung-Nyi-Thant) |
+| 6931503031 | Chawakron Singkaew | [@chawakron50-lab](https://github.com/chawakron50-lab) |
+| 6931503042 | Tharathon Plengsri | [@Tharathon47](https://github.com/Tharathon47) |
+| 6931503073 | Sasiwimon Chatkaew | [@noeysasi](https://github.com/noeysasi) |
+| 6931503103 | Natthanon Wongsai | [@wujieiei](https://github.com/wujieiei) |
+
 See `docs/TEAM_WORK_PLAN.md` (who owns what) and `CONTRIBUTING.md` (how to commit).
