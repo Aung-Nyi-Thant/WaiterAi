@@ -4,11 +4,11 @@
   if (window.APP_VIEW !== 'owner') return;   // only run on index.html?view=owner
   const OWNER = { email: 'owner@hachi-kyu.example', pass: '1234' };   // demo login (client-side only)
   const PG = [['dash', 'chart', 'Dashboard'], ['menu', 'menu', 'Menu Items'], ['imp', 'inbox', 'Import Menu'], ['hf', 'clock', 'Hours & FAQ'], ['ai', 'sparkle', 'AI Settings'], ['qr', 'qr', 'QR Codes'], ['staff', 'chefHat', 'Staff'], ['ins', 'bulb', 'Insights']];
-  const ST = { new: 'New', accepted: 'Accepted', cooking: 'Cooking', ready: 'Ready', served: 'Served', paid: 'Paid' };
+  const ST = { picked: 'Picked', new: 'Taken (to kitchen)', cooking: 'Cooking', ready: 'Ready', served: 'Served', paid: 'Paid' };
   const CT = CATS.filter(c => c[0] != 'all' && c[0] != 'rec'), CZ = ['don', 'noodle', 'app', 'grill', 'set'];
   const TPL = 'name_th,name_en,price,category,imagelink,ingredients,allergens\nข้าวผัดกุ้ง,Shrimp Fried Rice,89,don,https://images.unsplash.com/photo-1603133872878-684f208fb84b,rice;shrimp;egg,shell;egg\n';
   const root = document.getElementById('app'); root.className = 'ow';
-  let U = { ok: sessionStorage.getItem('shopai_owner') == '1', pg: 'dash', q: '', cat: 'all', edit: null, err: '', toast: '', qr: 0 }, D = Store.get(), tm;
+  let U = { ok: sessionStorage.getItem('shopai_owner') == '1', pg: PG.some(p => p[0] == new URLSearchParams(location.search).get('go')) ? new URLSearchParams(location.search).get('go') : 'dash', q: '', cat: 'all', edit: null, err: '', toast: '', qr: 0 }, D = Store.get(), tm;
 
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const val = id => document.getElementById(id).value, up = Store.update, sum = a => a.reduce((x, o) => x + o.total, 0);

@@ -38,7 +38,7 @@ window.THREAD = [
     design: ['05-use-cases.png', 'UC-7 Print QR codes'], test: ['menu.test.ts', 'ui/owner-pages.test.tsx'] },
   { fr: 'FR-9', what: 'Staff accounts (PIN)', ids: 'SF-1, SF-2', view: 'staff',
     happy: 'Staff: choose Waiter, enter 1111: you are in. Owner → Staff creates or changes a PIN.',
-    unhappy: 'A wrong PIN is refused ("Wrong PIN (1 of 5)"). Five wrong PINs lock sign-in for 60 seconds. An account needs a name and a 4-digit PIN.',
+    unhappy: 'A wrong PIN is refused ("Wrong PIN (1 of 5)"). Five wrong PINs lock sign-in for 10 minutes. An account needs a name and a 4-digit PIN.',
     design: ['02-database.png', 'staff table, SRS SF-2 lockout'], test: ['auth.test.ts', 'security-round2.test.ts', 'ratelimit.test.ts'] },
   { fr: 'FR-10', what: 'Insights', ids: 'IN-1 … IN-4', view: 'owner', go: 'ins',
     happy: 'Ask the AI a question it has no rule for, then Owner → Insights: it is listed under "Questions the AI could not answer".',
@@ -48,7 +48,7 @@ window.THREAD = [
 
 (() => {
   const view = window.APP_VIEW, esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const link = f => { const u = new URL(location.href); u.search = ''; u.searchParams.set('view', f.view); u.searchParams.set('table', '5'); u.searchParams.set('lang', 'en'); return u.href; };
+  const link = f => { const u = new URL(location.href); u.search = ''; u.searchParams.set('view', f.view); u.searchParams.set('table', '5'); u.searchParams.set('lang', 'en'); if (f.go) u.searchParams.set('go', f.go); return u.href; };
   const css = document.createElement('style');
   css.textContent = `.cv{position:fixed;left:12px;top:12px;z-index:60;max-width:min(250px,calc(100vw - 24px));font:13px/1.45 system-ui,sans-serif;background:#fff;color:#111;border:1px solid #d6d6d6;border-radius:14px;box-shadow:0 6px 24px #0002}
 .cv summary{cursor:pointer;padding:8px 12px;min-height:44px;display:flex;align-items:center;gap:6px;list-style:none}.cv summary::-webkit-details-marker{display:none}
