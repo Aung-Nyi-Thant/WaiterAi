@@ -134,14 +134,16 @@ body { background: var(--canvas); }
 ::view-transition-group(dish-hero) { animation-duration: var(--dur-morph); animation-timing-function: var(--spring-smooth); }
 ::view-transition-old(dish-hero), ::view-transition-new(dish-hero) { height: 100%; width: 100%; object-fit: cover; overflow: clip; }
 
-/* sliding selection: a real <i class="pill"> (motion.js fx.pills) carries the selected colour */
-:is(.lang button, .chip, #app nav button, .ow aside button):has(> .pill) { position: relative; isolation: isolate; background: transparent !important; }
-.pill { position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--pill, var(--ink)); pointer-events: none; }
-#app nav, .ow aside { --pill: #e1e2e7; }
-@media (min-width: 1024px) { .view-customer #app > nav { --pill: var(--ink); } }
+/* sliding selection: the selected button itself (with its label) moves to its new place, so the label is never covered */
+.lang button.on { view-transition-name: lang-pill; }
+.chips .chip.on { view-transition-name: chip-pill; }
+#app > nav button.on { view-transition-name: nav-pill; }
+.ow aside button.on { view-transition-name: side-pill; }
 ::view-transition-group(lang-pill), ::view-transition-group(chip-pill), ::view-transition-group(nav-pill), ::view-transition-group(side-pill), ::view-transition-group(pt-pill) {
   animation-duration: var(--dur-ui); animation-timing-function: var(--spring-snappy);
 }
+::view-transition-old(lang-pill), ::view-transition-old(chip-pill), ::view-transition-old(nav-pill), ::view-transition-old(side-pill), ::view-transition-old(pt-pill),
+::view-transition-new(lang-pill), ::view-transition-new(chip-pill), ::view-transition-new(nav-pill), ::view-transition-new(side-pill), ::view-transition-new(pt-pill) { height: 100%; }   /* label cross-fades while the pill slides */
 
 /* staff tickets glide between columns; owner editor slides in from the right */
 .ow .ov.c .sh { view-transition-name: owner-editor; }
@@ -167,3 +169,38 @@ body { background: var(--canvas); }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
   #app > nav, .cartbar { transition: none; }
 }
+
+/* ===== Laptop: dish detail as a two-column dialog; order placed as status + receipt (desktop research, 9 Nov) ===== */
+@media (min-width: 1024px) {
+  .view-customer #app > .ov > .sh {
+    width: min(880px, calc(100% - 48px)); height: min(600px, calc(100% - 48px)); max-height: none;
+    display: grid; grid-template-columns: 400px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); padding: 0; overflow: hidden;
+  }
+  .view-customer #app > .ov > .sh::before { display: none; }                       /* no phone drag handle */
+  .view-customer #app > .ov > .sh .big { position: relative; height: auto; min-height: 0; max-height: none; aspect-ratio: auto; border-radius: 0; margin: 0; background: var(--tint); }
+  .view-customer #app > .ov > .sh .big img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .view-customer #app > .ov > .sh .pad .tag { display: inline-flex; width: auto; margin: 0 6px 6px 0; }
+  .view-customer #app > .ov > .sh .pad { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; padding: 28px 28px 0; }
+  .view-customer #app > .ov > .sh .pad h2 { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--secondary); margin: 18px 0 8px; }
+  .view-customer #app > .ov > .sh .pad .row:first-child h2 { font-size: 24px; letter-spacing: -.01em; text-transform: none; color: var(--ink); margin: 0; }
+  .view-customer #app > .ov > .sh .foot {
+    position: sticky; bottom: 0; margin: auto -28px 0; padding: 14px 28px 18px; background: var(--surface); border-top: 1px solid var(--line);
+    display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px;
+  }
+  .view-customer #app > .ov > .sh .foot .row { margin: 0 !important; gap: 12px; }
+  .view-customer #app > .ov > .sh .foot .row .pr { display: none; }               /* the total is on the Add button */
+  .view-customer #app > .ov > .sh .foot .btn { margin: 0; min-height: 48px; border-radius: 24px; }
+  .view-customer #app > .ov > .sh .foot .btn.alt { background: transparent; color: var(--secondary); padding: 0 12px; }
+
+  /* pages without the docked cart use the full width, centred */
+  .view-customer #app > main:not(:has(~ .dock)) { grid-column: 1 / -1; }
+  .view-customer #app > main:not(:has(~ .dock)) > * { max-width: 760px; margin-left: auto; margin-right: auto; }
+  .view-customer #app > main:has(.done) > * { max-width: 1040px; }
+  .done { display: grid; grid-template-columns: minmax(0, 1fr) 380px; grid-template-areas: "status receipt" "go receipt"; gap: 16px 24px; align-items: start; }
+  .done-status { grid-area: status; } .done-receipt { grid-area: receipt; } .done-go { grid-area: go; }
+  .done-go .btn { width: auto; min-width: 220px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+  #app main:has(.done) .ok { text-align: left; display: flex; align-items: center; gap: 14px; margin: 8px auto 20px; }
+  #app main:has(.done) .ok i { margin: 0; }
+}
+.done-receipt .tot.b { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 6px; }
+@media (min-width: 1024px) { #app main:has(.done) .ok h2 { font-size: 30px; letter-spacing: -.02em; margin: 0; } #app main:has(.done) .ci { padding: 20px 22px; border-radius: 20px; } }

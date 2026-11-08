@@ -209,7 +209,7 @@ function moreV() {
 }
 
 // confirmV() = post-order success screen: order number · shop/table · status · estimated time · items and total
-function confirmV() { const o = S.orders[S.orders.length - 1]; return `<div class="ok"><i>${ic('checkCircle', 56)}</i><h2>${t('done')}</h2></div><div class="ci" style="display:block"><div class="tot"><span>${t('ono')}</span><b>#${o.no}</b></div><div class="tot"><span>${REST}</span><b>${t('table')} ${TABLE}</b></div><div class="tot"><span>${t('st')}</span><b>${stOf(o)}</b></div><div class="tot"><span></span><small>${t('eta')}</small></div><hr>${o.items.map(l => `<div class="tot"><span>${tr(byId(l.id).n)} ×${l.qty}${l.ot == 'take' ? ' ' + ic('bag', 14) : ''}</span><span>฿${price(l)}</span></div>`).join('')}<div class="tot b"><span>${t('total')}</span><span>฿${o.total}</span></div></div><button class="btn" data-a="nav" data-v="menu">${t('back')}</button>` }
+function confirmV() { const o = S.orders[S.orders.length - 1]; return `<div class="ok"><i>${ic('checkCircle', 56)}</i><h2>${t('done')}</h2></div><div class="done"><div class="ci done-status" style="display:block"><div class="tot"><span>${t('ono')}</span><b>#${o.no}</b></div><div class="tot"><span>${REST}</span><b>${t('table')} ${TABLE}</b></div><div class="tot"><span>${t('st')}</span><b>${stOf(o)}</b></div><div class="tot"><span></span><small>${t('eta')}</small></div></div><div class="ci done-receipt" style="display:block">${o.items.map(l => `<div class="tot"><span>${tr(byId(l.id).n)} ×${l.qty}${l.ot == 'take' ? ' ' + ic('bag', 14) : ''}</span><span>฿${price(l)}</span></div>`).join('')}<div class="tot b"><span>${t('total')}</span><span>฿${o.total}</span></div></div><div class="done-go"><button class="btn" data-a="nav" data-v="menu">${t('back')}</button></div></div>` }
 
 /* =====================================================================
  * ▌Section 11 — UI: menu details and pop-up windows
@@ -222,13 +222,13 @@ function confirmV() { const o = S.orders[S.orders.length - 1]; return `<div clas
 //   quantity + total → add-to-cart button
 function detail() {
   const D = S.D, m = byId(D.id), tot = m.p * D.qty; return `<div class="ov${fresh.ov ? ' in' : ''}" data-a="closeM"><div class="sh"><div class="big">${hasPhoto(m) ? `<img data-c="${m.c[0]}" src="${menuPhoto(m.img)}" alt="${esc(tr(m.n))}">` : ''}</div><div class="pad"><div class="row"><h2 style="margin:0;flex:1">${tr(m.n)}</h2><span class="pr" style="flex:none">฿${m.p}</span></div><p style="color:var(--sub);font-size:14px;margin:6px 0">${tr(m.d)}</p>${warn(m)}
-<h2>${t('ing')}</h2>${m.ing.length ? m.ing.map(i => `<span class="tag">${tr(ingA(i))}</span>`).join('') : `<span class="tag">${t('noIng')}</span>`}
+<h2>${t('ing')}</h2><div class="tags">${m.ing.length ? m.ing.map(i => `<span class="tag">${tr(ingA(i))}</span>`).join('') : `<span class="tag">${t('noIng')}</span>`}</div>
 <p class="facts"><span>${ic('leaf', 15)}${t('diet')}: <b>${vegT(m)}</b></span><span>${ic('shield', 15)}${t('al')}: <b>${m.al.length ? m.al.map(k => tr(AL[k])).join(', ') : t('none')}</b></span></p>
 <h2>${t('otype')}</h2><div class="opt"><button class="${D.ot == 'dine' ? 'on' : ''}" data-a="dot" data-v="dine">${ic('utensils', 16)}${t('dine')}</button><button class="${D.ot == 'take' ? 'on' : ''}" data-a="dot" data-v="take">${ic('bag', 16)}${t('take')}</button></div>
 ${m.sp ? `<h2 class="hd">${ic('flame', 17)}${t('spice')}</h2><div class="opt">${SP.map((s, i) => `<button class="${D.spice == i ? 'on' : ''}" data-a="spice" data-i="${i}">${tr(s)}</button>`).join('')}</div>` : ''}
 <h2>${t('note')}</h2><textarea rows="2" id="note" placeholder="${t('note')}">${D.note}</textarea>
-<div class="row" style="margin-top:14px"><div class="qt"><button data-a="dq" data-d="-1" aria-label="-">${ic('minus', 16)}</button><span data-tick>${D.qty}</span><button data-a="dq" data-d="1" aria-label="+">${ic('plus', 16)}</button></div><span class="pr" style="text-align:right;font-size:20px">฿${tot}</span></div>
-<button class="btn" data-a="addD">${t('add')} · ฿${tot}</button><button class="btn alt" data-a="closeM">${t('close')}</button></div></div></div>`
+<div class="foot"><div class="row" style="margin-top:14px"><div class="qt"><button data-a="dq" data-d="-1" aria-label="-">${ic('minus', 16)}</button><span data-tick>${D.qty}</span><button data-a="dq" data-d="1" aria-label="+">${ic('plus', 16)}</button></div><span class="pr" style="text-align:right;font-size:20px">฿${tot}</span></div>
+<button class="btn" data-a="addD">${t('add')} · ฿${tot}</button><button class="btn alt" data-a="closeM">${t('close')}</button></div></div></div></div>`
 }
 
 // modal() = popup window based on S.modal:
