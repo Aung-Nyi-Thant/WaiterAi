@@ -295,3 +295,11 @@ body .th code { overflow-wrap: anywhere; }
 
 /* Delete buttons: owner.js gives them a pale red fill; dark red text keeps 4.5:1 contrast */
 .btn[data-o="mdel"], .btn[data-o="sdel"] { color: #9b1c1c; }
+
+/* owner: rows without a photo keep the same rhythm; hours table fits its card so the "Closed" label shows */
+.ph-sm { display: inline-block; width: 36px; height: 36px; border-radius: 8px; background: #e7e7ec; vertical-align: middle; margin-right: 8px; }
+.pnl input[type="time"] { width: 128px; min-width: 0; }
+.pnl td label { white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+/* Thread page: keep each ?view= address on one line */
+.th td:last-child small { white-space: nowrap; }
+.tb:has(tr.hr) { min-width: 0; width: 100%; }   /* the hours table needs no 560px minimum */
