@@ -77,6 +77,7 @@ window.THREAD = [
     return document.querySelector('.tt small') ? 'FR-4' : 'FR-9';
   };
   const pill = document.createElement('details'); pill.className = 'cv'; document.body.appendChild(pill);
+  setTimeout(() => { const bar = document.querySelector('.pt-bar'); if (bar) bar.prepend(pill) });   // design v2: Covers sits in the role-switcher strip
   const sim = () => { try { return JSON.parse(sessionStorage.getItem('shopai_sim') || '{}') } catch (e) { return {} } };
   let last = '';
   const draw = () => {
