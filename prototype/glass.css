@@ -241,7 +241,7 @@ body .th code { overflow-wrap: anywhere; }
     top: calc(8px + env(safe-area-inset-top, 0px)); left: 8px; right: 8px;
     transform: none; width: auto; max-width: none; padding: 6px; justify-content: stretch;
   }
-  .pt-bar a, .pt-bar button { flex: 1; min-width: 0; padding: 0 4px; font-size: 12px; }
+  .pt-bar a, .pt-bar button { flex: 1; min-width: 0; padding: 0 4px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; }   /* equal cells, label centred so the active pill sits evenly */
   .pt-bar span { display: none; }
   body .cv { top: calc(74px + env(safe-area-inset-top, 0px)); left: 16px; right: 16px; max-width: none; width: auto; }
   body .cv summary { font-size: 11px; gap: 4px; }
