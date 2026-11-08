@@ -23,8 +23,8 @@
       const ticks = [...root.querySelectorAll("[data-tick]")].map((e) => e.textContent);
       return (o = {}) => {
         const main = root.querySelector(o.main || "main");
-        const moved = ready && o.page !== undefined && o.page !== lastPage;
-        if (ready) {
+        const moved = ready && o.page !== undefined && o.page !== lastPage, inVt = window.fx.inVt;
+        if (ready && !inVt) {
           root.querySelectorAll(".on").forEach((e) => { if (!on.has(key(e)) && !e.closest(".ov.in")) e.classList.add("sel"); });
           root.querySelectorAll("[data-tick]").forEach((e, i) => { if (ticks[i] !== undefined && ticks[i] !== e.textContent) e.classList.add("tick"); });
           if (o.count > lastCount) root.querySelectorAll("[data-bump]").forEach((e) => e.classList.add("bump"));
@@ -37,7 +37,29 @@
         const now = new Set([...root.querySelectorAll("[data-fx]")].map((e) => e.dataset.fx));
         if (ready && !moved) root.querySelectorAll("[data-fx]").forEach((e) => { if (!lastFx.has(e.dataset.fx)) e.classList.add("fresh"); });
         lastFx = now; lastPage = o.page; lastCount = o.count ?? lastCount; lastList = o.list; ready = true;
+        window.fx.pills(root);
       };
+    },
+      inVt: false,
+    /* vt(change, o): run a discrete UI change inside a View Transition (Liquid Glass motion, see ANIMATION notes in v2.css).
+       Falls back to a plain change when the browser has no View Transitions or the user asks for reduced motion.
+       o.before() names elements in the old state, o.after() in the new state, o.cleanup() removes temporary names. */
+    vt(change, o = {}) {
+      const ok = typeof document.startViewTransition === "function" && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!ok) return change();
+      if (this._vt) this._vt.skipTransition();           // a fast second tap finishes the first transition at once
+      o.before && o.before();
+      const vt = (this._vt = document.startViewTransition(() => { this.inVt = true; try { change(); o.after && o.after(); } finally { this.inVt = false; } }));
+      vt.finished.finally(() => { if (this._vt === vt) this._vt = null; o.cleanup && o.cleanup(); });
+    },
+    /* pills(root): the selected item of each segmented control gets a real <i class="pill"> so the selection can slide */
+    pills(root) {
+      [[".lang", "lang-pill"], [".chips", "chip-pill"], ["nav", "nav-pill"], ["aside", "side-pill"]].forEach(([g, name]) => {
+        root.querySelectorAll(g).forEach((grp, i) => {
+          const on = grp.querySelector(".on"); if (!on || on.querySelector(":scope > .pill")) return;
+          on.insertAdjacentHTML("afterbegin", `<i class="pill" aria-hidden="true" style="view-transition-name:${name}${i ? "-" + i : ""}"></i>`);
+        });
+      });
     },
   };
 })();

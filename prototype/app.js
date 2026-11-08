@@ -299,7 +299,13 @@ const A = {
  * App startup: attach events and draw the first screen
  * ===================================================================== */
 
-document.addEventListener('click', ev => { const el = ev.target.closest('[data-a]'); if (el && A[el.dataset.a]) { if (el.classList.contains('ov') && ev.target !== el) return; ev.stopPropagation(); A[el.dataset.a](el.dataset) } });
+// Liquid Glass motion: discrete taps run inside a View Transition (fx.vt in motion.js); typing and quick-add stay instant.
+const VT_A = new Set(['nav', 'cat', 'lang', 'modal', 'addD']), vtOk = () => typeof document.startViewTransition === 'function' && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+const heroOpen = (el, d) => { const img = el.closest('.card') && el.closest('.card').querySelector('.img'); fx.vt(() => A.open(d), { before: () => { if (img) img.style.viewTransitionName = 'dish-hero' }, after: () => { const b = document.querySelector('.ov .sh .big'); if (b) b.style.viewTransitionName = 'dish-hero' } }) };
+const heroClose = () => { const id = S.D && S.D.id; let back = null; fx.vt(() => { S.modal = null; render() }, { after: () => { back = id && document.querySelector(`[data-a="open"][data-id="${id}"] .img`); if (back) back.style.viewTransitionName = 'dish-hero' }, cleanup: () => { if (back) back.style.viewTransitionName = '' } }) };
+document.addEventListener('click', ev => { const el = ev.target.closest('[data-a]'); if (el && A[el.dataset.a]) { if (el.classList.contains('ov') && ev.target !== el) return; ev.stopPropagation(); const a = el.dataset.a, d = el.dataset; if (a == 'open') return heroOpen(el, d); if (a == 'closeM' && S.modal == 'detail' && vtOk()) return heroClose(); if (VT_A.has(a)) return fx.vt(() => A[a](d)); A[a](d) } });
+// phone: the glass tab bar tucks away while scrolling down and returns on scroll up (iOS 26/27 tab bar minimise)
+document.addEventListener('scroll', e => { const m = e.target, app = $('#app'); if (!app || WIDE.matches || !m.matches || !m.matches('#app > main')) return; const y = m.scrollTop, dy = y - (m._y || 0); m._y = y; if (y < 24 || dy < -8) delete app.dataset.navMin; else if (dy > 8 && y > 80) app.dataset.navMin = '1' }, true);
 document.addEventListener('input', e => { if (e.target.id == 'note' && S.D) S.D.note = e.target.value; if (e.target.id == 'q') { S.q = e.target.value; $('#list').innerHTML = listH() } });
 document.addEventListener('keydown', e => { if (e.key == 'Enter' && e.target.id == 'ci') A.send() });
 // A dish photo that cannot load (offline, a dead link) is swapped for a tinted tile with the category icon instead of broken-image text
@@ -351,7 +357,7 @@ if (!window.STAFF_MODE) {
   const tags = l => [l.spice != null ? ic('flame', 13) + SP[l.spice][1] : '', ...(l.mods || []).map(k => MODS[k][1]), l.ot == 'take' ? ic('bag', 13) + 'Takeaway' : ic('utensils', 13) + 'Dine in'].filter(Boolean).map(x => `<span class="tag">${x}</span>`).join('');
   const line = l => { const m = byId(l.id) || { img: '', n: ['', '(removed dish)'] }; return `<div class="ln"><b>${hasPhoto(m) ? `<img data-c="${m.c[0]}" src="${menuPhoto(m.img)}" alt="" style="width:20px;height:20px;object-fit:cover;border-radius:4px;vertical-align:middle;margin-right:6px">` : ''}${esc(m.n[1])}</b> <span class="q">×${l.qty}</span><div>${tags(l)}</div>${l.note ? `<div class="nt">${ic('note', 14)}<span>${esc(l.note)}</span></div>` : ''}</div>` };
   const btn = (a, id, txt, c = '') => `<button class="btn ${c}" data-s="${a}" data-id="${id}">${txt}</button>`;
-  const oc = (o, act, showSt) => `<div class="ci os ${o.status}" data-fx="o${o.id}-${o.status}"><div style="flex:1;min-width:0"><div class="top"><b style="font-size:18px">Table ${esc(o.table)}</b><span class="tag">#${esc(o.no)}</span>${showSt ? `<span class="tag st">${ST[o.status]}</span>` : ''}<small class="ago">${ago(o.t)}</small></div>${o.al && o.al.length ? `<div class="warn" style="margin:6px 0">${ic('alert', 16)}<span>Customer allergy: ${o.al.map(esc).join(', ')}</span></div>` : ''}${o.items.map(line).join('')}<div class="tot b"><span>Total</span><span>฿${o.total}</span></div>${act || ''}</div></div>`;
+  const oc = (o, act, showSt) => `<div class="ci os ${o.status}" data-fx="o${o.id}-${o.status}" style="view-transition-name:ticket-${o.id}"><div style="flex:1;min-width:0"><div class="top"><b style="font-size:18px">Table ${esc(o.table)}</b><span class="tag">#${esc(o.no)}</span>${showSt ? `<span class="tag st">${ST[o.status]}</span>` : ''}<small class="ago">${ago(o.t)}</small></div>${o.al && o.al.length ? `<div class="warn" style="margin:6px 0">${ic('alert', 16)}<span>Customer allergy: ${o.al.map(esc).join(', ')}</span></div>` : ''}${o.items.map(line).join('')}<div class="tot b"><span>Total</span><span>฿${o.total}</span></div>${act || ''}</div></div>`;
   const list = (a, f, em) => a.length ? a.map(f).join('') : `<div class="empty"><i>${ic(em[0], 28)}</i>${em[1]}</div>`;
 
   const ml = () => { const q = U.q.trim().toLowerCase(); return MENU.filter(m => (U.cat == 'all' || m.c.includes(U.cat)) && (!q || m.n.some(x => x.toLowerCase().includes(q)))).map(m => { const x = D.soldout.includes(m.id); return `<div class="ci mr ${x ? 'x' : ''}">${hasPhoto(m) ? `<img data-c="${m.c[0]}" src="${menuPhoto(m.img)}" alt="" style="width:36px;height:36px;object-fit:cover;border-radius:8px;margin-right:10px">` : ''}<div style="flex:1;min-width:0"><b>${esc(m.n[1])}</b><br><small>฿${m.p}</small></div><button class="swt ${x ? 'x' : ''}" data-s="sold" data-id="${m.id}">${x ? ic('xCircle', 16) + 'Sold out' : ic('checkCircle', 16) + 'In stock'}</button></div>` }).join('') || `<div class="empty"><i>${ic('search', 28)}</i>No dishes found</div>` };
@@ -409,7 +415,8 @@ if (!window.STAFF_MODE) {
     sold: e => up(d => { const i = d.soldout.indexOf(+e.id); i < 0 ? d.soldout.push(+e.id) : d.soldout.splice(i, 1) }),
     reset: () => up(d => { d.soldout = [] })
   };
-  root.addEventListener('click', ev => { const el = ev.target.closest('[data-s]'); if (el && H[el.dataset.s]) H[el.dataset.s](el.dataset) });
+  const VT_S = new Set(['tab', 'accept', 'start', 'done', 'serve', 'pick', 'logout']);   // staff: tickets glide between columns
+  root.addEventListener('click', ev => { const el = ev.target.closest('[data-s]'); if (el && H[el.dataset.s]) { const k = el.dataset.s, d = el.dataset; VT_S.has(k) ? fx.vt(() => H[k](d)) : H[k](d) } });
   document.addEventListener('input', e => { if (e.target.id == 'sq') { U.q = e.target.value; document.getElementById('ml').innerHTML = ml() } });
 
   if (U.role) seen = keys();

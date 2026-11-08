@@ -109,3 +109,61 @@ body { background: var(--canvas); }
 .grid .dish-name, .feat .dish-name { padding: 0; text-align: left; justify-content: flex-start; }
 @media (min-width: 1200px) { .view-customer .grid, .view-customer .feat { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .view-customer #app > .dock .btn.alt[data-a="nav"] { display: none; }   /* "Back to menu": the menu is beside the dock */
+
+/* ===== Liquid Glass motion (research: Apple spring presets -> CSS linear(); same-document View Transitions) ===== */
+:root {
+  --dur-fast: 180ms; --dur-ui: 280ms; --dur-morph: 360ms; --dur-bounce: 420ms;
+  --spring-smooth: linear(0, 0.037 4%, 0.122 8%, 0.228 12%, 0.337 16%, 0.442 20%, 0.62 28%, 0.751 36%, 0.859 46%, 0.931 58%, 0.971 72%, 0.988 86%, 1);   /* .smooth: no overshoot */
+  --spring-snappy: linear(0, 0.065 5%, 0.209 10%, 0.38 15%, 0.544 20%, 0.756 28%, 0.896 36%, 0.98 45%, 1.013 54%, 1.02 63%, 1.014 76%, 1.006 88%, 1);  /* .snappy: 2% settle */
+  --spring-bouncy: linear(0, 0.075 5%, 0.244 10%, 0.485 16%, 0.705 22%, 0.896 29%, 1.008 36%, 1.059 43%, 1.068 49%, 1.053 58%, 1.026 68%, 1.004 80%, 0.996 92%, 1);
+}
+@view-transition { navigation: auto; }                 /* role switcher (Home / Diner / Staff / Owner) between page loads */
+::view-transition { pointer-events: none; }            /* never block taps during a transition */
+::view-transition-group(*) { animation-duration: var(--dur-ui); animation-timing-function: var(--spring-smooth); }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: var(--dur-fast); }
+
+/* chrome stays put; only the content changes */
+#app > header { view-transition-name: app-header; }
+#app > nav { view-transition-name: app-nav; }
+#app > .dock { view-transition-name: app-dock; }
+.pt-bar { view-transition-name: pt-bar; }
+.pt-bar a.on { view-transition-name: pt-pill; }
+.ow > aside { view-transition-name: owner-aside; }
+
+/* dish card photo grows into the dish dialog and back (names set in app.js heroOpen / heroClose) */
+::view-transition-group(dish-hero) { animation-duration: var(--dur-morph); animation-timing-function: var(--spring-smooth); }
+::view-transition-old(dish-hero), ::view-transition-new(dish-hero) { height: 100%; width: 100%; object-fit: cover; overflow: clip; }
+
+/* sliding selection: a real <i class="pill"> (motion.js fx.pills) carries the selected colour */
+:is(.lang button, .chip, #app nav button, .ow aside button):has(> .pill) { position: relative; isolation: isolate; background: transparent !important; }
+.pill { position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--pill, var(--ink)); pointer-events: none; }
+#app nav, .ow aside { --pill: #e1e2e7; }
+@media (min-width: 1024px) { .view-customer #app > nav { --pill: var(--ink); } }
+::view-transition-group(lang-pill), ::view-transition-group(chip-pill), ::view-transition-group(nav-pill), ::view-transition-group(side-pill), ::view-transition-group(pt-pill) {
+  animation-duration: var(--dur-ui); animation-timing-function: var(--spring-snappy);
+}
+
+/* staff tickets glide between columns; owner editor slides in from the right */
+.ow .ov.c .sh { view-transition-name: owner-editor; }
+::view-transition-new(owner-editor):only-child { animation: dockIn var(--dur-ui) var(--spring-smooth); }
+::view-transition-old(owner-editor):only-child { animation: dockOut var(--dur-fast) ease-out; }
+@keyframes dockIn { from { opacity: 0; transform: translateX(28px); } }
+@keyframes dockOut { to { opacity: 0; transform: translateX(28px); } }
+
+/* phone: tab bar tucks away while scrolling down (iOS 26/27 tab bar minimise) */
+@media (max-width: 1023px) {
+  #app > nav, .cartbar { transition: transform var(--dur-ui) var(--spring-smooth), opacity var(--dur-fast) ease-out; }
+  #app[data-nav-min="1"] > nav { transform: translateY(calc(100% + 24px)) scale(.94); opacity: 0; pointer-events: none; }
+  #app[data-nav-min="1"] > .cartbar { transform: translateY(80px); }
+}
+
+/* prices and counts keep their width while they change */
+.pr, .tot span, .bd, .chip .n, .cartbar { font-variant-numeric: tabular-nums; }
+.bump .bd { animation: bump var(--dur-bounce) var(--spring-bouncy); }
+#app .add { -webkit-backdrop-filter: none; backdrop-filter: none; }   /* opaque buttons need no blur (saves GPU on phones) */
+
+/* reduced motion: the JS skips View Transitions; keep only instant state changes */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+  #app > nav, .cartbar { transition: none; }
+}
