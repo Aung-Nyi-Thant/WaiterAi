@@ -100,6 +100,21 @@ Architecture: Browser ⇄ HTTPS/HTTP ⇄ Next.js server ⇄ SQLite, and Next.js 
 ### 3.1 Functional requirements
 Priority: **M** = must, **S** = should.
 
+**Course FRs and their priority** (FR-1 … FR-10 are the IDs in the M2 SRS PDF, `docs/M2-srs.pdf`; each is split into the detailed IDs below, and an FR is **Must** when it contains Must IDs):
+
+| FR | Name | Priority | Detailed IDs (Must / Should) |
+|---|---|---|---|
+| **FR-1** | Multilingual menu browsing | **Must** | DM: 8 / 3 |
+| **FR-2** | Safe AI waiter chat | **Must** | AI: 17 / 3 |
+| **FR-3** | Picks, orders and staff calls | **Must** | PC: 7 / 0 |
+| **FR-4** | Waiter and kitchen live screens | **Must** | SF-3 … SF-6: 4 / 0 |
+| **FR-5** | Owner account and menu / allergen management | **Must** | OA, MM: 9 / 1 |
+| **FR-6** | Menu import from a photo | **Must** | MI: 4 / 1 |
+| **FR-7** | Restaurant settings (hours, FAQ, AI voice) | **Must** | ST: 3 / 2 |
+| **FR-8** | QR codes per table | **Must** | QR: 2 / 0 |
+| **FR-9** | Staff accounts (PIN) | **Must** | SF-1, SF-2: 2 / 0 |
+| **FR-10** | Insights | Should | IN: 0 / 4 |
+
 #### 3.1.1 Diner menu (DM)
 | ID | Requirement | Pri |
 |---|---|---|

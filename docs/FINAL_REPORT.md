@@ -21,7 +21,7 @@ Small restaurants rely on a few staff to take orders and answer questions. At pe
 
 ## 2. Requirements (M2)
 
-The SRS (`docs/M2-srs.pdf`, full text `docs/SRS_Shop_AI.md`) has FR-1 … FR-10 and NFR IDs; the ten FRs split into 70 detailed IDs, **56 Must** and 14 Should, each traced to code and tests in `docs/TRACEABILITY.md`.
+The SRS (`docs/M2-srs.pdf`, full text `docs/SRS_Shop_AI.md`) has FR-1 … FR-10 and NFR IDs; the ten FRs split into 70 detailed IDs, **56 Must** and 14 Should, each traced to code and tests in `docs/TRACEABILITY.md`. At FR level, **FR-1 … FR-9 are Must and FR-10 (Insights) is Should** (table in `docs/SRS_Shop_AI.md` §3.1).
 
 | NFR | Target | Measured (one laptop, `gemma4:12b`, `docs/PERFORMANCE.md`) |
 |---|---|---|
@@ -56,7 +56,7 @@ Not covered by automated tests: real phones, native-speaker review of Thai and B
 
 ## 6. Golden Thread
 
-One row per Must FR. Problem from M1, requirement from M2, design diagram in `docs/design/`, prototype page (open `prototype/index.html` with the query shown, or the Thread page), and the acceptance tests in `app/tests/`.
+One row per FR: FR-1 … FR-9 are the Must FRs, and FR-10 (Should) is included because it has a screen too. Problem from M1, requirement from M2, design diagram in `docs/design/`, prototype page (open `prototype/index.html` with the query shown, or the Thread page), and the acceptance tests in `app/tests/`.
 
 | Problem (M1) | Requirement (FR) | Design | Prototype page: happy / unhappy path | Test |
 |---|---|---|---|---|
