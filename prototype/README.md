@@ -2,7 +2,7 @@
 
 **Open `index.html` in a browser** (double-click it) to see the landing-page prototype. Select **Explore the demo** to open the **HaChi Kyu** diner menu. No server, database or install is required. Demo changes are saved in your browser, shared between tabs; **Reset** in the demo toolbar clears them. The published copy at <https://aung-nyi-thant.github.io/WaiterAi/> updates when this folder is merged to `main`; local changes are not published automatically.
 
-The interface uses black, white and gray, with food photography in color. Six existing reference photos are bundled in `assets/`, with source URLs in `assets/provenance.json`. The remaining menu photos and optional Thai/Myanmar font stylesheet need an internet connection; unavailable photos retain the category fallback and fonts fall back to the system.
+The interface uses black, white and gray, with food photography in color. Dish photos are openly licensed, illustrative photos in `assets/dishes/` (credits and licences in `assets/dishes/CREDITS.md`, mapped to dishes in `photos.js`); dishes without a good match show a neutral placeholder tile. The optional Thai/Myanmar font stylesheet needs an internet connection; fonts fall back to the system.
 
 ## Landing-page comparison
 
@@ -64,7 +64,7 @@ The AI here is a scripted stand-in with the same rules as the real one for the s
 | `index.html`, `proto.css`, `design.css` | routing, existing base styles and the prototype's responsive monochrome design |
 | `landing.js`, `landing-service.js`, `landing-table.js`, `landing-workspace.js`, `landing.css` | shared landing interactions and three isolated layout directions |
 | `picker.js`, `picker.css` | landing-layout comparison controls |
-| `assets/` | six local menu reference photos and their provenance |
+| `assets/dishes/`, `photos.js` | licensed dish photos, their credits, and the dish → photo map |
 | `app.js` | state, the diner and staff journeys |
 | `ai-rules.js` | the scripted AI waiter (FR-2): rules that answer from the menu data |
 | `thread.js` | the Golden Thread page (`?view=thread`) and the Covers pill |

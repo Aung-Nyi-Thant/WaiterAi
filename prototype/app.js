@@ -150,16 +150,8 @@ const defL = id => ({ id: +id, qty: 1, spice: null, mods: [], note: '', ot: 'din
 
 // card(menu) = menu card: image → name → description (category) → warning → price/rating/button +
 //   click card = open details (action 'open'), click + button = add to cart immediately (action 'quick')
-const LOCAL_PHOTOS = {
-  "https://img.wongnai.com/p/256x256/2020/03/25/3488a09942a04c009e3b8e42ac30b822.jpg": "assets/salmon-sushi.jpg",
-  "https://img.wongnai.com/p/256x256/2020/03/25/074fce62cbe74e45a79dca4e776dbaad.jpg": "assets/seared-salmon-sushi.jpg",
-  "https://img.wongnai.com/p/256x256/2020/03/25/487ea551c03b43a893d7d7f8d7b61f22.jpg": "assets/tuna-sushi.jpg",
-  "https://img.wongnai.com/p/256x256/2020/03/25/a7194bbee4e349d49afa6888d1f8d566.jpg": "assets/edamame.jpg",
-  "https://img.wongnai.com/p/256x256/2020/03/25/0c02c814888f477d9b59b7a1a6b626e8.jpg": "assets/gyoza.jpg",
-  "https://img.wongnai.com/p/256x256/2020/03/25/7a7a1a05673a46a1b0627d6a881b9bf9.jpg": "assets/miso-soup.jpg"
-};
 // photos.js maps each dish to a licensed local photo (credits: assets/dishes/CREDITS.md); review-site hotlinks are never shown
-const menuPhoto = src => esc((window.DISH_PHOTOS || {})[src] || LOCAL_PHOTOS[src] || (/wongnai\.com/.test(src || '') ? '' : src || ''));
+const menuPhoto = src => esc((window.DISH_PHOTOS || {})[src] || (/wongnai\.com/.test(src || '') ? '' : src || ''));
 const hasPhoto = m => !!menuPhoto(m.img);
 const card = m => `<article class="card${m.s ? ' so' : ''}"><button class="dish-open" data-a="open" data-id="${m.id}" aria-label="${esc(tr(m.n))}"><div class="img">${hasPhoto(m) ? `<img data-c="${m.c[0]}" src="${menuPhoto(m.img)}" alt="${esc(tr(m.n))}" loading="lazy">` : ''}</div></button><div class="cb"><button class="dish-name" data-a="open" data-id="${m.id}">${tr(m.n)}</button><small>${tr(m.d)}</small>${m.s ? `<span class="tag so-b">${t('soldT')}</span>` : ''}${warn(m)}<div class="row"><span class="pr">฿${m.p}</span><button class="add" aria-label="${t('add')}: ${esc(tr(m.n))}" data-a="quick" data-id="${m.id}">${ic('plus', 18)}</button></div></div></article>`;
 
@@ -176,7 +168,7 @@ function header() {
 
 // disc(feat) = search/select menu page order: search box → category chips → (home-only: banner + featured menu) → menu grid
 function disc(feat) {
-  return `<div class="menu-intro"><div><h1>${esc(REST)}</h1><p>${t('hs')}</p></div><img src="assets/salmon-sushi.jpg" alt="" width="68" height="68"></div><div class="sb">${ic('search', 18)}<input id="q" value="${S.q.replace(/"/g, '&quot;')}" placeholder="${t('search')}" aria-label="search"></div>
+  return `<div class="menu-intro"><div><h1>${esc(REST)}</h1><p>${t('hs')}</p></div><img src="assets/dishes/salmon-nigiri.jpg" alt="" width="68" height="68"></div><div class="sb">${ic('search', 18)}<input id="q" value="${S.q.replace(/"/g, '&quot;')}" placeholder="${t('search')}" aria-label="search"></div>
 <div class="chips">${CATS.map(c => `<button class="chip ${S.cat == c[0] ? 'on' : ''}" data-a="cat" data-c="${c[0]}"><span>${ic(c[1], 18)}</span>${tr(c[2])}</button>`).join('')}</div>
 ${feat ? `<h2>${t('menu')}</h2><div class="feat">${MENU.filter(hasPhoto).slice(0, 4).map(card).join('')}</div><h2>${t('all')}</h2>` : ''}
 <div class="grid" id="list">${listH()}</div><p style="text-align:center;color:var(--sub);font-size:11px;margin-top:14px">${t('demo')}</p>`
@@ -266,7 +258,7 @@ let fresh = {}, _modal = null, _toast = '', _chatN = 0;
 function render() {
   fresh = { ov: !!S.modal && S.modal != _modal, toast: !!S.toast && S.toast != _toast, chat: S.chat.length != _chatN }; _modal = S.modal; _toast = S.toast; _chatN = S.chat.length;
   const _cs = document.querySelector(".chips"), _sx = _cs ? _cs.scrollLeft : 0; const v = S.view, bd = v == 'home' ? disc(1) : v == 'menu' ? disc(0) : v == 'ai' ? chatV() : v == 'cart' ? cartV() : v == 'more' ? moreV() : confirmV();
-  const ai = v == 'ai', _fx = fx.snap($('#app')); $('#app').innerHTML = header() + `<main ${ai ? 'style="padding-bottom:8px"' : ''}>${bd}</main>` + (ai ? `<div style="padding-bottom:90px;background:#fff"><div class="sg" style="padding:6px 12px">${SG.map(r => r[I[S.lang]]).filter(Boolean).map(x => `<button data-a="ask" data-t="${x.replace(/"/g, '&quot;')}">${x}</button>`).join('')}</div><div class="inb"><input id="ci" placeholder="${t('ph')}"><button data-a="send" aria-label="send">${ic('send', 19)}</button></div></div>` : '') + nav() + modal() + (S.toast ? `<div class="toast${fresh.toast ? ' in' : ''}" role="status">${S.toast}</div>` : '');
+  const ai = v == 'ai', _fx = fx.snap($('#app')); $('#app').innerHTML = header() + `<main class="${ai ? 'chat-page' : ''}">${bd}</main>` + (ai ? `<div class="chat-tools"><div class="sg" style="padding:6px 12px">${SG.map(r => r[I[S.lang]]).filter(Boolean).map(x => `<button data-a="ask" data-t="${x.replace(/"/g, '&quot;')}">${x}</button>`).join('')}</div><div class="inb"><input id="ci" placeholder="${t('ph')}"><button data-a="send" aria-label="send">${ic('send', 19)}</button></div></div>` : '') + nav() + modal() + (S.toast ? `<div class="toast${fresh.toast ? ' in' : ''}" role="status">${S.toast}</div>` : '');
   _fx({ page: S.view, order: ['home', 'menu', 'ai', 'cart', 'more', 'confirm'], count: cnt(), list: S.cat });
   document.documentElement.lang = S.lang; { const c = document.querySelector(".chips"); if (c) { c.style.scrollSnapType = "none"; c.scrollLeft = _sx; const on = c.querySelector(".chip.on"); if (on && (on.offsetLeft < c.scrollLeft || on.offsetLeft + on.offsetWidth > c.scrollLeft + c.clientWidth)) c.scrollTo({ left: on.offsetLeft - (c.clientWidth - on.offsetWidth) / 2, behavior: "smooth" }); requestAnimationFrame(() => { c.style.scrollSnapType = "" }) } } if (ai) { const m = $('main'); m.scrollTop = m.scrollHeight } save()
 }
