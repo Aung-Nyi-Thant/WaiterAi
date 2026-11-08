@@ -45,3 +45,6 @@ docs/*.pdf
 !docs/M2-srs.pdf
 !docs/FINAL_REPORT.pdf
 !slides/*.pdf
+
+# the real app serves the prototype for ?ai=live (link made by npm run prototype:live)
+app/public/prototype

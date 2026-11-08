@@ -11,16 +11,35 @@ import { POST as createResource } from "@/modules/owner/api/resource";
 import { PUT as updateResource, DELETE as deleteResource } from "@/modules/owner/api/resourceItem";
 import { GET as floor } from "@/modules/staff/api/floor";
 import { all, get } from "@/modules/platform/db";
+import * as aiStatus from "@/app/api/public/[slug]/ai-status/route";
 
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
 describe("NFR-5: no customer data goes to a cloud AI service (checked in the source)", () => {
   const walk = (dir: string): string[] => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]));
   const files = walk(path.join(process.cwd(), "src")).filter((f) => /\.(ts|tsx)$/.test(f));
-  it("the only server-side network call is the one to Ollama, whose address defaults to this computer", () => {
-    const callers = files.filter((f) => /\bfetch\(/.test(fs.readFileSync(f, "utf8")) && !/"use client"/.test(fs.readFileSync(f, "utf8")));
-    expect(callers.map((f) => path.relative(process.cwd(), f).split(path.sep).join("/"))).toEqual(["src/modules/ai/provider.ts"]);   // "/" on every system, Windows too
-    expect(fs.readFileSync(callers[0], "utf8")).toContain('process.env.OLLAMA_URL || "http://localhost:11434"');
+  it("only the model provider and read-only status route fetch from Ollama, defaulting to this computer", () => {
+    const permitted: Record<string, string> = {
+      "src/app/api/public/[slug]/ai-status/route.ts": "ps",
+      "src/modules/ai/provider.ts": "chat",
+    };
+    const callers = files.filter((f) => /\bfetch\s*\(/.test(fs.readFileSync(f, "utf8")) && !/"use client"/.test(fs.readFileSync(f, "utf8")));
+    expect(callers.map((f) => path.relative(process.cwd(), f).split(path.sep).join("/")).sort()).toEqual(Object.keys(permitted).sort());   // "/" on every system, Windows too
+    for (const [file, endpoint] of Object.entries(permitted)) {
+      const source = fs.readFileSync(path.join(process.cwd(), file), "utf8");
+      expect(source.match(/\bfetch\s*\(/g), file).toHaveLength(1);
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: intentionally checks literal source syntax
+      expect(source, file).toContain('fetch(`${process.env.OLLAMA_URL || "http://localhost:11434"}/api/' + endpoint + '`,');
+    }
+  });
+  it("the status route exposes only GET and sends no customer data or prompt", async () => {
+    expect(Object.keys(aiStatus)).toEqual(["GET"]);
+    const fetch = vi.fn().mockResolvedValue(Response.json({ models: [] }));
+    vi.stubGlobal("fetch", fetch);
+    await aiStatus.GET();
+    expect(fetch).toHaveBeenCalledExactlyOnceWith(`${process.env.OLLAMA_URL || "http://localhost:11434"}/api/ps`, {
+      cache: "no-store", signal: expect.any(AbortSignal),
+    });
   });
   it("external addresses are limited to the font stylesheet and named public landing references", () => {
     const hostsByFile: Record<string, string[]> = {};

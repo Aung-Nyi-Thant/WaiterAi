@@ -1,4 +1,4 @@
-// The second sample restaurant (HaChi Kyu, 132 dishes, built from the clickable prototype): the data itself, the seed script, the
+// The second sample restaurant (HaChi Kyu, 104 dishes, built from the clickable prototype): the data itself, the seed script, the
 // isolation between the two restaurants, the full order flow on the big menu, and the allergen answers checked dish by dish.
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -27,8 +27,8 @@ const run = (script: string, env: Record<string, string>, args: string[] = []) =
 afterEach(() => { vi.unstubAllGlobals(); });
 
 describe("the HaChi Kyu data", () => {
-  it("has 132 dishes in 9 categories, each with a Thai and an English name and a whole, positive price", () => {
-    expect(data.items.length).toBe(132);
+  it("has 104 dishes in 9 categories, each with a Thai and an English name and a whole, positive price", () => {
+    expect(data.items.length).toBe(104);
     expect(data.categories.length).toBe(9);
     for (const i of data.items) { expect(i.name.en.length, JSON.stringify(i.name)).toBeGreaterThan(1); expect(i.name.th.length).toBeGreaterThan(1); expect(Number.isInteger(i.price) && i.price > 0, i.name.en).toBe(true); }
   });
@@ -88,9 +88,9 @@ describe("the HaChi Kyu data", () => {
       expect([...i.allergens].sort(), i.name.en).toEqual([...want].sort());
     }
   });
-  it("an empty allergen list (a claim of 'none') is only on dishes whose every part is known and plain: rice, fries, lettuce, the drinks and the plain sea urchin nigiri", () => {
+  it("an empty allergen list (a claim of 'none') is only on dishes whose every part is known and plain: rice, fries, the drinks and the plain sea urchin nigiri", () => {
     const empty = data.items.filter((i: any) => Array.isArray(i.allergens) && i.allergens.length === 0).map((i: any) => i.name.en);
-    expect(empty.sort()).toEqual(["Coca-Cola Original", "Coca-Cola Zero Sugar", "French Fries", "Japanese Rice", "Lettuce", "Red Soda", "Sea Urchin Roe Sushi", "Sprite"].sort());
+    expect(empty.sort()).toEqual(["Coca-Cola Original", "Coca-Cola Zero Sugar", "French Fries", "Japanese Rice", "Red Soda", "Sea Urchin Roe Sushi", "Sprite"].sort());
   });
   it("crustaceans and molluscs are separate allergens (the prototype lumped them together)", () => {
     const shrimp = data.items.find((i: any) => i.name.en === "Giant Sweet Shrimp Sashimi");
@@ -117,7 +117,7 @@ describe("the HaChi Kyu data", () => {
     }
   });
   it("tags: pork only when pork or bacon is in the dish, spicy only with a spice level, vegetarian only for plain things; never vegan", () => {
-    const PLAIN = ["Coca-Cola Original", "Coca-Cola Zero Sugar", "Edamame", "French Fries", "Japanese Rice", "Lettuce", "Red Soda", "Sprite"];
+    const PLAIN = ["Coca-Cola Original", "Coca-Cola Zero Sugar", "Edamame", "French Fries", "Japanese Rice", "Red Soda", "Sprite"];
     for (const i of data.items) {
       expect(i.tags.filter((t: string) => !["contains_pork", "spicy", "vegetarian"].includes(t)), i.name.en).toEqual([]);
       expect(i.tags.includes("contains_pork"), i.name.en).toBe(/pork|bacon/i.test(i.ingredients));
@@ -140,7 +140,7 @@ describe("the HaChi Kyu data", () => {
       expect(i.name.my, i.name.en).toMatch(/[က-႟]/);
       for (const word of i.name.my.split(/\s+/)) if (/[A-Za-z]/.test(word)) expect(word, `${i.name.en}: ${word}`).toMatch(/^[A-Za-z()'&-]+$/);       // a Latin word stays whole, never half Burmese half Latin
     }
-    expect(data.items.filter((i: any) => i.name.my).length).toBeGreaterThan(40);
+    expect(data.items.filter((i: any) => i.name.my).length).toBeGreaterThan(35);
   });
   it("every dish has its ingredients in Thai too, one name per English ingredient (brackets keep their commas), and Burmese where it is known (an empty part = not translated)", () => {
     let burmese = 0;
@@ -174,13 +174,13 @@ describe("scripts/seed-hachi-kyu.mts", () => {
   const sql = async (dir: string, q: string) => { const { DatabaseSync } = await import("node:sqlite"); const d = new DatabaseSync(path.join(dir, "shop.db")); try { return d.prepare(q).all() as any[]; } finally { d.close(); } };
   afterEach(() => { for (const d of dirs.splice(0)) fs.rmSync(d, { recursive: true, force: true }); });
 
-  it("adds the restaurant beside the first one, with 132 dishes, 2 staff and its own owner", async () => {
+  it("adds the restaurant beside the first one, with 104 dishes, 2 staff and its own owner", async () => {
     const r = seed();
     expect(r.code, r.out).toBe(0);
     expect(r.out).toContain("/r/hachi-kyu");
     expect((await sql(r.dir, "SELECT slug FROM restaurants ORDER BY id")).map((x) => x.slug)).toEqual(["golden-lotus", "hachi-kyu"]);
     const rid = (await sql(r.dir, "SELECT id FROM restaurants WHERE slug='hachi-kyu'"))[0].id;
-    expect((await sql(r.dir, `SELECT COUNT(*) n FROM menu_items WHERE restaurant_id=${rid}`))[0].n).toBe(132);
+    expect((await sql(r.dir, `SELECT COUNT(*) n FROM menu_items WHERE restaurant_id=${rid}`))[0].n).toBe(104);
     expect((await sql(r.dir, `SELECT COUNT(*) n FROM staff WHERE restaurant_id=${rid}`))[0].n).toBe(2);
     expect((await sql(r.dir, "SELECT COUNT(DISTINCT owner_id) n FROM restaurants"))[0].n).toBe(2);
   });
@@ -188,7 +188,7 @@ describe("scripts/seed-hachi-kyu.mts", () => {
     const r = seed();
     const rows = await sql(r.dir, "SELECT name_en, name_my, desc_en, desc_th, allergens_json, spice, tags_json FROM menu_items WHERE restaurant_id=(SELECT id FROM restaurants WHERE slug='hachi-kyu')");
     expect(rows.find((x) => x.name_en === "Salmon Sashimi")).toMatchObject({ allergens_json: '["fish"]', name_my: "ဆော်လမွန် ဆာရှီမီ", desc_en: "Slices of raw salmon, served on their own.", desc_th: "แซลม่อนสดหั่นเป็นชิ้นพอดีคำ เสิร์ฟเปล่า ๆ" });
-    expect(rows.find((x) => x.name_en === "[Coke Combo] Garlic Fried Rice with Coke")!.allergens_json).toBeNull();
+    expect(rows.find((x) => x.name_en === "Wagyu Sushi")!.allergens_json).toBeNull();
     expect(rows.find((x) => x.name_en === "Japanese Rice")!.allergens_json).toBe("[]");
     expect(rows.find((x) => x.name_en === "Yakisoba")).toMatchObject({ allergens_json: '["gluten","fish","soy"]', tags_json: '["contains_pork"]' });
     expect(rows.find((x) => x.name_en === "Kimchi")).toMatchObject({ spice: 2, tags_json: '["spicy"]' });
@@ -208,7 +208,7 @@ describe("scripts/seed-hachi-kyu.mts", () => {
     const row = (await sql(r.dir, "SELECT ingredients, ingredients_th, ingredients_my FROM menu_items WHERE name_en = '[Coke Combo] Yakisoba with Coke'"))[0];
     expect(row).toEqual({ ingredients: "Yakisoba noodles (wheat), Pork, Cabbage, Yakisoba sauce (soy sauce, Worcestershire-style), Cola", ingredients_th: "เส้นยากิโซบะ (แป้งสาลี), หมู, กะหล่ำปลี, ซอสยากิโซบะ, น้ำอัดลมโคล่า", ingredients_my: "ခေါက်ဆွဲ, ဝက်သား, , , " });
     const written = data.items.filter((i: any) => i.ingredients).length;
-    expect(written).toBe(132);                                                              // even an unlisted recipe now says so visibly
+    expect(written).toBe(104);                                                              // even an unlisted recipe now says so visibly
     expect(data.items.find((i: any) => i.name.en === "Clear Soup")!.ingredients).toBe("Other ingredients (not listed on this menu)");
     expect((await sql(r.dir, "SELECT COUNT(*) n FROM menu_items WHERE ingredients_th <> '' AND restaurant_id = (SELECT id FROM restaurants WHERE slug = 'hachi-kyu')"))[0].n).toBe(written);
   });
@@ -220,7 +220,7 @@ describe("scripts/seed-hachi-kyu.mts", () => {
     d.exec("UPDATE menu_items SET ingredients_th = 'เส้น, น้ำ' WHERE name_en = '[Coke Combo] Yakisoba with Coke'");     // the owner already wrote this one
     d.close();
     const again = seed({}, r.dir);
-    expect(again.out).toMatch(/added the Thai and Burmese ingredient names to 131 dishes/);                 // 132 with a line, minus the one the owner wrote
+    expect(again.out).toMatch(/added the Thai and Burmese ingredient names to 103 dishes/);                 // 104 with a line, minus the one the owner wrote
     const rows = await sql(r.dir, "SELECT name_en, ingredients_th FROM menu_items WHERE name_en IN ('[Coke Combo] Yakisoba with Coke', 'Tuna Sashimi')");
     expect(rows.find((x) => x.name_en.startsWith("[Coke"))!.ingredients_th).toBe("เส้น, น้ำ");
     expect(rows.find((x) => x.name_en === "Tuna Sashimi")!.ingredients_th).toBe("ทูน่า");
@@ -230,17 +230,17 @@ describe("scripts/seed-hachi-kyu.mts", () => {
     const a = seed();
     expect((await sql(a.dir, "SELECT COUNT(*) n FROM menu_items WHERE photo_url <> ''"))[0].n).toBe(0);
     const b = seed({ SEED_HACHI_PHOTOS: "1" });
-    expect((await sql(b.dir, "SELECT COUNT(*) n FROM menu_items WHERE photo_url LIKE 'https://%'"))[0].n).toBe(132);
+    expect((await sql(b.dir, "SELECT COUNT(*) n FROM menu_items WHERE photo_url LIKE 'https://%'"))[0].n).toBe(104);
   });
   describe("--into: the same dishes on an existing restaurant's menu", () => {
     const into = (dir: string, slugArg: string[] = ["golden-lotus"], env: Record<string, string> = {}) => ({ dir, ...run("scripts/seed-hachi-kyu.mts", { DATA_DIR: dir, ...env }, ["--into", ...slugArg]) });
     const fresh = () => { const dir = fs.mkdtempSync(path.join(os.tmpdir(), "shopai-into-")); dirs.push(dir); return dir; };
-    it("adds the 132 dishes and the categories Golden Lotus does not have, without a new restaurant, owner or staff", async () => {
+    it("adds the 104 dishes and the categories Golden Lotus does not have, without a new restaurant, owner or staff", async () => {
       const r = into(fresh());
       expect(r.code, r.out).toBe(0);
-      expect(r.out).toContain('Added 132 dishes and 8 categories to "Golden Lotus Kitchen" (/r/golden-lotus).');
+      expect(r.out).toContain('Added 104 dishes and 8 categories to "Golden Lotus Kitchen" (/r/golden-lotus).');
       expect((await sql(r.dir, "SELECT slug FROM restaurants")).map((x) => x.slug)).toEqual(["golden-lotus"]);
-      expect((await sql(r.dir, "SELECT COUNT(*) n FROM menu_items WHERE restaurant_id = 1"))[0].n).toBe(145);
+      expect((await sql(r.dir, "SELECT COUNT(*) n FROM menu_items WHERE restaurant_id = 1"))[0].n).toBe(117);
       expect((await sql(r.dir, "SELECT COUNT(*) n FROM users"))[0].n).toBe(1);
       expect((await sql(r.dir, "SELECT COUNT(*) n FROM staff"))[0].n).toBe(2);
     });
@@ -257,7 +257,7 @@ describe("scripts/seed-hachi-kyu.mts", () => {
       expect(old).toEqual([{ name_en: "Shrimp Pad Thai", price: 120, ingredients_th: "เส้นผัดไทย, กุ้ง, ไข่, น้ำมะขาม, น้ำปลา, ถั่วลิสงบด" }]);
       const sorts = (await sql(r.dir, "SELECT sort FROM menu_items WHERE restaurant_id = 1 ORDER BY id")).map((x) => x.sort);
       expect(sorts).toEqual([...sorts].sort((a, b) => a - b));                                                  // the new dishes come after the old ones
-      expect(new Set(sorts).size).toBe(145);
+      expect(new Set(sorts).size).toBe(117);
     });
     it("carries the Thai and Burmese ingredient lines and the allergen estimates, and the photo links only with SEED_HACHI_PHOTOS=1", async () => {
       const a = into(fresh());
@@ -265,7 +265,7 @@ describe("scripts/seed-hachi-kyu.mts", () => {
       const row = (await sql(a.dir, "SELECT ingredients_th, ingredients_my, allergens_json FROM menu_items WHERE name_en = 'Tuna Sashimi'"))[0];
       expect(row).toEqual({ ingredients_th: "ทูน่า", ingredients_my: "တူနာ", allergens_json: '["fish"]' });
       const b = into(fresh(), ["golden-lotus"], { SEED_HACHI_PHOTOS: "1" });
-      expect((await sql(b.dir, "SELECT COUNT(*) n FROM menu_items WHERE photo_url LIKE 'https://%'"))[0].n).toBe(132);
+      expect((await sql(b.dir, "SELECT COUNT(*) n FROM menu_items WHERE photo_url LIKE 'https://%'"))[0].n).toBe(104);
     });
     it("adds the FAQ that says the ingredients and allergens are the usual ones, once only, in place of an older wording of it", async () => {
       const r = into(fresh());
@@ -286,7 +286,7 @@ describe("scripts/seed-hachi-kyu.mts", () => {
       const again = into(r.dir);
       expect(again.code).toBe(0);
       expect(again.out).toContain("already has these dishes: nothing to add");
-      expect((await sql(r.dir, "SELECT COUNT(*) n FROM menu_items WHERE restaurant_id = 1"))[0].n).toBe(145);
+      expect((await sql(r.dir, "SELECT COUNT(*) n FROM menu_items WHERE restaurant_id = 1"))[0].n).toBe(117);
       expect((await sql(r.dir, "SELECT COUNT(*) n FROM categories WHERE restaurant_id = 1"))[0].n).toBe(14);
     });
     it("only adds the dishes the restaurant does not have yet (same English name)", async () => {
@@ -308,12 +308,12 @@ describe("scripts/seed-hachi-kyu.mts", () => {
       expect((await sql(dir, "SELECT COUNT(*) n FROM menu_items"))[0].n).toBe(13);
     });
     describe("--replace", () => {
-      it("removes every dish and category the restaurant had and leaves exactly these 132 dishes in the 9 categories", async () => {
+      it("removes every dish and category the restaurant had and leaves exactly these 104 dishes in the 9 categories", async () => {
         const dir = fresh();
         const r = into(dir, ["golden-lotus", "--replace"]);
         expect(r.code, r.out).toBe(0);
-        expect(r.out).toContain('Replaced the 13 dishes of "Golden Lotus Kitchen" (/r/golden-lotus) with 132 dishes in 9 categories.');
-        expect((await sql(dir, "SELECT COUNT(*) n FROM menu_items WHERE restaurant_id = 1"))[0].n).toBe(132);
+        expect(r.out).toContain('Replaced the 13 dishes of "Golden Lotus Kitchen" (/r/golden-lotus) with 104 dishes in 9 categories.');
+        expect((await sql(dir, "SELECT COUNT(*) n FROM menu_items WHERE restaurant_id = 1"))[0].n).toBe(104);
         expect((await sql(dir, "SELECT name_en FROM menu_items WHERE name_en IN ('Shrimp Pad Thai', 'Tom Yum Goong', 'Papaya Salad')")).length).toBe(0);
         expect((await sql(dir, "SELECT name_en FROM categories WHERE restaurant_id = 1 ORDER BY sort")).map((c) => c.name_en)).toEqual(data.categories.map((c: any) => c.en));
         expect((await sql(dir, "SELECT COUNT(*) n FROM menu_items WHERE category_id IS NULL"))[0].n).toBe(0);
@@ -339,15 +339,15 @@ describe("scripts/seed-hachi-kyu.mts", () => {
         into(dir, ["golden-lotus", "--replace"]);
         const firstMax = (await sql(dir, "SELECT MAX(id) m FROM menu_items"))[0].m;
         const again = into(dir, ["golden-lotus", "--replace"]);
-        expect(again.out).toContain("Replaced the 132 dishes");
-        expect((await sql(dir, "SELECT COUNT(*) n FROM menu_items WHERE restaurant_id = 1"))[0].n).toBe(132);
+        expect(again.out).toContain("Replaced the 104 dishes");
+        expect((await sql(dir, "SELECT COUNT(*) n FROM menu_items WHERE restaurant_id = 1"))[0].n).toBe(104);
         expect((await sql(dir, "SELECT MIN(id) m FROM menu_items"))[0].m).toBeGreaterThan(firstMax);          // ids are not reused (an order line of the old dishes cannot point at a new dish)
       });
       it("on a restaurant other than the first it touches only that one", async () => {
         const dir = fresh();
         expect(seed({}, dir).code).toBe(0);
         const r = into(dir, ["hachi-kyu", "--replace"]);
-        expect(r.out).toContain('Replaced the 132 dishes of "HaChi Kyu"');
+        expect(r.out).toContain('Replaced the 104 dishes of "HaChi Kyu"');
         expect((await sql(dir, "SELECT COUNT(*) n FROM menu_items WHERE restaurant_id = 1"))[0].n).toBe(13);
         expect((await sql(dir, "SELECT name_en FROM menu_items WHERE restaurant_id = 1 ORDER BY id LIMIT 1"))[0].name_en).toBe("Shrimp Pad Thai");
       });
@@ -399,7 +399,7 @@ describe("two restaurants in one database stay apart", () => {
     const g = await call(publicMenu, { params: { slug: "golden-lotus" }, url: "http://t/api/public/golden-lotus/menu" });
     expect(h.status).toBe(200);
     expect(h.data.restaurant.name).toBe("HaChi Kyu");
-    expect(h.data.items.length).toBe(132);
+    expect(h.data.items.length).toBe(104);
     expect(h.data.categories.length).toBe(9);
     expect(g.data.items.length).toBeLessThan(20);
     expect(g.data.items.some((i: any) => /Sashimi/.test(i.name.en))).toBe(false);
@@ -448,7 +448,7 @@ describe("the HaChi Kyu ingredients in the diner's language", () => {
   });
 });
 
-describe("a diner orders from the big menu and the HaChi Kyu staff cook it (the full flow, 132 dishes)", () => {
+describe("a diner orders from the big menu and the HaChi Kyu staff cook it (the full flow, 104 dishes)", () => {
   it("picks go to the waiter of that restaurant only; the kitchen cooks, the waiter serves", async () => {
     noModel();
     signOut();
@@ -526,11 +526,11 @@ describe("the allergen answers equal the data, for every HaChi Kyu dish and ever
         }
       }
     }
-    expect(checked).toBe(132 * 14);
+    expect(checked).toBe(104 * 14);
     expect(wrong, `${wrong.length} wrong of ${checked}:\n${wrong.slice(0, 6).join("\n")}`).toEqual([]);
   });
 
-  it("'Which dishes contain X?' lists every dish with X, and every dish with no data, on the 132-dish menu", async () => {
+  it("'Which dishes contain X?' lists every dish with X, and every dish with no data, on the 104-dish menu", async () => {
     const c = await ctx();
     const wrong: string[] = [];
     for (const a of Object.keys(WORD)) {

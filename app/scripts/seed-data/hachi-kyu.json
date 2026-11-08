@@ -98,28 +98,6 @@
   {
    "category": "set",
    "name": {
-    "en": "[Coke Combo] Garlic Fried Rice with Coke",
-    "th": "[อร่อยซ่ากับโค้ก] ข้าวผัดกระเทียมพร้อมโค้ก"
-   },
-   "price": 99,
-   "desc": {
-    "en": "Garlic fried rice with a Coke. The other seasoning in the rice is the kitchen's own.",
-    "th": "ข้าวผัดกระเทียมพร้อมโค้ก เครื่องปรุงอื่น ๆ ในข้าวผัดเป็นของทางร้าน"
-   },
-   "ingredients": "Japanese rice, Garlic, Other ingredients (not listed on this menu), Cola",
-   "ingredients_tr": {
-    "th": "ข้าวญี่ปุ่น, กระเทียม, ส่วนผสมอื่น (เมนูนี้ไม่ได้ระบุ), น้ำอัดลมโคล่า",
-    "my": "ထမင်း, ကြက်သွန်ဖြူ, , "
-   },
-   "allergens": null,
-   "estimated_allergens_from_listed_parts": [],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2021/09/01/9012bf88413c485294906e11b9093bfd.jpg"
-  },
-  {
-   "category": "set",
-   "name": {
     "en": "[Coke Combo] Fatty Beef Don with Coke",
     "th": "[อร่อยซ่ากับโค้ก] ข้าวหน้าเนื้อติดมันพร้อมโค้ก"
    },
@@ -608,29 +586,6 @@
    "photo": "https://img.wongnai.com/p/256x256/2020/03/25/2ad1e0c32bda4c0f9e4a08c1d09298ef.jpg"
   },
   {
-   "category": "sushi",
-   "name": {
-    "en": "Special Sushi",
-    "th": "ซูชิสเปเชี่ยว",
-    "my": "Special ဆူရှီ"
-   },
-   "price": 481,
-   "desc": {
-    "en": "A special sushi from the house. What it is made of is not listed here: please ask the staff.",
-    "th": "ซูชิพิเศษของทางร้าน ยังไม่มีรายการส่วนประกอบในระบบ กรุณาสอบถามพนักงาน"
-   },
-   "ingredients": "Sushi rice (vinegar, sugar, salt), Other ingredients (not listed on this menu)",
-   "ingredients_tr": {
-    "th": "ข้าวซูชิ (น้ำส้มสายชู น้ำตาล เกลือ), ส่วนผสมอื่น (เมนูนี้ไม่ได้ระบุ)",
-    "my": "စူရှီထမင်း, "
-   },
-   "allergens": null,
-   "estimated_allergens_from_listed_parts": [],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/935478e426cb47769d63e2f2f27e2e19.jpg"
-  },
-  {
    "category": "sashimi",
    "name": {
     "en": "Scallop Sashimi",
@@ -1043,34 +998,6 @@
   {
    "category": "sushi",
    "name": {
-    "en": "California Roll",
-    "th": "California roll",
-    "my": "California ရိုးလ်"
-   },
-   "price": 310,
-   "desc": {
-    "en": "The classic inside-out roll: crab stick, cucumber and mayonnaise, rolled in sushi rice with sesame seeds and flying-fish roe. Avocado is common; ask the staff.",
-    "th": "แคลิฟอร์เนียโรลแบบคลาสสิก ปูอัด แตงกวา และมายองเนส ม้วนด้วยข้าวซูชิ โรยงาและไข่ปลาบิน โดยทั่วไปมีอะโวคาโดด้วย สอบถามพนักงานได้"
-   },
-   "ingredients": "Sushi rice (vinegar, sugar, salt), Nori seaweed, Crab stick (surimi), Cucumber, Japanese mayonnaise, Sesame seeds, Flying-fish roe (tobiko)",
-   "ingredients_tr": {
-    "th": "ข้าวซูชิ (น้ำส้มสายชู น้ำตาล เกลือ), สาหร่ายโนริ, ปูอัด, แตงกวา, มายองเนสญี่ปุ่น, งา, ไข่ปลาบิน (โทบิโกะ)",
-    "my": "စူရှီထမင်း, ပင်လယ်ရေညှိ, , သခွားသီး, , နှမ်း, "
-   },
-   "allergens": [
-    "gluten",
-    "shellfish",
-    "egg",
-    "fish",
-    "sesame"
-   ],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/c221117aa0534e6493e1e5935f994bd5.jpg"
-  },
-  {
-   "category": "sushi",
-   "name": {
     "en": "Sweet Egg (Tamago) Sushi",
     "th": "ซูชิไข่หวาน",
     "my": "ကြက်ဥ တာမာဂို ဆူရှီ"
@@ -1118,54 +1045,6 @@
    ],
    "spice": 0,
    "photo": "https://img.wongnai.com/p/256x256/2020/03/25/a2c1a025222747bc9f309bd1ebeb9567.jpg"
-  },
-  {
-   "category": "app",
-   "name": {
-    "en": "Mori Ebi",
-    "th": "โมริ อีบิ"
-   },
-   "price": 160,
-   "desc": {
-    "en": "A shrimp dish from the house menu. How it is prepared is the kitchen's own: please ask the staff.",
-    "th": "เมนูกุ้งของทางร้าน ยังไม่มีรายละเอียดวิธีปรุงในระบบ กรุณาสอบถามพนักงาน"
-   },
-   "ingredients": "Shrimp, Other ingredients (not listed on this menu)",
-   "ingredients_tr": {
-    "th": "กุ้ง, ส่วนผสมอื่น (เมนูนี้ไม่ได้ระบุ)",
-    "my": "ပုစွန်, "
-   },
-   "allergens": null,
-   "estimated_allergens_from_listed_parts": [
-    "shellfish"
-   ],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/a3e2d4160ada4448948d43d88dd59ddf.jpg"
-  },
-  {
-   "category": "app",
-   "name": {
-    "en": "Hokuto Ebi",
-    "th": "โฮกูโตะ อีบิ"
-   },
-   "price": 160,
-   "desc": {
-    "en": "A shrimp dish from the house menu. How it is prepared is the kitchen's own: please ask the staff.",
-    "th": "เมนูกุ้งของทางร้าน ยังไม่มีรายละเอียดวิธีปรุงในระบบ กรุณาสอบถามพนักงาน"
-   },
-   "ingredients": "Shrimp, Other ingredients (not listed on this menu)",
-   "ingredients_tr": {
-    "th": "กุ้ง, ส่วนผสมอื่น (เมนูนี้ไม่ได้ระบุ)",
-    "my": "ပုစွန်, "
-   },
-   "allergens": null,
-   "estimated_allergens_from_listed_parts": [
-    "shellfish"
-   ],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/52e89d7162c1400d9a70a83f6be995f9.jpg"
   },
   {
    "category": "app",
@@ -1220,32 +1099,6 @@
   {
    "category": "app",
    "name": {
-    "en": "Tuna with Wasabi",
-    "th": "ทูน่าคลุกวาซาบิ"
-   },
-   "price": 203,
-   "desc": {
-    "en": "Raw tuna tossed in wasabi, usually with a little soy sauce.",
-    "th": "ทูน่าดิบคลุกวาซาบิ ปกติใส่ซีอิ๊วเล็กน้อย"
-   },
-   "ingredients": "Tuna, Wasabi paste, Soy sauce",
-   "ingredients_tr": {
-    "th": "ทูน่า, วาซาบิ, ซีอิ๊ว",
-    "my": "တူနာ, , ပဲငံပြာရည်"
-   },
-   "allergens": [
-    "gluten",
-    "fish",
-    "soy",
-    "mustard"
-   ],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/609cc246558c492b94876184b003709a.jpg"
-  },
-  {
-   "category": "app",
-   "name": {
     "en": "Edamame",
     "th": "ถั่วแระญี่ปุ่น"
    },
@@ -1291,81 +1144,6 @@
    "tags": [],
    "spice": 0,
    "photo": "https://img.wongnai.com/p/256x256/2020/03/25/2f0f0c79188f4d42b92c1b4f7fa1b819.jpg"
-  },
-  {
-   "category": "app",
-   "name": {
-    "en": "Salmon Yum (Spicy Salad)",
-    "th": "ยำแซลม่อน"
-   },
-   "price": 203,
-   "desc": {
-    "en": "Thai-style spicy salad of salmon with lime juice, fish sauce, chilli, onion and herbs.",
-    "th": "ยำแซลม่อนสไตล์ไทย ปรุงด้วยน้ำมะนาว น้ำปลา พริก หอมใหญ่ และสมุนไพร"
-   },
-   "ingredients": "Salmon, Fish sauce, Lime, Chilli, Onion, Mint and coriander",
-   "ingredients_tr": {
-    "th": "แซลม่อน, น้ำปลา, มะนาว, พริก, หอมใหญ่, สะระแหน่และผักชี",
-    "my": "ဆော်လမွန်, , , , , "
-   },
-   "allergens": [
-    "fish"
-   ],
-   "tags": [
-    "spicy"
-   ],
-   "spice": 2,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/57deb39b0015450c87a0c1d72457f31c.jpg"
-  },
-  {
-   "category": "app",
-   "name": {
-    "en": "Salmon Larb",
-    "th": "ลาบแซลม่อน"
-   },
-   "price": 203,
-   "desc": {
-    "en": "Salmon larb: salmon in the northern-Thai style, with lime, fish sauce, chilli, toasted rice powder and herbs.",
-    "th": "ลาบแซลม่อน ปรุงแบบลาบ ใส่มะนาว น้ำปลา พริก ข้าวคั่ว และสมุนไพร"
-   },
-   "ingredients": "Salmon, Fish sauce, Lime, Chilli, Toasted rice powder, Mint and coriander, Onion",
-   "ingredients_tr": {
-    "th": "แซลม่อน, น้ำปลา, มะนาว, พริก, ข้าวคั่ว, สะระแหน่และผักชี, หอมใหญ่",
-    "my": "ဆော်လမွန်, , , , , , "
-   },
-   "allergens": [
-    "fish"
-   ],
-   "tags": [
-    "spicy"
-   ],
-   "spice": 2,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/8873c048bf524a19aa0ecac85aba9693.jpg"
-  },
-  {
-   "category": "app",
-   "name": {
-    "en": "Cheese Balls",
-    "th": "ชีสบอล"
-   },
-   "price": 96,
-   "desc": {
-    "en": "Cheese balls coated in breadcrumbs and deep-fried.",
-    "th": "ชีสบอลชุบเกล็ดขนมปังทอดกรอบ"
-   },
-   "ingredients": "Cheese, Breadcrumb coating (wheat, egg)",
-   "ingredients_tr": {
-    "th": "ชีส, เกล็ดขนมปังชุบทอด (แป้งสาลี ไข่)",
-    "my": "ချိစ်, "
-   },
-   "allergens": [
-    "gluten",
-    "egg",
-    "milk"
-   ],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/5dc5815fc1b9450aa906ff5c451ae55d.jpg"
   },
   {
    "category": "app",
@@ -1443,29 +1221,6 @@
    ],
    "spice": 0,
    "photo": "https://img.wongnai.com/p/256x256/2020/03/25/0c02c814888f477d9b59b7a1a6b626e8.jpg"
-  },
-  {
-   "category": "app",
-   "name": {
-    "en": "Chicken Skin with Wasabi",
-    "th": "หนังไก่วาซาบิ"
-   },
-   "price": 96,
-   "desc": {
-    "en": "Crisp chicken skin tossed in wasabi.",
-    "th": "หนังไก่กรอบคลุกวาซาบิ"
-   },
-   "ingredients": "Chicken skin, Wasabi paste",
-   "ingredients_tr": {
-    "th": "หนังไก่, วาซาบิ",
-    "my": ""
-   },
-   "allergens": [
-    "mustard"
-   ],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/4313d4edcf104473b66be6c78e9e3874.jpg"
   },
   {
    "category": "app",
@@ -1739,54 +1494,6 @@
   {
    "category": "app",
    "name": {
-    "en": "Tuna in Sweet Sauce",
-    "th": "ทูน่าในซอสหวาน"
-   },
-   "price": 267,
-   "desc": {
-    "en": "Tuna in the kitchen's sweet sauce, whose recipe is not listed here.",
-    "th": "ทูน่าในซอสหวานของทางร้าน ยังไม่มีสูตรซอสในระบบ"
-   },
-   "ingredients": "Tuna, Sweet sauce (recipe not known)",
-   "ingredients_tr": {
-    "th": "ทูน่า, ซอสหวาน (ไม่ทราบสูตร)",
-    "my": "တူနာ, "
-   },
-   "allergens": null,
-   "estimated_allergens_from_listed_parts": [
-    "fish"
-   ],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/25eafe5257af47f4b1b4e81b3547e482.jpg"
-  },
-  {
-   "category": "app",
-   "name": {
-    "en": "Squid with Shrimp Roe",
-    "th": "ปลาหมึกคลุกไข่กุ้ง"
-   },
-   "price": 171,
-   "desc": {
-    "en": "Raw squid tossed with shrimp roe (ebiko).",
-    "th": "ปลาหมึกดิบคลุกไข่กุ้ง (เอบิโกะ)"
-   },
-   "ingredients": "Squid, Shrimp roe (ebiko)",
-   "ingredients_tr": {
-    "th": "ปลาหมึก, ไข่กุ้ง (เอบิโกะ)",
-    "my": ""
-   },
-   "allergens": [
-    "shellfish",
-    "molluscs"
-   ],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-LzkJJwA9ExzxR2dmLmsHo1NMn-58S-yubpii3l-edo42gNRClstNom4&s=10"
-  },
-  {
-   "category": "app",
-   "name": {
     "en": "Soft-Shell Crab Salad",
     "th": "สลัดปูนิ่ม"
    },
@@ -1913,54 +1620,6 @@
   {
    "category": "app",
    "name": {
-    "en": "Salt-grilled Salmon Head",
-    "th": "หัวปลาแซลม่อนย่างเกลือ"
-   },
-   "price": 235,
-   "desc": {
-    "en": "Salmon head grilled with salt.",
-    "th": "หัวปลาแซลม่อนย่างเกลือ"
-   },
-   "ingredients": "Salmon",
-   "ingredients_tr": {
-    "th": "แซลม่อน",
-    "my": "ဆော်လမွန်"
-   },
-   "allergens": [
-    "fish"
-   ],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/088c700238b745dd95a9adf6966b0fe2.jpg"
-  },
-  {
-   "category": "app",
-   "name": {
-    "en": "Wasabi Fried Chicken",
-    "th": "ไก่ทอดวาซาบิ"
-   },
-   "price": 96,
-   "desc": {
-    "en": "Karaage-style fried chicken tossed in wasabi.",
-    "th": "ไก่ทอดแบบคาราเกะคลุกวาซาบิ"
-   },
-   "ingredients": "Chicken, Soy-ginger marinade, Flour and starch coating, Wasabi paste",
-   "ingredients_tr": {
-    "th": "ไก่, หมักซีอิ๊วขิง, แป้งชุบทอด, วาซาบิ",
-    "my": "ကြက်သား, , , "
-   },
-   "allergens": [
-    "gluten",
-    "soy",
-    "mustard"
-   ],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/5d5b9f7f7d5541f4ab84d7a11bcbd81b.jpg"
-  },
-  {
-   "category": "app",
-   "name": {
     "en": "Shrimp Tempura",
     "th": "กุ้งเทมปุระ"
    },
@@ -2057,81 +1716,6 @@
    ],
    "spice": 2,
    "photo": "https://img.wongnai.com/p/256x256/2020/03/25/a912bbf12b394b2c92a533c55177b41a.jpg"
-  },
-  {
-   "category": "app",
-   "name": {
-    "en": "Salmon with Wasabi",
-    "th": "แซลม่อนคลุกวาซาบิ"
-   },
-   "price": 203,
-   "desc": {
-    "en": "Raw salmon tossed in wasabi, usually with a little soy sauce.",
-    "th": "แซลม่อนดิบคลุกวาซาบิ ปกติใส่ซีอิ๊วเล็กน้อย"
-   },
-   "ingredients": "Salmon, Wasabi paste, Soy sauce",
-   "ingredients_tr": {
-    "th": "แซลม่อน, วาซาบิ, ซีอิ๊ว",
-    "my": "ဆော်လမွန်, , ပဲငံပြာရည်"
-   },
-   "allergens": [
-    "gluten",
-    "fish",
-    "soy",
-    "mustard"
-   ],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/49df56cf8e6a4e40935e5808e3ace672.jpg"
-  },
-  {
-   "category": "app",
-   "name": {
-    "en": "Purple Sweet Potato Cheese Balls",
-    "th": "ชีสบอลมันม่วง"
-   },
-   "price": 106,
-   "desc": {
-    "en": "Purple sweet potato and cheese balls, coated in breadcrumbs and deep-fried.",
-    "th": "ชีสบอลมันม่วง ชุบเกล็ดขนมปังทอดกรอบ"
-   },
-   "ingredients": "Purple sweet potato, Cheese, Breadcrumb coating (wheat, egg)",
-   "ingredients_tr": {
-    "th": "มันม่วง, ชีส, เกล็ดขนมปังชุบทอด (แป้งสาลี ไข่)",
-    "my": ", ချိစ်, "
-   },
-   "allergens": [
-    "gluten",
-    "egg",
-    "milk"
-   ],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/4c68d12fd636498592442260a3b72376.jpg"
-  },
-  {
-   "category": "app",
-   "name": {
-    "en": "Stingray Fin",
-    "th": "คีบปลากระเบน"
-   },
-   "price": 128,
-   "desc": {
-    "en": "Dried stingray fin (eihire), grilled and served the izakaya way with mayonnaise and chilli.",
-    "th": "ครีบปลากระเบนแห้งย่าง (เอฮิเระ) เสิร์ฟแบบอิซากายะ พร้อมมายองเนสและพริก"
-   },
-   "ingredients": "Grilled dried stingray fin (eihire), Japanese mayonnaise, Chilli",
-   "ingredients_tr": {
-    "th": "ครีบปลากระเบนแห้งย่าง (เอฮิเระ), มายองเนสญี่ปุ่น, พริก",
-    "my": ""
-   },
-   "allergens": [
-    "egg",
-    "fish"
-   ],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/bbede04dfe7d4b33bd58afafdf8096c7.jpg"
   },
   {
    "category": "grill",
@@ -2368,94 +1952,6 @@
   {
    "category": "grill",
    "name": {
-    "en": "Garlic Skewer",
-    "th": "กระเทียมเสียบไม้"
-   },
-   "price": 21,
-   "desc": {
-    "en": "A skewer of garlic, grilled. Whether it is seasoned with salt or a sauce is the kitchen's own: please ask the staff.",
-    "th": "กระเทียมเสียบไม้ย่าง จะปรุงด้วยเกลือหรือซอสเป็นของทางร้าน กรุณาสอบถามพนักงาน"
-   },
-   "ingredients": "Garlic, Other ingredients (not listed on this menu)",
-   "ingredients_tr": {
-    "th": "กระเทียม, ส่วนผสมอื่น (เมนูนี้ไม่ได้ระบุ)",
-    "my": "ကြက်သွန်ဖြူ, "
-   },
-   "allergens": null,
-   "estimated_allergens_from_listed_parts": [],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/13cee00d0f3e44cbaaba3530f812b961.jpg"
-  },
-  {
-   "category": "grill",
-   "name": {
-    "en": "Okra Skewer",
-    "th": "กระเจี๊ยบ"
-   },
-   "price": 21,
-   "desc": {
-    "en": "A skewer of okra, grilled. Whether it is seasoned with salt or a sauce is the kitchen's own: please ask the staff.",
-    "th": "กระเจี๊ยบเสียบไม้ย่าง จะปรุงด้วยเกลือหรือซอสเป็นของทางร้าน กรุณาสอบถามพนักงาน"
-   },
-   "ingredients": "Okra, Other ingredients (not listed on this menu)",
-   "ingredients_tr": {
-    "th": "กระเจี๊ยบ, ส่วนผสมอื่น (เมนูนี้ไม่ได้ระบุ)",
-    "my": "ဘန်ဒါသီး, "
-   },
-   "allergens": null,
-   "estimated_allergens_from_listed_parts": [],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/dda788d419414e208ba66cb4f6d0d758.jpg"
-  },
-  {
-   "category": "grill",
-   "name": {
-    "en": "Pumpkin Skewer",
-    "th": "ฟักทองเสียบไม้"
-   },
-   "price": 21,
-   "desc": {
-    "en": "A skewer of pumpkin, grilled. Whether it is seasoned with salt or a sauce is the kitchen's own: please ask the staff.",
-    "th": "ฟักทองเสียบไม้ย่าง จะปรุงด้วยเกลือหรือซอสเป็นของทางร้าน กรุณาสอบถามพนักงาน"
-   },
-   "ingredients": "Pumpkin, Other ingredients (not listed on this menu)",
-   "ingredients_tr": {
-    "th": "ฟักทอง, ส่วนผสมอื่น (เมนูนี้ไม่ได้ระบุ)",
-    "my": "ဖရုံသီး, "
-   },
-   "allergens": null,
-   "estimated_allergens_from_listed_parts": [],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/494a20a0a99a4fb080e2d81aea706f87.jpg"
-  },
-  {
-   "category": "grill",
-   "name": {
-    "en": "King Oyster Mushroom Skewer",
-    "th": "เห็ดออรินจิเสียบไม้"
-   },
-   "price": 21,
-   "desc": {
-    "en": "A skewer of king oyster mushroom, grilled. Whether it is seasoned with salt or a sauce is the kitchen's own: please ask the staff.",
-    "th": "เห็ดออรินจิเสียบไม้ย่าง จะปรุงด้วยเกลือหรือซอสเป็นของทางร้าน กรุณาสอบถามพนักงาน"
-   },
-   "ingredients": "King oyster mushroom, Other ingredients (not listed on this menu)",
-   "ingredients_tr": {
-    "th": "เห็ดออรินจิ, ส่วนผสมอื่น (เมนูนี้ไม่ได้ระบุ)",
-    "my": "မှို, "
-   },
-   "allergens": null,
-   "estimated_allergens_from_listed_parts": [],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/b284c068cc6f47729e1c566695899f33.jpg"
-  },
-  {
-   "category": "grill",
-   "name": {
     "en": "Shiitake Skewer",
     "th": "เห็ดหอม"
    },
@@ -2591,28 +2087,6 @@
    "tags": [],
    "spice": 0,
    "photo": "https://img.wongnai.com/p/256x256/2020/03/25/73fd1da56eef4f30a550eb739dfc1650.jpg"
-  },
-  {
-   "category": "don",
-   "name": {
-    "en": "Garlic Fried Rice",
-    "th": "ข้าวผัดกระเทียม"
-   },
-   "price": 64,
-   "desc": {
-    "en": "Japanese rice fried with garlic. The other seasoning in the rice is the kitchen's own.",
-    "th": "ข้าวญี่ปุ่นผัดกระเทียม เครื่องปรุงอื่น ๆ ในข้าวผัดเป็นของทางร้าน"
-   },
-   "ingredients": "Japanese rice, Garlic, Other ingredients (not listed on this menu)",
-   "ingredients_tr": {
-    "th": "ข้าวญี่ปุ่น, กระเทียม, ส่วนผสมอื่น (เมนูนี้ไม่ได้ระบุ)",
-    "my": "ထမင်း, ကြက်သွန်ဖြူ, "
-   },
-   "allergens": null,
-   "estimated_allergens_from_listed_parts": [],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/998a47ee88224a8fb93b7b9ae4cba2e7.jpg"
   },
   {
    "category": "don",
@@ -2889,28 +2363,6 @@
   {
    "category": "don",
    "name": {
-    "en": "Three-Topping Don",
-    "th": "ข้าวหน้า 3 อย่าง"
-   },
-   "price": 310,
-   "desc": {
-    "en": "Japanese rice with three toppings. Which three is not listed here: please ask the staff.",
-    "th": "ข้าวญี่ปุ่นหน้า 3 อย่าง ยังไม่มีรายการหน้าข้าวในระบบ กรุณาสอบถามพนักงาน"
-   },
-   "ingredients": "Japanese rice, Other ingredients (not listed on this menu)",
-   "ingredients_tr": {
-    "th": "ข้าวญี่ปุ่น, ส่วนผสมอื่น (เมนูนี้ไม่ได้ระบุ)",
-    "my": "ထမင်း, "
-   },
-   "allergens": null,
-   "estimated_allergens_from_listed_parts": [],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/6caa5f4a5ab345b983853533f6246733.jpg"
-  },
-  {
-   "category": "don",
-   "name": {
     "en": "Seared Salmon Don",
     "th": "ข้าวหน้าแซลม่อนเบิร์น"
    },
@@ -2930,30 +2382,6 @@
    "tags": [],
    "spice": 0,
    "photo": "https://img.wongnai.com/p/256x256/2020/03/25/85d3e1c11b814945970868290d8aab3c.jpg"
-  },
-  {
-   "category": "app",
-   "name": {
-    "en": "Lettuce",
-    "th": "ผักกาดหอม",
-    "my": "ဆလပ်ရွက်"
-   },
-   "price": 74,
-   "desc": {
-    "en": "A plate of fresh lettuce.",
-    "th": "ผักกาดหอมสดเสิร์ฟเป็นจาน"
-   },
-   "ingredients": "Lettuce",
-   "ingredients_tr": {
-    "th": "ผักกาดหอม",
-    "my": ""
-   },
-   "allergens": [],
-   "tags": [
-    "vegetarian"
-   ],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/03/25/6482cf925e1a4f94a90646b2c7aaca93.jpg"
   },
   {
    "category": "don",
@@ -3011,30 +2439,6 @@
    ],
    "spice": 2,
    "photo": "https://img.wongnai.com/p/256x256/2020/04/01/101d08e1f257424c8a2317fe1d1834db.jpg"
-  },
-  {
-   "category": "don",
-   "name": {
-    "en": "Salmon Garlic Fried Rice",
-    "th": "ข้าวผัดกระเทียมแซลม่อน"
-   },
-   "price": 74,
-   "desc": {
-    "en": "Garlic fried rice with salmon. The other seasoning in the rice is the kitchen's own.",
-    "th": "ข้าวผัดกระเทียมแซลม่อน เครื่องปรุงอื่น ๆ ในข้าวผัดเป็นของทางร้าน"
-   },
-   "ingredients": "Japanese rice, Garlic, Salmon, Other ingredients (not listed on this menu)",
-   "ingredients_tr": {
-    "th": "ข้าวญี่ปุ่น, กระเทียม, แซลม่อน, ส่วนผสมอื่น (เมนูนี้ไม่ได้ระบุ)",
-    "my": "ထမင်း, ကြက်သွန်ဖြူ, ဆော်လမွန်, "
-   },
-   "allergens": null,
-   "estimated_allergens_from_listed_parts": [
-    "fish"
-   ],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2020/04/01/e48ce74c7e73486c9b3f8657079eef32.jpg"
   },
   {
    "category": "don",
@@ -3115,72 +2519,6 @@
    ],
    "spice": 0,
    "photo": "https://img.wongnai.com/p/256x256/2020/04/18/f5b6f2be4c4349978963ef5fe345d6f9.jpg"
-  },
-  {
-   "category": "set",
-   "name": {
-    "en": "Tontoro Happy Set",
-    "th": "Tontoro Happy Set"
-   },
-   "price": 299,
-   "desc": {
-    "en": "A set meal. What comes with it is not listed here: please ask the staff.",
-    "th": "ชุดตอนโตโร แฮปปี้เซ็ต เซ็ตอาหาร ยังไม่มีรายการในชุดในระบบ กรุณาสอบถามพนักงาน"
-   },
-   "ingredients": "Other ingredients (not listed on this menu)",
-   "ingredients_tr": {
-    "th": "ส่วนผสมอื่น (เมนูนี้ไม่ได้ระบุ)",
-    "my": ""
-   },
-   "allergens": null,
-   "estimated_allergens_from_listed_parts": [],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2021/05/01/ced1e88a00464a70bfc7a5a785212a12.jpg"
-  },
-  {
-   "category": "set",
-   "name": {
-    "en": "Buta Set",
-    "th": "Buta Set"
-   },
-   "price": 499,
-   "desc": {
-    "en": "A set meal. What comes with it is not listed here: please ask the staff.",
-    "th": "ชุดบุตะ เซ็ตอาหาร ยังไม่มีรายการในชุดในระบบ กรุณาสอบถามพนักงาน"
-   },
-   "ingredients": "Other ingredients (not listed on this menu)",
-   "ingredients_tr": {
-    "th": "ส่วนผสมอื่น (เมนูนี้ไม่ได้ระบุ)",
-    "my": ""
-   },
-   "allergens": null,
-   "estimated_allergens_from_listed_parts": [],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2021/05/01/d0bc5651b8e34f0aa0193de28a132702.jpg"
-  },
-  {
-   "category": "set",
-   "name": {
-    "en": "Omori Set",
-    "th": "Omori Set"
-   },
-   "price": 1200,
-   "desc": {
-    "en": "A set meal. What comes with it is not listed here: please ask the staff.",
-    "th": "ชุดโอโมริ เซ็ตอาหาร ยังไม่มีรายการในชุดในระบบ กรุณาสอบถามพนักงาน"
-   },
-   "ingredients": "Other ingredients (not listed on this menu)",
-   "ingredients_tr": {
-    "th": "ส่วนผสมอื่น (เมนูนี้ไม่ได้ระบุ)",
-    "my": ""
-   },
-   "allergens": null,
-   "estimated_allergens_from_listed_parts": [],
-   "tags": [],
-   "spice": 0,
-   "photo": "https://img.wongnai.com/p/256x256/2021/05/01/63fc4e04e4c14919abb91e797315012f.jpg"
   },
   {
    "category": "drink",

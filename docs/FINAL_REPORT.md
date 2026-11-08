@@ -89,4 +89,4 @@ Commits on `main` on 8 Nov 2026 (`git shortlog -sn --no-merges`; `.mailmap` maps
 
 ## 9. Limits
 
-Speed figures come from one laptop. With three diners chatting nonstop about 1 answer in 7 is the fallback message, because they share one model. Not done yet: tests on real phones and with real owners, native review of all Thai and Burmese labels, a public HTTPS deployment, and restaurant-verified allergen lists (none of the 145 sample dishes is verified, so the AI suggests no dish for an allergy).
+Speed figures come from one laptop. With three diners chatting nonstop about 1 answer in 7 is the fallback message, because they share one model. Not done yet: tests on real phones and with real owners, native review of all Thai and Burmese labels, a public HTTPS deployment, and restaurant-verified allergen lists (none of the 117 sample dishes is verified, so the AI suggests no dish for an allergy).

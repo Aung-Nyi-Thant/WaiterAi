@@ -24,6 +24,7 @@
     "db:restore": "node --experimental-strip-types --no-warnings scripts/backup-data.mts restore",
     "db:seed:hachi": "node --experimental-strip-types --no-warnings scripts/seed-hachi-kyu.mts",
     "db:seed:hachi:into": "node --experimental-strip-types --no-warnings scripts/seed-hachi-kyu.mts --into golden-lotus",
+    "prototype:live": "ln -sfn ../../prototype public/prototype && echo \"Prototype with the real AI: http://localhost:3000/prototype/index.html?view=customer&ai=live\"",
     "db:seed:hachi:build": "node --experimental-strip-types --no-warnings scripts/make-hachi-kyu-seed.mts"
   },
   "devDependencies": {

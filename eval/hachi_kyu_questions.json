@@ -53,7 +53,7 @@
   "id": "hk-en3",
   "lang": "en",
   "category": "allergen_unknown",
-  "question": "Does the Garlic Skewer contain peanuts?",
+  "question": "Does the Japanese Leek Skewer contain peanuts?",
   "expect": [
    [
     "not provided"
@@ -443,7 +443,7 @@
   "id": "hk-th4",
   "lang": "th",
   "category": "allergen_unknown",
-  "question": "กระเทียมเสียบไม้มีถั่วลิสงไหม",
+  "question": "ต้นหอมญี่ปุ่นมีถั่วลิสงไหม",
   "expect": [
    [
     "ไม่มีข้อมูล",

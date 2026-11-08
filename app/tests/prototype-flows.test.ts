@@ -15,7 +15,7 @@ function open(query = "", storage?: { db?: string | null; session?: Record<strin
     pretendToBeVisual: true,
   });
   openDemos.push(dom);
-  if (storage?.db) dom.window.localStorage.setItem("shopai_db2", storage.db);
+  if (storage?.db) dom.window.localStorage.setItem("shopai_db3", storage.db);
   if (storage?.session) {
     for (const [k, v] of Object.entries(storage.session)) {
       dom.window.sessionStorage.setItem(k, v);
@@ -52,6 +52,27 @@ function click(doc: Document, selector: string) {
   const el = doc.querySelector(selector) as HTMLElement | null;
   expect(el, `missing element: ${selector}`).not.toBeNull();
   el!.click();
+}
+
+function findDishCard(doc: Document, englishName: string): HTMLElement {
+  const cards = [...doc.querySelectorAll("#list .card")];
+  const card = cards.find(c => c.querySelector(".dish-name")?.textContent?.trim() === englishName);
+  expect(card, `dish card for "${englishName}"`).toBeDefined();
+  return card as HTMLElement;
+}
+
+function clickDishOpen(doc: Document, englishName: string) {
+  const card = findDishCard(doc, englishName);
+  const btn = card.querySelector('[data-a="open"]') as HTMLElement | null;
+  expect(btn, `open button for "${englishName}"`).not.toBeNull();
+  btn!.click();
+}
+
+function clickDishQuickAdd(doc: Document, englishName: string) {
+  const card = findDishCard(doc, englishName);
+  const btn = card.querySelector('[data-a="quick"]') as HTMLElement | null;
+  expect(btn, `quick-add button for "${englishName}"`).not.toBeNull();
+  btn!.click();
 }
 
 function enterPin(doc: Document, digits: string) {
@@ -109,7 +130,7 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
     expect(doc.querySelector("#list")?.textContent).toContain("Salmon Sushi");
 
     // Open a dish detail and close it
-    click(doc, '#list [data-a="open"][data-id="12"]');
+    clickDishOpen(doc, "Salmon Sushi");
     expect(doc.querySelector(".ov h2")?.textContent).toBe("Salmon Sushi");
     click(doc, '.ov button[data-a="closeM"]');
 
@@ -132,7 +153,9 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
 
     const chatText = doc.querySelector(".chat")?.textContent || "";
     expect(chatText).toContain("Salmon Sushi: ฿96");
-    expect(doc.querySelector('.chat .mc [data-a="aiadd"][data-id="12"]')).not.toBeNull();
+    const chatDish = [...doc.querySelectorAll(".chat .mc")].find(el => el.querySelector("b")?.textContent?.includes("Salmon Sushi"));
+    expect(chatDish, 'chat card for "Salmon Sushi"').toBeDefined();
+    expect(chatDish!.querySelector('[data-a="aiadd"]')).not.toBeNull();
 
     // Unhappy path: prompt injection is refused
     const input2 = doc.getElementById("ci") as HTMLInputElement;
@@ -155,8 +178,8 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
     click(doc, '.empty [data-a="nav"][data-v="menu"]');
 
     // Happy path: add two dishes, open cart, send to staff
-    click(doc, '#list [data-a="quick"][data-id="12"]');
-    click(doc, '#list [data-a="quick"][data-id="16"]');
+    clickDishQuickAdd(doc, "Salmon Sushi");
+    clickDishQuickAdd(doc, "Shrimp Roe Sushi");
     click(doc, 'nav [data-a="nav"][data-v="cart"]');
     expect(doc.querySelectorAll(".ci")).toHaveLength(2);
 
@@ -165,7 +188,7 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
     await wait(1250);
 
     expect(doc.querySelector(".ok h2")?.textContent).toContain("Order placed!");
-    const db = JSON.parse(win.localStorage.getItem("shopai_db2")!);
+    const db = JSON.parse(win.localStorage.getItem("shopai_db3")!);
     expect(db.orders).toHaveLength(1);
     expect(db.orders[0].status).toBe("picked");
     expect(db.orders[0].items).toHaveLength(2);
@@ -174,28 +197,28 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
     click(doc, 'header [data-a="modal"][data-m="staff"]');
     click(doc, '[data-a="staffGo"]');
     expect(doc.querySelector(".toast")?.textContent).toContain("Staff notified");
-    expect(JSON.parse(win.localStorage.getItem("shopai_db2")!).calls).toHaveLength(1);
+    expect(JSON.parse(win.localStorage.getItem("shopai_db3")!).calls).toHaveLength(1);
 
     // Unhappy path: second staff call within 60 s is refused
     click(doc, 'header [data-a="modal"][data-m="staff"]');
     click(doc, '[data-a="staffGo"]');
     expect(doc.querySelector(".toast")?.textContent).toContain("Request already sent, please wait.");
-    expect(JSON.parse(win.localStorage.getItem("shopai_db2")!).calls).toHaveLength(1);
+    expect(JSON.parse(win.localStorage.getItem("shopai_db3")!).calls).toHaveLength(1);
   });
 
   it("FR-4 (?view=staff): waiter PIN 1111 takes order ('new'), chef 2222 cooks ('cooking') -> ready ('ready'), waiter serves ('served')", async () => {
     // Prepare a picked order via customer flow first
     const dinerWin = open("?view=customer&lang=en");
     const dinerDoc = dinerWin.document;
-    click(dinerDoc, '#list [data-a="quick"][data-id="12"]');
-    click(dinerDoc, '#list [data-a="quick"][data-id="16"]');
+    clickDishQuickAdd(dinerDoc, "Salmon Sushi");
+    clickDishQuickAdd(dinerDoc, "Shrimp Roe Sushi");
     click(dinerDoc, 'nav [data-a="nav"][data-v="cart"]');
     click(dinerDoc, '[data-a="modal"][data-m="review"]');
     click(dinerDoc, '[data-a="placeGo"]');
     await wait(1250);
-    const dbPicked = dinerWin.localStorage.getItem("shopai_db2")!;
+    const dbPicked = dinerWin.localStorage.getItem("shopai_db3")!;
 
-    // Open staff view with the picked order in shopai_db2
+    // Open staff view with the picked order in shopai_db3
     const win = open("?view=staff", { db: dbPicked });
     const doc = win.document;
 
@@ -212,7 +235,7 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
     // Waiter takes order -> status 'new'
     click(doc, '[data-s="tab"][data-v="orders"]');
     click(doc, '[data-s="accept"]');
-    expect(JSON.parse(win.localStorage.getItem("shopai_db2")!).orders[0].status).toBe("new");
+    expect(JSON.parse(win.localStorage.getItem("shopai_db3")!).orders[0].status).toBe("new");
 
     // Log out waiter, sign in as chef (PIN 2222)
     click(doc, '[data-s="logout"]');
@@ -222,12 +245,12 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
 
     // Chef starts cooking -> status 'cooking'
     click(doc, '[data-s="start"]');
-    expect(JSON.parse(win.localStorage.getItem("shopai_db2")!).orders[0].status).toBe("cooking");
+    expect(JSON.parse(win.localStorage.getItem("shopai_db3")!).orders[0].status).toBe("cooking");
 
     // Chef marks ready -> status 'ready'
     click(doc, '[data-s="tab"][data-v="cook"]');
     click(doc, '[data-s="done"]');
-    expect(JSON.parse(win.localStorage.getItem("shopai_db2")!).orders[0].status).toBe("ready");
+    expect(JSON.parse(win.localStorage.getItem("shopai_db3")!).orders[0].status).toBe("ready");
 
     // Log out chef, sign in as waiter (PIN 1111) and serve -> status 'served'
     click(doc, '[data-s="logout"]');
@@ -235,7 +258,7 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
     enterPin(doc, "1111");
     click(doc, '[data-s="tab"][data-v="ready"]');
     click(doc, '[data-s="serve"]');
-    expect(JSON.parse(win.localStorage.getItem("shopai_db2")!).orders[0].status).toBe("served");
+    expect(JSON.parse(win.localStorage.getItem("shopai_db3")!).orders[0].status).toBe("served");
   });
 
   it("FR-5 (?view=owner): logs in with demo credentials, rejects a dish with no name, and adds a valid dish", () => {
@@ -249,7 +272,7 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
     // Happy login
     loginOwner(doc);
     click(doc, 'aside [data-o="pg"][data-v="menu"]');
-    const beforeCount = JSON.parse(win.localStorage.getItem("shopai_db2")!).menu.length;
+    const beforeCount = JSON.parse(win.localStorage.getItem("shopai_db3")!).menu.length;
 
     // Open Add dish modal
     click(doc, '[data-o="madd"]');
@@ -259,7 +282,7 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
     (doc.getElementById("f_p") as HTMLInputElement).value = "120";
     click(doc, '[data-o="msave"]');
     expect(doc.querySelector(".toast")?.textContent).toContain("Name and price are required");
-    expect(JSON.parse(win.localStorage.getItem("shopai_db2")!).menu).toHaveLength(beforeCount);
+    expect(JSON.parse(win.localStorage.getItem("shopai_db3")!).menu).toHaveLength(beforeCount);
 
     // Happy path: fill name, price, allergen and save
     (doc.getElementById("f_n1") as HTMLInputElement).value = "Matcha Parfait";
@@ -268,7 +291,7 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
     click(doc, '#fal [data-o="atog"][data-k="milk"]');
     click(doc, '[data-o="msave"]');
 
-    const afterMenu = JSON.parse(win.localStorage.getItem("shopai_db2")!).menu;
+    const afterMenu = JSON.parse(win.localStorage.getItem("shopai_db3")!).menu;
     expect(afterMenu).toHaveLength(beforeCount + 1);
     const added = afterMenu.find((m: { n: string[] }) => m.n[1] === "Matcha Parfait");
     expect(added).toBeDefined();
@@ -283,12 +306,12 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
     loginOwner(doc);
 
     click(doc, 'aside [data-o="pg"][data-v="imp"]');
-    const beforeCount = JSON.parse(win.localStorage.getItem("shopai_db2")!).menu.length;
+    const beforeCount = JSON.parse(win.localStorage.getItem("shopai_db3")!).menu.length;
 
     // Happy path: default CSV template adds Shrimp Fried Rice
     click(doc, '[data-o="doimport"]');
     expect(doc.querySelector(".toast")?.textContent).toContain("Imported 1 dish(es)");
-    const afterTemplate = JSON.parse(win.localStorage.getItem("shopai_db2")!).menu;
+    const afterTemplate = JSON.parse(win.localStorage.getItem("shopai_db3")!).menu;
     expect(afterTemplate).toHaveLength(beforeCount + 1);
     expect(afterTemplate.some((m: { n: string[] }) => m.n[1] === "Shrimp Fried Rice")).toBe(true);
 
@@ -302,7 +325,7 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
     ].join("\n");
     click(doc, '[data-o="doimport"]');
     expect(doc.querySelector(".toast")?.textContent).toContain("Imported 1 dish(es), skipped 2 invalid row(s)");
-    const afterMixed = JSON.parse(win.localStorage.getItem("shopai_db2")!).menu;
+    const afterMixed = JSON.parse(win.localStorage.getItem("shopai_db3")!).menu;
     expect(afterMixed).toHaveLength(beforeCount + 2);
   });
 
@@ -320,7 +343,7 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
     firstClose.value = "10:00";
     click(doc, '[data-o="hsave"]');
     expect(doc.querySelector(".toast")?.textContent).toContain("Closing time must be after opening time");
-    expect(JSON.parse(win.localStorage.getItem("shopai_db2")!).hours[0].o).toBe("11:00");
+    expect(JSON.parse(win.localStorage.getItem("shopai_db3")!).hours[0].o).toBe("11:00");
 
     // Happy path: valid hours are saved
     const validOpen = doc.querySelector(".hr .ho") as HTMLInputElement;
@@ -329,7 +352,7 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
     validClose.value = "23:00";
     click(doc, '[data-o="hsave"]');
     expect(doc.querySelector(".toast")?.textContent).toContain("Hours saved");
-    expect(JSON.parse(win.localStorage.getItem("shopai_db2")!).hours[0]).toMatchObject({ o: "10:00", c: "23:00" });
+    expect(JSON.parse(win.localStorage.getItem("shopai_db3")!).hours[0]).toMatchObject({ o: "10:00", c: "23:00" });
   });
 
   it("FR-8 (?view=owner): generates QR codes and rejects 0 and 61 tables", () => {
@@ -343,19 +366,19 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
     for (let i = 0; i < 9; i++) {
       click(doc, '[data-o="tn"][data-d="-1"]');
     }
-    expect(JSON.parse(win.localStorage.getItem("shopai_db2")!).tables).toBe(1);
+    expect(JSON.parse(win.localStorage.getItem("shopai_db3")!).tables).toBe(1);
     click(doc, '[data-o="tn"][data-d="-1"]');
     expect(doc.querySelector(".toast")?.textContent).toContain("Tables must be between 1 and 60");
-    expect(JSON.parse(win.localStorage.getItem("shopai_db2")!).tables).toBe(1);
+    expect(JSON.parse(win.localStorage.getItem("shopai_db3")!).tables).toBe(1);
 
     // Unhappy path 2: increase up to 60, then try 61 -> rejected
     for (let i = 0; i < 59; i++) {
       click(doc, '[data-o="tn"][data-d="1"]');
     }
-    expect(JSON.parse(win.localStorage.getItem("shopai_db2")!).tables).toBe(60);
+    expect(JSON.parse(win.localStorage.getItem("shopai_db3")!).tables).toBe(60);
     click(doc, '[data-o="tn"][data-d="1"]');
     expect(doc.querySelector(".toast")?.textContent).toContain("Tables must be between 1 and 60");
-    expect(JSON.parse(win.localStorage.getItem("shopai_db2")!).tables).toBe(60);
+    expect(JSON.parse(win.localStorage.getItem("shopai_db3")!).tables).toBe(60);
 
     // Happy path: generate QR codes
     click(doc, '[data-o="gen"]');
@@ -388,7 +411,7 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
     click(ownerDoc, '[data-o="sadd"]');
     click(ownerDoc, '[data-o="ssave"]');
     expect(ownerDoc.querySelector(".toast")?.textContent).toContain("Every account needs a name and a 4-digit PIN");
-    const storedStaff = JSON.parse(ownerWin.localStorage.getItem("shopai_db2") || "{}").staff;
+    const storedStaff = JSON.parse(ownerWin.localStorage.getItem("shopai_db3") || "{}").staff;
     expect(storedStaff ?? []).toSatisfy((arr: { name: string; pass: string }[]) =>
       arr.every(s => s.name.trim().length > 0 && /^\d{4}$/.test(s.pass))
     );
@@ -400,7 +423,7 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
     pins[pins.length - 1].value = "3333";
     click(ownerDoc, '[data-o="ssave"]');
     expect(ownerDoc.querySelector(".toast")?.textContent).toContain("Accounts saved");
-    expect(JSON.parse(ownerWin.localStorage.getItem("shopai_db2")!).staff).toHaveLength(3);
+    expect(JSON.parse(ownerWin.localStorage.getItem("shopai_db3")!).staff).toHaveLength(3);
   });
 
   it("FR-10 (?view=customer&go=ai -> ?view=owner): strips email from unanswered questions and lists them in Owner -> Insights", async () => {
@@ -417,7 +440,7 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
     click(dinerDoc, '[data-a="send"]');
     await wait(450);
 
-    const dbAfterAsk = dinerWin.localStorage.getItem("shopai_db2")!;
+    const dbAfterAsk = dinerWin.localStorage.getItem("shopai_db3")!;
     expect(dbAfterAsk).not.toContain("alice@example.com");
     expect(dbAfterAsk).toContain("[email]");
 
@@ -434,7 +457,7 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
 
   it("Photos: every dish with an entry in prototype/photos.js renders an <img> whose file exists, and no rendered <img> src contains 'wongnai'", () => {
     const ownerWin = open("?view=owner");
-    const menu = JSON.parse(ownerWin.localStorage.getItem("shopai_db2")!).menu as {
+    const menu = JSON.parse(ownerWin.localStorage.getItem("shopai_db3")!).menu as {
       id: number;
       n: string[];
       img: string;

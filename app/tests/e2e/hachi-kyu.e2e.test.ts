@@ -22,13 +22,13 @@ describe("HaChi Kyu on the running server", () => {
   const dish = (n: string) => items.find((d) => d.name.en === n);
   let pickId: number;
 
-  it("serves the diner page and a 132-dish menu in 9 categories; the first restaurant is unchanged", async () => {
+  it("serves the diner page and a 104-dish menu in 9 categories; the first restaurant is unchanged", async () => {
     const page = await fetch(`${BASE}/r/${slug}?t=7`);
     expect(page.status).toBe(200);
     const menu = await diner(`/api/public/${slug}/menu?open=1`);
     expect(menu.status).toBe(200);
     items = menu.data.items;
-    expect(items).toHaveLength(132);
+    expect(items).toHaveLength(104);
     expect(menu.data.categories).toHaveLength(9);
     expect(menu.data.restaurant.name).toBe("HaChi Kyu");
     expect((await diner("/api/public/golden-lotus/menu")).data.items).toHaveLength(13);
@@ -46,7 +46,7 @@ describe("HaChi Kyu on the running server", () => {
     expect(r.data.reply).not.toContain("Salmon Sushi");               // one typed dish is one dish
   });
   it("a dish with no allergen estimate is reported as 'not provided', never as free of the allergen", async () => {
-    const r = await diner(`/api/public/${slug}/chat`, { message: "I'm allergic to peanuts. Can I eat the Garlic Skewer?", sessionId: "hk-e2e-1", table: "7", lang: "en" });
+    const r = await diner(`/api/public/${slug}/chat`, { message: "I'm allergic to peanuts. Can I eat the Japanese Leek Skewer?", sessionId: "hk-e2e-1", table: "7", lang: "en" });
     expect(r.data.reply).toMatch(/not provided/i);
     expect(r.data.reply).not.toMatch(/\bno peanuts?\b|free of peanut/i);
   });
@@ -66,7 +66,7 @@ describe("HaChi Kyu on the running server", () => {
     const pick = floor.data.picks.find((p: any) => p.id === pickId);
     expect(pick).toMatchObject({ table: "7", status: "picked" });
     expect(pick.items.reduce((s: number, i: any) => s + i.qty, 0)).toBe(3);
-    expect(floor.data.dishes).toHaveLength(132);                                   // only this restaurant's dishes on the waiter's sold-out list
+    expect(floor.data.dishes).toHaveLength(104);                                   // only this restaurant's dishes on the waiter's sold-out list
     expect(JSON.stringify(floor.data)).not.toContain("Shrimp Pad Thai");
     // (the other restaurant's staff account is locked for a minute by diner-flow.e2e.test.ts, so isolation from its side is in tests/hachi-kyu.test.ts)
     const act = (who: ReturnType<typeof person>, action: string) => who(`/api/staff/orders/${pickId}`, { action, allergyConfirmed: true });

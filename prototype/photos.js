@@ -62,7 +62,6 @@ window.DISH_PHOTOS = {
  "https://img.wongnai.com/p/256x256/2020/03/25/990a73fbbe0e470b95454d9232772618.jpg": "assets/dishes/shiitake-skewer.jpg",
  "https://img.wongnai.com/p/256x256/2020/03/25/db4a921937b14589bac5d27db4b9c47f.jpg": "assets/dishes/salt-grilled-saba.jpg",
  "https://img.wongnai.com/p/256x256/2020/03/25/25296f1ec014422b913908726851804c.jpg": "assets/dishes/tamago-sashimi.jpg",
- "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqdy7ojSMvdWM644_GFMnHmN01ZSagns-Zeodg3WYWiA&s=10": "assets/dishes/squid-with-shrimp-roe-sushi.jpg",
  "https://img.wongnai.com/p/256x256/2020/03/25/ca5876670feb41cb9a20b837d8e14142.jpg": "assets/dishes/surf-clam-sashimi.jpg",
  "https://img.wongnai.com/p/256x256/2020/03/25/416ad1abf0814ee68e8b111b35617720.jpg": "assets/dishes/hamachi-sushi.jpg",
  "https://img.wongnai.com/p/256x256/2020/03/25/5babb6dabc214fb880a6e6d318f1560c.jpg": "assets/dishes/hamachi-sashimi.jpg",
@@ -83,7 +82,6 @@ window.DISH_PHOTOS = {
  "https://img.wongnai.com/p/256x256/2020/03/25/2880644d5d504f768c41dd6fd9be646e.jpg": "assets/dishes/shrimp-tempura.jpg",
  "https://img.wongnai.com/p/256x256/2020/03/25/2a88a5a6e4f54444af7656f15afb879b.jpg": "assets/dishes/pork-neck-in-special-sauce.jpg",
  "https://img.wongnai.com/p/256x256/2020/03/25/62674a6a20e04cb3b4ebc9e1c1065765.jpg": "assets/dishes/salmon-salad.jpg",
- "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCqJaUWz9DCKMmOpSquUKpH-LqppxoOA-X92kXRdoC3g&s=10": "assets/dishes/kanimiso.jpg",
  "https://img.wongnai.com/p/256x256/2020/03/25/a2c1a025222747bc9f309bd1ebeb9567.jpg": "assets/dishes/french-fries.jpg",
  "https://img.wongnai.com/p/256x256/2020/03/25/2f0f0c79188f4d42b92c1b4f7fa1b819.jpg": "assets/dishes/fried-battered-squid.jpg",
  "https://img.wongnai.com/p/256x256/2020/03/25/068753e4658447afa9b204904d2b635f.jpg": "assets/dishes/chicken-steak.jpg",
@@ -100,5 +98,8 @@ window.DISH_PHOTOS = {
  "https://img.wongnai.com/p/256x256/2020/03/25/affc4856c96646f78965e17ffd35273c.jpg": "assets/dishes/crab-stick-salad.jpg",
  "https://img.wongnai.com/p/256x256/2020/03/25/ef3a467aef114264bf7807808060a3d5.jpg": "assets/dishes/salmon-salad.jpg",
  "https://img.wongnai.com/p/256x256/2020/03/25/51343e1f0fe7485e8503c2299274064d.jpg": "assets/dishes/gochujang-chicken.jpg",
- "https://img.wongnai.com/p/256x256/2020/03/25/a912bbf12b394b2c92a533c55177b41a.jpg": "assets/dishes/tuna-yum.jpg"
+ "https://img.wongnai.com/p/256x256/2020/03/25/a912bbf12b394b2c92a533c55177b41a.jpg": "assets/dishes/tuna-yum.jpg",
+ "https://img.wongnai.com/p/256x256/2020/03/25/c221117aa0534e6493e1e5935f994bd5.jpg": "assets/dishes/tamago-nigiri.jpg",
+ "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqdy7ojSMvdWM644_GFMnHmN01ZSagns-Zeodg3WYWiA&s=10": "assets/dishes/squid-with-shrimp-roe-sushi.jpg",
+ "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCqJaUWz9DCKMmOpSquUKpH-LqppxoOA-X92kXRdoC3g&s=10": "assets/dishes/kanimiso.jpg"
 };

@@ -23,7 +23,7 @@ export default async function setup() {
   const env = { ...process.env, NODE_ENV: "production" as const, DATA_DIR: dir, SESSION_SECRET: "e2e-secret", AI_PROVIDER: "ollama", OLLAMA_URL: "http://127.0.0.1:9", RATE_LIMIT_LOGIN_MAX: "5", RATE_LIMIT_CHAT_MAX: "10", ...creds };
   const seeded = spawnSync(process.execPath, ["--experimental-strip-types", "--no-warnings", "scripts/seed.mts"], { cwd: root, env, encoding: "utf8" });
   if (seeded.status !== 0) throw new Error("seed failed: " + seeded.stdout + seeded.stderr);
-  // the second sample restaurant (HaChi Kyu, 132 dishes), with its own owner and PINs, the way a deployment would add it
+  // the second sample restaurant (HaChi Kyu, 104 dishes), with its own owner and PINs, the way a deployment would add it
   const hachiCreds = { SEED_HACHI_OWNER_EMAIL: "e2e-hachi@test.local", SEED_HACHI_OWNER_PASSWORD: "e2e-hachi-pass-123", SEED_HACHI_WAITER_PIN: "5937", SEED_HACHI_CHEF_PIN: "6048" };
   const seededHachi = spawnSync(process.execPath, ["--experimental-strip-types", "--no-warnings", "scripts/seed-hachi-kyu.mts"], { cwd: root, env: { ...env, ...hachiCreds }, encoding: "utf8" });
   if (seededHachi.status !== 0) throw new Error("hachi seed failed: " + seededHachi.stdout + seededHachi.stderr);
