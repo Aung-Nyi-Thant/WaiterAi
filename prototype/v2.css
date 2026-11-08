@@ -34,28 +34,39 @@ body { background: var(--canvas); }
 }
 
 @media (min-width: 1024px) {
-  /* diner on a laptop: glass side rail | menu | docked cart */
+  /* diner on a laptop (design B): one floating glass top bar, full-width menu, docked cart; no side rail */
   .view-customer #app {
     width: min(1440px, calc(100% - 32px)); max-width: none; height: calc(100dvh - 96px); margin: 80px auto 16px;
-    display: grid; grid-template-columns: 104px minmax(0, 1fr) 360px; grid-template-rows: auto minmax(0, 1fr) auto;
+    display: grid; grid-template-columns: minmax(0, 1fr) 360px; grid-template-rows: auto minmax(0, 1fr) auto; gap: 0 16px;
     border: 0; background: transparent; overflow: visible;
   }
-  .view-customer #app > header { grid-column: 2; grid-row: 1; background: transparent; padding: 4px 20px 8px; }
-  .view-customer #app > main { grid-column: 2; grid-row: 2; padding: 4px 20px 24px; overflow-y: auto; }
-  .view-customer #app > .chat-tools { grid-column: 2; grid-row: 3; }
-  .view-customer #app > nav {
-    grid-column: 1; grid-row: 1 / -1; position: static; inset: auto; transform: none; width: 88px; margin: 0 8px;
-    flex-direction: column; justify-content: flex-start; align-items: center; gap: 6px; padding: 14px 0; border-radius: 28px; height: auto;
+  .view-customer #app > header {
+    grid-column: 1 / -1; grid-row: 1; margin-bottom: 14px; padding: 10px 14px 10px 20px; border-radius: 28px;
+    background: var(--glass-fill); border: 1px solid var(--glass-edge); box-shadow: var(--glass-shadow);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation)); backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
   }
-  .view-customer #app > nav button { width: 72px; min-height: 64px; flex: none; border-radius: 18px; font-size: 11px; }
+  .view-customer #app > header .ib[data-a="nav"], .view-customer #app > header .ib:has(.bd) { display: none; }   /* cart lives in the top bar and the dock */
+  .view-customer #app > nav {
+    grid-column: 1 / -1; grid-row: 1; justify-self: center; align-self: start; margin-top: 10px; z-index: 6;
+    position: static; inset: auto; transform: none; width: auto; height: auto;
+    flex-direction: row; gap: 2px; padding: 4px; border-radius: 24px; box-shadow: none; background: rgb(28 27 25 / 5%); border: 0;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
+  .view-customer #app > nav button { flex: none; flex-direction: row; gap: 6px; min-height: 40px; width: auto; padding: 0 14px; border-radius: 20px; font-size: 13.5px; }
+  .view-customer #app > nav button span { width: auto !important; height: auto !important; background: none !important; margin: 0; }
+  .view-customer #app > nav button.on { background: var(--ink); color: #fff; }
+  .view-customer #app > nav button.on span { color: #fff; }
+  .view-customer #app > main { grid-column: 1; grid-row: 2; padding: 0 4px 24px; overflow-y: auto; }
+  .view-customer #app > .chat-tools { grid-column: 1; grid-row: 3; }
   .view-customer #app > .dock {
-    grid-column: 3; grid-row: 1 / -1; overflow-y: auto; background: var(--surface); border: 1px solid var(--line);
-    border-radius: 28px; padding: 16px; box-shadow: 0 10px 30px rgb(28 27 25 / 10%);
+    grid-column: 2; grid-row: 2 / -1; overflow-y: auto; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 28px; padding: 16px; box-shadow: 0 10px 30px rgb(28 27 25 / 10%); align-self: start; max-height: 100%;
   }
   .view-customer #app > .dock .empty { padding: 32px 8px; }
   .view-customer #app > .dock .empty .btn { display: none; }   /* the menu is already beside it */
   /* menu: 4-column photo grid, photo on top */
-  .view-customer .grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
+  .view-customer .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .view-customer .menu-intro { display: none; }   /* the restaurant name is already in the top bar */
   .view-customer .grid .card { flex-direction: column; padding: 0; overflow: hidden; border: 1px solid var(--line); gap: 0; }
   .view-customer .grid .dish-open { width: 100%; height: auto; flex-basis: auto; border-radius: 0; }
   .view-customer .grid .card .img { aspect-ratio: 4 / 3; border-radius: 0; }
@@ -80,3 +91,21 @@ body { background: var(--canvas); }
   .ow .ov.c .fm label { margin-top: 8px; }
   .pt-bar .cv { max-width: 380px; }
 }
+
+/* design B: category counts on chips, category label above the dish name, phone order bar */
+.chip .n { font-style: normal; font-size: 11.5px; font-weight: 600; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: rgb(28 27 25 / 7%); color: var(--secondary); }
+.chip.on .n { background: rgb(255 255 255 / 20%); color: #fff; }
+.grid .cb, .feat .cb { display: flex; flex-direction: column; }
+.grid .cb > small, .feat .cb > small { order: -1; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--secondary); }
+.cartbar {
+  position: absolute; left: 12px; right: 12px; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); z-index: 8;
+  display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 18px 0 8px; border: 0; border-radius: 26px;
+  background: var(--accent); color: #fff; font-size: 14px; font-weight: 650; box-shadow: 0 10px 24px rgb(194 65 12 / 30%);
+}
+.cartbar b { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #fff; color: var(--accent); font-size: 13px; }
+.cartbar .go { margin-left: auto; }
+.view-customer #app main:has(~ .cartbar) { padding-bottom: 176px; }   /* last card stays above the bar */
+
+.grid .dish-name, .feat .dish-name { padding: 0; text-align: left; justify-content: flex-start; }
+@media (min-width: 1200px) { .view-customer .grid, .view-customer .feat { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.view-customer #app > .dock .btn.alt[data-a="nav"] { display: none; }   /* "Back to menu": the menu is beside the dock */
