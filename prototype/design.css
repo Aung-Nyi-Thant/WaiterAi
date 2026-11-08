@@ -15,7 +15,7 @@
 body { background: #f3f3f3; font-family: 'Helvetica Neue', Arial, 'Noto Sans Thai', 'Noto Sans Myanmar', sans-serif; }
 button, a, input, select, textarea { touch-action: manipulation; }
 button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
-textarea:focus, .in:focus { border-color: var(--tx); box-shadow:none; outline: 2px solid var(--tx); outline-offset: 2px; }
+textarea:focus, :is(input, select, textarea).in:focus { border-color: var(--tx); box-shadow:none; outline: 2px solid var(--tx); outline-offset: 2px; }
 button { font-weight: 500; }
 .btn, .add, .inb button { background: var(--tx); color: #fff; border-radius: 8px; box-shadow:none; font-weight: 600; }
 .btn.alt { background: var(--tint); color: var(--tx); }

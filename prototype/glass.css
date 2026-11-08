@@ -164,7 +164,7 @@ button.tag, .rmv, .qa button, .mc button { min-height: 44px; min-width: 44px; }
 .ov.c .sh { background: white; border-radius: 32px; }
 .ov.c .sh::before { display: none; }
 .ov { z-index: 20; }
-.in, textarea, select.in { border-radius: 12px; border: 1px solid var(--line-2); background: white; }
+:is(input, select, textarea).in, textarea, select.in { border-radius: 12px; border: 1px solid var(--line-2); background: white; }
 .staff-screen-title { font-size: 30px; line-height: 1.15; margin-bottom: 20px; }
 .os.new, .os.cooking, .os.ready { border: 0; }
 .ln { border-bottom-color: var(--line); }

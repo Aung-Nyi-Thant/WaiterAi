@@ -150,7 +150,7 @@ h2 {
 }
 
 textarea,
-.in {
+:is(input, select, textarea).in {
   width: 100%;
   border: 1.5px solid var(--line-2);
   border-radius: 12px;
@@ -1189,7 +1189,7 @@ header {
   margin-bottom: 12px
 }
 
-.tool .in {
+.tool :is(input, select, textarea).in {
   width: auto;
   flex: 1
 }
@@ -1240,7 +1240,7 @@ header {
   box-shadow: 0 6px 24px #0002
 }
 
-.lg .in {
+.lg :is(input, select, textarea).in {
   margin: 6px 0 12px
 }
 
@@ -1610,20 +1610,20 @@ header {
 
 .sb input::placeholder,
 .inb input::placeholder,
-.in::placeholder,
+:is(input, select, textarea).in::placeholder,
 textarea::placeholder {
   color: #8a8271
 }
 
 textarea,
-.in {
+:is(input, select, textarea).in {
   border-color: var(--line-2);
   border-radius: 12px;
   transition: border-color 140ms, box-shadow 140ms
 }
 
 textarea:focus,
-.in:focus {
+:is(input, select, textarea).in:focus {
   outline: 0;
   border-color: var(--tx);
   outline: 2px solid var(--tx);
