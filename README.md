@@ -148,3 +148,5 @@ Group 18, **MFU 888**.
 | 6931503103 | Natthanon Wongsai | [@wujieiei](https://github.com/wujieiei) |
 
 See `docs/TEAM_WORK_PLAN.md` (who owns what) and `CONTRIBUTING.md` (how to commit).
+
+**About commits authored `t <t@t>`.** 40 commits on `main` (12 Oct to 2 Nov 2026) show the author `t <t@t>`. They are Aung Nyi Nyi Thant's (@Aung-Nyi-Thant) work, made in Claude Code on the web, which used a placeholder git identity that GitHub cannot link to an account. Evidence: each carries a `Claude-Session` or `Co-Authored-By` trailer, and each reached `main` through a pull request opened and merged by @Aung-Nyi-Thant. `.mailmap` maps them to Aung, so `git shortlog -sn` counts them correctly; later commits use the right identity.
