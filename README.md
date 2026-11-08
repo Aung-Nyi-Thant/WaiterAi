@@ -27,6 +27,9 @@ A clickable prototype of Shop AI. No install, no server and no account needed: o
 | `app/src/modules/` | The code, split into 5 modules: `diner`, `ai`, `owner`, `staff`, `platform`. Each has its own README |
 | `eval/` | Test questions, sample menu and the model comparison scripts |
 | `docs/` | SRS, feature plan, project explanation, team work plan, measured results (`NFR_RESULTS.md`), and the product worksheet answers (`PRODUCT_IDEA_WORKSHEET.md`) |
+| `slides/` | Demo slides: [`demo-slides.pdf`](slides/demo-slides.pdf) (source `demo-slides.html`) and `shop-ai-logic.html` |
+| `docs/design/` | Design diagrams: architecture, data model, use cases, order states, AI decision flow |
+| `docs/FINAL_REPORT.md` | Final Report with the Golden Thread table (§6); the AI-use statement is [`docs/ai-use-statement.md`](docs/ai-use-statement.md) |
 | `design/` | UI design work: the older Art Deco and Glass mock-ups, and `ui-ux-redesign/` (the monochrome glass redesign with its Figma handoff) |
 
 ## Run it on Windows (no programming needed)
@@ -127,8 +130,8 @@ Shop AI answers it with a QR menu and a menu-aware AI waiter (Thai, Burmese, Eng
 | `prototype/` | The clickable prototype (no server; also published by GitHub Pages, see above) |
 | `windows/` | Double-click setup, start, stop, check and offline-pack scripts for Windows laptops, with their own guide |
 | `eval/` | The 30 test questions, sample menu, pass thresholds, model comparison scripts and results |
-| `docs/deliverables/` | The course PDFs: the M1 charter and the corrected M2 SRS (the as-submitted SRS is in git history, see `docs/PDF_CORRECTIONS.md`). Their FR numbers map to the IDs in `docs/TRACEABILITY.md` |
-| `docs/` | [SRS](docs/SRS_Shop_AI.md), [traceability](docs/TRACEABILITY.md), [AI safety](docs/AI_SAFETY.md), [AI usage log](docs/AI_USAGE_LOG.md), [performance](docs/PERFORMANCE.md), [pilot runbook](docs/PILOT_RUNBOOK.md), [allergen data research](docs/ALLERGEN_DATA_RESEARCH.md), [AI-use statement](docs/AI_USE_STATEMENT.md), feature plan, project explanation, team work plan |
+| `docs/M1-team-charter.pdf`, `docs/M2-srs.pdf` | The course PDFs: the M1 charter and the corrected M2 SRS (the as-submitted SRS is in git history, see `docs/PDF_CORRECTIONS.md`). Their FR numbers map to the IDs in `docs/TRACEABILITY.md` |
+| `docs/` | [SRS](docs/SRS_Shop_AI.md), [traceability](docs/TRACEABILITY.md), [AI safety](docs/AI_SAFETY.md), [AI usage log](docs/AI_USAGE_LOG.md), [performance](docs/PERFORMANCE.md), [pilot runbook](docs/PILOT_RUNBOOK.md), [allergen data research](docs/ALLERGEN_DATA_RESEARCH.md), [AI-use statement](docs/ai-use-statement.md), feature plan, project explanation, team work plan |
 | `design/` | UI design work: the older Art Deco and Glass mock-ups, and `ui-ux-redesign/` (the monochrome glass redesign with its Figma handoff) |
 | `reports/`, `research_notes/` | Repository analysis, UI/UX audit, dish-data research, and the 9/10 roadmap with its progress record |
 | `Dockerfile`, `docker-compose.yml`, `.env.example` | One-command start (see above) |

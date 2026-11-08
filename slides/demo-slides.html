@@ -31,6 +31,7 @@
   .help { position: fixed; top: 8px; right: 12px; color: #fff9; font-size: 12px; z-index: 9; }
   code { font-family: "Courier Prime", ui-monospace, monospace; background: var(--sunk); padding: 0 .3em; border-radius: .4em; font-size: .9em; }
   .qa dt { font-weight: 800; color: var(--teal); margin-top: .5em; } .qa dd { margin: 0 0 .2em; }
+  @page { size: 13.333in 7.5in; margin: 0; }
   @media print { html, body { background: #fff; height: auto; } .deck { display: block; } .slide { display: flex !important; width: 100%; height: 100vh; page-break-after: always; } .help, .notes { display: none !important; } }
 </style>
 </head>
@@ -68,7 +69,7 @@
       <li><b>Owner</b> (laptop): menu and 14 allergens, import a menu from a photo, hours, FAQ, AI voice, QR codes, staff, insights.</li>
       <li>Next.js + SQLite + a <b>local</b> model (<code>gemma4:12b</code>, Ollama). No cloud, no paid API.</li>
     </ul>
-    <img src="diagrams/01-architecture.png" alt="Architecture diagram">
+    <img src="../docs/design/01-architecture.png" alt="Architecture diagram">
   </div>
   <div class="foot"><span>Requirements: FR-1 … FR-10 (M1), SRS 56 Must · 14 Should</span><span>3</span></div>
 </section>
@@ -82,7 +83,7 @@
       <div class="card" style="margin-top:1.4vmin"><h3>Language model (open questions only)</h3><p>“What would you recommend on a hot day?” Then <b>checked</b>: no safety claim, no allergen statement, price must match, dish must exist. Otherwise: “please ask the staff”.</p></div>
       <p><b>Missing allergen data is “not provided”, never “none”. A dish is never called “safe”.</b></p>
     </div>
-    <img src="diagrams/04-ai-flow.png" alt="AI decision flow">
+    <img src="../docs/design/04-ai-flow.png" alt="AI decision flow">
   </div>
   <div class="foot"><span>docs/AI_SAFETY.md: rules R1 … R14, each with its test</span><span>4</span></div>
 </section>
