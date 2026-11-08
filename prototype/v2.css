@@ -72,4 +72,7 @@ body { background: var(--canvas); }
   .ow .ov.c { inset: 92px 16px 16px auto; width: 380px; background: none; padding: 0; align-items: stretch; justify-content: stretch; }
   .ow .ov.c .sh { height: 100%; max-height: none; width: 100%; border-radius: 28px; overflow-y: auto; margin: 0; }
   .ow:has(.ov.c) .mn { padding-right: 412px; }
+  .ow .ov.c .fm { grid-template-columns: 1fr; gap: 6px; }   /* docked form: labels above fields */
+  .ow .ov.c .fm label { margin-top: 8px; }
+  .pt-bar .cv { max-width: 380px; }
 }

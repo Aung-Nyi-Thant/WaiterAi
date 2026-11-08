@@ -14,7 +14,6 @@ window.DISH_PHOTOS = {
  "https://img.wongnai.com/p/256x256/2020/03/25/ac862e40c47342398507653109ee95ab.jpg": "assets/dishes/maki-roll.jpg",
  "https://img.wongnai.com/p/256x256/2020/03/25/d09e052ad7014edfbc086348de07ef87.jpg": "assets/dishes/assorted-sashimi.jpg",
  "https://img.wongnai.com/p/256x256/2020/03/25/fb4394dbb250458784b44debb71f04c6.jpg": "assets/dishes/maki-roll.jpg",
- "https://img.wongnai.com/p/256x256/2020/03/25/c221117aa0534e6493e1e5935f994bd5.jpg": "assets/dishes/tamago-nigiri.jpg",
  "https://img.wongnai.com/p/256x256/2020/03/25/42c7b68d457c4a8a9e2eeeba0ba63205.jpg": "assets/dishes/seaweed-salad.jpg",
  "https://img.wongnai.com/p/256x256/2020/03/25/991e8634a24d430fbaf2673ae38cf601.jpg": "assets/dishes/cucumber-salad.jpg",
  "https://img.wongnai.com/p/256x256/2020/03/25/a7194bbee4e349d49afa6888d1f8d566.jpg": "assets/dishes/edamame.jpg",
