@@ -50,7 +50,7 @@ const AIService = {
     if (f) return { t: f.a.replace(/</g, '&lt;') };
     if (/hours?|open|close|เปิด|ปิด/i.test(message) && d.hours) return { t: d.hours.map(h => h.d + ' ' + (h.closed ? 'Closed' : h.o + '–' + h.c)).join(' · ') };
     const open = AIRules.open(ctx); if (open) return open;   // "model" stand-in: offline / unsafe-claim guard
-    Store.update(x => x.unanswered.push({ q: message, t: Date.now() }));
+    Store.update(x => x.unanswered.push({ q: message.replace(/\S+@\S+\.\S+/g, '[email]').replace(/\+?\d[\d\s-]{7,}\d/g, '[phone]'), t: Date.now() }));   // IN-1: no personal data
     return { t: (aiS().fallback || t('aiTodo')).replace(/</g, '&lt;') };
   }
 };
@@ -77,7 +77,7 @@ const REST = P.get('restaurant') || 'HaChi Kyu', TABLE = P.get('table') || '5';
 // Entire app state (stored in memory + saved to sessionStorage via save())
 let S = {
   lang: 'th',      // selected language: 'th' | 'en' | 'my'
-  view: 'home',    // current screen: home | menu | ai | cart | more | confirm
+  view: ['menu', 'ai', 'cart', 'more'].includes(P.get('go')) ? P.get('go') : 'home',    // current screen: home | menu | ai | cart | more | confirm
   q: '',           // search text in the search box
   cat: 'all',      // selected category (key in CATS)
   cart: [],        // cart items [{id,qty,spice,mods,note,ot,k}]
@@ -201,7 +201,7 @@ function chatV() {
 // cartV() = cart page: (empty cart shows a back-to-menu button) → set all dine-in/takeaway buttons →
 //   items (image · name · selections · note · dine-in/takeaway toggle button · quantity · price · remove) → subtotal/service/total → place order button
 // stOf(order) = live order status text (updated by waiter/chef through Store)
-const stOf = o => { const r = Store.get().orders.find(x => x.id == o.no); return t({ new: 'sNew', accepted: 'sAcc', cooking: 'sCook', ready: 'sReady', served: 'sServed', paid: 'sPaid' }[r ? r.status : 'new']) };
+const stOf = o => { const r = Store.get().orders.find(x => x.id == o.no); return t({ picked: 'sNew', new: 'sAcc', cooking: 'sCook', ready: 'sReady', served: 'sServed', paid: 'sPaid' }[r ? r.status : 'picked']) };
 function cartV() {
   if (!S.cart.length) return `<div class="empty"><i>${ic('cart', 28)}</i>${t('cartE')}<button class="btn" data-a="nav" data-v="menu">${t('back')}</button></div>`;
   return `<div class="opt"><span style="align-self:center;font-weight:700">${t('setAll')}:</span><button data-a="allot" data-v="dine">${ic('utensils', 16)}${t('dine')}</button><button data-a="allot" data-v="take">${ic('bag', 16)}${t('take')}</button></div>` + S.cart.map((l, i) => { const m = byId(l.id); return `<div class="ci"><div class="img">${m.img ? `<img data-c="${m.c[0]}" src="${menuPhoto(m.img)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:14px">` : ''}</div><div style="flex:1"><b>${tr(m.n)}</b>${warn(m)}<div style="font-size:12px;color:var(--sub)">${[l.spice != null ? tr(SP[l.spice]) : '', ...l.mods.map(k => tr(MODS[k]))].filter(Boolean).join(' · ')}${l.note ? '<br><span class="nl">' + ic('note', 13) + l.note.replace(/</g, '&lt;') + '</span>' : ''}</div><button class="tag" data-a="lt" data-i="${i}">${l.ot == 'take' ? ic('bag', 14) + t('take') : ic('utensils', 14) + t('dine')}${ic('swap', 13)}</button><div class="row" style="margin-top:6px"><div class="qt"><button data-a="cq" data-i="${i}" data-d="-1" aria-label="-">${ic('minus', 16)}</button><span data-tick>${l.qty}</span><button data-a="cq" data-i="${i}" data-d="1" aria-label="+">${ic('plus', 16)}</button></div><span class="pr" style="text-align:right">฿${price(l)}</span><button class="rmv" data-a="rm" data-i="${i}" aria-label="remove">${ic('trash', 18)}</button></div></div></div>` }).join('') +
@@ -294,7 +294,7 @@ const A = {
   algT: e => { const i = S.al.indexOf(e.k); i < 0 ? S.al.push(e.k) : S.al.splice(i, 1); S.other = $('#oth').value; render() }, algS: () => { S.other = $('#oth').value; S.modal = null; toast(t('saved')) },
   staffGo: () => { if (Date.now() - S.staffAt < 60000) { S.modal = null; return toast(t('wait')) } S.staffAt = Date.now(); Store.update(d => { if (!d.calls.some(c => c.table == TABLE && !c.done)) d.calls.push({ id: Date.now().toString(36), table: TABLE, t: Date.now(), done: 0 }) }); S.modal = null; toast(t('staffOk')) },
   billGo: () => { Store.update(d => { if (!d.bills.some(b => b.table == TABLE && !b.done)) d.bills.push({ id: Date.now().toString(36), table: TABLE, total: S.orders.reduce((a, o) => a + o.total, 0), t: Date.now(), done: 0 }) }); S.modal = null; toast(t('billOk')) },
-  placeGo: () => { if (S.busy || !S.cart.length) return; S.busy = true; render(); setTimeout(() => { const o = { no: 'HK' + TABLE + '-' + (1000 + Math.floor(Math.random() * 9000)), items: S.cart, total: sum() }; S.orders.push(o); Store.update(d => d.orders.push({ id: o.no, no: o.no, table: TABLE, items: o.items.map(l => ({ ...l })), total: o.total, status: 'new', t: Date.now(), al: [...S.al.map(k => AL[k][1]), ...(S.other ? [S.other] : [])] })); S.cart = []; S.busy = false; S.modal = null; S.view = 'confirm'; render() }, 1200) },
+  placeGo: () => { if (S.busy || !S.cart.length) return; S.busy = true; render(); setTimeout(() => { const o = { no: 'HK' + TABLE + '-' + (1000 + Math.floor(Math.random() * 9000)), items: S.cart, total: sum() }; S.orders.push(o); Store.update(d => d.orders.push({ id: o.no, no: o.no, table: TABLE, items: o.items.map(l => ({ ...l })), total: o.total, status: 'picked', t: Date.now(), al: [...S.al.map(k => AL[k][1]), ...(S.other ? [S.other] : [])] })); S.cart = []; S.busy = false; S.modal = null; S.view = 'confirm'; render() }, 1200) },
   wrong: e => { const c = S.chat[e.i]; if (!c || !c.q) return; Store.update(d => d.wrong.push({ q: c.q, a: String(c.t).replace(/<[^>]*>/g, ''), t: Date.now() })); c.q = 0; toast(t('saved')) }, ask: e => ask(e.t), send: () => { const i = $('#ci'); const v = i.value; i.value = ''; ask(v) }
 };
 
@@ -331,7 +331,7 @@ if (!window.STAFF_MODE) {
  * ===================================================================== */
 
 /* staff.js — Staff app: Waiter + Chef (PIN login). Data comes from Store (store.js); menu data from app.js.
- * Flow: customer places order (new) → waiter accepts (accepted) → chef starts (cooking) → chef done (ready)
+ * Flow: customer sends picks (picked) → waiter takes the order (new) → chef starts (cooking) → chef done (ready)
  *       → waiter serves (served) → customer requests bill → waiter collects payment (paid) */
 (() => {
   if (window.APP_VIEW !== 'staff') return;   // only run on index.html?view=staff
@@ -340,7 +340,7 @@ if (!window.STAFF_MODE) {
     waiter: [['calls', 'bell', 'Calls'], ['orders', 'clipboard', 'Orders'], ['ready', 'utensils', 'Serve'], ['bills', 'receipt', 'Bills'], ['menu', 'menu', 'Menu']],
     chef: [['todo', 'inbox', 'To cook'], ['cook', 'flame', 'Cooking'], ['menu', 'menu', 'Menu']]
   };
-  const ST = { new: 'New', accepted: 'Waiting for chef', cooking: 'Cooking', ready: 'Ready to serve', served: 'Served', paid: 'Paid' };
+  const ST = { picked: 'New picks', new: 'Waiting for chef', cooking: 'Cooking', ready: 'Ready to serve', served: 'Served', paid: 'Paid' };
   const root = document.getElementById('app');
   const saved = sessionStorage.getItem('shopai_staff');
   let U = { role: PIN[saved] ? saved : '', tab: '', pin: '', pick: 'waiter', q: '', cat: 'all', toast: '' }, D = Store.get(), seen = new Set(), keep = true, tm, ac;
@@ -363,14 +363,14 @@ if (!window.STAFF_MODE) {
   /* ---- screens (tab key → HTML) ---- */
   const V = {
     calls: () => list(D.calls.filter(c => !c.done).sort((a, b) => a.t - b.t), c => `<div class="ci os new" data-fx="c${c.id}"><div style="flex:1"><div class="top"><b class="tn">${ic('bell', 20)}Table ${esc(c.table)}</b><small class="ago">${ago(c.t)}</small></div><p>Customer is calling for staff</p>${btn('callDone', c.id, ic('check', 18) + 'Acknowledged')}</div></div>`, ['smile', 'No tables are calling right now']),
-    orders: () => { const n = byS('new'), p = [...byS('accepted'), ...byS('cooking')]; return `<h2 class="hd">${ic('inbox', 18)}New orders (${n.length})</h2>` + list(n, o => oc(o, btn('accept', o.id, ic('thumbUp', 18) + 'Accept and send to chef')), ['clipboard', 'No new orders']) + `<h2 class="hd">${ic('chefHat', 18)}In the kitchen (${p.length})</h2>` + list(p, o => oc(o, '', 1), ['flame', 'No orders in the kitchen']) },
+    orders: () => { const n = byS('picked'), p = [...byS('new'), ...byS('cooking')]; return `<h2 class="hd">${ic('inbox', 18)}New orders (${n.length})</h2>` + list(n, o => oc(o, btn('accept', o.id, ic('thumbUp', 18) + 'Accept and send to chef')), ['clipboard', 'No new orders']) + `<h2 class="hd">${ic('chefHat', 18)}In the kitchen (${p.length})</h2>` + list(p, o => oc(o, '', 1), ['flame', 'No orders in the kitchen']) },
     ready: () => list(byS('ready'), o => oc(o, btn('serve', o.id, ic('utensils', 18) + 'Mark as served', 'dk')), ['utensils', 'Nothing waiting to be served']),
     bills: () => list(D.bills.filter(b => !b.done).sort((a, b) => a.t - b.t), b => { const os = D.orders.filter(o => o.table == b.table && o.status != 'paid'), tt = os.reduce((a, o) => a + o.total, 0), pend = os.filter(o => o.status != 'served'); return `<div class="ci os ready" data-fx="b${b.id}"><div style="flex:1"><div class="top"><b class="tn">${ic('receipt', 20)}Table ${esc(b.table)}</b><small class="ago">${ago(b.t)}</small></div>${os.map(o => `<div class="tot"><span>#${esc(o.no)}</span><span>฿${o.total}</span></div>`).join('')}<div class="tot b"><span>Amount to collect</span><span>฿${tt}</span></div>${pend.length ? `<div class="warn">${ic('alert', 16)}<span>${pend.length} order(s) not served yet</span></div>` : ''}${btn('paid', b.id, ic('cash', 18) + 'Payment received')}</div></div>` }, ['receipt', 'No bill requests']),
-    todo: () => list(byS('accepted'), o => oc(o, btn('start', o.id, ic('flame', 18) + 'Start cooking')), ['inbox', 'No orders waiting to cook']),
+    todo: () => list(byS('new'), o => oc(o, btn('start', o.id, ic('flame', 18) + 'Start cooking')), ['inbox', 'No orders waiting to cook']),
     cook: () => list(byS('cooking'), o => oc(o, btn('done', o.id, ic('check', 18) + 'Ready to serve', 'dk')), ['flame', 'No orders being cooked']),
     menu: () => { const n = D.soldout.length; return `<div class="sb">${ic('search', 18)}<input id="sq" value="${esc(U.q)}" placeholder="Search dishes..."></div><div class="chips">${CATS.map(c => `<button class="chip ${U.cat == c[0] ? 'on' : ''}" data-s="cat" data-c="${c[0]}"><span>${ic(c[1], 18)}</span>${c[2][1]}</button>`).join('')}</div><div class="top" style="margin:4px 0 8px"><b style="flex:1">Sold-out items: ${n}</b>${n ? '<button class="tag" data-s="reset">Clear all</button>' : ''}</div><div id="ml">${ml()}</div>` }
   };
-  const cnt = k => ({ calls: () => D.calls.filter(c => !c.done).length, orders: () => byS('new').length, ready: () => byS('ready').length, bills: () => D.bills.filter(b => !b.done).length, todo: () => byS('accepted').length, cook: () => byS('cooking').length }[k] || (() => 0))();
+  const cnt = k => ({ calls: () => D.calls.filter(c => !c.done).length, orders: () => byS('picked').length, ready: () => byS('ready').length, bills: () => D.bills.filter(b => !b.done).length, todo: () => byS('new').length, cook: () => byS('cooking').length }[k] || (() => 0))();
   const toastH = () => U.toast ? `<div class="toast in" role="status">${U.toast}</div>` : '';
 
   const login = () => `<main style="display:flex;flex-direction:column;justify-content:center;padding-bottom:24px"><div style="text-align:center"><div class="logo" style="display:inline-block;font-size:22px;padding:6px 16px">ShopAI</div><h1 class="staff-login-title">${esc(REST)} · Staff login</h1></div><div class="lang" style="margin:12px auto">${['waiter', 'chef'].map(r => `<button data-s="pick" data-v="${r}" class="${U.pick == r ? 'on' : ''}">${r == 'waiter' ? ic('user', 16) + 'Waiter' : ic('chefHat', 16) + 'Chef'}</button>`).join('')}</div><p style="text-align:center;color:var(--sub)">Enter your 4-digit PIN</p><div class="pin">${[0, 1, 2, 3].map(i => `<i class="${i < U.pin.length ? 'f' : ''}"></i>`).join('')}</div><div class="kp">${[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, 'back'].map(k => k === '' ? '<span></span>' : `<button data-s="k" data-v="${k}"${k == 'back' ? ' aria-label="Delete"' : ''}>${k == 'back' ? ic('backspace', 24) : k}</button>`).join('')}</div></main>` + toastH();
@@ -389,7 +389,7 @@ if (!window.STAFF_MODE) {
   const say = (x, k = 'checkCircle') => { U.toast = ic(k, 18) + '<span>' + x + '</span>'; R(); clearTimeout(tm); tm = setTimeout(() => { U.toast = ''; R() }, 2200) };
 
   /* ---- realtime: "new" items for the current role (used for beep + toast) ---- */
-  const keys = () => new Set((U.role == 'chef' ? D.orders.filter(o => o.status == 'accepted') : [...D.calls.filter(c => !c.done), ...D.orders.filter(o => o.status == 'new' || o.status == 'ready'), ...D.bills.filter(b => !b.done)]).map(x => x.id + (x.status || '')));
+  const keys = () => new Set((U.role == 'chef' ? D.orders.filter(o => o.status == 'new') : [...D.calls.filter(c => !c.done), ...D.orders.filter(o => o.status == 'picked' || o.status == 'ready'), ...D.bills.filter(b => !b.done)]).map(x => x.id + (x.status || '')));
   Store.on(d => { D = d; applyMenu(); if (!U.role) return; const k = keys(), fresh = [...k].some(x => !seen.has(x)); seen = k; if (fresh) beep(); if (!typing()) fresh ? say('New activity', 'bell') : R() });
   setInterval(() => { if (U.role && !typing()) R() }, 30000);   // refresh "x minutes ago"
 
@@ -400,14 +400,14 @@ if (!window.STAFF_MODE) {
     k: e => {
       if (e.v == 'back') U.pin = U.pin.slice(0, -1); else if (U.pin.length < 4) U.pin += e.v;
       if (U.pin.length == 4) {
-        if (Date.now() < +sessionStorage.getItem('shopai_lock')) { U.pin = ''; return say('Locked: too many wrong PINs. Try again in a minute.', 'lock') }   // SF-2
+        if (Date.now() < +sessionStorage.getItem('shopai_lock')) { U.pin = ''; return say('Locked: too many wrong PINs. Try again in 10 minutes.', 'lock') }   // SF-2
         if (Store.get().staff.some(a => a.role == U.pick && a.pass == U.pin)) { sessionStorage.removeItem('shopai_bad'); U.role = U.pick; U.tab = ''; U.pin = ''; sessionStorage.setItem('shopai_staff', U.role); D = Store.get(); seen = keys(); beep() }
-        else { U.pin = ''; const n = +sessionStorage.getItem('shopai_bad') + 1; sessionStorage.setItem('shopai_bad', n % 5); if (n >= 5) { sessionStorage.setItem('shopai_lock', Date.now() + 60000); return say('5 wrong PINs: sign-in locked for 60 seconds', 'lock') } return say('Wrong PIN (' + n + ' of 5)', 'xCircle') }
+        else { U.pin = ''; const n = +sessionStorage.getItem('shopai_bad') + 1; sessionStorage.setItem('shopai_bad', n % 5); if (n >= 5) { sessionStorage.setItem('shopai_lock', Date.now() + 600000); return say('5 wrong PINs: sign-in locked for 10 minutes', 'lock') } return say('Wrong PIN (' + n + ' of 5)', 'xCircle') }
       } R()
     },
     logout: () => { U.role = ''; sessionStorage.removeItem('shopai_staff'); R() },
     tab: e => { U.tab = e.v; keep = false; R() }, cat: e => { U.cat = e.c; R() },
-    accept: e => ord(e.id, 'new', 'accepted'), start: e => ord(e.id, 'accepted', 'cooking'), done: e => ord(e.id, 'cooking', 'ready'), serve: e => ord(e.id, 'ready', 'served'),
+    accept: e => ord(e.id, 'picked', 'new'), start: e => ord(e.id, 'new', 'cooking'), done: e => ord(e.id, 'cooking', 'ready'), serve: e => ord(e.id, 'ready', 'served'),
     callDone: e => up(d => { const c = d.calls.find(x => x.id == e.id); if (c) c.done = 1 }),
     paid: e => up(d => { const b = d.bills.find(x => x.id == e.id); if (!b) return; b.done = 1; d.orders.forEach(o => { if (o.table == b.table && o.status != 'paid') o.status = 'paid' }) }),
     sold: e => up(d => { const i = d.soldout.indexOf(+e.id); i < 0 ? d.soldout.push(+e.id) : d.soldout.splice(i, 1) }),

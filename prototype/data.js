@@ -48,7 +48,7 @@ window.FR_MAP = [
  * Firebase / Supabase / WebSocket — customer, staff and owner code do not need to change.
  * ===================================================================== */
 const Store = (() => {
-  const K = 'shopai_db', cbs = [];
+  const K = 'shopai_db2', cbs = [];   // db2: order states renamed to the SRS (picked → new → cooking …); old saved demo data is dropped
   const _ls = typeof window !== 'undefined' ? window.localStorage : null;
   const blank = () => ({
     orders: [], calls: [], bills: [], soldout: [],

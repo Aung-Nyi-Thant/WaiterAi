@@ -40,7 +40,7 @@ describe("the redesigned standalone prototype", () => {
   it("calculates preview picks from real prices, switches language, and clears without changing orders", () => {
     const win = open();
     const doc = win.document;
-    const ordersBefore = win.localStorage.getItem("shopai_db");
+    const ordersBefore = win.localStorage.getItem("shopai_db2");
     (doc.querySelector('[data-preview-add="12"]') as HTMLElement).click();
     (doc.querySelector('[data-preview-add="103"]') as HTMLElement).click();
     expect([...doc.querySelectorAll(".lp-menu-total output")].map(el => el.textContent)).toEqual(["฿138", "฿138"]);
@@ -48,7 +48,7 @@ describe("the redesigned standalone prototype", () => {
     expect(doc.querySelector(".lp-dish b")?.textContent).toBe("ซูชิแซลม่อน");
     (doc.querySelector("[data-preview-clear]") as HTMLElement).click();
     expect(doc.querySelector(".lp-menu-total output")?.textContent).toBe("฿0");
-    expect(win.localStorage.getItem("shopai_db")).toBe(ordersBefore);
+    expect(win.localStorage.getItem("shopai_db2")).toBe(ordersBefore);
   });
   it("shows every role with a real demo destination and keeps keyboard focus on the selected role", () => {
     const win = open();

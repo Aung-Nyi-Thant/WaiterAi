@@ -40,7 +40,7 @@
 <div class="deck" id="deck">
 
 <section class="slide" data-notes="Introduce the team and the one-sentence pitch. Say: 'Shop AI is an AI waiter for small restaurants that answers in Thai, Burmese and English, and never guesses about allergies.' Mention that everything runs on one laptop with no cloud and no paid service.">
-  <div class="kicker">Intro to Software Engineering 2569 · Milestone 4</div>
+  <div class="kicker">Intro to Software Engineering 2569 · M3 · Group 18</div>
   <h1>Shop AI<br>the digital waiter</h1>
   <p style="max-width:34em">Diners scan a QR code, browse the menu in Thai, Burmese or English, and ask an AI waiter. Staff and the kitchen see calls and orders live. The AI never guesses about allergies.</p>
   <p><b>Team MFU 888</b> · Aung Nyi Nyi Thant · Chawakron Singkaew · Tharathon Plengsri · Sasiwimon Chatkaew · Natthanon Wongsai</p>
@@ -96,7 +96,7 @@
     <tr><td>1</td><td>Diner: switch TH / MY / EN; search “salmon”, then “zzz”</td><td>names and prices change; “No dishes found”</td><td>FR-1 · DM-1, DM-5</td></tr>
     <tr><td>2</td><td>Ask AI: “allergic to peanuts”; switch on “AI offline”</td><td>no dish suggested (none verified), “confirm with the staff”; fallback with buttons</td><td>FR-2 · AI-2, AI-3, AI-11</td></tr>
     <tr><td>3</td><td>Add a dish, place the order; press Call Staff twice</td><td>order number; second call refused</td><td>FR-3 · PC-1, PC-4</td></tr>
-    <tr><td>4</td><td>Staff: wrong PIN ×5, then waiter 1111: accept; chef 2222: cook</td><td>locked for 60 s; order moves to the kitchen</td><td>FR-4, FR-9 · SF-2, SF-3</td></tr>
+    <tr><td>4</td><td>Staff: waiter 1111: take the order; chef 2222: cook. Then, in a new tab, wrong PIN ×5</td><td>order moves to the kitchen; sign-in locked for 10 minutes</td><td>FR-4, FR-9 · SF-2, SF-3</td></tr>
     <tr><td>5</td><td>Owner: wrong password; edit a dish; import CSV with a bad row; hours; QR</td><td>refused; “skipped 1 invalid row”; closing before opening refused; tables 1–60</td><td>FR-5 … FR-8</td></tr>
     <tr><td>6</td><td>Owner: Insights</td><td>the unanswered question is listed</td><td>FR-10 · IN-1</td></tr>
   </table>
@@ -165,7 +165,7 @@
     <div class="card"><h3>Worked</h3><ul><li>Tests written first found real bugs: “bill” inside “papaya”, “x4 … x2”, the Thai word for staff read as sesame.</li><li>Measuring beat guessing: the slow first answer was the prompt being read, not the model loading (40–65 s, now warmed at start-up).</li><li>A test keeps the requirements table honest.</li></ul></div>
     <div class="card"><h3>People decided</h3><ul><li>“AI” vs “staff” wording (corrected twice by a member).</li><li>Burmese replies: four native-speaker reviews.</li><li>No cloud AI, even though it was easier.</li><li>How to merge two lines of AI-assisted work.</li></ul></div>
   </div>
-  <p class="todo" style="margin-top:1.4vmin">[team to complete] what was changed or rejected in the AI's output (Claude Code by one member; Antigravity logged for six tasks on 8 Oct) · docs/AI_USAGE_LOG.md</p>
+  <p style="margin-top:1.4vmin">Rejected: a prototype whose test passed while its AI was dead (found by clicking it in a browser, 2 Nov). Tools: Claude Code (one member), Antigravity (six tasks, 8 Oct). Statement: <code>docs/ai-use-statement.md</code></p>
   <div class="foot"><span>docs/AI_USAGE_LOG.md</span><span>9</span></div>
 </section>
 
@@ -174,11 +174,11 @@
   <h2>Who built what</h2>
   <table>
     <tr><th>Part</th><th>Covers</th><th>Member and where the work is in the repository</th></tr>
-    <tr><td>1 · Diner web app</td><td>FR-1, FR-3 diner side</td><td>Tharathon Plengsri (account Tharathon47): [team to complete where in the repository]</td></tr>
+    <tr><td>1 · Diner web app</td><td>FR-1, FR-3 diner side</td><td>Tharathon Plengsri (Tharathon47) · <code>prototype/</code> (images, role switcher, call staff), <code>app/src/modules/diner</code> (quantity stepper, order confirmation, tests)</td></tr>
     <tr><td>2 · AI waiter and backend core</td><td>FR-2, backend of FR-5, FR-6, FR-9</td><td>Aung Nyi Nyi Thant · <code>app/src/modules/ai</code>, <code>platform</code></td></tr>
-    <tr><td>3 · Owner back office</td><td>FR-5, FR-7</td><td>Chawakron Singkaew (account chawakron50-lab): [team to complete where in the repository]</td></tr>
-    <tr><td>4 · Staff and orders</td><td>FR-4, FR-9</td><td>Natthanon Wongsai (account wujieiei): [team to complete where in the repository]</td></tr>
-    <tr><td>5 · QR, insights, import screen, tests, docs</td><td>FR-6, FR-8, FR-10</td><td>Sasiwimon Chatkaew (account noeysasi): [team to complete where in the repository]</td></tr>
+    <tr><td>3 · Owner back office</td><td>FR-5, FR-7</td><td>Chawakron Singkaew (chawakron50-lab) · <code>app/src/modules/owner</code> (dish search and allergen filter, duplicate, bulk sold out, field validation)</td></tr>
+    <tr><td>4 · Staff and orders</td><td>FR-4, FR-9</td><td>Natthanon Wongsai (wujieiei) · <code>app/src/modules/staff</code> (recall order, sound alert, waiting-time colours, tables tab)</td></tr>
+    <tr><td>5 · QR, insights, import screen, tests, docs</td><td>FR-6, FR-8, FR-10</td><td>Sasiwimon Chatkaew (noeysasi) · pull requests #76 installation guide, #83 QR table tents, #84 QR and insights tests</td></tr>
   </table>
   <div class="foot"><span>docs/TEAM_WORK_PLAN.md</span><span>10</span></div>
 </section>

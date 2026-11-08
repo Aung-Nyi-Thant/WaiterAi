@@ -75,7 +75,15 @@ describe("prototype Golden Thread page", () => {
   });
   it("the Final Report's Golden Thread table has the same ten rows", () => {
     const report = read("docs/FINAL_REPORT.md");
-    for (const f of thread) expect(report, f.fr).toMatch(new RegExp(`\\| ${f.fr} \\|`));
+    const rows = report.split("\n").filter((l) => l.startsWith("|"));
+    for (const f of thread) {
+      // one 5-column row per FR: problem | requirement | design | prototype page | test
+      const row = rows.find((l) => l.includes(`**${f.fr}**`)) ?? "";
+      expect(row.split(" | ").length, f.fr).toBe(5);
+      expect(row, f.fr).toContain(`\`${f.design[0].slice(0, 2)}\``);
+      expect(row, f.fr).toContain(`?view=${f.view}`);
+      expect(row, f.fr).toContain(f.test[0]);
+    }
   });
   it("is reachable: loaded by index.html, in the toolbar, and every screen with a Covers pill loads it", () => {
     const html = read("prototype/index.html");

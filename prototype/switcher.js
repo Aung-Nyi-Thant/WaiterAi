@@ -11,7 +11,7 @@
     const VIEWS = [['landing', 'Home', 'home'], ['customer', 'Diner', 'utensils'], ['staff', 'Staff', 'chefHat'], ['owner', 'Owner', 'store'], ['thread', 'Thread', 'clipboard']];
 
     // Storage keys used by the prototype (see data.js Store, app.js save(), staff login, owner login)
-    const LOCAL_KEYS = ['shopai_db'];                                  // shared demo database (orders / calls / bills / menu edits)
+    const LOCAL_KEYS = ['shopai_db2'];                                  // shared demo database (orders / calls / bills / menu edits)
     const SESSION_KEYS = ['shopai2', 'shopai_staff', 'shopai_owner', 'shopai_bad', 'shopai_lock', 'shopai_sim'];    // diner session, staff login, owner login
 
     // Current screen (index.html sets window.APP_VIEW before this script runs)
