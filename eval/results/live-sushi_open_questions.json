@@ -1,0 +1,173 @@
+{
+ "label": "gemma4:12b (Ollama), Golden Lotus sushi menu (132 dishes)",
+ "date": "2026-10-20T19:03:02.870Z",
+ "summary": {
+  "overall": {
+   "pass": 17,
+   "total": 17,
+   "pct": 1
+  },
+  "byLang": {
+   "en": {
+    "pass": 10,
+    "total": 10,
+    "pct": 1
+   },
+   "my": {
+    "pass": 3,
+    "total": 3,
+    "pct": 1
+   },
+   "th": {
+    "pass": 4,
+    "total": 4,
+    "pct": 1
+   }
+  },
+  "byCategory": {
+   "open_recommend": {
+    "pass": 17,
+    "total": 17,
+    "pct": 1
+   }
+  }
+ },
+ "rows": [
+  {
+   "id": "so-en1",
+   "lang": "en",
+   "category": "open_recommend",
+   "pass": true,
+   "ms": 12229,
+   "reply": "Since you are new to Japanese food, I recommend trying a \"Rice & Don\" dish like the Salmon Don (267 THB) or a \"Sushi\" selection. You might also enjoy the Gyoza (96 THB) or the Yakisoba (128 THB). Would you like to see more options from these categories?"
+  },
+  {
+   "id": "so-en2",
+   "lang": "en",
+   "category": "open_recommend",
+   "pass": true,
+   "ms": 10617,
+   "reply": "I don't have information on which dishes are best for sharing, but I can suggest some items from our menu. You might enjoy the Tontoro Happy Set (299 THB) or the Buta Set (499 THB). Would you like to see more options from our Sets & Combos?"
+  },
+  {
+   "id": "so-en3",
+   "lang": "en",
+   "category": "open_recommend",
+   "pass": true,
+   "ms": 9746,
+   "reply": "I would recommend the Tofu Salad (128 THB) or the Salmon Salad (203 THB). Alternatively, you could try the Seaweed Salad (74 THB) or the Addictive Cucumber (74 THB). Addictive Cucumber lists these allergens: gluten, soy, sesame. Please confirm with the staff before ordering."
+  },
+  {
+   "id": "so-en4",
+   "lang": "en",
+   "category": "open_recommend",
+   "pass": true,
+   "ms": 15,
+   "reply": "Rice & Don (20): Japanese Rice (฿42), Garlic Fried Rice (฿64), Beef Striploin Don (฿256), Fatty Beef Don (฿235), Pork Neck Don (฿171), Pork Loin Don (฿171), Bacon Don (฿171), Gochujang Fatty Pork Don (฿181), Salmon Roe Don (฿374), Eel Don (฿353), Salmon Don (฿267), Minced Tuna Don (฿267) and 8 more. Anything else I can help with?"
+  },
+  {
+   "id": "so-en5",
+   "lang": "en",
+   "category": "open_recommend",
+   "pass": true,
+   "ms": 10751,
+   "reply": "I recommend trying our hot soups or a comforting bowl of noodles. You can choose from Miso Soup (42 THB), Clear Soup (42 THB), or Yakisoba (128 THB). Would you like to see more options from our soup or noodle categories?"
+  },
+  {
+   "id": "so-en6",
+   "lang": "en",
+   "category": "open_recommend",
+   "pass": true,
+   "ms": 13,
+   "reply": "Dishes that do not list fish: [Coke Combo] Fatty Beef Don with Coke, Giant Sweet Shrimp Sashimi, Shrimp Roe, Hachi Ebi Roll, Shrimp Roe Sushi, Giant Sweet Shrimp Sushi, Scallop Sashimi, Scallop Sushi, Sea Urchin Roe Sushi, Squid Sashimi, Squid with Shrimp Roe Sushi, Surf Clam Sashimi, Squid Sushi, Surf Clam Sushi, Soft-Shell Crab Roll, French Fries, Seaweed Salad, Addictive Cucumber, Edamame, Fried Battered Squid, Cheese Balls, Squid Tentacles with Wasabi, Gyoza, Chicken Skin with Wasabi, HaChi Kyu Fried Chicken, Chicken Karaage, Squid with Shrimp Roe, Wasabi Fried Chicken, Purple Sweet Potato Cheese Balls, Chicken Teriyaki Skewer, Gochujang Chicken, Kanimiso (Crab Innards), Japanese Rice, Beef Striploin Don, Fatty Beef Don, Pork Neck Don, Pork Loin Don, Bacon Don, Gochujang Fatty Pork Don, Lettuce, Fatty Beef Don with Onsen Egg, Jo Tontoro Don with Onsen Egg, Coca-Cola Original, Coca-Cola Zero Sugar, Sprite, Red Soda. This comes from the allergen data only, which can be incomplete. Allergen information is not provided for: [Coke Combo] Garlic Fried Rice with Coke, Wagyu Sushi, Special Sushi, Assorted Sashimi, Foie Gras Sushi, Mori Ebi, Hokuto Ebi, Salmon Skin Salad, Wagyu Beef in Sweet Sauce, Chicken Steak, Japanese Pizza, Japanese-style Pla Ra, Tuna in Sweet Sauce, Soft-Shell Crab Salad, Tofu Salad, Bacon-wrapped Enoki, Pork Neck in Special Sauce, Salmon Salad, Grilled Chicken Skin, Grilled Chicken Tail, Grilled Chicken Liver, Grilled Chicken Gizzard, Grilled Chicken Heart, Grilled Salmon Belly, Japanese Leek Skewer, Garlic Skewer, Okra Skewer, Pumpkin Skewer, King Oyster Mushroom Skewer, Shiitake Skewer, Clear Soup, Garlic Fried Rice, Three-Topping Don, Salmon Garlic Fried Rice, Tontoro Happy Set, Buta Set, Omori Set. Please confirm with the staff before ordering."
+  },
+  {
+   "id": "so-en7",
+   "lang": "en",
+   "category": "open_recommend",
+   "pass": true,
+   "ms": 7,
+   "reply": "Under ฿150: Japanese Leek Skewer (฿21, not spicy), Garlic Skewer (฿21, not spicy), Okra Skewer (฿21, not spicy). Anything else I can help with?"
+  },
+  {
+   "id": "so-en8",
+   "lang": "en",
+   "category": "open_recommend",
+   "pass": true,
+   "ms": 10168,
+   "reply": "I don't have information on which dish is better as I cannot comment on taste or popularity. Would you like to see more details about these dishes? Salmon Sashimi lists these allergens: fish. Please confirm with the staff before ordering."
+  },
+  {
+   "id": "so-en9",
+   "lang": "en",
+   "category": "open_recommend",
+   "pass": true,
+   "ms": 10912,
+   "reply": "For a big appetite, I recommend our large sets like the Omori Set for 1200 THB or the Buta Set for 499 THB. You might also enjoy the assorted sashimi for 952 THB. Would you like to see some of these options?"
+  },
+  {
+   "id": "so-en10",
+   "lang": "en",
+   "category": "open_recommend",
+   "pass": true,
+   "ms": 12576,
+   "reply": "I don't have information on specific meal sets for three people, but I can suggest some dishes from our menu. You might enjoy the Tontoro Happy Set (299 THB) or the Buta Set (499 THB). Would you like to see more options from our Sushi or Rice & Don categories?"
+  },
+  {
+   "id": "so-th1",
+   "lang": "th",
+   "category": "open_recommend",
+   "pass": true,
+   "ms": 15,
+   "reply": "เมนูที่ไม่ได้ระบุว่ามี ปลา: [อร่อยซ่ากับโค้ก] ข้าวหน้าเนื้อติดมันพร้อมโค้ก, กุ้งหวานยักษ์ซาซิมิ, ไข่กุ้ง, ฮาจิอีบิโรล, ซูชิไข่กุ้ง, ซูชิกุ้งหวานยักษ์, หอยเชลซาซิมิ, หอยเชลซูชิ, ซูชิไข่หอยเม่น, ปลาหมึกซาซิมิ, ซูชิปลาหมึกไข่กุ้ง, หอยปีกนกซาซิมิ, ซูชิปลาหมึก, ซูชิหอยปีกนก, โรลปูนิ่ม, เฟรนฟราย, ยำสาหร่าย, แตงกวาหยุดกินไม่ได้, ถั่วแระญี่ปุ่น, หมึกชุบแป้งทอด, ชีสบอล, หนวดปลาหมึกคลุกวาซาบิ, เกี๊ยวซ่า, หนังไก่วาซาบิ, ไก่ทอดฮะจิคิว, ไก่คาราเกะ, ปลาหมึกคลุกไข่กุ้ง, ไก่ทอดวาซาบิ, ชีสบอลมันม่วง, ไก่เทอริยากิ, ไก่โกจุงจัง, Kanimiso, ข้าวญี่ปุ่น, ข้าวหน้าสันนอกเนื้อ, ข้าวหน้าเนื้อติดมัน, ข้าวหน้าสันคอหมู, ข้าวหน้าสันนอกหมู, ข้าวหน้าเบคอน, ข้าวหน้าหมูติดมันโกจุงจัง, ผักกาดหอม, ข้าวหน้าเนื้อติดมันไข่ออนเซ็น, ข้าวหน้าโจทอนโทโระไข่ออนเซ็น, โค๊กออริจินัล, โค๊กไม่มีน้ำตาล, สไปร์ท, น้ำแดงครับ ข้อมูลนี้มาจากข้อมูลสารก่อภูมิแพ้เท่านั้น ซึ่งอาจไม่ครบถ้วน ยังไม่มีข้อมูลสารก่อภูมิแพ้ของ: [อร่อยซ่ากับโค้ก] ข้าวผัดกระเทียมพร้อมโค้ก, ซูชิวากิว, ซูชิสเปเชี่ยว, ซาซิมิรวม, ซูชิตับห่าน, โมริ อีบิ, โฮกูโตะ อีบิ, สลัดหนังปลาแซลม่อน, เนื้อวากิวในซอสหวาน, สเต็กไก่, พิษซ่าญี่ปุ่น, ปลาร้าญี่ปุ่น, ทูน่าในซอสหวาน, สลัดปูนิ่ม, สลัดเต้าหู้, เห็ดเข็มทองพันเบคอน, สันคอหมูผัดซอสพิเศษ, สลัดแซลม่อน, หนังไก่ย่าง, ตูดไก่ย่าง, ตับไก่ย่าง, กึ้นไก่ย่าง, หัวใจไก่ย่าง, ท้องปลาแซลม่อนย่าง, ต้นหอมญี่ปุ่น, กระเทียมเสียบไม้, กระเจี๊ยบ, ฟักทองเสียบไม้, เห็ดออรินจิเสียบไม้, เห็ดหอม, ซุบใส, ข้าวผัดกระเทียม, ข้าวหน้า 3 อย่าง, ข้าวผัดกระเทียมแซลม่อน, Tontoro Happy Set, Buta Set, Omori Setครับ กรุณายืนยันกับพนักงานก่อนสั่งอาหารครับ"
+  },
+  {
+   "id": "so-th2",
+   "lang": "th",
+   "category": "open_recommend",
+   "pass": true,
+   "ms": 12683,
+   "reply": "ขออภัย ไม่มีข้อมูลนี้ครับ กรุณาสอบถามพนักงานครับ"
+  },
+  {
+   "id": "so-th3",
+   "lang": "th",
+   "category": "open_recommend",
+   "pass": true,
+   "ms": 16,
+   "reply": "ขอแนะนำเมนูไม่เกิน 150 บาท: ต้นหอมญี่ปุ่น (21 บาท, ไม่เผ็ด), กระเทียมเสียบไม้ (21 บาท, ไม่เผ็ด), กระเจี๊ยบ (21 บาท, ไม่เผ็ด)ครับ มีอะไรให้ช่วยอีกไหมครับ"
+  },
+  {
+   "id": "so-th4",
+   "lang": "th",
+   "category": "open_recommend",
+   "pass": true,
+   "ms": 11885,
+   "reply": "ขออภัย ไม่มีข้อมูลนี้ครับ กรุณาสอบถามพนักงานครับ"
+  },
+  {
+   "id": "so-my1",
+   "lang": "my",
+   "category": "open_recommend",
+   "pass": true,
+   "ms": 16,
+   "reply": "fish ပါဝင်တယ်လို့ မဖော်ပြထားတဲ့ ဟင်းလျာတွေကတော့ [Coke Combo] Fatty Beef Don with Coke၊ ပုစွန်ကြီး ဆာရှီမီ၊ ပုစွန်ဥ၊ Hachi Ebi ရိုးလ်၊ ပုစွန်ဥ ဆူရှီ၊ ပုစွန်ကြီး ဆူရှီ၊ Scallop ဆာရှီမီ၊ Scallop ဆူရှီ၊ Sea Urchin ဆူရှီ၊ Squid ဆာရှီမီ၊ Squid နှင့် ပုစွန်ဥ ဆူရှီ၊ Surf Clam ဆာရှီမီ၊ Squid ဆူရှီ၊ Surf Clam ဆူရှီ၊ Soft-Shell Crab ရိုးလ်၊ အာလူးကြော်၊ Seaweed Salad၊ Addictive Cucumber၊ Edamame၊ Fried Battered Squid၊ Cheese Balls၊ Squid Tentacles with Wasabi၊ Gyoza၊ Chicken Skin with Wasabi၊ HaChi Kyu Fried Chicken၊ Chicken Karaage၊ Squid with Shrimp Roe၊ Wasabi Fried Chicken၊ Purple Sweet Potato Cheese Balls၊ Chicken Teriyaki Skewer၊ Gochujang Chicken၊ Kanimiso (Crab Innards)၊ ဂျပန်ထမင်း၊ Beef Striploin Don၊ Fatty Beef Don၊ Pork Neck Don၊ Pork Loin Don၊ Bacon Don၊ Gochujang Fatty Pork Don၊ ဆလပ်ရွက်၊ Fatty Beef Don with Onsen Egg၊ Jo Tontoro Don with Onsen Egg၊ Coca-Cola Original၊ Coca-Cola Zero Sugar၊ Sprite၊ Red Soda ဖြစ်ပါတယ်ခင်ဗျာ။ ဒါက Allergen အချက်အလက်အပေါ် အခြေခံတာသာဖြစ်ပြီး မပြည့်စုံနိုင်ပါဘူးခင်ဗျာ။ [Coke Combo] Garlic Fried Rice with Coke၊ Wagyu ဆူရှီ၊ Special ဆူရှီ၊ ရောစုံ ဆာရှီမီ၊ Foie Gras ဆူရှီ၊ Mori Ebi၊ Hokuto Ebi၊ Salmon Skin Salad၊ Wagyu Beef in Sweet Sauce၊ Chicken Steak၊ Japanese Pizza၊ Japanese-style Pla Ra၊ Tuna in Sweet Sauce၊ Soft-Shell Crab Salad၊ Tofu Salad၊ Bacon-wrapped Enoki၊ Pork Neck in Special Sauce၊ Salmon Salad၊ Grilled Chicken Skin၊ Grilled Chicken Tail၊ Grilled Chicken Liver၊ Grilled Chicken Gizzard၊ Grilled Chicken Heart၊ Grilled Salmon Belly၊ Japanese Leek Skewer၊ Garlic Skewer၊ Okra Skewer၊ Pumpkin Skewer၊ King Oyster Mushroom Skewer၊ Shiitake Skewer၊ Clear Soup၊ Garlic Fried Rice၊ Three-Topping Don၊ Salmon Garlic Fried Rice၊ Tontoro Happy Set၊ Buta Set၊ Omori Set အတွက် Allergen အချက်အလက် မရှိပါဘူးခင်ဗျာ။ ဝန်ထမ်းကို မေးမြန်းပေးပါခင်ဗျာ။"
+  },
+  {
+   "id": "so-my2",
+   "lang": "my",
+   "category": "open_recommend",
+   "pass": true,
+   "ms": 9697,
+   "reply": "ဟင်းချို (Miso Soup) က ၄၂ ဘတ် ဖြစ်ပါတယ်ခင်ဗျာ။ ဒါမှမဟုတ် ဆူပ်ကြည် (Clear Soup) ကိုလည်း ၄၂ ဘတ်နဲ့ မှာယူနိုင်ပါတယ်ခင်ဗျာ။"
+  },
+  {
+   "id": "so-my3",
+   "lang": "my",
+   "category": "open_recommend",
+   "pass": true,
+   "ms": 12697,
+   "reply": "လူနှစ်ယောက်အတွက် Sets & Combos ကဏ္ဍထဲက Tontoro Happy Set (299 ဘတ်) ဒါမှမဟုတ် Buta Set (499 ဘတ်) တို့ကို အကြံပြုလိုပါတယ်ခင်ဗျာ။ အသေးစိတ်ကို သိရှိလိုပါက ဝန်ထမ်းကို မေးမြန်းနိုင်ပါတယ်ခင်ဗျာ။"
+  }
+ ]
+}

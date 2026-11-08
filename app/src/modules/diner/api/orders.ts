@@ -10,11 +10,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   const r = restaurantBySlug(slug);
   if (!r) return bad("Restaurant not found.", 404);
   const menu = itemsOf(r.id);
-  const lines: { it: any; qty: number }[] = [];
-  for (const l of Array.isArray(b.items) ? b.items : []) {
-    const it = menu.find((m) => m.id === Number(l.id));
-    if (it?.available) lines.push({ it, qty: Math.max(1, Math.min(20, Number(l.qty) || 1)) });
+  const table = String(b.table || "").trim().slice(0, 10);
+  if (!table) return bad("Table number missing.");
+  // whole portions only, repeated dishes are added together, at most 20 of one dish and 50 lines
+  const qtys = new Map<number, number>();
+  for (const l of (Array.isArray(b.items) ? b.items : []).slice(0, 50)) {
+    const n = Number(l?.qty ?? 1);
+    if (!Number.isInteger(n) || n < 1) return bad("Quantity must be a whole number of at least 1.");
+    qtys.set(Number(l.id), Math.min(20, (qtys.get(Number(l.id)) || 0) + n));
   }
+  const lines: { it: any; qty: number }[] = [];
+  for (const [id, qty] of qtys) { const it = menu.find((m) => m.id === id); if (it?.available) lines.push({ it, qty }); }
   if (!lines.length) return bad("No available dishes were picked.");
   // allergies the diner chose in their profile, and the ones they asked about in this chat session: both go to the staff
   const profile = cleanProfile(b.profile);
@@ -25,14 +31,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   try {
     // The receipt code is issued HERE, never chosen by the phone (see diner/api/bill.ts): 192 random bits, returned with the order.
     // A phone that already holds a code for this table sends it back and keeps it; anything the server did not issue is ignored.
-    const table = String(b.table || "").slice(0, 10);
     const sent = String(b.receipt || "");
-    const issued = /^[a-f0-9]{48}$/.test(sent) && get("SELECT 1 AS ok FROM orders WHERE restaurant_id = ? AND table_no = ? AND receipt = ?", r.id, table, sent);
+    const issued = /^[a-f0-9]{48}$/.test(sent) && get("SELECT 1 AS ok FROM orders WHERE restaurant_id = ? AND table_no = ? AND receipt = ? AND paid_at IS NULL", r.id, table, sent);
     const receipt = issued ? sent : crypto.randomBytes(24).toString("hex");
     const id = run("INSERT INTO orders (restaurant_id, table_no, status, lang, allergy_note, receipt) VALUES (?,?,?,?,?,?)", r.id, table, "picked", lang, [...said].join(", "), receipt).id;
     for (const { it, qty } of lines) {
       // flag the dish lines that clash with the diner's profile: the allergens the dish lists, or "unknown" when it has no allergen data
-      const flag = !profile.length ? "" : it.allergens === null ? "unknown" : it.allergens.filter((a: string) => profile.includes(a)).join(",");
+      const hit = it.allergens?.filter((a: string) => profile.includes(a)).join(",") || "";
+      const flag = !profile.length ? "" : it.allergens === null ? "unknown" : hit || (it.allergen_status === "verified" ? "" : "estimated");
       run("INSERT INTO order_items (order_id, item_id, name, qty, price, flag) VALUES (?,?,?,?,?,?)", id, it.id, it.name.en, qty, it.price, flag);
     }
     db.exec("COMMIT");

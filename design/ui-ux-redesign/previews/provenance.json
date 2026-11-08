@@ -1,0 +1,67 @@
+[
+  {
+    "file": "01-diner-menu.png",
+    "origin": "../screens/01-diner-menu.svg",
+    "method": "PyMuPDF raster preview of authored vector drawing; not a UI deliverable image"
+  },
+  {
+    "file": "02-dish-detail.png",
+    "origin": "../screens/02-dish-detail.svg",
+    "method": "PyMuPDF raster preview of authored vector drawing; not a UI deliverable image"
+  },
+  {
+    "file": "03-ai-conversation.png",
+    "origin": "../screens/03-ai-conversation.svg",
+    "method": "PyMuPDF raster preview of authored vector drawing; not a UI deliverable image"
+  },
+  {
+    "file": "04-review-picks.png",
+    "origin": "../screens/04-review-picks.svg",
+    "method": "PyMuPDF raster preview of authored vector drawing; not a UI deliverable image"
+  },
+  {
+    "file": "05-picks-sent.png",
+    "origin": "../screens/05-picks-sent.svg",
+    "method": "PyMuPDF raster preview of authored vector drawing; not a UI deliverable image"
+  },
+  {
+    "file": "06-waiter-floor.png",
+    "origin": "../screens/06-waiter-floor.svg",
+    "method": "PyMuPDF raster preview of authored vector drawing; not a UI deliverable image"
+  },
+  {
+    "file": "07-owner-menu.png",
+    "origin": "../screens/07-owner-menu.svg",
+    "method": "PyMuPDF raster preview of authored vector drawing; not a UI deliverable image"
+  },
+  {
+    "file": "08-kitchen-board.png",
+    "origin": "../screens/08-kitchen-board.svg",
+    "method": "PyMuPDF raster preview of authored vector drawing; not a UI deliverable image"
+  },
+  {
+    "file": "09-design-foundations.png",
+    "origin": "../screens/09-design-foundations.svg",
+    "method": "PyMuPDF raster preview of authored vector drawing; not a UI deliverable image"
+  },
+  {
+    "file": "10-research-to-design.png",
+    "origin": "../screens/10-research-to-design.svg",
+    "method": "PyMuPDF raster preview of authored vector drawing; not a UI deliverable image"
+  },
+  {
+    "file": "11-interaction-states.png",
+    "origin": "../screens/11-interaction-states.svg",
+    "method": "PyMuPDF raster preview of authored vector drawing; not a UI deliverable image"
+  },
+  {
+    "file": "12-language-and-allergy.png",
+    "origin": "../screens/12-language-and-allergy.svg",
+    "method": "PyMuPDF raster preview of authored vector drawing; not a UI deliverable image"
+  },
+  {
+    "file": "13-language-switcher.png",
+    "origin": "../screens/13-language-switcher.svg",
+    "method": "PyMuPDF raster preview of authored vector drawing; not a UI deliverable image"
+  }
+]

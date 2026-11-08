@@ -1,8 +1,8 @@
 // The rule-based part of the AI waiter. Every question here must be answered from the database
 // WITHOUT calling the language model (noModel() makes any model call fail the test).
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { aiCtx, noModel } from "./helpers";
-import { answer, detectLang, allergensMentioned, topicOf } from "@/modules/ai/ai";
+import { aiCtx, noModel, mockModel } from "./helpers";
+import { answer, detectLang, allergensMentioned, topicOf, matchDishes } from "@/modules/ai/ai";
 
 let modelCalls: unknown[];
 beforeEach(() => { modelCalls = noModel(); });
@@ -39,7 +39,16 @@ describe("AI-2 / UC-2 / BR-1 / NFR-S1 / NFR-S2 allergen questions are answered f
   it("answers about one dish from that dish's allergens", async () => {
     const r = await ask("Can I eat the Pad Thai? I'm allergic to peanuts");
     expect(r.reply).toContain("Shrimp Pad Thai lists these allergens: peanut, shellfish, egg, fish");
+    expect(r.reply).toContain("This list is an estimate");
     expect(r.action.ids).toHaveLength(1);
+  });
+  it("states when a restaurant checked the allergen list without promising safety", async () => {
+    const ctx = await aiCtx();
+    const items = ctx.items.map((item) => item.name.en === "Shrimp Pad Thai" ? { ...item, allergen_status: "verified" as const } : item);
+    const r = await ask("What allergens are in Shrimp Pad Thai?", { items });
+    expect(r.reply).toContain("The restaurant checked this ingredient list");
+    expect(r.reply).toContain("preparation can still introduce allergens");
+    expect(r.reply).toMatch(STAFF.en);
   });
   it("says 'not provided' for a dish with missing data, never 'no allergens' (BR-1, NFR-S2)", async () => {
     const r = await ask("Does the Fresh Spring Rolls contain any allergens?");
@@ -48,7 +57,7 @@ describe("AI-2 / UC-2 / BR-1 / NFR-S1 / NFR-S2 allergen questions are answered f
   });
   it("'without X' lists dishes that do not list X and still flags the unknown dish", async () => {
     const r = await ask("anything without shellfish?");
-    expect(r.reply).toMatch(/^Dishes that do not list shellfish: /);
+    expect(r.reply).toMatch(/^I can't suggest a restaurant-checked dish for shellfish/);
     expect(r.reply).not.toMatch(/Shrimp Pad Thai|Tom Yum/);
     expect(r.reply).toMatch(/not provided for: Fresh Spring Rolls/);
     expect(r.action.ids!.length).toBeLessThanOrEqual(4);
@@ -178,6 +187,44 @@ describe("AI-5 / ST-1 price, hours, ingredients, pork and sold-out come from the
     const r = await ask("What are the ingredients of the Papaya Salad?");
     expect(r.reply).toBe("Papaya Salad is made with: green papaya, chili, lime, peanuts, dried shrimp.");
   });
+  it("gives an ingredient answer the list one by one and a short lead, so the phone can show it as pills; the reply stays the whole text", async () => {
+    const r = await ask("What are the ingredients of the Papaya Salad?");
+    expect(r.ingredients).toEqual(["green papaya", "chili", "lime", "peanuts", "dried shrimp"]);
+    expect(r.lead).toBe("Papaya Salad is made with:");
+    expect(r.reply.startsWith(r.lead as string)).toBe(true);
+    expect(r.reply).toContain((r.ingredients as string[]).join(", "));
+    expect(r.usedModel).toBe(false);
+  });
+  it("answers an ingredient question in Thai and Burmese with a polite lead, and no particle stuck to the last ingredient", async () => {
+    const th = await ask("ส่วนผสมของส้มตำมีอะไรบ้าง");
+    expect(th.ingredients).toHaveLength(5);
+    expect(th.lead).toBe("ส่วนผสมของส้มตำมีดังนี้ครับ");
+    expect(th.reply).toBe("ส่วนผสมของส้มตำ: มะละกอดิบ, พริก, มะนาว, ถั่วลิสง, กุ้งแห้ง ครับ");          // the demo menu has Thai ingredient names; a space before the particle
+    expect(th.ingredients).toEqual(["มะละกอดิบ", "พริก", "มะนาว", "ถั่วลิสง", "กุ้งแห้ง"]);
+    const my = await ask("သင်္ဘောသီးသုပ်မှာ ဘာတွေပါလဲ");
+    expect(my.ingredients).toHaveLength(5);
+    expect(my.ingredients).toEqual(["green papaya", "chili", "lime", "peanuts", "dried shrimp"]);   // no Burmese names written: the English ones, never a blank
+    expect(my.lead).toMatch(/ပါဝင်ပစ္စည်းများက အောက်ပါအတိုင်း ဖြစ်ပါတယ်ခင်ဗျာ။$/);
+    expect(my.lead).not.toMatch(/သည်|ရှင်|ကျွန်မ/);                                  // the default voice is the male, spoken one
+  });
+  it("a female waiter uses her particle in the Thai lead", async () => {
+    const r = await ask("ส่วนผสมของส้มตำมีอะไรบ้าง", await female());
+    expect(r.lead).toBe("ส่วนผสมของส้มตำมีดังนี้ค่ะ");
+  });
+  it("a dish with no ingredients written gets the plain answer, with no list", async () => {
+    const c = await aiCtx();
+    const items = c.items.map((i: any) => (i.name.en === "Papaya Salad" ? { ...i, ingredients: "" } : i));
+    const r = await ask("What are the ingredients of the Papaya Salad?", { items });
+    expect(r.ingredients).toBeUndefined();
+    expect(r.lead).toBeUndefined();
+  });
+  it("only an ingredient answer carries a list (hours, prices and allergen answers do not)", async () => {
+    for (const q of ["What time do you close?", "How much is the Papaya Salad?", "I'm allergic to peanuts"]) {
+      const r = await ask(q);
+      expect(r.ingredients, q).toBeUndefined();
+      expect(r.lead, q).toBeUndefined();
+    }
+  });
   it("lists pork dishes from the contains_pork tag", async () => {
     const r = await ask("do you have pork?");
     expect(r.reply).toContain("Grilled Pork Skewers (฿60)");
@@ -264,10 +311,9 @@ describe("AI-6 order wording adds dishes and quantities to the picks (never plac
 
 describe("AI-7 bill and staff requests create a staff call", () => {
   it("asks for the bill / for help", async () => {
-    expect((await ask("Can I get the bill?")).action).toEqual({ type: "call_staff", kind: "bill" });
+    // a bill request offers the button (the diner presses it); an explicit "call the staff" is a command and calls at once
+    for (const q of ["Can I get the bill?", "เช็คบิลหน่อย", "I want to pay"]) { const r = await ask(q); expect([q, r.action, r.offer]).toEqual([q, { type: "none" }, "bill"]); }
     expect((await ask("I need help, call the staff")).action).toEqual({ type: "call_staff", kind: "help" });
-    expect((await ask("เช็คบิลหน่อย")).action).toEqual({ type: "call_staff", kind: "bill" });
-    expect((await ask("I want to pay")).action).toEqual({ type: "call_staff", kind: "bill" });
   });
   it("does not mistake a dish name for a bill request (regression: 'pay' inside 'papaya')", async () => {
     const price = await ask("how much is the papaya salad");
@@ -372,6 +418,8 @@ describe("AI-2 all 14 allergens are recognised (EN, TH and, where there is a wor
   });
   it("words that merely contain an allergen word are not allergens", () => {
     expect(allergensMentioned("I like eggplant")).toEqual([]);
+    expect(allergensMentioned("can you code")).toEqual([]);                 // "cod" (fish) is not "code"
+    expect(allergensMentioned("I am allergic to cod")).toEqual(["fish"]);
     expect(allergensMentioned("coconut milk")).toEqual(["milk"]);      // deliberately still a milk mention: over-warning is the safe direction
     expect(allergensMentioned("a pinch of nutmeg")).toEqual([]);
     expect(allergensMentioned("แพ้ปลาหมึก")).toEqual(["molluscs"]);          // squid is a mollusc, not a fish
@@ -393,7 +441,7 @@ describe("AI-2 all 14 allergens are recognised (EN, TH and, where there is a wor
     expect(th.reply).toContain("ซัลไฟต์");
     expect(th.reply).toMatch(STAFF.th);
     const none = await ask("I'm allergic to lupin");                       // no dish lists lupin in the demo menu
-    expect(none.reply).toContain("No dish on the menu lists lupin.");
+    expect(none.reply).toContain("No dish has lupin in its allergen data");
     expect(none.reply).toMatch(/not provided for: Fresh Spring Rolls/);    // ... but one dish has no data, so it is never called safe
     expect(none.reply).toMatch(STAFF.en);
     expect(modelCalls.length).toBe(0);
@@ -416,5 +464,155 @@ describe("topic and allergen helpers", () => {
     expect(allergensMentioned("ပုစွန်")).toEqual(["shellfish"]);
     expect(allergensMentioned("coconut milk")).toEqual(["milk"]);   // 'coconut' must not count as a nut
     expect(allergensMentioned("hello")).toEqual([]);
+  });
+});
+
+// Found on the 132-dish HaChi Kyu menu (tests/hachi-kyu.test.ts): on the 13-dish demo menu no dish name contains another's, so these never showed.
+describe("matching a dish on a big menu: one typed name is one dish", () => {
+  const mk = async (...names: string[]) => { const base = (await aiCtx()).items[0]; return names.map((en, n) => ({ ...base, id: 900 + n, name: { en, th: "", my: "" }, allergens: [] as string[], ingredients: "", available: true })); };
+  const names = (m: { item: { name: { en: string } } }[]) => m.map((x) => x.item.name.en).sort();
+
+  it("the short nickname of another dish inside the typed name is not a second dish ('Squid Sushi' holds 'sushi')", async () => {
+    const items = await mk("Squid Sushi", "Salmon Sushi", "Tuna Sushi", "Miso Soup", "Clear Soup");
+    expect(names(matchDishes("I'll have the Squid Sushi", items))).toEqual(["Squid Sushi"]);
+    expect(names(matchDishes("2 miso soup please", items))).toEqual(["Miso Soup"]);
+  });
+  it("two dishes typed side by side are still two dishes", async () => {
+    const items = await mk("Squid Sushi", "Salmon Sushi", "Tuna Sushi");
+    expect(names(matchDishes("squid sushi and tuna sushi", items))).toEqual(["Squid Sushi", "Tuna Sushi"]);
+  });
+  it("a dish's full name beats another dish that only uses those words as a nickname ('Salmon Sushi' / 'Seared Salmon Sushi')", async () => {
+    const items = await mk("Salmon Sushi", "Seared Salmon Sushi", "Salmon Belly Sushi");
+    expect(names(matchDishes("Can I eat the Salmon Sushi?", items))).toEqual(["Salmon Sushi"]);
+    expect(names(matchDishes("Can I eat the Seared Salmon Sushi?", items))).toEqual(["Seared Salmon Sushi"]);
+  });
+  it("a name with a bracketed part is found with the bracket, without it, and in capitals", async () => {
+    const items = await mk("Hamachi (Yellowtail) Sushi", "Salmon Sushi");
+    for (const q of ["the Hamachi (Yellowtail) Sushi", "the hamachi sushi", "HAMACHI (YELLOWTAIL) SUSHI"]) expect(names(matchDishes(q, items)), q).toEqual(["Hamachi (Yellowtail) Sushi"]);
+  });
+  it("the name variants are kept per menu, and an owner's rename or a new dish is matched at once (the cache is keyed on the names)", async () => {
+    const before = await mk("Squid Sushi", "Salmon Sushi");
+    expect(names(matchDishes("the squid sushi", before))).toEqual(["Squid Sushi"]);
+    expect(names(matchDishes("the squid sushi", before))).toEqual(["Squid Sushi"]);                // second call: from the cache, same answer
+    const renamed = before.map((i, n) => (n === 0 ? { ...i, name: { ...i.name, en: "Calamari Sushi" } } : i));
+    expect(names(matchDishes("the squid sushi", renamed))).not.toContain("Squid Sushi");        // the old name is gone (the generic word "sushi" still matches)
+    expect(names(matchDishes("the calamari sushi", renamed))).toEqual(["Calamari Sushi"]);        // the new one works
+    const added = [...before, ...(await mk("Tuna Sushi")).map((i) => ({ ...i, id: 999 }))];
+    expect(names(matchDishes("tuna sushi please", added))).toEqual(["Tuna Sushi"]);
+  });
+  it("a word that many dishes share is not a choice of dish: 'the sashimi' matches none, 'the salmon sashimi' matches one", async () => {
+    const items = await mk("Salmon Sashimi", "Tuna Sashimi", "Squid Sashimi", "Miso Soup");
+    expect(names(matchDishes("I'll have the sashimi", items))).toEqual([]);
+    expect(names(matchDishes("I'll have the salmon sashimi", items))).toEqual(["Salmon Sashimi"]);
+    expect(names(matchDishes("salmon sashimi and tuna sashimi", items))).toEqual(["Salmon Sashimi", "Tuna Sashimi"]);
+    const r = await answer("I'll have the sashimi", "en", (await aiCtx({ items })) as any);
+    expect(r.action.type).not.toBe("add_to_picks");                  // never all three at once
+  });
+  it("a one-word nickname after another descriptive word names a different dish: 'wagyu steak' is not the 'Chicken Steak'", async () => {
+    const items = await mk("Chicken Steak", "Salmon Sushi");
+    expect(names(matchDishes("How much is the Wagyu Steak?", items))).toEqual([]);
+    expect(names(matchDishes("How much is the steak?", items))).toEqual(["Chicken Steak"]);          // filler before it does not count
+    expect(names(matchDishes("how much is the chicken steak", items))).toEqual(["Chicken Steak"]);
+    expect(names(matchDishes("I want steak please", items))).toEqual(["Chicken Steak"]);
+  });
+  it("ordering one dish adds one dish with the quantity asked, never its look-alikes", async () => {
+    const ctx = await aiCtx({ items: await mk("Squid Sushi", "Salmon Sushi", "Tuna Sushi") });
+    const r = await answer("I'll have 2 Squid Sushi", "en", ctx as any);
+    expect(r.action).toMatchObject({ type: "add_to_picks", ids: [900] });
+    expect(r.reply).toContain("2× Squid Sushi");
+    expect(r.reply).not.toContain("Salmon");
+  });
+  it("an allergy question about one dish is answered about that dish, not with the list of every dish", async () => {
+    const items = (await mk("Squid Sushi", "Salmon Sushi", "Tuna Sushi")).map((i, n) => ({ ...i, allergens: n === 0 ? ["molluscs"] : n === 1 ? ["fish"] : null }));
+    const r = await answer("I'm allergic to fish. Can I eat the Squid Sushi?", "en", (await aiCtx({ items })) as any);
+    expect(r.reply).toContain("Squid Sushi");
+    expect(r.reply).not.toContain("Salmon Sushi");
+  });
+});
+
+describe("topics the data never holds (discounts, promotions, coupons, reservations) are not left to the model", () => {
+  it("says it does not know and points to the staff, in all three languages, without calling the model", async () => {
+    for (const q of ["Can I get a discount?", "Do you have any promotions today?", "Can I reserve a table for six?", "มีส่วนลดไหม", "จองโต๊ะได้ไหม", "လျှော့ပေးလို့ရလား", "ကူပွန် ရှိလား"]) {
+      const r = await ask(q);
+      expect(r.usedModel, q).toBe(false);
+      expect(r.offer, q).toBe("help");
+      expect(r.reply, q).toMatch(/staff|พนักงาน|ဝန်ထမ်း/);
+      expect(r.reply, q).not.toMatch(/don't have that information|ไม่มีข้อมูล|အချက်အလက် မရှိ/);
+      expect(r.reply, q).not.toMatch(/\b(yes|no discount|cannot be reduced)\b/i);
+    }
+    expect(modelCalls.length).toBe(0);
+  });
+  it("an owner's FAQ about the topic still reaches the model, which has the FAQs", async () => {
+    const calls = mockModel("Yes, 10% off for students.");
+    const faqs = [{ q: "Do you have a student discount?", a: "Yes, 10% off for students with a student card." }];
+    const r = await answer("Can I get a discount?", "en", await aiCtx({ faqs }));
+    expect(calls.length).toBe(1);
+    expect(r.reply).toContain("10%");
+  });
+  it("ordinary questions are not caught: a dish, a price, a birthday, 'reduce the spice'", async () => {
+    for (const q of ["How much is the Tom Yum Goong?", "I'm celebrating a birthday, any suggestion?", "Can you make it less spicy?"]) {
+      const r = await ask(q).catch(() => null);
+      expect(r === null || !/^.{0,5}(don't|do not) know/i.test(r.reply), q).toBe(true);
+    }
+  });
+});
+
+describe("a bare request for a recommendation is answered from the data, not by the model", () => {
+  const BARE = ["What do you recommend?", "what would you recommend", "Recommend something", "Can you suggest something?", "any suggestions?", "What's good here?", "What should I order?", "recommend", "Hello, what do you recommend for us?",
+    "แนะนำหน่อย", "แนะนำเมนูหน่อยครับ", "มีอะไรแนะนำไหม", "อะไรอร่อย", "အကြံပြုပေးပါ", "ဘာစားသင့်လဲ"];
+  it.each(BARE)("%s", async (q) => {
+    const r = await ask(q);
+    expect(r.usedModel).toBe(false);
+    expect(r.topic).toBe("recommend");
+    expect(r.action.type).toBe("show_dishes");
+    expect(r.action.ids!.length).toBeGreaterThan(1);
+    expect(modelCalls.length).toBe(0);
+  });
+  it("with no order history, offers one dish from each of the largest categories, says it cannot name the most popular, and never calls a dish popular or the best", async () => {
+    const r = await ask("What do you recommend?");
+    const ctx = await aiCtx();
+    const picked = r.action.ids!.map((id) => ctx.items.find((i: any) => i.id === id)!);
+    expect(new Set(picked.map((i: any) => i.category_id)).size).toBe(picked.length);          // different categories
+    expect(picked.every((i: any) => i.available)).toBe(true);
+    for (const i of picked) expect(r.reply).toContain(`${i.name.en} (฿${i.price})`);
+    expect(r.reply).toMatch(/can't say which dishes are the most popular/);
+    expect(r.reply.replace("can't say which dishes are the most popular", "")).not.toMatch(/\b(?:best|most popular|famous|favourite|signature)\b/i);
+    expect(r.reply).toMatch(/spicy or mild, a budget, a type of dish, vegetarian/);
+  });
+  it("never offers a sold-out dish, and a dish that clashes with the diner's allergy profile is left out, with the usual note", async () => {
+    const ctx = await aiCtx();
+    const r = await ask("recommend something", { profile: ["peanut"] });
+    for (const id of r.action.ids ?? []) { const i = ctx.items.find((x: any) => x.id === id)!; expect(i.available).toBe(true); expect(i.allergen_status).toBe("verified"); expect(i.allergens === null || !i.allergens.includes("peanut")).toBe(true); }
+    expect(r.action.ids).toEqual([]);
+    expect(r.reply).toMatch(/peanut/i);
+  });
+  it("with an order history, answers with the dishes ordered most (the existing 'popular' answer), not the spread", async () => {
+    const ctx = await aiCtx();
+    const second = ctx.items[1];
+    const r = await ask("What do you recommend?", { popular: { [second.id]: 5 } });
+    expect(r.action.ids![0]).toBe(second.id);
+    expect(r.reply).toContain("ordered 5×");
+    expect(r.reply).not.toMatch(/can't say/);
+  });
+  it("is in Thai and Burmese for a Thai or Burmese question, in the voice of the waiter", async () => {
+    const th = await ask("แนะนำหน่อย");
+    expect(th.reply).toMatch(/^ยังไม่มีข้อมูลการสั่ง/);
+    expect(th.reply).toMatch(/ครับ$/);
+    const my = await ask("ဘာစားသင့်လဲ");
+    expect(my.reply).toMatch(/^ဘယ်ဟင်းလျာက/);
+    expect(my.reply).not.toMatch(/သည်|ရှင်|ကျွန်မ/);
+    const f = await ask("แนะนำหน่อย", await female());
+    expect(f.reply).toMatch(/ค่ะ$/);
+  });
+  it("is not used when the diner says something more (a budget, spice, a type of dish, the weather, a number of people): those keep their own answers", async () => {
+    for (const q of ["What would you recommend on a hot day?", "recommend something spicy", "recommend something under 100 baht", "recommend a dessert", "what do you recommend for two people?", "recommend a vegetarian dish"]) {
+      const r = await ask(q);
+      expect(r.reply, q).not.toMatch(/can't say which dishes are the most popular/);
+    }
+  });
+  it("a menu with nothing available has nothing to offer: the question falls through to the usual path", async () => {
+    const ctx = await aiCtx();
+    const r = await ask("What do you recommend?", { items: ctx.items.map((i: any) => ({ ...i, available: false })) });
+    expect(r.reply).not.toMatch(/can't say which dishes are the most popular/);
   });
 });

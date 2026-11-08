@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Icon from "@/modules/platform/Icon";
 import TestChat from "@/modules/owner/TestChat";
@@ -31,7 +31,9 @@ export default function OwnerShell({ children }: { children: React.ReactNode }) 
   const refresh = useCallback(() => { api("/api/owner/me").then(setMe).catch(() => router.push("/login")); }, [router]);
   useEffect(refresh, [refresh]);
   const t = (key: string) => tr(OWNER_LANG, key);
-  const toast = (m: string) => { setMsg(m); setTimeout(() => setMsg(""), 2600); };
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);       // one timer: a new message restarts it, leaving the page stops it
+  const toast = (m: string) => { setMsg(m); clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setMsg(""), 2600); };
+  useEffect(() => () => clearTimeout(toastTimer.current), []);
   const logout = async () => { await api("/api/auth/logout", { body: {} }); router.push("/login"); };
   if (!me) return <div className="sa-app" style={{ padding: 40 }}>{t("loading")}</div>;
   const r = me.restaurant;

@@ -1,3 +1,20 @@
+# Re-run on 28 Oct 2026 (after the allergen-status, quota and security changes)
+
+Same computer (MacBook Air M4, 32 GB), production build (`next start`) on a **fresh temporary database** (the 13-dish demo menu), `gemma4:12b` warmed first, nothing else running, chat rate limits off. Not a phone, not Wi-Fi.
+
+| Test | Result |
+|---|---|
+| 30 diners at once, rules only, three runs | 0 errors. Run 1 (cold, just after start): 0.4 s total, chat medians 36-61 ms. Runs 2 and 3 (warm): 0.3 s and 0.2 s, chat medians 25-36 ms, menu API 15-17 ms, page 59-63 ms, bill 13-17 ms |
+| 100 open questions, one at a time (`--ai-questions 100`) | 0 errors. Median **4.4 s**, 90th percentile **12.2 s**, slowest 15.0 s, **99 of 100 within 15 s** (target 90%). 63 reached the model, 37 were answered by the rules |
+| `npm run eval:live` (30 questions) | **29/30**, run twice with the same result; English 10/10, Thai 10/10, Burmese 9/10. Thresholds met. The miss is Burmese `my7` ("not on the menu"): the model needed 15.0 s, so the safe fallback was shown |
+| `npm run eval:live -- --extended` (30 model-heavy questions) | **30/30**, thresholds met |
+
+**A trap to avoid.** A first 100-question run reported a median of 0.0 s. It was invalid: the earlier load tests had already sent 370 chat messages, above the monthly cap of 300, and past the cap the model is switched off, so 36 answers were the instant "chat limit" message. Lift the cap (`chat_cap`) or use a fresh database before this test. The `chat_messages.source` column (`rules` or `model`) shows how many questions really reached the model.
+
+**What changed since 5 Oct.** The median open answer is 4.4 s instead of 5.5 s because more questions are now answered by the rules and never reach the model; the 90th percentile is 12.2 s instead of 10.7 s, and one question in 100 hit the 15 s cutoff. These are single runs on one machine, so differences of a second or so are not meaningful. Burmese open answers are the slowest.
+
+---
+
 # Performance measurements (SRS NFR-P1, NFR-P3, NFR-P4)
 
 Measured on 2026-10-05 with `app/scripts/load-test.mts` (`npm run load-test`) against the production build (`npm run build && npm start`) on **one MacBook (Apple Silicon)** with `gemma4:12b` through Ollama. The "diners" are simulated clients on the same computer, so these numbers show what the **server** does. They do **not** include a phone's browser, Wi-Fi, or rendering time. Repeat them on the restaurant's real computer before relying on them.

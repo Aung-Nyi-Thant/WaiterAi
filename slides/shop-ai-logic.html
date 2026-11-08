@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Shop AI: how it works</title>
+<style>
+@page { size: 1280px 720px; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --ink:#111114; --sub:#5d5d66; --line:#d9d9de; --soft:#f2f2f5; --card:#ffffff; --dark:#16161a; --warn:#8a5a00; --warnbg:#fff4de; --ok:#1f6b3a; --okbg:#e6f4ea; --bad:#9b1c1c; --badbg:#fdeaea; }
+html, body { background:#fff; color:var(--ink); font-family:"Helvetica Neue",Helvetica,Arial,"Thonburi","Myanmar Sangam MN",sans-serif; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+.s { width:1280px; height:720px; position:relative; overflow:hidden; page-break-after:always; break-after:page; padding:48px 64px 56px; background:linear-gradient(160deg,#fafafb 0%,#eeeef2 100%); display:flex; flex-direction:column; }
+.s.dark { background:linear-gradient(160deg,#1d1d22,#0e0e11); color:#f5f5f7; }
+.s header { display:flex; align-items:baseline; gap:18px; margin-bottom:22px; }
+.s header .k { font-size:15px; font-weight:700; letter-spacing:.08em; color:var(--sub); font-variant-numeric:tabular-nums; }
+.dark header .k { color:#9a9aa5; }
+h1 { font-size:60px; line-height:1.05; letter-spacing:-.02em; font-weight:700; }
+h2 { font-size:34px; line-height:1.12; letter-spacing:-.01em; font-weight:700; }
+h3 { font-size:19px; font-weight:700; margin-bottom:6px; }
+p, li { font-size:18px; line-height:1.42; }
+.sub { color:var(--sub); } .dark .sub { color:#a9a9b3; }
+.lead { font-size:22px; line-height:1.4; max-width:980px; }
+footer { position:absolute; left:64px; right:64px; bottom:20px; display:flex; justify-content:space-between; font-size:12px; color:#62626c; }
+.dark footer { color:#a3a3ad; }
+.row { display:flex; gap:20px; } .col { display:flex; flex-direction:column; gap:12px; }
+.grow { flex:1; min-width:0; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px 20px; box-shadow:0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.05); }
+.dark .card { background:#232329; border-color:#34343c; box-shadow:none; }
+.card.flat { box-shadow:none; background:rgba(255,255,255,.7); }
+.tag { display:inline-block; font-size:13px; font-weight:700; padding:3px 10px; border-radius:99px; background:var(--soft); border:1px solid var(--line); color:#33333a; margin-right:6px; }
+.tag.ok { background:var(--okbg); border-color:#b8dcc4; color:var(--ok); } .tag.warn { background:var(--warnbg); border-color:#f0d9a4; color:var(--warn); } .tag.bad { background:var(--badbg); border-color:#efc2c2; color:var(--bad); } .tag.dk { background:#16161a; color:#fff; border-color:#16161a; }
+ul { padding-left:22px; display:flex; flex-direction:column; gap:7px; }
+table { border-collapse:collapse; width:100%; }
+th, td { text-align:left; padding:8px 12px; font-size:15px; vertical-align:top; border-bottom:1px solid var(--line); line-height:1.35; }
+th { font-size:12px; letter-spacing:.07em; text-transform:uppercase; color:var(--sub); font-weight:700; }
+td.n, th.n { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+code { font-family:"SF Mono",Menlo,Consolas,monospace; font-size:.88em; background:rgba(0,0,0,.06); padding:1px 6px; border-radius:6px; }
+.dark code { background:rgba(255,255,255,.12); }
+.big { font-size:54px; font-weight:700; letter-spacing:-.02em; line-height:1; font-variant-numeric:tabular-nums; }
+.stat .t { font-size:14px; color:var(--sub); margin-top:6px; line-height:1.3; }
+.flow { display:flex; align-items:stretch; gap:10px; }
+.box { background:#fff; border:1.5px solid #1b1b20; border-radius:12px; padding:10px 14px; font-size:15px; line-height:1.3; text-align:center; display:flex; align-items:center; justify-content:center; }
+.box.g { border-color:var(--line); background:var(--soft); } .box.d { background:#16161a; color:#fff; }
+.arrow { align-self:center; font-size:22px; color:#777; }
+.q { font-weight:700; margin-bottom:3px; font-size:16px; } .a { font-size:15px; color:#3b3b44; margin-bottom:12px; line-height:1.38; }
+.roomy p, .roomy li, .roomy td { font-size:21px; line-height:1.45; } .roomy h3 { font-size:23px; margin-bottom:8px; } .roomy .small, .roomy .stat .t { font-size:15px; } .roomy .row { align-items:flex-start; } .roomy .box { font-size:17px; } .qa .q { font-size:20px; } .qa .a { font-size:18px; margin-bottom:18px; }
+.small { font-size:13px; color:var(--sub); line-height:1.35; }
+</style>
+</head>
+<body>
+
+<!-- 1 -->
+<section class="s dark" style="justify-content:center">
+  <div style="font-size:15px;letter-spacing:.14em;font-weight:700;color:#a9a9b3;margin-bottom:22px">PROJECT WALKTHROUGH · ORAL EXAM AND FINAL PRESENTATION</div>
+  <h1>Shop AI<br>the digital waiter</h1>
+  <p class="lead" style="margin-top:26px;color:#c9c9d1">How the whole system works, why it is built this way, what was measured, and what is still weak.</p>
+  <div style="margin-top:40px;display:flex;gap:10px"><span class="tag dk" style="background:#2c2c33;border-color:#3a3a43">Next.js 16 + React 19</span><span class="tag dk" style="background:#2c2c33;border-color:#3a3a43">SQLite</span><span class="tag dk" style="background:#2c2c33;border-color:#3a3a43">Local Ollama model (gemma4:12b)</span><span class="tag dk" style="background:#2c2c33;border-color:#3a3a43">Thai · Burmese · English</span></div>
+  <footer><span>Shop AI · as of 28 Oct 2026</span><span>1</span></footer>
+</section>
+
+<!-- 2 -->
+<section class="s roomy">
+  <header><span class="k">02</span><h2>The problem and the product</h2></header>
+  <div class="row" style="flex:1">
+    <div class="col grow">
+      <div class="card"><h3>Problem (M1 charter, SRS)</h3><p>Small restaurants have few front-of-house staff. At peak hours they must take orders <em>and</em> answer the same questions about ingredients, allergens, opening hours and recommendations. Result: slow service, mistakes, repeated questions.</p><p class="small" style="margin-top:8px">Evidence: three interviews in Chiang Rai (front-of-house employee, noodle-shop chef-owner, fried-food-shop owner).</p></div>
+      <div class="card"><h3>Product</h3><ul><li><b>Diner</b>: scans the table QR, no app, no account. Menu, filters, allergy profile, AI chat in Thai, Burmese or English, picks, call staff, table bill.</li><li><b>Owner</b>: menu and 14 allergens, photo import, hours, FAQ, AI settings, QR codes, staff, insights.</li><li><b>Waiter and chef</b>: live floor and kitchen screens behind a PIN.</li></ul></div>
+    </div>
+    <div class="col" style="width:380px">
+      <div class="card stat"><div class="big">3</div><div class="t">languages: Thai, Burmese, English</div></div>
+      <div class="card stat"><div class="big">14</div><div class="t">allergens (the EU list, Reg. 1169/2011)</div></div>
+      <div class="card stat"><div class="big">0</div><div class="t">customer questions sent to a cloud AI: the model runs on the restaurant's own computer</div></div>
+    </div>
+  </div>
+  <footer><span>Shop AI</span><span>2</span></footer>
+</section>
+
+<!-- 3 -->
+<section class="s roomy">
+  <header><span class="k">03</span><h2>Architecture</h2></header>
+  <div class="flow" style="height:92px"><div class="box grow"><div>Diner phone<br><span class="small">no login</span></div></div><div class="box grow"><div>Owner laptop<br><span class="small">email + password</span></div></div><div class="box grow"><div>Waiter / chef screens<br><span class="small">restaurant + PIN</span></div></div></div>
+  <div style="text-align:center;font-size:22px;color:#777;margin:4px 0">▼ HTTP + JSON, cookies ▼</div>
+  <div class="box d" style="height:80px;font-size:18px"><div>Next.js server: pages and thin API route wrappers<br><span style="font-size:14px;opacity:.8">the work lives in 5 modules: diner · ai · owner · staff · platform</span></div></div>
+  <div style="text-align:center;font-size:22px;color:#777;margin:4px 0">▼ ▼</div>
+  <div class="row" style="flex:1">
+    <div class="card grow"><h3>SQLite file</h3><p>Built-in <code>node:sqlite</code>, WAL mode. 14 tables: users, restaurants, categories, menu_items, specials, faqs, staff, chat_sessions, chat_messages, orders, order_items, calls, events, imports.</p></div>
+    <div class="card grow"><h3>Ollama on the same computer</h3><p>Model <code>gemma4:12b</code> for open questions and menu-photo reading. One request at a time through a queue; a request that would wait too long gets "AI unavailable".</p></div>
+  </div>
+  <p class="small" style="margin-top:10px">Live updates are polling (staff screens every 3 s, diner menu every 20 s): simple and reliable on a restaurant network. Limit: one laptop, so about one AI answer at a time.</p>
+  <footer><span>Shop AI</span><span>3</span></footer>
+</section>
+
+<!-- 4 -->
+<section class="s roomy dark">
+  <header><span class="k">04</span><h2>The one design principle</h2></header>
+  <p class="lead">Anything that can hurt a customer or cost the restaurant money is answered by <b>code and the database</b>, with fixed sentences. The language model is the last resort, and its answer is checked before anyone sees it.</p>
+  <div class="row" style="margin-top:34px;flex:1">
+    <div class="card grow"><h3>Rules answer (milliseconds)</h3><ul><li>allergens and ingredients</li><li>prices, opening hours</li><li>sold out, alternatives</li><li>orders, the bill, call staff</li><li>"I can't confirm, please ask the staff"</li></ul></div>
+    <div class="card grow"><h3>Model answers (about 5 s)</h3><ul><li>recommendations in free words</li><li>FAQ-style and small talk</li><li>everything the rules did not recognise</li></ul><p class="sub" style="margin-top:10px;font-size:15px">Then: pattern checks on the reply. If it fails, the diner gets a safe sentence, never the model's text.</p></div>
+    <div class="card grow"><h3>Why</h3><ul><li>A wrong allergy answer is dangerous and a legal risk.</li><li>A model can be fluently wrong.</li><li>Rules are testable: 1,293 automated tests, 100% on the rule-based questions.</li></ul></div>
+  </div>
+  <footer><span>Shop AI</span><span>4</span></footer>
+</section>
+
+<!-- 5 -->
+<section class="s">
+  <header><span class="k">05</span><h2>One chat message, step by step</h2></header>
+  <div class="flow" style="height:64px;margin-bottom:14px"><div class="box"><div>Check restaurant, trim to 500 characters</div></div><span class="arrow">→</span><div class="box"><div>Detect language</div></div><span class="arrow">→</span><div class="box"><div>Rate limits (session, restaurant, address)</div></div><span class="arrow">→</span><div class="box"><div>Monthly cap?</div></div><span class="arrow">→</span><div class="box d"><div>answer()</div></div><span class="arrow">→</span><div class="box"><div>Log + action</div></div></div>
+  <div class="row" style="flex:1">
+    <div class="card" style="width:640px;padding:12px 16px"><table>
+      <tr><th>In order, first match wins</th><th>Answered by</th></tr>
+      <tr><td>Attempt to change the rules ("ignore your rules")</td><td>fixed refusal</td></tr>
+      <tr><td>Ingredients of a named dish</td><td>database</td></tr>
+      <tr><td>Allergens: dish, allergen word, or "what can I eat"</td><td>database</td></tr>
+      <tr><td>Bill, call staff</td><td>fixed sentence + button</td></tr>
+      <tr><td>Vegetarian, pork, budget</td><td>tags in the database</td></tr>
+      <tr><td>Named dish: price, sold out, "2 x pad thai"</td><td>database, adds to picks</td></tr>
+      <tr><td>Opening hours, show menu</td><td>owner's data</td></tr>
+      <tr><td>Allergy question we could not match</td><td>"can't confirm, ask staff"</td></tr>
+      <tr><td>Money, bookings, order changes</td><td>staff sentence + button</td></tr>
+      <tr><td><b>Everything else</b></td><td><b>language model, then checked</b></td></tr>
+    </table></div>
+    <div class="col grow">
+      <div class="card flat"><h3>After the monthly limit (300 by default)</h3><p>Only the <b>model</b> is switched off. Allergen, price, hours and order answers keep working. (This was a bug: it used to refuse everything. Fixed 28 Oct.)</p></div>
+      <div class="card flat"><h3>If the model is down or slow</h3><p>Fixed "AI unavailable" message, the menu and the call-staff button. Measured on 5 Oct: 0.0 s when stopped, cut off at 15 s when it hangs.</p></div>
+    </div>
+  </div>
+  <footer><span>Shop AI · ai/api/chat.ts, ai/ai.ts</span><span>5</span></footer>
+</section>
+
+<!-- 6 -->
+<section class="s">
+  <header><span class="k">06</span><h2>How the rules understand a sentence</h2></header>
+  <div class="row" style="flex:1">
+    <div class="col grow">
+      <div class="card"><h3>Language detection</h3><p>Count characters in the Burmese and Thai Unicode blocks. Burmese wins ties, Thai if any Thai, Latin letters mean English, otherwise the language the diner picked in the app. Burmese digits (၁၀၀) become 100 so budgets work.</p></div>
+      <div class="card"><h3>Allergen words</h3><p>Keyword lists per allergen in English, Thai and Burmese (shrimp, prawn, กุ้ง, ပုစွန် all mean <code>shellfish</code>). English uses word boundaries so "nut" does not match "coconut". A word inside a dish name ("Shrimp Pad Thai") is not an allergy statement: the dish name is blanked out first.</p></div>
+      <div class="card"><h3>Dish matching</h3><p>Each dish gets many names: full name in 3 languages, without brackets, the last word, words unique to that dish, short Thai forms. A word counts only if it is unique to one dish and is not an allergen word. The longest match wins ("Thai Iced Tea" over "Tea"). Quantity from "2 x", "x2", "2 จาน", clamped 1 to 20.</p></div>
+    </div>
+    <div class="col" style="width:400px">
+      <div class="card"><h3>Voice</h3><p>The owner picks male or female. Thai gets ครับ or ค่ะ, Burmese gets the polite spoken style (ပါတယ်), never the formal written one.</p></div>
+      <div class="card"><h3>Missing data is never "none"</h3><p>In the database <code>allergens = NULL</code> means <b>not provided</b>, and <code>[]</code> means <b>none recorded</b>. Every allergen answer names the not-provided dishes separately and ends with "please confirm with the staff". It never says "safe".</p></div>
+    </div>
+  </div>
+  <footer><span>Shop AI</span><span>6</span></footer>
+</section>
+
+<!-- 7 -->
+<section class="s">
+  <header><span class="k">07</span><h2>The language model path and its guards</h2></header>
+  <div class="row" style="flex:1">
+    <div class="col" style="width:470px">
+      <div class="card"><h3>What the model gets</h3><ul><li>The restaurant's data as JSON: dishes, prices, allergens, tags, availability, hours, FAQs, specials</li><li>Rules in the prompt: answer only from this data, same language, at most 4 sentences, never "safe"</li><li>Only the last turns of history (every token costs seconds)</li><li>It may end with <code>ACTION: {show_dishes}</code>; the ids are filtered to real, available dishes, at most 4</li></ul></div>
+      <div class="card"><h3>If any check fails</h3><p>A recommendation question gets a few real dishes from the database (that fit the allergy profile). Anything else gets "I don't have that information, please ask the staff". The model's text is thrown away.</p></div>
+    </div>
+    <div class="card grow"><h3>Checks on the reply (checkModelReply)</h3><table>
+      <tr><td><span class="tag bad">block</span>Empty, or only "how can I help?"</td></tr>
+      <tr><td><span class="tag bad">block</span>Unsafe wording: "is safe", "perfectly safe", "harmless", "no risk", "allergen-free", "guarantee", Thai ปลอดภัย, Burmese ဘေးကင်း</td></tr>
+      <tr><td><span class="tag bad">block</span>Claims "no allergens" (any language) → replaced by the database allergen answer</td></tr>
+      <tr><td><span class="tag bad">block</span>A price that is not the dish's real price; an amount that is not on the menu</td></tr>
+      <tr><td><span class="tag bad">block</span>A dish name that does not exist (capitalised names with unknown words)</td></tr>
+      <tr><td><span class="tag bad">block</span>Says a sold-out dish is available</td></tr>
+      <tr><td><span class="tag bad">block</span>Talks about allergens at all (the rules own that topic)</td></tr>
+    </table>
+    <p class="small" style="margin-top:10px"><b>Honest limit:</b> these are pattern checks, a last line of defence and not a proof. On 28 Oct "perfectly safe" got through the old pattern; it is fixed and tested, but a paraphrase nobody listed could still pass. That is why allergen facts never depend on the model.</p></div>
+  </div>
+  <footer><span>Shop AI · docs/AI_SAFETY.md</span><span>7</span></footer>
+</section>
+
+<!-- 8 -->
+<section class="s">
+  <header><span class="k">08</span><h2>Allergen data: unknown, estimated, verified</h2></header>
+  <p class="lead" style="font-size:19px;margin-bottom:16px">New this week. A list of allergens is only as good as the recipe check behind it, so the system now records <i>who stands behind each list</i>.</p>
+  <div class="row">
+    <div class="card grow"><span class="tag">unknown</span><p style="margin-top:8px">No list. Shown to diners as "not provided". Never verifiable. Hidden from diners with an allergy profile.</p></div>
+    <div class="card grow"><span class="tag warn">estimated</span><p style="margin-top:8px">A list exists, nobody at the restaurant compared it with the recipe and supplier labels. The default for imports, seeds and AI-read menus. Diners see "an estimate, ask staff".</p></div>
+    <div class="card grow"><span class="tag ok">verified</span><p style="margin-top:8px">The owner ticked "I compared this list with the kitchen recipe and the supplier labels today". Date and e-mail stored. Diners see "checked by the restaurant on …".</p></div>
+  </div>
+  <div class="card flat" style="margin-top:16px"><h3>Rules enforced on the server</h3>
+    <ul><li>Verified only on an explicit owner request, and only when a list exists.</li><li><b>Editing the allergens or the ingredients drops it back to estimated</b>: a check of an old recipe says nothing about the new one.</li><li>A check older than <b>180 days</b> stops counting (a policy choice; the guidance only says "regularly").</li><li>The owner's e-mail is stored for the record and is never sent to diners.</li></ul></div>
+  <p class="small" style="margin-top:10px">Tests: <code>allergen-status.test.ts</code>. Not built yet: supplier documents, per-ingredient records, change history, cross-contact field.</p>
+  <footer><span>Shop AI · docs/ALLERGEN_DATA_RESEARCH.md</span><span>8</span></footer>
+</section>
+
+<!-- 9 -->
+<section class="s">
+  <header><span class="k">09</span><h2>What the research says about "verified"</h2></header>
+  <div class="row" style="flex:1">
+    <div class="col grow">
+      <div class="card"><h3>Law and guidance</h3><ul>
+        <li>EU Reg. 1169/2011: since 2014 the 14 allergens must be given for restaurant food too, in writing (FSAI).</li>
+        <li>UK FSA best practice: written information <i>and a conversation</i>; keep records of ingredients and recipes; keep information "accurate and up to date at all times"; check whether ingredients changed; limit last-minute substitutions; suppliers must report allergen changes.</li>
+        <li>Thailand: the rules I found (MOPH Notification 450, effective 19 Jul 2024) are for <b>prepacked</b> food. I found no equivalent duty for restaurant menus. A 2026 draft would add sesame, celery, mustard, lupin; it is not law.</li>
+      </ul></div>
+      <div class="card"><h3>Why estimates are risky here</h3><ul>
+        <li>Shrimp paste in curry paste, fish sauce, oyster sauce (mollusc), peanut oil: allergens that the dish name does not show.</li>
+        <li>Burmese ngapi is fermented fish or shrimp paste; peanut and sesame oils are common.</li>
+        <li>A supplier swap can change allergens while the packaging looks the same.</li>
+      </ul></div>
+    </div>
+    <div class="col" style="width:420px">
+      <div class="card"><h3>About AI</h3><ul><li>A 2025 JACI study (via AAAAI): critical errors in about 5% of ChatGPT allergy answers.</li><li>A thesis that extracted allergens from restaurant sites got F1 = 68%: fine for a warning, not for a guarantee.</li></ul></div>
+      <div class="card flat"><h3>Say it honestly</h3><p class="small">Desk research, mostly secondary sources; the full legal texts were not read, and no study measuring restaurant-menu allergen accuracy was found. The 180-day interval is my design choice. Open the primary links in the research file before quoting a number.</p></div>
+    </div>
+  </div>
+  <footer><span>Shop AI · sources and confidence levels: docs/ALLERGEN_DATA_RESEARCH.md</span><span>9</span></footer>
+</section>
+
+<!-- 10 -->
+<section class="s">
+  <header><span class="k">10</span><h2>Orders: from a pick to the bill</h2></header>
+  <div class="flow" style="height:70px;margin-bottom:10px"><div class="box g"><div>Diner sends picks<br><span class="small">"Sent to staff" is not a confirmed order</span></div></div><span class="arrow">→</span><div class="box"><div>picked</div></div><span class="arrow">→</span><div class="box"><div>new</div></div><span class="arrow">→</span><div class="box"><div>cooking</div></div><span class="arrow">→</span><div class="box"><div>ready</div></div><span class="arrow">→</span><div class="box"><div>served</div></div><span class="arrow">→</span><div class="box g"><div>paid</div></div></div>
+  <div class="row" style="flex:1">
+    <div class="card" style="width:560px;padding:12px 16px"><table>
+      <tr><th>Action</th><th>Who</th><th>From → to</th></tr>
+      <tr><td>take</td><td>waiter</td><td>picked → new</td></tr>
+      <tr><td>later (decline)</td><td>waiter</td><td>picked → cancelled</td></tr>
+      <tr><td>cooking</td><td>chef</td><td>new → cooking</td></tr>
+      <tr><td>ready</td><td>chef</td><td>cooking → ready</td></tr>
+      <tr><td>served</td><td>waiter or chef</td><td>ready → served</td></tr>
+      <tr><td>recall</td><td>chef</td><td>ready → cooking</td></tr>
+    </table><p class="small" style="margin-top:8px">Server checks the role (403) and the current state (409). The kitchen never sees a pick the waiter has not taken.</p></div>
+    <div class="col grow">
+      <div class="card flat"><h3>Allergies travel with the order</h3><p>The diner's profile and the allergens named in the chat go onto the ticket. Each dish line is flagged when it lists one of them, or when it has no allergen data ("unknown").</p></div>
+      <div class="card flat"><h3>The bill without accounts</h3><p>Diners have no login. The phone holds a random 192-bit receipt code <i>issued by the server</i> with its first order. It opens the table's bill only after staff <b>accepted</b> an order carrying it; before that the phone sees its own picks only (fixed 28 Oct: anyone could read another table's bill).</p></div>
+      <div class="card flat"><h3>Input rules</h3><p>Whole quantities only, repeated dishes added then capped at 20, at most 50 lines, table required, double-tap guarded.</p></div>
+    </div>
+  </div>
+  <footer><span>Shop AI · staff/api/orders.ts, diner/api/orders.ts, diner/api/bill.ts</span><span>10</span></footer>
+</section>
+
+<!-- 11 -->
+<section class="s">
+  <header><span class="k">11</span><h2>Who can do what: sign-in and abuse limits</h2></header>
+  <div class="row" style="flex:1">
+    <div class="col grow">
+      <div class="card"><h3>Three kinds of user</h3><table>
+        <tr><td><b>Diner</b></td><td>no account; table number from the QR code</td></tr>
+        <tr><td><b>Owner</b></td><td>email + password (bcrypt), session cookie 7 days</td></tr>
+        <tr><td><b>Staff</b></td><td>restaurant code + PIN (bcrypt), role waiter or chef, session 12 hours</td></tr>
+      </table><p class="small" style="margin-top:8px">Every owner and staff query is scoped to the signed-in restaurant (<code>restaurant_id</code>). In production no demo logins are created; credentials are generated and shown once.</p></div>
+      <div class="card"><h3>Preview chat</h3><p>The owner's test chat (no storage, no monthly limit) is honoured only for the signed-in owner of that restaurant.</p></div>
+    </div>
+    <div class="card grow"><h3>Limits and the bugs closed this week</h3><table>
+      <tr><td><b>PIN guessing</b></td><td>5 wrong from one address or 20 per restaurant → locked 10 min. Attempts <i>in progress</i> now count: 21 parallel guesses used to all be checked.</td></tr>
+      <tr><td><b>Chat flooding</b></td><td>20 per minute per session, 120 per restaurant, 60 per address; 300 per month</td></tr>
+      <tr><td><b>Chat sessions</b></td><td>an id used by another restaurant is replaced</td></tr>
+      <tr><td><b>Feedback</b></td><td>needs the chat session that owns the message</td></tr>
+      <tr><td><b>Dish edits</b></td><td>a category must belong to the same restaurant (update path was missing the check)</td></tr>
+      <tr><td><b>Swipe actions</b></td><td>a cancelled gesture no longer accepts, serves or settles</td></tr>
+    </table></div>
+  </div>
+  <footer><span>Shop AI · platform/auth.ts, platform/rateLimit.ts</span><span>11</span></footer>
+</section>
+
+<!-- 12 -->
+<section class="s roomy">
+  <header><span class="k">12</span><h2>Owner insights: what each number means</h2></header>
+  <div class="row" style="flex:1">
+    <div class="card grow"><h3>Fixed on 28 Oct</h3><table>
+      <tr><th>Before</th><th>Now</th></tr>
+      <tr><td>"Answered from menu %" counted model replies too</td><td>"Answered by the AI waiter", split into <b>menu rules</b>, <b>language model</b> and <b>sent to staff</b>. Each user message stores its source (<code>rules</code> or <code>model</code>)</td></tr>
+      <tr><td>Popular dishes counted picks nobody accepted</td><td>Only orders staff accepted (not <code>picked</code>, not cancelled). The AI's "what's popular" uses the same rule</td></tr>
+      <tr><td>Allergen completeness meant "entries recorded"</td><td>Checked / estimated / not provided counts, for dishes on sale</td></tr>
+    </table></div>
+    <div class="col" style="width:380px">
+      <div class="card flat"><h3>Other cards</h3><ul><li>Questions the AI could not answer, to turn into FAQs</li><li>Allergies diners have and how many dishes fit each</li><li>Unmet demand: more vegetarian questions than vegetarian dishes</li><li>Flagged answers (thumbs-down)</li></ul></div>
+      <div class="card flat"><h3>Known limit</h3><p>Old messages written before this change have no source; they appear in the total but in neither split.</p></div>
+    </div>
+  </div>
+  <footer><span>Shop AI · platform/api/insights.ts</span><span>12</span></footer>
+</section>
+
+<!-- 13 -->
+<section class="s roomy">
+  <header><span class="k">13</span><h2>Menu photo import</h2></header>
+  <div class="flow" style="height:80px;margin-bottom:16px"><div class="box"><div>Owner uploads a photo (JPG, PNG, WebP up to 8 MB; type checked by file bytes)</div></div><span class="arrow">→</span><div class="box"><div>Vision model reads the dishes</div></div><span class="arrow">→</span><div class="box"><div>Rows are flagged for review</div></div><span class="arrow">→</span><div class="box"><div>Owner edits and confirms</div></div><span class="arrow">→</span><div class="box d"><div>Dishes saved as <b>estimated</b></div></div></div>
+  <div class="row" style="flex:1">
+    <div class="card grow"><h3>Why a review step</h3><p>A model reading a photo can misread a price or invent an allergen. Flagged rows block publishing until the owner has looked at them. Nothing the model read is trusted as verified.</p></div>
+    <div class="card grow"><h3>Limits</h3><ul><li>Import shares the one AI queue with chat.</li><li>Accuracy of the photo reading has not been measured.</li><li>Needs Ollama on the demo laptop; the rest of the app works without it.</li></ul></div>
+  </div>
+  <footer><span>Shop AI · platform/api/import.ts, importConfirm.ts</span><span>13</span></footer>
+</section>
+
+<!-- 14 -->
+<section class="s">
+  <header><span class="k">14</span><h2>Design, accessibility and languages</h2></header>
+  <div class="row" style="flex:1">
+    <div class="col grow">
+      <div class="card"><h3>Visual direction</h3><p>Monochrome "liquid glass": black, white and gray chrome, translucent surfaces, soft shadows, water-like motion. Food photographs keep their own colour. The old coloured banner and card grid were removed. A research-based redesign: Nielsen Norman heuristics and WCAG 2.2 rules guided the changes.</p></div>
+      <div class="card"><h3>Accessibility rules</h3><ul><li>WCAG AA contrast, controls at least 44 px, visible focus</li><li>Reduced-motion and reduced-transparency fallbacks</li><li>Page language attribute follows the chosen language</li><li>Thai and Myanmar fonts, script-aware wrapping</li></ul></div>
+    </div>
+    <div class="col grow">
+      <div class="card"><h3>Three clearly separate actions</h3><p><b>Ask AI</b> (information), <b>Call staff</b> (a person comes), <b>Send to staff</b> (picks for a waiter to accept). The interface never says "ordered" when it only means "sent".</p></div>
+      <div class="card"><h3>Languages</h3><p>The UI and AI answer in the language of the question. Burmese keeps "Allergens" in English by project convention and uses one fixed staff sentence. <b>Open item:</b> the Burmese wording, including the new allergen-status lines, needs a native speaker's review.</p></div>
+    </div>
+  </div>
+  <footer><span>Shop AI · design/ui-ux-redesign, reports/ui-ux-improvement-2026-10-23.md</span><span>14</span></footer>
+</section>
+
+<!-- 15 -->
+<section class="s">
+  <header><span class="k">15</span><h2>How we know it works</h2></header>
+  <div class="row" style="gap:16px">
+    <div class="card stat grow"><div class="big">1,293</div><div class="t">automated tests, 68 files (rules, API, UI, adversarial, security, seeds)</div></div>
+    <div class="card stat grow"><div class="big">23</div><div class="t">end-to-end tests on a real production server with a fresh seeded database</div></div>
+    <div class="card stat grow"><div class="big">29/30</div><div class="t">live eval with the real model, re-run 28 Oct (twice, same result); 10 per language, English and Thai 10/10, Burmese 9/10</div></div>
+    <div class="card stat grow"><div class="big">30/30</div><div class="t">harder set that mostly reaches the model (open questions, paraphrased attacks, misspellings), re-run 28 Oct</div></div>
+  </div>
+  <div class="row" style="flex:1;margin-top:16px">
+    <div class="card grow"><h3>What is checked automatically</h3><ul><li>Type-check, lint, build and tests on every push (GitHub Actions); a Windows job runs the Windows scripts</li><li>Eval scores must stay above thresholds in <code>eval/thresholds.json</code> or CI fails</li><li>Requirement → code → test table (<code>docs/TRACEABILITY.md</code>)</li><li>Regression tests for every bug fixed this week (<code>exam-fixes.test.ts</code>, <code>allergen-status.test.ts</code>)</li></ul></div>
+    <div class="card flat grow"><h3>Read the numbers carefully</h3><ul><li>Eval scoring is keyword-based, on a small domain. It does not prove general accuracy.</li><li>The tests cannot replace a real phone, a real kitchen or a real Windows laptop: none were tested.</li><li>Tests that read source strings prove a rule exists, not that the screen works.</li><li>The one miss is a Burmese "not on the menu" question: the model needed 15 s, the safe fallback was shown (see slide 16). On 5 Oct the same eval scored 30/30. Earlier sushi-menu results (58/58, 17/17, 31/31, 21 Oct) were not re-run.</li></ul></div>
+  </div>
+  <footer><span>Shop AI · npm test, npm run test:e2e, npm run eval:live</span><span>15</span></footer>
+</section>
+
+<!-- 16 -->
+<section class="s">
+  <header><span class="k">16</span><h2>Speed (MacBook Air M4, server side, re-run 28 Oct)</h2></header>
+  <div class="row" style="gap:16px">
+    <div class="card stat grow"><div class="big">~25 ms</div><div class="t">median rule answer (price, allergy, hours) with 30 diners at once, warm server; the requirement is 1 s</div></div>
+    <div class="card stat grow"><div class="big">0 errors</div><div class="t">30 diners starting together, all done in 0.2 s warm (0.4 s on the first run after a restart); no model</div></div>
+    <div class="card stat grow"><div class="big">4.4 s</div><div class="t">median over 100 questions; 90th percentile 12.2 s; 99 of 100 within 15 s (target 90%)</div></div>
+  </div>
+  <div class="row" style="flex:1;margin-top:16px">
+    <div class="card grow"><h3>Conditions that matter</h3><ul><li>The model and the app share one computer. In the 5 Oct run, with a build, tests and a browser running at the same time, the median rose to 12.6 s and only 63% finished within 15 s. <b>Close other programs during the demo.</b></li><li>The first question after the model has been idle can take about 15 s and fall back. Warm it up before the exam.</li><li>The prompt grows with the menu: the numbers are for a small menu.</li><li>Of the 100 questions, 63 reached the model and 37 were answered by the rules (the new <code>source</code> column shows it): rules now cover more than on 5 Oct.</li><li>Burmese open answers are the slowest: the Burmese "not on the menu" eval question hit the 15 s cutoff in 2 of 2 runs.</li></ul></div>
+    <div class="card flat grow"><h3>Not measured</h3><ul><li>Phone browser time over Wi-Fi</li><li>Menu-photo import accuracy</li><li>Owner onboarding time</li></ul><p class="small" style="margin-top:8px">Re-run 28 Oct 2026 on a clean database, model warmed, nothing else running. A first 100-question run was discarded: earlier tests had used up the monthly chat cap, so answers came back as the instant limit message. Details: docs/PERFORMANCE.md.</p></div>
+  </div>
+  <footer><span>Shop AI</span><span>16</span></footer>
+</section>
+
+<!-- 17 -->
+<section class="s">
+  <header><span class="k">17</span><h2>Bugs found by audit and fixed</h2></header>
+  <div class="card" style="padding:10px 16px"><table>
+    <tr><th>Weak point</th><th>Fix</th></tr>
+    <tr><td>AI reply "perfectly safe" passed the guard</td><td>Guard catches adjectives, "harmless", "no risk", Thai and Burmese reassurance</td></tr>
+    <tr><td>Another table's bill readable with an invented pick</td><td>Receipt opens the table bill only after staff accept an order</td></tr>
+    <tr><td>Parallel wrong PINs bypassed the lockout</td><td>In-flight attempts count toward the ceiling</td></tr>
+    <tr><td>Dish moved into another restaurant's category; null fields crashed</td><td>Same category check on update; bad types return 400</td></tr>
+    <tr><td>Quantity 1.5, duplicate rows, empty table, double-tap order</td><td>Whole numbers, merged and capped, table required, send guarded</td></tr>
+    <tr><td>One chat session on two restaurants; feedback by counting ids</td><td>Session ownership check; feedback needs the session</td></tr>
+    <tr><td>After the monthly limit even allergen answers stopped</td><td>Only the model is switched off</td></tr>
+    <tr><td>Blocked storage crashed the diner page; a cancelled swipe ran an action</td><td>Guarded storage; cancel does nothing</td></tr>
+    <tr><td>Insights over-counted; demo restaurant had the wrong menu; prototype guide wrong</td><td>Source tracking, accepted orders only; menu restored from backup; guide tied to code by a test</td></tr>
+  </table></div>
+  <p class="small" style="margin-top:10px">Method: a written repository audit (22 Oct) reproduced 12 defects with tests; each fix has a regression test. The previous suite was green while these existed, which is the lesson: passing tests only prove what they check.</p>
+  <footer><span>Shop AI · reports/repository-analysis-2026-10-22.md</span><span>17</span></footer>
+</section>
+
+<!-- 18 -->
+<section class="s">
+  <header><span class="k">18</span><h2>Honest limitations</h2></header>
+  <div class="row" style="flex:1">
+    <div class="col grow">
+      <div class="card"><h3>Safety and data</h3><ul><li>All allergen lists are <b>estimated</b>; nobody has checked a real kitchen. The system now says so; it cannot make the data true.</li><li>The reply guard is a pattern list, not a proof.</li><li>Staff order tickets flag listed allergens and "unknown" but not "estimated".</li><li>Free chat text is stored as typed; no redaction or retention job.</li></ul></div>
+      <div class="card"><h3>Engineering</h3><ul><li>Strict TypeScript is off; many handlers use <code>any</code>.</li><li>Owner login still uses the older check-then-count limit.</li><li>One process: queue and limits are not shared across servers.</li><li>Money is a floating-point column.</li></ul></div>
+    </div>
+    <div class="col grow">
+      <div class="card"><h3>Evidence</h3><ul><li>No usability test with real diners or staff.</li><li>Not tested on a real Windows laptop or a phone over Wi-Fi.</li><li>Burmese open questions can reach the 15 s cutoff (safe fallback shown).</li><li>Burmese strings need a native speaker.</li></ul></div>
+      <div class="card"><h3>Next steps, in order</h3><ol style="padding-left:22px;display:flex;flex-direction:column;gap:6px"><li style="font-size:17px">Check real recipes with a kitchen and mark them verified</li><li style="font-size:17px">Supplier documents and change history per dish</li><li style="font-size:17px">Mention the status in the AI's allergen sentence (needs a re-run of the evals)</li><li style="font-size:17px">Moderated test with 5 diners and 2 staff</li></ol></div>
+    </div>
+  </div>
+  <footer><span>Shop AI</span><span>18</span></footer>
+</section>
+
+<!-- 19 -->
+<section class="s roomy">
+  <header><span class="k">19</span><h2>Delivery and process</h2></header>
+  <div class="row" style="flex:1">
+    <div class="card grow"><h3>Run it</h3><ul><li><code>docker compose up --build</code>, or <code>npm run dev</code> in <code>app/</code> (Node 22.13+)</li><li>Windows: double-click scripts in <code>windows/</code> (setup, start, stop, check, reset, offline pack)</li><li>Only the demo laptop needs the model (about 9 GB, 16 GB memory); without it, rules still answer</li><li>Demo logins exist only outside production; production generates and prints credentials once</li></ul></div>
+    <div class="card grow"><h3>Requirements and traceability</h3><ul><li>SRS with FR-1 to FR-10 and 56 Must requirements; each has a screen in the prototype and a row in the traceability table (the "Golden Thread")</li><li>Static clickable prototype on GitHub Pages (separate simplified implementation, HaChi Kyu menu)</li><li>Team rule: AI help is logged, verified, and the member must be able to explain it. The AI-use log has cells only the team can fill</li></ul></div>
+  </div>
+  <footer><span>Shop AI</span><span>19</span></footer>
+</section>
+
+<!-- 20 -->
+<section class="s roomy dark">
+  <header><span class="k">20</span><h2>Five-minute demo script</h2></header>
+  <div class="row" style="flex:1">
+    <div class="card grow"><ol style="padding-left:24px;display:flex;flex-direction:column;gap:9px"><li><b>Before:</b> start Ollama, load <code>gemma4:12b</code>, close other programs, open <code>/r/golden-lotus?t=5</code>, owner, <code>/staff</code></li><li>Diner: pick "peanut" in the allergy profile; open a dish and show the <b>estimate</b> line</li><li>Ask "does the papaya salad have peanuts?" → rule answer, ends with "confirm with staff"</li><li>Ask "what do you recommend?" → model answer, dish cards</li><li>Pick two dishes → <b>Send to staff</b>; point out the allergy warning</li><li>Waiter: take the order; chef: cooking, ready; served</li><li>Diner: the bill appears only now</li><li>Owner: edit a dish's allergens, tick the verify box, show "checked on today"; edit again, it falls back to estimated; open Insights</li><li>Stop Ollama, ask an open question → safe fallback, menu still works</li></ol></div>
+    <div class="col" style="width:330px">
+      <div class="card"><h3>Backups</h3><ul><li>Prototype link (no server)</li><li><code>slides/demo-slides.html</code></li><li>This deck as PDF</li></ul></div>
+      <div class="card"><h3>Reset data</h3><p class="sub" style="font-size:15px"><code>npm run db:restore-demo</code> restores the 13-dish Golden Lotus menu and writes a backup first. HaChi Kyu is a separate restaurant at <code>/r/hachi-kyu</code>.</p></div>
+    </div>
+  </div>
+  <footer><span>Shop AI</span><span>20</span></footer>
+</section>
+
+<!-- 21 -->
+<section class="s qa">
+  <header><span class="k">21</span><h2>Questions to expect</h2></header>
+  <div class="row" style="flex:1;gap:28px">
+    <div class="grow">
+      <div class="q">Can the AI tell me a dish is safe?</div><div class="a">No. Allergen facts come from the database, never the model, and every answer ends with "confirm with the staff". The model's text is pattern-checked as a last line of defence; I list that as a limit.</div>
+      <div class="q">What if the owner's allergen data is wrong?</div><div class="a">Then the answers are wrong, so the system labels every list as unknown, estimated or verified, resets a check when the recipe changes, and expires it after 180 days.</div>
+      <div class="q">Why a local model?</div><div class="a">Customer questions never leave the restaurant, no per-question cost. The price is speed (about 5 s) and one request at a time.</div>
+      <div class="q">Why rules and not the model for everything?</div><div class="a">Rules are instant, testable and can't invent. The model only gets what rules can't recognise.</div>
+    </div>
+    <div class="grow">
+      <div class="q">Is there a legal duty in Thailand?</div><div class="a">I found rules for prepacked food (Notification 450). I did not find a duty for restaurant menus. I used the EU and UK expectations as the benchmark.</div>
+      <div class="q">What did you find wrong in your own project?</div><div class="a">Twelve audited defects; for example a table's bill readable with an invented pick, and parallel PIN guesses bypassing the lockout. All fixed with regression tests.</div>
+      <div class="q">What is not tested?</div><div class="a">Real phones, real Windows laptops, real kitchens, usability with real people, photo-import accuracy.</div>
+      <div class="q">What would you do next?</div><div class="a">Verify real recipes with a kitchen, add supplier records and a change history, then run a small moderated test.</div>
+    </div>
+  </div>
+  <footer><span>Shop AI</span><span>21</span></footer>
+</section>
+
+<!-- 22 -->
+<section class="s">
+  <header><span class="k">22</span><h2>Numbers and files to remember</h2></header>
+  <div class="row" style="flex:1">
+    <div class="card grow"><h3>Numbers</h3><table>
+      <tr><td>Languages / allergens</td><td class="n">3 / 14</td></tr>
+      <tr><td>Database tables</td><td class="n">14</td></tr>
+      <tr><td>Tests / end-to-end</td><td class="n">1,293 / 23</td></tr>
+      <tr><td>Live eval: 30 questions / harder 30</td><td class="n">29/30 / 30/30</td></tr>
+      <tr><td>Rule answer / open answer (median)</td><td class="n">~25 ms / 4.4 s</td></tr>
+      <tr><td>Message length / monthly cap</td><td class="n">500 / 300</td></tr>
+      <tr><td>PIN lockout</td><td class="n">5 per address, 20 per restaurant, 10 min</td></tr>
+      <tr><td>Quantity per dish / lines per order</td><td class="n">20 / 50</td></tr>
+      <tr><td>Verification expires after</td><td class="n">180 days</td></tr>
+      <tr><td>Sessions</td><td class="n">owner 7 days, staff 12 h</td></tr>
+    </table></div>
+    <div class="card grow"><h3>Files to re-read the night before</h3><ol style="padding-left:22px;display:flex;flex-direction:column;gap:7px">
+      <li style="font-size:16px"><code>app/src/modules/ai/ai.ts</code>: <code>answer</code>, <code>checkModelReply</code>, <code>UNSAFE</code></li>
+      <li style="font-size:16px"><code>ai/api/chat.ts</code>: limits, sessions, source</li>
+      <li style="font-size:16px"><code>owner/api/items.ts</code>: <code>allergenCheck</code></li>
+      <li style="font-size:16px"><code>platform/auth.ts</code>: <code>pinGate</code></li>
+      <li style="font-size:16px"><code>staff/api/orders.ts</code>: <code>FLOW</code></li>
+      <li style="font-size:16px"><code>diner/api/bill.ts</code>, <code>orders.ts</code></li>
+      <li style="font-size:16px"><code>docs/AI_SAFETY.md</code>, <code>docs/ALLERGEN_DATA_RESEARCH.md</code></li>
+      <li style="font-size:16px"><code>app/tests/exam-fixes.test.ts</code>: run it live</li></ol></div>
+  </div>
+  <footer><span>Shop AI</span><span>22</span></footer>
+</section>
+
+</body>
+</html>

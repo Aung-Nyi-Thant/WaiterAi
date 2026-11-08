@@ -34,7 +34,24 @@ describe("the M4 clickable prototype", () => {
     const data = read("prototype/data.js");
     for (let n = 1; n <= 10; n++) expect(data, `FR-${n}`).toContain(`["FR-${n}",`);
   });
-  it("uses the real sample menu (eval/menu.json): same dishes, prices, allergens and availability", () => {
+  it("builds the menu it really shows (HaChi Kyu): many dishes, every one with a price and an allergen list, none claimed as verified", () => {
+    const win: any = {};
+    const menu = new Function("window", `${read("prototype/data.js")}\nreturn MENU;`)(win) as { n: string[]; p: number; al: string[]; v: number }[];
+    expect(menu.length).toBeGreaterThan(100);
+    for (const d of menu) { expect(d.p, d.n[1]).toBeGreaterThan(0); expect(Array.isArray(d.al), d.n[1]).toBe(true); }
+    expect(menu.filter((d) => d.v).length, "no dish is listed in VERIFIED, so none may carry the verified badge").toBe(0);
+  });
+  it("the README states the sign-ins the code really uses (so the guide cannot drift again)", () => {
+    const owner = read("prototype/owner.js").match(/OWNER = \{ email: '([^']+)', pass: '([^']+)' \}/)!;
+    const pins = read("prototype/app.js").match(/PIN = \{ waiter: '(\d+)', chef: '(\d+)' \}/)!;
+    for (const doc of ["prototype/README.md", "README.md"]) {
+      const text = read(doc);
+      expect(text, doc).toContain(`${owner[1]}\` / \`${owner[2]}`);
+      expect(text, doc).toContain(`\`${pins[1]}\``);
+      expect(text, doc).toContain(`\`${pins[2]}\``);
+    }
+  });
+  it("keeps the 13-dish Golden Lotus sample data (DISH_SEED, not shown) in line with eval/menu.json: same dishes, prices, allergens and availability", () => {
     const menu = JSON.parse(read("eval/menu.json")).items as { id: string; price: number; allergens: string[] | null; available: boolean; name: Record<string, string> }[];
     const win: any = {};
     new Function("window", read("prototype/data.js"))(win);
@@ -52,6 +69,23 @@ describe("the M4 clickable prototype", () => {
     expect(win.I18N.dict).toEqual(JSON.parse(JSON.stringify(DICT)));
     expect(win.I18N.allergens).toEqual([...ALLERGENS]);
   });
+  it("shows no emoji: every icon is drawn in icons.js (i18n.js is the app's own dictionary and is stripped when it is shown)", () => {
+    const emoji = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}]|\uFE0F/u;
+    for (const f of ["app.js", "owner.js", "data.js", "switcher.js", "icons.js", "motion.js", "index.html", "proto.css"]) {
+      const bad = read(`prototype/${f}`).split("\n").map((l, i) => [i + 1, l] as const).filter(([, l]) => emoji.test(l));
+      expect(bad.map(([n, l]) => `${f}:${n} ${l.trim().slice(0, 60)}`), f).toEqual([]);
+    }
+    const win: any = {};
+    new Function("window", read("prototype/icons.js"))(win);
+    expect(win.strip("\u2705 Saved \u{1F60A}")).toBe("Saved");
+    const used = new Set([...(proto + read("prototype/switcher.js")).matchAll(/\bic\('([A-Za-z]+)'/g)].map((m) => m[1]));
+    // icon names also appear as plain strings (CATS in data.js, tab lists, page lists): collect those that are passed to ic() through a variable
+    for (const m of proto.matchAll(/\['[a-z]+', '([A-Za-z]+)', '[A-Z][^']*'\]/g)) used.add(m[1]);
+    for (const m of read("prototype/data.js").matchAll(/^\s*\["[a-z]+", "([a-z]+)", \[/gm)) used.add(m[1]);
+    const drawn = String(win.ic("star")), missing = [...used].filter((n) => win.ic(n) === win.ic("help") && n !== "help");
+    expect(drawn).toContain("<svg");
+    expect(missing, "icon names used but not drawn in icons.js").toEqual([]);
+  });
   it("opens from a folder with no server: every script and style it loads is a local file (only the font stylesheet is remote)", () => {
     const html = read("prototype/index.html");
     const scripts = [...html.matchAll(/<script[^>]*src="([^"]+)"/g)].map((m) => m[1]);
@@ -59,6 +93,6 @@ describe("the M4 clickable prototype", () => {
     for (const s of scripts) { expect(s, s).not.toMatch(/^(https?:)?\/\//); expect(fs.existsSync(path.join(root, "prototype", s)), s).toBe(true); }
     const sheets = [...html.matchAll(/<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map((m) => m[1]).filter((h) => !/^https:\/\/fonts\.googleapis\.com\//.test(h));
     for (const h of sheets) expect(fs.existsSync(path.join(root, "prototype", h)), h).toBe(true);
-    expect(proto).not.toMatch(/\bfetch\(|XMLHttpRequest|localStorage/);       // no server calls, nothing saved
+    expect(proto).not.toMatch(/\bfetch\(|XMLHttpRequest|sendBeacon|new WebSocket\(/);       // no server calls; it saves only to the browser's own storage
   });
 });

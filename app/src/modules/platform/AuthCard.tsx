@@ -19,7 +19,7 @@ export default function AuthCard({ mode }: { mode: "login" | "register" }) {
     <div className="sa-app center-screen">
       <form onSubmit={submit} className="sa-plate auth-card">
         <div className="sa-display" style={{ color: "var(--cherry-text)", fontSize: 22 }}>Shop AI</div>
-        <div><h1 style={{ fontSize: 32 }}>{reg ? "Create your restaurant" : "Owner sign in"}</h1><p className="muted" style={{ margin: "6px 0 0" }}>{reg ? "Set up your AI Waiter in minutes." : "Manage your menu and AI Waiter."}</p></div>
+        <div><h1 style={{ fontSize: 26 }}>{reg ? "Create your restaurant" : "Owner sign in"}</h1><p className="muted" style={{ margin: "6px 0 0" }}>{reg ? "Set up your AI Waiter in minutes." : "Manage your menu and AI Waiter."}</p></div>
         {reg && <><label className="sa-field"><span>Restaurant name</span><input className="sa-input" value={f.restaurantName} onChange={set("restaurantName")} required /></label>
           <label className="sa-field"><span>City</span><input className="sa-input" value={f.city} onChange={set("city")} /></label></>}
         <label className="sa-field"><span>Email</span><input type="email" className="sa-input" value={f.email} onChange={set("email")} required autoComplete="email" /></label>

@@ -16,12 +16,27 @@ import { itemsOf } from "@/modules/platform/menu";
 const slug = "golden-lotus";
 const id = (en: string) => itemsOf(1).find((i) => i.name.en === en)!.id;
 const order = (b: object) => call(placeOrder, { method: "POST", params: { slug }, body: b });
-const act = (oid: number, action: string) => call(orderAction, { method: "POST", params: { id: String(oid) }, body: { action } });
+const act = (oid: number, action: string, allergyConfirmed = true) => call(orderAction, { method: "POST", params: { id: String(oid) }, body: { action, allergyConfirmed } });
 const status = (oid: number) => get("SELECT status FROM orders WHERE id = ?", oid)!.status;
 const asWaiter = () => staffLogin("1111");
 const asChef = () => staffLogin("2222");
 
 describe("PC-2 the diner sends picks to the staff", () => {
+  it("requires separate waiter and chef allergy acknowledgments and records both", async () => {
+    const sent = await order({ table: "ack-1", profile: ["peanut"], items: [{ id: id("Mango Sticky Rice"), qty: 1 }] });
+    const oid = sent.data.id;
+    await asWaiter();
+    expect((await act(oid, "take", false)).status).toBe(409);
+    expect(status(oid)).toBe("picked");
+    expect((await act(oid, "take")).status).toBe(200);
+    await asChef();
+    expect((await act(oid, "cooking", false)).status).toBe(409);
+    expect(status(oid)).toBe("new");
+    expect((await act(oid, "cooking")).status).toBe(200);
+    const ack = get("SELECT waiter_allergy_confirmed_at AS waiter, chef_allergy_confirmed_at AS chef FROM orders WHERE id = ?", oid)!;
+    expect(ack.waiter).toBeTruthy();
+    expect(ack.chef).toBeTruthy();
+  });
   it("creates an order in status 'picked' with the table, language and dish prices", async () => {
     const r = await order({ table: "9", lang: "my", items: [{ id: id("Vegetable Tofu Stir-fry"), qty: 1 }, { id: id("Thai Iced Tea"), qty: 2 }] });
     expect(r.status).toBe(200);
@@ -50,12 +65,16 @@ describe("PC-2 the diner sends picks to the staff", () => {
     expect((await order({ table: "9" })).status).toBe(400);
     expect((await call(placeOrder, { method: "POST", params: { slug: "nope" }, body: { items: [{ id: 1, qty: 1 }] } })).status).toBe(404);
   });
-  it("clamps quantities to 1-20, defaults the language, and limits the table label", async () => {
-    const r = await order({ table: "T".repeat(30), lang: "xx", items: [{ id: id("Papaya Salad"), qty: 999 }, { id: id("Chicken Fried Rice"), qty: -3 }, { id: id("Thai Iced Tea"), qty: "x" }] });
+  it("caps a dish at 20, adds repeated dishes together, defaults the language, and limits the table label", async () => {
+    const r = await order({ table: "T".repeat(30), lang: "xx", items: [{ id: id("Papaya Salad"), qty: 999 }, { id: id("Chicken Fried Rice"), qty: 12 }, { id: id("Chicken Fried Rice"), qty: 12 }] });
     const o = get("SELECT * FROM orders WHERE id = ?", r.data.id)!;
     expect(o.table_no.length).toBe(10);
     expect(o.lang).toBe("en");
-    expect(all("SELECT qty FROM order_items WHERE order_id = ? ORDER BY id", o.id).map((x: any) => x.qty)).toEqual([20, 1, 1]);
+    expect(all("SELECT qty FROM order_items WHERE order_id = ? ORDER BY id", o.id).map((x: any) => x.qty)).toEqual([20, 20]);
+  });
+  it("refuses fractions, zero, negatives, text and a missing table", async () => {
+    for (const qty of [1.5, 0, -3, "x"]) expect((await order({ table: "5", items: [{ id: id("Papaya Salad"), qty }] })).status).toBe(400);
+    expect((await order({ table: "", items: [{ id: id("Papaya Salad"), qty: 1 }] })).status).toBe(400);
   });
   it("copies the allergens the diner mentioned in the chat into the order (the red banner)", async () => {
     run("INSERT INTO chat_sessions (id, restaurant_id, table_no) VALUES ('s-allergy', 1, '7')");

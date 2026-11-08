@@ -13,7 +13,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   if (!r) return bad("Restaurant not found.", 404);
   const value = Number(b.value) === -1 ? -1 : 1;
   const reason = REASONS.has(String(b.reason || "")) ? String(b.reason || "") : "";
-  run("UPDATE chat_messages SET feedback = ?, flagged = ?, feedback_reason = ? WHERE id = ? AND restaurant_id = ? AND role = 'assistant'",
-    value, value === -1 ? 1 : 0, reason, Number(b.messageId), r.id);
+  // the message id alone is a counter anyone can count up: the caller must also name the chat session the message belongs to
+  run("UPDATE chat_messages SET feedback = ?, flagged = ?, feedback_reason = ? WHERE id = ? AND restaurant_id = ? AND role = 'assistant' AND session_id = ?",
+    value, value === -1 ? 1 : 0, reason, Number(b.messageId), r.id, String(b.sessionId || ""));
   return json({ ok: true });
 }

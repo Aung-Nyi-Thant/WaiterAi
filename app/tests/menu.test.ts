@@ -179,6 +179,11 @@ describe("QR-1 / QR-2 / UC-7 QR codes", () => {
     expect(r.headers.get("x-qr-url")).toBe("http://192.168.1.5:3000/r/golden-lotus?t=4");
     expect(String(r.data)).toContain("<svg");
   });
+  it("keeps only the origin of the address and refuses anything that is not a plain web address", async () => {
+    const at = (base: string) => call(qr, { url: `http://t/api/owner/qr?table=1&base=${encodeURIComponent(base)}` });
+    expect((await at("https://menu.example.com/some/path?x=1")).headers.get("x-qr-url")).toBe("https://menu.example.com/r/golden-lotus?t=1");
+    for (const bad of ["javascript:alert(1)", "data:text/html,hi", "ftp://example.com", "https://shop.com@evil.example", "not a url"]) expect((await at(bad)).status).toBe(400);
+  });
 });
 
 describe("MM-6 photo upload", () => {

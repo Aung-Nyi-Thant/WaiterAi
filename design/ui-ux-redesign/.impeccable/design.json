@@ -1,0 +1,416 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-22T15:14:35Z",
+  "title": "Design System: Shop AI — Monochrome Glass concept",
+  "extensions": {
+    "colorMeta": {
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Canvas",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(73% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "White",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(73% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(73% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "secondary": {
+        "role": "neutral",
+        "displayName": "Secondary",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(73% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "action": {
+        "role": "neutral",
+        "displayName": "Action",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(73% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "soft": {
+        "role": "neutral",
+        "displayName": "Soft",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(73% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(73% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "warning-ink": {
+        "role": "neutral",
+        "displayName": "Warning Ink",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(73% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "warning-surface": {
+        "role": "neutral",
+        "displayName": "Warning Surface",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(73% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "notice-ink": {
+        "role": "neutral",
+        "displayName": "Notice Ink",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(73% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "notice-surface": {
+        "role": "neutral",
+        "displayName": "Notice Surface",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(73% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "kitchen-dark": {
+        "role": "neutral",
+        "displayName": "Kitchen Dark",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(73% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "inverse-secondary": {
+        "role": "neutral",
+        "displayName": "Inverse Secondary",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(73% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "sidebar-divider": {
+        "role": "neutral",
+        "displayName": "Sidebar Divider",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(73% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "shadow": {
+        "role": "neutral",
+        "displayName": "Shadow",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(73% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "glass": {
+        "role": "neutral",
+        "displayName": "Glass",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(73% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "popover-glass": {
+        "role": "neutral",
+        "displayName": "Popover Glass",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(73% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "glass-stroke": {
+        "role": "neutral",
+        "displayName": "Glass Stroke",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(27% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(50% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(73% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Restaurant Display",
+        "purpose": "Helvetica Neue 35 px / 600 with -0.025em tracking; supersedes the previous serif direction."
+      },
+      "body": {
+        "displayName": "Interface Body",
+        "purpose": "Helvetica Neue; native Thai uses Thonburi and Burmese uses Noto Sans Myanmar outlines in the artifact. Runtime requires live script-aware text."
+      }
+    },
+    "shadows": [
+      {
+        "name": "glass-preview-approximation",
+        "value": "0 8px 24px rgba(0,0,0,0.12)",
+        "purpose": "Proposed CSS documentation approximation only. Source SVG uses 28 separately editable black layers, not this CSS shadow or a native effect."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-opacity",
+        "value": "150ms",
+        "purpose": "Proposed short opacity feedback after state changes; not demonstrated in static drawings."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "0ms",
+        "purpose": "Proposed instant state changes when reduced motion is requested."
+      }
+    ],
+    "breakpoints": [],
+    "glass": {
+      "vectorSimulation": {
+        "layerCount": 28,
+        "growth": "step * 0.5px",
+        "offsetY": "5px",
+        "opacity": "0.004 + 0.002 * (1 - step / 29)^2",
+        "steps": "28 descending to 1",
+        "surfaceOpacity": 0.94,
+        "popoverOpacity": 0.98,
+        "strokeOpacity": 0.92,
+        "highlight": "White top rule"
+      },
+      "runtimeProposal": {
+        "backdropFilter": "blur(16px)",
+        "reducedTransparency": "Opaque white; retain readable boundaries.",
+        "status": "Not implemented by SVG import or static previews."
+      }
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Monochrome static-concept translation with proposed focus, hover, pressed and disabled states; not an application component.",
+      "html": "<button type=\"button\" class=\"ds-btn-primary\">Send to staff</button>",
+      "css": ".ds-btn-primary{font-family:\"Helvetica Neue\",Arial,sans-serif;font-size:15px;font-weight:600;border-radius:8px;min-height:48px;background:#151515;color:#FFFFFF;border:1px solid transparent;padding:0 24px;cursor:pointer}.ds-btn-primary:hover:not(:disabled){box-shadow:inset 0 0 0 2px currentColor}.ds-btn-primary:focus-visible{outline:2px solid #151515;outline-offset:3px;}.ds-btn-primary:active:not(:disabled){opacity:.85}.ds-btn-primary:disabled{opacity:.55;cursor:default}"
+    },
+    {
+      "name": "Soft Button",
+      "kind": "button",
+      "refersTo": "button-soft",
+      "description": "Monochrome static-concept translation with proposed focus, hover, pressed and disabled states; not an application component.",
+      "html": "<button type=\"button\" class=\"ds-btn-soft\">Send to staff</button>",
+      "css": ".ds-btn-soft{font-family:\"Helvetica Neue\",Arial,sans-serif;font-size:15px;font-weight:600;border-radius:8px;min-height:48px;background:#EAEAEA;color:#151515;border:1px solid transparent;padding:0 24px;cursor:pointer}.ds-btn-soft:hover:not(:disabled){box-shadow:inset 0 0 0 2px currentColor}.ds-btn-soft:focus-visible{outline:2px solid #151515;outline-offset:3px;}.ds-btn-soft:active:not(:disabled){opacity:.85}.ds-btn-soft:disabled{opacity:.55;cursor:default}"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Monochrome static-concept translation with proposed focus, hover, pressed and disabled states; not an application component.",
+      "html": "<button type=\"button\" class=\"ds-btn-outline\">Send to staff</button>",
+      "css": ".ds-btn-outline{font-family:\"Helvetica Neue\",Arial,sans-serif;font-size:15px;font-weight:600;border-radius:8px;min-height:48px;background:#FFFFFF;color:#151515;border:1px solid #DEDEDE;padding:0 24px;cursor:pointer}.ds-btn-outline:hover:not(:disabled){box-shadow:inset 0 0 0 2px currentColor}.ds-btn-outline:focus-visible{outline:2px solid #151515;outline-offset:3px;}.ds-btn-outline:active:not(:disabled){opacity:.85}.ds-btn-outline:disabled{opacity:.55;cursor:default}"
+    },
+    {
+      "name": "Menu Search",
+      "kind": "input",
+      "refersTo": "search-field",
+      "description": "Proposed live search translation. CSS shadow and 16 px backdrop blur approximate the drawing; they are not implemented by the vector artifact.",
+      "html": "<label class=\"ds-search-label\" for=\"ds-menu-search\">Search menu</label><input class=\"ds-search\" id=\"ds-menu-search\" type=\"search\" placeholder=\"Search dishes or ingredients\">",
+      "css": ".ds-search-label{display:block;margin-bottom:8px;font:13px/20px \"Helvetica Neue\",Arial,sans-serif;color:#141414}.ds-search{width:100%;max-width:342px;min-height:46px;padding:0 16px;border:1px solid #DEDEDE;border-radius:9px;background:rgba(255,255,255,.94);color:#141414;font:14px \"Helvetica Neue\",Arial,sans-serif}.ds-search:hover{border-color:#626262}.ds-search:focus-visible{outline:2px solid #151515;outline-offset:3px;}.ds-search:disabled{opacity:.55} .ds-search{box-shadow:0 8px 24px rgba(0,0,0,.12);backdrop-filter:blur(16px)}@media(prefers-reduced-transparency:reduce){.ds-search{background:#FFFFFF;backdrop-filter:none}}"
+    },
+    {
+      "name": "Diner Navigation",
+      "kind": "nav",
+      "refersTo": "diner-navigation",
+      "description": "Floating four-destination dock. CSS blur/shadow and link behavior are illustrative runtime proposals; imported drawing contains vector glass only.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Diner\"><a class=\"ds-nav-active\" aria-current=\"page\" href=\"#menu\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 5h14v15H5zM8 9h8M8 13h8M8 17h4\"/></svg><span>Menu</span></a><a href=\"#ask\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 4h16v12H9l-5 4zM8 8h8M8 12h5\"/></svg><span>Ask AI</span></a><a href=\"#picks\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 8h14l1 13H4zM9 8V6a3 3 0 0 1 6 0v2\"/></svg><span>My picks</span></a><a href=\"#staff\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 17h14l-2-3V9a5 5 0 0 0-10 0v5zM10 21h4\"/></svg><span>Staff</span></a></nav>",
+      "css": ".ds-nav{display:flex;align-items:center;gap:8px;min-height:70px;max-width:358px;padding:0 8px;border:1px solid rgba(255,255,255,.92);border-radius:16px;background:rgba(255,255,255,.94);box-shadow:0 8px 24px rgba(0,0,0,.12);backdrop-filter:blur(16px)}.ds-nav a{display:flex;flex-direction:column;gap:5px;align-items:center;justify-content:center;min-width:44px;min-height:55px;flex:1;color:#626262;text-decoration:none;font:400 11px/16px \"Helvetica Neue\",Arial,sans-serif}.ds-nav .ds-nav-active{color:#141414;font-weight:650}.ds-nav .ds-nav-active:after{content:\"\";width:3px;height:3px;border-radius:50%;background:#141414}.ds-nav a:hover{color:#141414}.ds-nav a:focus-visible{outline:2px solid #141414;outline-offset:2px}.ds-nav a:active{opacity:.7}@media(prefers-reduced-transparency:reduce){.ds-nav{background:#FFFFFF;backdrop-filter:none}}"
+    },
+    {
+      "name": "Allergy Profile Row",
+      "kind": "custom",
+      "description": "Recommended 44 px whole-label hit target around the 24 px visual checkbox; live semantics are illustrative.",
+      "html": "<label class=\"ds-allergy-row\"><input type=\"checkbox\" checked><span>Peanut</span></label>",
+      "css": ".ds-allergy-row{display:flex;align-items:center;gap:14px;min-height:44px;padding:0 8px;color:#141414;background:#FFFFFF;border-radius:5px;font:550 15px/24px \"Helvetica Neue\",Arial,sans-serif;cursor:pointer}.ds-allergy-row input{width:24px;height:24px;margin:0;accent-color:#151515}.ds-allergy-row:hover{background:#EAEAEA}.ds-allergy-row input:focus-visible{outline:2px solid #151515;outline-offset:3px;}"
+    },
+    {
+      "name": "Underlined Category",
+      "kind": "custom",
+      "description": "Menu uses text categories and a 2 px active underline; 44 px hit area is proposed runtime behavior.",
+      "html": "<nav class=\"ds-categories\" aria-label=\"Menu categories\"><button type=\"button\" aria-pressed=\"true\">All</button><button type=\"button\" aria-pressed=\"false\">Sushi</button></nav>",
+      "css": ".ds-categories{display:flex;gap:24px;border-bottom:1px solid #DEDEDE}.ds-categories button{min-height:44px;padding:0;border:0;border-bottom:2px solid transparent;background:transparent;color:#626262;font:400 14px \"Helvetica Neue\",Arial,sans-serif;cursor:pointer}.ds-categories button[aria-pressed=\"true\"]{border-bottom-color:#141414;color:#141414;font-weight:600}.ds-categories button:hover{color:#141414}.ds-categories button:focus-visible{outline:2px solid #141414;outline-offset:3px}.ds-categories button:active{opacity:.7}"
+    },
+    {
+      "name": "Menu Row",
+      "kind": "custom",
+      "description": "Text-side excerpt of a horizontal dish row, not a full photo reproduction. The source drawing includes a 112 px square food photo.",
+      "html": "<article class=\"ds-menu-row\"><h3>Salmon Sushi</h3><p>1 piece / Est. fish</p><div><strong>THB 96</strong><button type=\"button\" aria-label=\"Add Salmon Sushi to my picks\">+</button></div></article>",
+      "css": ".ds-menu-row{max-width:210px;padding:16px 0;border-bottom:1px solid #DEDEDE;color:#141414;font-family:\"Helvetica Neue\",Arial,sans-serif}.ds-menu-row h3{margin:0;font-size:18px;font-weight:550}.ds-menu-row p{margin:12px 0;color:#626262;font-size:12px;line-height:20px}.ds-menu-row div{display:flex;align-items:center;justify-content:space-between;gap:16px}.ds-menu-row strong{font-size:17px;font-weight:600}.ds-menu-row button{min-width:44px;min-height:44px;border:0;border-radius:8px;background:#141414;color:#FFFFFF;font-size:24px;cursor:pointer}.ds-menu-row button:hover{background:#303030}.ds-menu-row button:focus-visible{outline:2px solid #141414;outline-offset:3px}.ds-menu-row button:active{opacity:.8}"
+    },
+    {
+      "name": "Compact Language and Options",
+      "kind": "custom",
+      "refersTo": "language-popover",
+      "description": "Open static sample: 50 × 28 visual inside 56 × 44 button, with 46 px options. Focus/hover are illustrative; opening, persistence and dismissal are not wired.",
+      "html": "<div class=\"ds-language\"><button class=\"ds-language-hit\" type=\"button\" aria-expanded=\"true\" aria-controls=\"ds-language-options\"><span>EN <svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"/></svg></span></button><div id=\"ds-language-options\" class=\"ds-language-options\" role=\"group\" aria-label=\"Language\"><button type=\"button\" aria-pressed=\"true\">English ✓</button><button type=\"button\" aria-pressed=\"false\" lang=\"th\">ไทย</button><button type=\"button\" aria-pressed=\"false\" lang=\"my\">မြန်မာ</button></div></div>",
+      "css": ".ds-language{position:relative;width:170px;color:#141414;font-family:\"Helvetica Neue\",Arial,sans-serif}.ds-language-hit{display:flex;align-items:center;justify-content:center;margin-left:auto;width:56px;height:44px;padding:0;border:0;background:transparent;cursor:pointer}.ds-language-hit span{display:flex;align-items:center;justify-content:center;gap:8px;width:50px;height:28px;border-radius:6px;background:#FFFFFF;font-size:12px;font-weight:550}.ds-language-options{padding:10px 8px;border:1px solid rgba(255,255,255,.92);border-radius:10px;background:rgba(255,255,255,.98);box-shadow:0 8px 24px rgba(0,0,0,.12);backdrop-filter:blur(16px)}.ds-language-options button{display:block;width:100%;min-height:46px;padding:0 8px;text-align:left;border:0;border-bottom:1px solid #DEDEDE;background:transparent;color:#141414;font:400 15px/24px \"Helvetica Neue\",\"Noto Sans Thai\",\"Noto Sans Myanmar\",Arial,sans-serif;cursor:pointer}.ds-language-options button:last-child{border-bottom:0}.ds-language button:hover{background:#EAEAEA}.ds-language button:focus-visible{outline:2px solid #141414;outline-offset:2px}.ds-language button:active{opacity:.7}@media(prefers-reduced-transparency:reduce){.ds-language-options{background:#FFFFFF;backdrop-filter:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Monochrome Glass",
+    "overview": "A restaurant menu with precise typography and calm utility. Black, white and gray interface chrome makes food photography the content focus. Spacious horizontal dish entries, understated category underlines and a compact language control replace the prior warm direction. AI remains a labelled destination instead of an oversized menu banner. Select floating surfaces carry translucent white and soft offset depth.\n\nThis document describes only this directory's current static concept, extracted from `build_design.py`, `screens/*.svg` and preview boards on 22 October 2026. The user's monochrome revision in `SURFACE_BRIEF.md` replaces the previous warm concept. Tokens are normative for these drawings only; they do not authorize a production-app restyle or change root design authority. The root `PRODUCT.md` still constrains allergy handling, multilingual access and staff confirmation.",
+    "keyCharacteristics": [
+      "Achromatic interface chrome; food photographs retain their source color.",
+      "Helvetica Neue hierarchy, menu rows and underlined categories.",
+      "Compact language control with an accessible proposed hit area.",
+      "Floating glass navigation and selected operational surfaces.",
+      "Explicit recipe estimates, allergy uncertainty and staff confirmation."
+    ],
+    "rules": [],
+    "dos": [
+      "**Do** keep interface chrome achromatic and food imagery in its source color.",
+      "**Do** keep food, portions, estimates, price and the next action readable without requiring chat.",
+      "**Do** preserve compact language visuals with the proposed larger hit area.",
+      "**Do** retain allergy uncertainty and staff confirmation across every handoff.",
+      "**Do** use live Unicode and vertically growing localized text in implementation.",
+      "**Do** reserve content clearance for floating surfaces and test actual responsive layouts."
+    ],
+    "donts": [
+      "**Don't** reintroduce the superseded warm palette, serif headings or oversized AI menu banner.",
+      "**Don't** describe estimates as verified recipes, unknowns as absent allergens or dishes as allergy-safe.",
+      "**Don't** treat sent picks as confirmed orders or retry uncertain delivery blindly.",
+      "**Don't** claim vector glass supplies backdrop blur, native Figma effects or working interaction.",
+      "**Don't** treat this concept as authority to change production app styling.",
+      "**Don't** describe imported vectors as Auto Layout, reusable component instances, variants or a wired prototype."
+    ]
+  },
+  "scope": {
+    "authority": "Monochrome concept only: design/ui-ux-redesign/DESIGN.md. Supersedes warm concept; no production app or root-design authority.",
+    "source": "Current build_design.py; thirteen drawings: nine task/state screens and four supporting boards.",
+    "ramps": "Synthesized achromatic OKLCH exploration strips; not extra palette tokens.",
+    "snippets": "Proposed self-contained documentation translations, not a published component library or Figma behavior. CSS shadow/blur approximates the vector simulation.",
+    "responsive": "No application breakpoints established.",
+    "figma": "Editable vector shape import with embedded raster food photos; no Auto Layout, component instances, variants or prototype wiring. Native Thai/Myanmar sample glyphs are outlines, with Unicode source retained."
+  }
+}

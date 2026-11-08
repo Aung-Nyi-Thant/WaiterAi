@@ -9,10 +9,11 @@ export async function POST(req: Request) {
   // wrong PINs are counted per restaurant, and per address where the address can be trusted (see pinGate in auth.ts)
   const gate = pinGate(req, r.id);
   if (gate.waitSec) return bad(`Too many wrong PINs. Try again in ${Math.ceil(gate.waitSec / 60)} minute(s).`, 429);
+  gate.begin();   // holds a place while the slow bcrypt checks run, so parallel guesses cannot all slip past the gate above
   const pin = String(b.pin || "");
   const rows = all("SELECT * FROM staff WHERE restaurant_id = ?", r.id).filter((x: any) => !b.role || x.role === b.role);
   let st: any;
-  for (const x of rows) if (await checkPassword(pin, x.pin_hash)) { st = x; break; }
+  try { for (const x of rows) if (await checkPassword(pin, x.pin_hash)) { st = x; break; } } finally { gate.end(); }   // never leave the place held if a check throws
   if (!st) { gate.fail(); return bad("Wrong PIN.", 401); }
   gate.ok();
   await setStaffCookie({ staffId: st.id, restaurantId: r.id, role: st.role, slug: r.slug, name: st.name });

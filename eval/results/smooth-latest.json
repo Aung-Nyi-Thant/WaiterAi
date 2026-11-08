@@ -1,0 +1,648 @@
+{
+ "label": "gemma4:12b (Ollama), Golden Lotus sushi menu (132 dishes)",
+ "date": "2026-10-20T19:05:52.692Z",
+ "latency": {
+  "rules": {
+   "n": 61,
+   "mean": 7,
+   "p50": 6,
+   "p90": 10,
+   "p95": 15,
+   "max": 18
+  },
+  "model": {
+   "n": 14,
+   "mean": 9916,
+   "p50": 10602,
+   "p90": 12414,
+   "p95": 12478,
+   "max": 12478
+  },
+  "all": {
+   "n": 75,
+   "mean": 1857,
+   "p50": 6,
+   "p90": 10602,
+   "p95": 12007,
+   "max": 12478
+  },
+  "burst": {
+   "n": 4,
+   "mean": 14306,
+   "p50": 14004,
+   "p90": 22120,
+   "p95": 22120,
+   "max": 22120
+  },
+  "rulesWhileModelBusy": {
+   "n": 10,
+   "mean": 52,
+   "p50": 48,
+   "p90": 68,
+   "p95": 75,
+   "max": 75
+  }
+ },
+ "rows": [
+  {
+   "id": "sm-en1",
+   "lang": "en",
+   "ms": 9,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en2",
+   "lang": "en",
+   "ms": 7,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en3",
+   "lang": "en",
+   "ms": 9,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en4",
+   "lang": "en",
+   "ms": 7,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en5",
+   "lang": "en",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en6",
+   "lang": "en",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en7",
+   "lang": "en",
+   "ms": 6,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en8",
+   "lang": "en",
+   "ms": 6,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en9",
+   "lang": "en",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en10",
+   "lang": "en",
+   "ms": 6,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en11",
+   "lang": "en",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en12",
+   "lang": "en",
+   "ms": 6,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en13",
+   "lang": "en",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en14",
+   "lang": "en",
+   "ms": 6,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en15",
+   "lang": "en",
+   "ms": 4,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en16",
+   "lang": "en",
+   "ms": 6,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en17",
+   "lang": "en",
+   "ms": 9,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en18",
+   "lang": "en",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en19",
+   "lang": "en",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en20",
+   "lang": "en",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en21",
+   "lang": "en",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en22",
+   "lang": "en",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en23",
+   "lang": "en",
+   "ms": 4,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en24",
+   "lang": "en",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en25",
+   "lang": "en",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en26",
+   "lang": "en",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en27",
+   "lang": "en",
+   "ms": 4,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en28",
+   "lang": "en",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en29",
+   "lang": "en",
+   "ms": 4,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en30",
+   "lang": "en",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en31",
+   "lang": "en",
+   "ms": 3,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en32",
+   "lang": "en",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en33",
+   "lang": "en",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en34",
+   "lang": "en",
+   "ms": 3069,
+   "usedModel": true,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en35",
+   "lang": "en",
+   "ms": 9,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en36",
+   "lang": "en",
+   "ms": 9,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en37",
+   "lang": "en",
+   "ms": 9837,
+   "usedModel": true,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en38",
+   "lang": "en",
+   "ms": 6831,
+   "usedModel": true,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en39",
+   "lang": "en",
+   "ms": 18,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en40",
+   "lang": "en",
+   "ms": 9,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en41",
+   "lang": "en",
+   "ms": 8,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en42",
+   "lang": "en",
+   "ms": 7,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en43",
+   "lang": "en",
+   "ms": 7,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-en44",
+   "lang": "en",
+   "ms": 6,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-th1",
+   "lang": "th",
+   "ms": 8,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-th2",
+   "lang": "th",
+   "ms": 10,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-th3",
+   "lang": "th",
+   "ms": 6,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-th4",
+   "lang": "th",
+   "ms": 6,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-th5",
+   "lang": "th",
+   "ms": 6,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-th6",
+   "lang": "th",
+   "ms": 6,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-th7",
+   "lang": "th",
+   "ms": 6,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-th8",
+   "lang": "th",
+   "ms": 6,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-th9",
+   "lang": "th",
+   "ms": 6,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-my1",
+   "lang": "my",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-my2",
+   "lang": "my",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-my3",
+   "lang": "my",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-my4",
+   "lang": "my",
+   "ms": 5,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "sm-my5",
+   "lang": "my",
+   "ms": 4,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "so-en1",
+   "lang": "en",
+   "ms": 10602,
+   "usedModel": true,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "so-en2",
+   "lang": "en",
+   "ms": 11887,
+   "usedModel": true,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "so-en3",
+   "lang": "en",
+   "ms": 11045,
+   "usedModel": true,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "so-en4",
+   "lang": "en",
+   "ms": 15,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "so-en5",
+   "lang": "en",
+   "ms": 9931,
+   "usedModel": true,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "so-en6",
+   "lang": "en",
+   "ms": 15,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "so-en7",
+   "lang": "en",
+   "ms": 7,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "so-en8",
+   "lang": "en",
+   "ms": 11416,
+   "usedModel": true,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "so-en9",
+   "lang": "en",
+   "ms": 12187,
+   "usedModel": true,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "so-en10",
+   "lang": "en",
+   "ms": 5885,
+   "usedModel": true,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "so-th1",
+   "lang": "th",
+   "ms": 14,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "so-th2",
+   "lang": "th",
+   "ms": 12007,
+   "usedModel": true,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "so-th3",
+   "lang": "th",
+   "ms": 12,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "so-th4",
+   "lang": "th",
+   "ms": 12478,
+   "usedModel": true,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "so-my1",
+   "lang": "my",
+   "ms": 16,
+   "usedModel": false,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "so-my2",
+   "lang": "my",
+   "ms": 9232,
+   "usedModel": true,
+   "fallback": false,
+   "ok": true
+  },
+  {
+   "id": "so-my3",
+   "lang": "my",
+   "ms": 12414,
+   "usedModel": true,
+   "fallback": false,
+   "ok": true
+  }
+ ]
+}

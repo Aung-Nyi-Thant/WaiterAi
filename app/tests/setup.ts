@@ -27,3 +27,19 @@ vi.mock("next/headers", () => ({
     delete: (n: string) => { jar.delete(n); },
   }),
 }));
+
+// Component tests (tests/ui): next/navigation and next/link need a mounted Next router, which does not exist in a test.
+// The router is a set of spies the test can read: (globalThis as any).__router.push etc.
+const router = { push: vi.fn(), replace: vi.fn(), refresh: vi.fn(), back: vi.fn(), prefetch: vi.fn(), pathname: "/", search: "" };
+(globalThis as any).__router = router;
+vi.mock("next/navigation", () => ({
+  useRouter: () => router,
+  usePathname: () => router.pathname,
+  useSearchParams: () => new URLSearchParams(router.search),
+  useParams: () => ({}),
+  redirect: (to: string) => { router.push(to); },
+}));
+vi.mock("next/link", async () => {
+  const React = await import("react");
+  return { default: ({ href, children, ...rest }: any) => React.createElement("a", { href: typeof href === "string" ? href : href?.pathname, ...rest }, children) };
+});

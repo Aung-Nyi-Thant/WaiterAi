@@ -27,13 +27,26 @@ describe("AI-19 spice level", () => {
     expect(shown(r)).toEqual(["Tom Yum Goong", "Papaya Salad", "Chicken Green Curry"]);
     expect(r.reply).toContain("Tom Yum Goong (฿180, very spicy)");
     expect(r.reply).toContain("Chicken Green Curry (฿140, spicy)");
-    expect(r.reply).toContain("Based on what you asked (spicy)");
+    expect(r.reply).toContain("Spicy: ");
     expect(r.reply).not.toMatch(/Pad Thai|Tofu|Tea/);
   });
   it("'not spicy' means mild or no spice, never the spicy dishes", async () => {
     const r = await rec("something not spicy please");
     for (const n of shown(r)) expect(["Tom Yum Goong", "Papaya Salad", "Chicken Green Curry", "Steamed Fish with Lime"]).not.toContain(n);
-    expect(r.reply).toContain("(mild)");
+    expect(r.reply).toContain("Mild: ");
+  });
+});
+
+describe("a negated 'spicy' means mild (found by the extended live eval: 'my kid doesn't like spicy food' listed the hottest dishes)", () => {
+  const HOTTEST = ["Tom Yum Goong", "Papaya Salad", "Chicken Green Curry", "Steamed Fish with Lime"];
+  it.each([
+    ["My kid doesn't like spicy food. What can he have?", "en"], ["my son doesn’t like spicy food, what do you suggest", "en"], ["I can't eat spicy. Any ideas?", "en"], ["My daughter does not like spicy dishes", "en"],
+    ["ลูกไม่กินเผ็ด มีอะไรให้กินบ้าง", "th"], ["ผมกินเผ็ดไม่ได้ แนะนำหน่อย", "th"], ["ကျွန်တော့်သားက စပ်တာမစားဘူး၊ ဘာစားလို့ရမလဲ", "my"],
+  ] as const)("%s", async (msg, lang) => {
+    const r = await rec(msg, lang);
+    expect(r.topic).toBe("recommend");
+    expect(shown(r).length).toBeGreaterThan(0);
+    for (const n of shown(r)) expect(HOTTEST).not.toContain(n);
   });
 });
 
@@ -41,13 +54,13 @@ describe("budget", () => {
   it("'mild under 100 baht': strictly under, cheapest first, sold-out dishes left out", async () => {
     const r = await rec("something mild under 100 baht");
     expect(shown(r)).toEqual(["Thai Iced Tea", "Grilled Pork Skewers", "Chicken Fried Rice"]);
-    expect(r.reply).toContain("(mild, under ฿100)");
+    expect(r.reply).toContain("Mild, under ฿100: ");
     expect(r.reply).not.toContain("Coconut Ice Cream");
   });
   it("'up to 100' includes a dish that costs exactly 100", async () => {
     const r = await rec("dessert up to 100 baht");
     expect(shown(r)).toEqual(["Mango Sticky Rice"]);
-    expect(r.reply).toContain("up to ฿100");
+    expect(r.reply).toContain("Up to ฿100");
   });
   it("a number without a budget word is not a budget", async () => {
     mockModel("Try the Thai Iced Tea.");
@@ -73,10 +86,17 @@ describe("type of dish and diet", () => {
     expect(shown(r)).toEqual(expected);
     expect(r.reply).toContain(cat as string);                       // the category's own name is shown
   });
+  it("a dessert asked for in Thai ('ของหวาน', 'ขนมหวาน') or Burmese ('အချို', found by the live eval: it went to the model, which suggested a drink) is answered from the menu", async () => {
+    for (const q of ["ขอของหวานหน่อย", "มีขนมหวานไหม", "ထမင်းစားပြီး အချိုတစ်ခုခု", "အချိုပွဲ ရှိလား"]) {
+      const r = await rec(q);
+      expect(shown(r), q).toEqual(["Mango Sticky Rice"]);
+      expect(r.usedModel, q).toBe(false);
+    }
+  });
   it("'vegetarian, not spicy' combines both", async () => {
     const r = await rec("vegetarian and not spicy");
     expect(shown(r)).toEqual(["Vegetable Tofu Stir-fry", "Mango Sticky Rice", "Thai Iced Tea"]);
-    expect(r.reply).toContain("(mild, vegetarian)");
+    expect(r.reply).toContain("Mild, vegetarian: ");
   });
   it("a category the owner does not have is ignored (the question then goes to the model)", async () => {
     mockModel("We have a few choices.");
@@ -91,10 +111,11 @@ describe("popular: ranked by what diners really ordered here", () => {
     expect(shown(r)).toEqual(["Papaya Salad", "Shrimp Pad Thai", "Thai Iced Tea"]);
     expect(r.reply).toContain("Papaya Salad (฿70, very spicy, ordered 9×)");
   });
-  it("with no orders yet it still answers (menu order) and does not invent order counts", async () => {
+  it("with no orders yet it still answers with a spread of the menu, says it cannot name the most popular, and does not invent order counts", async () => {
     const r = await rec("surprise me");
-    expect(shown(r)).toHaveLength(3);
+    expect(shown(r).length).toBeGreaterThanOrEqual(3);
     expect(r.reply).not.toContain("ordered");
+    expect(r.reply).toMatch(/can't say which dishes are the most popular/);
   });
   it("popularDishes counts the last 30 days of real orders and ignores cancelled ones", async () => {
     const send = (items: object[], table: string) => call(placeOrder, { method: "POST", params: { slug }, body: { table, items } });
@@ -105,6 +126,7 @@ describe("popular: ranked by what diners really ordered here", () => {
     await call(orderAction, { method: "POST", params: { id: String(cancelled.data.id) }, body: { action: "later" } });
     const old = await send([{ id: dish("Papaya Salad"), qty: 50 }], "44");
     run("UPDATE orders SET created_at = datetime('now','-40 day') WHERE id = ?", old.data.id);
+    run("UPDATE orders SET status = 'new' WHERE status = 'picked'");      // only orders staff accepted count as demand
     const p = popularDishes(1);
     expect(p[dish("Mango Sticky Rice")]).toBeGreaterThanOrEqual(5);
     expect(p[dish("Thai Iced Tea")]).toBeGreaterThanOrEqual(1);
@@ -115,21 +137,21 @@ describe("popular: ranked by what diners really ordered here", () => {
   it("the chat endpoint feeds it in: after real orders 'what's popular?' puts them first", async () => {
     noModel();
     const r = await call(chat, { method: "POST", params: { slug }, body: { message: "what's popular?", sessionId: "pop-1", table: "9", lang: "en", preview: true } });
-    expect(r.data.reply).toMatch(/dishes from our menu: Mango Sticky Rice \(฿100, not spicy, ordered \d+×\)/);   // the most-ordered dish is named first
+    expect(r.data.reply).toMatch(/Popular here: Mango Sticky Rice \(฿100, not spicy, ordered \d+×\)/);   // the most-ordered dish is named first
     expect(r.data.dishes[0].name.en).toBe("Mango Sticky Rice");                                                  // and its card is shown first
   });
 });
 
 describe("the allergy profile applies to recommendations", () => {
   it("leaves out dishes with the diner's allergen or with no allergen data, and says so", async () => {
-    const r = await rec("What's spicy?", "en", { profile: ["shellfish"] });
+    const r = await rec("What's spicy?", "en", { profile: ["shellfish"], items: itemsOf(1).map((i) => i.allergens === null ? i : { ...i, allergen_status: "verified" as const }) });
     expect(shown(r)).toEqual(["Steamed Fish with Lime"]);
     expect(r.reply).toContain("Your allergy profile (shellfish) is applied");
     expect(r.reply).toContain("Please confirm with the staff");
     expect(r.reply).not.toMatch(/Tom Yum|Papaya|Green Curry/);
   });
   it("never recommends a dish with no allergen data to a diner with an allergy profile", async () => {
-    const r = await rec("a starter", "en", { profile: ["peanut"] });
+    const r = await rec("a starter", "en", { profile: ["peanut"], items: itemsOf(1).map((i) => i.allergens === null ? i : { ...i, allergen_status: "verified" as const }) });
     expect(r.reply).not.toContain("Fresh Spring Rolls");              // allergen data not provided
     expect(shown(r)).toEqual(["Grilled Pork Skewers"]);
   });
@@ -138,7 +160,7 @@ describe("the allergy profile applies to recommendations", () => {
 describe("Thai and Burmese", () => {
   it("Thai: mild and a budget, in Thai, from the data", async () => {
     const r = await rec("เมนูไม่เผ็ดราคาไม่เกิน 100 บาท", "th");
-    expect(r.reply).toContain("ตามที่คุณบอก (ไม่เผ็ด, ไม่เกิน 100 บาท)");
+    expect(r.reply).toContain("ขอแนะนำเมนูไม่เผ็ด, ไม่เกิน 100 บาท: ");
     expect(r.reply).toContain("ชาไทยเย็น (50 บาท, ไม่เผ็ด)");
     expect(r.reply.trimEnd().endsWith("ครับ")).toBe(true);
     expect(shown(r)).toEqual(["Thai Iced Tea", "Grilled Pork Skewers", "Chicken Fried Rice"]);

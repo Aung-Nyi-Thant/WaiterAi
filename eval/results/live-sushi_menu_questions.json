@@ -1,0 +1,591 @@
+{
+ "label": "gemma4:12b (Ollama), Golden Lotus sushi menu (132 dishes)",
+ "date": "2026-10-20T18:31:57.495Z",
+ "summary": {
+  "overall": {
+   "pass": 58,
+   "total": 58,
+   "pct": 1
+  },
+  "byLang": {
+   "en": {
+    "pass": 44,
+    "total": 44,
+    "pct": 1
+   },
+   "my": {
+    "pass": 5,
+    "total": 5,
+    "pct": 1
+   },
+   "th": {
+    "pass": 9,
+    "total": 9,
+    "pct": 1
+   }
+  },
+  "byCategory": {
+   "allergen": {
+    "pass": 5,
+    "total": 5,
+    "pct": 1
+   },
+   "allergen_category": {
+    "pass": 1,
+    "total": 1,
+    "pct": 1
+   },
+   "allergen_unknown": {
+    "pass": 1,
+    "total": 1,
+    "pct": 1
+   },
+   "ambiguous_order": {
+    "pass": 1,
+    "total": 1,
+    "pct": 1
+   },
+   "availability": {
+    "pass": 3,
+    "total": 3,
+    "pct": 1
+   },
+   "category": {
+    "pass": 13,
+    "total": 13,
+    "pct": 1
+   },
+   "category_rank": {
+    "pass": 2,
+    "total": 2,
+    "pct": 1
+   },
+   "combo_allergen": {
+    "pass": 2,
+    "total": 2,
+    "pct": 1
+   },
+   "combo_contents": {
+    "pass": 4,
+    "total": 4,
+    "pct": 1
+   },
+   "combo_list": {
+    "pass": 5,
+    "total": 5,
+    "pct": 1
+   },
+   "combo_order": {
+    "pass": 2,
+    "total": 2,
+    "pct": 1
+   },
+   "combo_price": {
+    "pass": 5,
+    "total": 5,
+    "pct": 1
+   },
+   "ingredients": {
+    "pass": 3,
+    "total": 3,
+    "pct": 1
+   },
+   "no_section": {
+    "pass": 1,
+    "total": 1,
+    "pct": 1
+   },
+   "open_recommend": {
+    "pass": 2,
+    "total": 2,
+    "pct": 1
+   },
+   "open_set": {
+    "pass": 3,
+    "total": 3,
+    "pct": 1
+   },
+   "out_of_menu": {
+    "pass": 1,
+    "total": 1,
+    "pct": 1
+   },
+   "preference": {
+    "pass": 1,
+    "total": 1,
+    "pct": 1
+   },
+   "recommend_bare": {
+    "pass": 3,
+    "total": 3,
+    "pct": 1
+   }
+  }
+ },
+ "rows": [
+  {
+   "id": "sm-en1",
+   "lang": "en",
+   "category": "combo_list",
+   "pass": true,
+   "ms": 26,
+   "reply": "Sets & Combos (6): [Coke Combo] Yakisoba with Coke (฿99), [Coke Combo] Garlic Fried Rice with Coke (฿99), [Coke Combo] Fatty Beef Don with Coke (฿159), Tontoro Happy Set (฿299), Buta Set (฿499), Omori Set (฿1200). I don't have a list of what comes with Tontoro Happy Set, Buta Set, Omori Set; please ask the staff. Anything else I can help with?"
+  },
+  {
+   "id": "sm-en2",
+   "lang": "en",
+   "category": "combo_list",
+   "pass": true,
+   "ms": 8,
+   "reply": "Sets & Combos (6): [Coke Combo] Yakisoba with Coke (฿99), [Coke Combo] Garlic Fried Rice with Coke (฿99), [Coke Combo] Fatty Beef Don with Coke (฿159), Tontoro Happy Set (฿299), Buta Set (฿499), Omori Set (฿1200). I don't have a list of what comes with Tontoro Happy Set, Buta Set, Omori Set; please ask the staff. Anything else I can help with?"
+  },
+  {
+   "id": "sm-en3",
+   "lang": "en",
+   "category": "combo_list",
+   "pass": true,
+   "ms": 6,
+   "reply": "Sets & Combos (6): [Coke Combo] Yakisoba with Coke (฿99), [Coke Combo] Garlic Fried Rice with Coke (฿99), [Coke Combo] Fatty Beef Don with Coke (฿159), Tontoro Happy Set (฿299), Buta Set (฿499), Omori Set (฿1200). I don't have a list of what comes with Tontoro Happy Set, Buta Set, Omori Set; please ask the staff. Anything else I can help with?"
+  },
+  {
+   "id": "sm-en4",
+   "lang": "en",
+   "category": "combo_contents",
+   "pass": true,
+   "ms": 6,
+   "reply": "I don't have the ingredients or what comes with Omori Set in our menu data. Please confirm with the staff before ordering."
+  },
+  {
+   "id": "sm-en5",
+   "lang": "en",
+   "category": "combo_contents",
+   "pass": true,
+   "ms": 8,
+   "reply": "I don't have the ingredients or what comes with Tontoro Happy Set in our menu data. Please confirm with the staff before ordering."
+  },
+  {
+   "id": "sm-en6",
+   "lang": "en",
+   "category": "combo_price",
+   "pass": true,
+   "ms": 5,
+   "reply": "Tontoro Happy Set is ฿299."
+  },
+  {
+   "id": "sm-en7",
+   "lang": "en",
+   "category": "combo_price",
+   "pass": true,
+   "ms": 4,
+   "reply": "[Coke Combo] Yakisoba with Coke is ฿99."
+  },
+  {
+   "id": "sm-en8",
+   "lang": "en",
+   "category": "combo_price",
+   "pass": true,
+   "ms": 5,
+   "reply": "[Coke Combo] Fatty Beef Don with Coke is ฿159."
+  },
+  {
+   "id": "sm-en9",
+   "lang": "en",
+   "category": "combo_contents",
+   "pass": true,
+   "ms": 6,
+   "reply": "[Coke Combo] Garlic Fried Rice with Coke is made with: Japanese rice, Garlic, Cola."
+  },
+  {
+   "id": "sm-en10",
+   "lang": "en",
+   "category": "combo_order",
+   "pass": true,
+   "ms": 5,
+   "reply": "Added to your picks: [Coke Combo] Garlic Fried Rice with Coke. Tap \"Send to staff\" when you're ready."
+  },
+  {
+   "id": "sm-en11",
+   "lang": "en",
+   "category": "combo_order",
+   "pass": true,
+   "ms": 5,
+   "reply": "Added to your picks: Buta Set. Tap \"Send to staff\" when you're ready."
+  },
+  {
+   "id": "sm-en12",
+   "lang": "en",
+   "category": "combo_allergen",
+   "pass": true,
+   "ms": 5,
+   "reply": "Allergen information is not provided for Omori Set. Please confirm with the staff before ordering."
+  },
+  {
+   "id": "sm-en13",
+   "lang": "en",
+   "category": "combo_allergen",
+   "pass": true,
+   "ms": 5,
+   "reply": "[Coke Combo] Fatty Beef Don with Coke lists these allergens: gluten, soy. Please confirm with the staff before ordering."
+  },
+  {
+   "id": "sm-en14",
+   "lang": "en",
+   "category": "category",
+   "pass": true,
+   "ms": 5,
+   "reply": "Sushi (25): Hachi Ebi Roll (฿212), Salmon Sushi (฿96), Salmon Belly Sushi (฿117), Seared Salmon Sushi (฿106), Salmon Roe Sushi (฿128), Tuna Sushi (฿96), Shrimp Roe Sushi (฿96), Eel Sushi (฿117), Crab Stick Sushi (฿64), Salmon Roll Sushi (฿310), Wagyu Sushi (฿417), Giant Sweet Shrimp Sushi (฿117) and 13 more. Anything else I can help with?"
+  },
+  {
+   "id": "sm-en15",
+   "lang": "en",
+   "category": "category",
+   "pass": true,
+   "ms": 4,
+   "reply": "Sashimi (14): Salmon Sashimi (฿203), Giant Sweet Shrimp Sashimi (฿214), Tuna Sashimi (฿203), Salmon Belly Sashimi (฿235), Shrimp Roe (฿139), Salmon Roe (฿235), Crab Stick (฿85), Scallop Sashimi (฿278), Saba (Mackerel) Sashimi (฿181), Squid Sashimi (฿246), Assorted Sashimi (฿952), Sweet Egg (Tamago) Sashimi (฿96) and 2 more. I don't have a list of what comes with Assorted Sashimi; please ask the staff. Anything else I can help with?"
+  },
+  {
+   "id": "sm-en16",
+   "lang": "en",
+   "category": "category",
+   "pass": true,
+   "ms": 5,
+   "reply": "Drinks (4): Coca-Cola Original (฿30), Coca-Cola Zero Sugar (฿30), Sprite (฿30), Red Soda (฿30). Anything else I can help with?"
+  },
+  {
+   "id": "sm-en17",
+   "lang": "en",
+   "category": "category",
+   "pass": true,
+   "ms": 4,
+   "reply": "Noodles: Yakisoba (฿128, not spicy), Yakisoba with Onsen Egg (฿99, not spicy). Anything else I can help with?"
+  },
+  {
+   "id": "sm-en18",
+   "lang": "en",
+   "category": "category",
+   "pass": true,
+   "ms": 6,
+   "reply": "Soup: Miso Soup (฿42, not spicy), Clear Soup (฿42, not spicy). Anything else I can help with?"
+  },
+  {
+   "id": "sm-en19",
+   "lang": "en",
+   "category": "category",
+   "pass": true,
+   "ms": 6,
+   "reply": "Grilled Skewers (15): Chicken Teriyaki Skewer (฿42), Grilled Chicken Skin (฿32), Grilled Chicken Tail (฿32), Grilled Chicken Liver (฿32), Grilled Chicken Gizzard (฿32), Grilled Chicken Heart (฿32), Grilled Salmon Belly (฿42), Gochujang Chicken (฿42), Japanese Leek Skewer (฿21), Garlic Skewer (฿21), Okra Skewer (฿21), Pumpkin Skewer (฿21) and 3 more. Anything else I can help with?"
+  },
+  {
+   "id": "sm-en20",
+   "lang": "en",
+   "category": "category",
+   "pass": true,
+   "ms": 4,
+   "reply": "Rice & Don (20): Japanese Rice (฿42), Garlic Fried Rice (฿64), Beef Striploin Don (฿256), Fatty Beef Don (฿235), Pork Neck Don (฿171), Pork Loin Don (฿171), Bacon Don (฿171), Gochujang Fatty Pork Don (฿181), Salmon Roe Don (฿374), Eel Don (฿353), Salmon Don (฿267), Minced Tuna Don (฿267) and 8 more. Anything else I can help with?"
+  },
+  {
+   "id": "sm-en21",
+   "lang": "en",
+   "category": "category",
+   "pass": true,
+   "ms": 5,
+   "reply": "Appetizers (44): French Fries (฿96), Mori Ebi (฿160), Hokuto Ebi (฿160), Seaweed Salad (฿74), Addictive Cucumber (฿74), Tuna with Wasabi (฿203), Edamame (฿96), Fried Battered Squid (฿96), Salmon Yum (Spicy Salad) (฿203), Salmon Larb (฿203), Cheese Balls (฿96), Squid Tentacles with Wasabi (฿171) and 32 more. Anything else I can help with?"
+  },
+  {
+   "id": "sm-en22",
+   "lang": "en",
+   "category": "category_rank",
+   "pass": true,
+   "ms": 5,
+   "reply": "The cheapest in Sushi: Crab Stick Sushi (฿64), Sweet Egg (Tamago) Sushi (฿64), Salmon Sushi (฿96). Anything else I can help with?"
+  },
+  {
+   "id": "sm-en23",
+   "lang": "en",
+   "category": "category_rank",
+   "pass": true,
+   "ms": 4,
+   "reply": "The most expensive in Sashimi: Assorted Sashimi (฿952), Surf Clam Sashimi (฿310), Scallop Sashimi (฿278). Anything else I can help with?"
+  },
+  {
+   "id": "sm-en24",
+   "lang": "en",
+   "category": "ingredients",
+   "pass": true,
+   "ms": 5,
+   "reply": "Salmon Sashimi is made with: Salmon."
+  },
+  {
+   "id": "sm-en25",
+   "lang": "en",
+   "category": "ingredients",
+   "pass": true,
+   "ms": 4,
+   "reply": "Garlic Fried Rice is made with: Japanese rice, Garlic."
+  },
+  {
+   "id": "sm-en26",
+   "lang": "en",
+   "category": "ingredients",
+   "pass": true,
+   "ms": 5,
+   "reply": "Edamame is made with: Edamame."
+  },
+  {
+   "id": "sm-en27",
+   "lang": "en",
+   "category": "allergen",
+   "pass": true,
+   "ms": 4,
+   "reply": "Salmon Sashimi lists these allergens: fish. Please confirm with the staff before ordering."
+  },
+  {
+   "id": "sm-en28",
+   "lang": "en",
+   "category": "allergen",
+   "pass": true,
+   "ms": 4,
+   "reply": "Squid Sushi lists these allergens: molluscs. Please confirm with the staff before ordering."
+  },
+  {
+   "id": "sm-en29",
+   "lang": "en",
+   "category": "allergen",
+   "pass": true,
+   "ms": 5,
+   "reply": "Yakisoba lists these allergens: gluten, fish, soy. Please confirm with the staff before ordering."
+  },
+  {
+   "id": "sm-en30",
+   "lang": "en",
+   "category": "allergen",
+   "pass": true,
+   "ms": 5,
+   "reply": "Edamame lists these allergens: soy. Please confirm with the staff before ordering."
+  },
+  {
+   "id": "sm-en31",
+   "lang": "en",
+   "category": "allergen_unknown",
+   "pass": true,
+   "ms": 9,
+   "reply": "Allergen information is not provided for Wagyu Sushi. Please confirm with the staff before ordering."
+  },
+  {
+   "id": "sm-en32",
+   "lang": "en",
+   "category": "recommend_bare",
+   "pass": true,
+   "ms": 5,
+   "reply": "I can't say which dishes are the most popular, because there is no order history to go by. Here are a few from different parts of the menu: French Fries (฿96), Hachi Ebi Roll (฿212), Japanese Rice (฿42), Chicken Teriyaki Skewer (฿42). Tell me what you like (spicy or mild, a budget, a type of dish, vegetarian) and I will narrow it down."
+  },
+  {
+   "id": "sm-en33",
+   "lang": "en",
+   "category": "open_set",
+   "pass": true,
+   "ms": 5,
+   "reply": "Sets & Combos (6): [Coke Combo] Yakisoba with Coke (฿99), [Coke Combo] Garlic Fried Rice with Coke (฿99), [Coke Combo] Fatty Beef Don with Coke (฿159), Tontoro Happy Set (฿299), Buta Set (฿499), Omori Set (฿1200). I don't have a list of what comes with Tontoro Happy Set, Buta Set, Omori Set; please ask the staff. Anything else I can help with?"
+  },
+  {
+   "id": "sm-en34",
+   "lang": "en",
+   "category": "open_set",
+   "pass": true,
+   "ms": 3220,
+   "reply": "I don't have information on whether the Omori Set includes a free dessert. I suggest asking the staff for more details."
+  },
+  {
+   "id": "sm-en35",
+   "lang": "en",
+   "category": "open_set",
+   "pass": true,
+   "ms": 15,
+   "reply": "I don't have that information. Please ask the staff."
+  },
+  {
+   "id": "sm-en36",
+   "lang": "en",
+   "category": "open_recommend",
+   "pass": true,
+   "ms": 8,
+   "reply": "Salmon (21): Salmon Sashimi (฿203), Salmon Belly Sashimi (฿235), Salmon Roe (฿235), Salmon Sushi (฿96), Salmon Belly Sushi (฿117), Seared Salmon Sushi (฿106), Salmon Roe Sushi (฿128), Salmon Roll Sushi (฿310), Salmon Yum (Spicy Salad) (฿203), Salmon Larb (฿203), Salmon Skin Salad (฿128), Salmon Head Simmered in Soy (฿235) and 9 more. Anything else I can help with?"
+  },
+  {
+   "id": "sm-en37",
+   "lang": "en",
+   "category": "open_recommend",
+   "pass": true,
+   "ms": 6735,
+   "reply": "Would you like to see more details on these? Salmon Sushi lists these allergens: fish. Please confirm with the staff before ordering."
+  },
+  {
+   "id": "sm-en38",
+   "lang": "en",
+   "category": "out_of_menu",
+   "pass": true,
+   "ms": 4703,
+   "reply": "I'm sorry, but the restaurant does not serve ramen. Would you like to see our selection of noodles or other dishes instead?"
+  },
+  {
+   "id": "sm-en39",
+   "lang": "en",
+   "category": "availability",
+   "pass": true,
+   "ms": 16,
+   "reply": "Yes, we have Salmon Sushi (฿96). Anything else I can help with?"
+  },
+  {
+   "id": "sm-en40",
+   "lang": "en",
+   "category": "availability",
+   "pass": true,
+   "ms": 8,
+   "reply": "Yes, we have Wagyu Sushi (฿417). Anything else I can help with?"
+  },
+  {
+   "id": "sm-en41",
+   "lang": "en",
+   "category": "ambiguous_order",
+   "pass": true,
+   "ms": 9,
+   "reply": "Which one would you like: Coca-Cola Original (฿30) or Coca-Cola Zero Sugar (฿30)?"
+  },
+  {
+   "id": "sm-en42",
+   "lang": "en",
+   "category": "no_section",
+   "pass": true,
+   "ms": 7,
+   "reply": "I don't see a desserts section on our menu. Our sections are: Sets & Combos, Sashimi, Sushi, Appetizers, Grilled Skewers, Rice & Don, Noodles, Soup, Drinks. Tell me which one you would like to see."
+  },
+  {
+   "id": "sm-en43",
+   "lang": "en",
+   "category": "allergen_category",
+   "pass": true,
+   "ms": 6,
+   "reply": "Dishes that do not list fish: Hachi Ebi Roll, Shrimp Roe Sushi, Giant Sweet Shrimp Sushi, Scallop Sushi, Sea Urchin Roe Sushi, Squid with Shrimp Roe Sushi, Squid Sushi, Surf Clam Sushi, Soft-Shell Crab Roll. This comes from the allergen data only, which can be incomplete. Allergen information is not provided for: Wagyu Sushi, Special Sushi, Foie Gras Sushi. Please confirm with the staff before ordering."
+  },
+  {
+   "id": "sm-en44",
+   "lang": "en",
+   "category": "preference",
+   "pass": true,
+   "ms": 6,
+   "reply": "Shrimp (7): Giant Sweet Shrimp Sashimi (฿214), Shrimp Roe (฿139), Shrimp Roe Sushi (฿96), Giant Sweet Shrimp Sushi (฿117), Squid with Shrimp Roe Sushi (฿149), Squid with Shrimp Roe (฿171), Shrimp Tempura (฿160). Anything else I can help with?"
+  },
+  {
+   "id": "sm-th1",
+   "lang": "th",
+   "category": "combo_list",
+   "pass": true,
+   "ms": 9,
+   "reply": "หมวดเซ็ต/โปรโมชัน มี 6 รายการ: [อร่อยซ่ากับโค้ก] ยากิโซบะพร้อมโค้ก (99 บาท), [อร่อยซ่ากับโค้ก] ข้าวผัดกระเทียมพร้อมโค้ก (99 บาท), [อร่อยซ่ากับโค้ก] ข้าวหน้าเนื้อติดมันพร้อมโค้ก (159 บาท), Tontoro Happy Set (299 บาท), Buta Set (499 บาท), Omori Set (1200 บาท)ครับ ยังไม่มีข้อมูลว่า Tontoro Happy Set, Buta Set, Omori Set มีอะไรบ้าง กรุณาสอบถามพนักงานครับ มีอะไรให้ช่วยอีกไหมครับ"
+  },
+  {
+   "id": "sm-th2",
+   "lang": "th",
+   "category": "combo_contents",
+   "pass": true,
+   "ms": 9,
+   "reply": "ยังไม่มีข้อมูลส่วนผสมหรือรายการที่มาพร้อมกับOmori Setในข้อมูลเมนูครับ กรุณายืนยันกับพนักงานก่อนสั่งอาหารครับ"
+  },
+  {
+   "id": "sm-th3",
+   "lang": "th",
+   "category": "combo_price",
+   "pass": true,
+   "ms": 6,
+   "reply": "Buta Set ราคา 499 บาทครับ"
+  },
+  {
+   "id": "sm-th4",
+   "lang": "th",
+   "category": "category",
+   "pass": true,
+   "ms": 5,
+   "reply": "หมวดซูชิ มี 25 รายการ: ฮาจิอีบิโรล (212 บาท), ซูชิแซลม่อน (96 บาท), ซูชิท้องปลาแซลม่อน (117 บาท), ซูชิแซลม่อนเบิร์น (106 บาท), ซูชิไข่ปลาแซลม่อน (128 บาท), ซูชิทูน่า (96 บาท), ซูชิไข่กุ้ง (96 บาท), ซูชิปลาไหล (117 บาท), ซูชิปูอัด (64 บาท), ซูชิแซลม่อนโรล (310 บาท), ซูชิวากิว (417 บาท), ซูชิกุ้งหวานยักษ์ (117 บาท) และอีก 13 รายการครับ มีอะไรให้ช่วยอีกไหมครับ"
+  },
+  {
+   "id": "sm-th5",
+   "lang": "th",
+   "category": "category",
+   "pass": true,
+   "ms": 5,
+   "reply": "หมวดเครื่องดื่ม มี 4 รายการ: โค๊กออริจินัล (30 บาท), โค๊กไม่มีน้ำตาล (30 บาท), สไปร์ท (30 บาท), น้ำแดง (30 บาท)ครับ มีอะไรให้ช่วยอีกไหมครับ"
+  },
+  {
+   "id": "sm-th6",
+   "lang": "th",
+   "category": "category",
+   "pass": true,
+   "ms": 7,
+   "reply": "ขอแนะนำเมนูซุป: ซุบมิโซะ (42 บาท, ไม่เผ็ด), ซุบใส (42 บาท, ไม่เผ็ด)ครับ มีอะไรให้ช่วยอีกไหมครับ"
+  },
+  {
+   "id": "sm-th7",
+   "lang": "th",
+   "category": "availability",
+   "pass": true,
+   "ms": 5,
+   "reply": "มีซูชิแซลม่อน (96 บาท)ครับ มีอะไรให้ช่วยอีกไหมครับ"
+  },
+  {
+   "id": "sm-th8",
+   "lang": "th",
+   "category": "recommend_bare",
+   "pass": true,
+   "ms": 8,
+   "reply": "ยังไม่มีข้อมูลการสั่งที่บอกได้ว่าเมนูไหนขายดีครับ ขอยกตัวอย่างจากหลายหมวดของเมนู: เฟรนฟราย (96 บาท), ฮาจิอีบิโรล (212 บาท), ข้าวญี่ปุ่น (42 บาท), ไก่เทอริยากิ (42 บาท)ครับ บอกได้เลยว่าชอบแบบไหน (เผ็ดหรือไม่เผ็ด งบเท่าไร ประเภทอาหาร มังสวิรัติ) แล้วจะช่วยเลือกให้ครับ"
+  },
+  {
+   "id": "sm-th9",
+   "lang": "th",
+   "category": "allergen",
+   "pass": true,
+   "ms": 5,
+   "reply": "เมนูที่มี หอย ได้แก่ หอยเชลซูชิ, ซูชิปลาหมึกไข่กุ้ง, ซูชิปลาหมึก, ซูชิหอยปีกนกครับ ยังไม่มีข้อมูลสารก่อภูมิแพ้ของ: ซูชิวากิว, ซูชิสเปเชี่ยว, ซูชิตับห่านครับ กรุณายืนยันกับพนักงานก่อนสั่งอาหารครับ"
+  },
+  {
+   "id": "sm-my1",
+   "lang": "my",
+   "category": "combo_list",
+   "pass": true,
+   "ms": 6,
+   "reply": "ဆက်များ မှာ ၆ မျိုး ရှိပါတယ်ခင်ဗျာ။ [Coke Combo] Yakisoba with Coke (၉၉ ဘတ်)၊ [Coke Combo] Garlic Fried Rice with Coke (၉၉ ဘတ်)၊ [Coke Combo] Fatty Beef Don with Coke (၁၅၉ ဘတ်)၊ Tontoro Happy Set (၂၉၉ ဘတ်)၊ Buta Set (၄၉၉ ဘတ်)၊ Omori Set (၁၂၀၀ ဘတ်)။ Tontoro Happy Set၊ Buta Set၊ Omori Set မှာ ဘာတွေပါလဲဆိုတာ အချက်အလက် မရှိပါဘူး၊ ဝန်ထမ်းကို မေးပေးပါခင်ဗျာ။ ဘာကူညီပေးရမလဲခင်ဗျာ?"
+  },
+  {
+   "id": "sm-my2",
+   "lang": "my",
+   "category": "combo_price",
+   "pass": true,
+   "ms": 5,
+   "reply": "Omori Set ဈေးနှုန်းက ၁၂၀၀ ဘတ် ဖြစ်ပါတယ်ခင်ဗျာ။"
+  },
+  {
+   "id": "sm-my3",
+   "lang": "my",
+   "category": "category",
+   "pass": true,
+   "ms": 4,
+   "reply": "အဖျော်ယမကာ မှာ ၄ မျိုး ရှိပါတယ်ခင်ဗျာ။ Coca-Cola Original (၃၀ ဘတ်)၊ Coca-Cola Zero Sugar (၃၀ ဘတ်)၊ Sprite (၃၀ ဘတ်)၊ Red Soda (၃၀ ဘတ်)။ ဘာကူညီပေးရမလဲခင်ဗျာ?"
+  },
+  {
+   "id": "sm-my4",
+   "lang": "my",
+   "category": "category",
+   "pass": true,
+   "ms": 4,
+   "reply": "ဆူရှီ မှာ ၂၅ မျိုး ရှိပါတယ်ခင်ဗျာ။ Hachi Ebi ရိုးလ် (၂၁၂ ဘတ်)၊ ဆော်လမွန် ဆူရှီ (၉၆ ဘတ်)၊ ဆော်လမွန်ဗိုက် ဆူရှီ (၁၁၇ ဘတ်)၊ ဆော်လမွန်ကင် ဆူရှီ (၁၀၆ ဘတ်)၊ ဆော်လမွန်ငါးဥ ဆူရှီ (၁၂၈ ဘတ်)၊ တူနာ ဆူရှီ (၉၆ ဘတ်)၊ ပုစွန်ဥ ဆူရှီ (၉၆ ဘတ်)၊ Eel ဆူရှီ (၁၁၇ ဘတ်)၊ Crab Stick ဆူရှီ (၆၄ ဘတ်)၊ ဆော်လမွန် ရိုးလ် ဆူရှီ (၃၁၀ ဘတ်)၊ Wagyu ဆူရှီ (၄၁၇ ဘတ်)၊ ပုစွန်ကြီး ဆူရှီ (၁၁၇ ဘတ်) နဲ့ ၁၃ မျိုး ထပ်ရှိပါတယ်။ ဘာကူညီပေးရမလဲခင်ဗျာ?"
+  },
+  {
+   "id": "sm-my5",
+   "lang": "my",
+   "category": "recommend_bare",
+   "pass": true,
+   "ms": 5,
+   "reply": "ဘယ်ဟင်းလျာက လူကြိုက်အများဆုံးလဲဆိုတာ ပြောနိုင်တဲ့ မှာယူမှုမှတ်တမ်း မရှိသေးပါဘူးခင်ဗျာ။ မီနူးအမျိုးမျိုးထဲက အာလူးကြော် (၉၆ ဘတ်)၊ Hachi Ebi ရိုးလ် (၂၁၂ ဘတ်)၊ ဂျပန်ထမင်း (၄၂ ဘတ်)၊ Chicken Teriyaki Skewer (၄၂ ဘတ်) တို့ကို ဥပမာပြပါတယ်ခင်ဗျာ။ စပ်/မစပ်၊ ဘတ်ဈေး၊ အမျိုးအစား၊ သက်သတ်လွတ် ဘာကြိုက်လဲ ပြောပေးရင် ရွေးပေးပါ့မယ်ခင်ဗျာ။"
+  }
+ ]
+}

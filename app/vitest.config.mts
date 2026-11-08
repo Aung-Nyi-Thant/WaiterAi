@@ -6,7 +6,7 @@ export default defineConfig({
   resolve: { alias: { "@": path.resolve(path.dirname(fileURLToPath(import.meta.url)), "src") } },
   test: {
     environment: "node",
-    include: ["tests/**/*.test.ts"],
+    include: ["tests/**/*.test.{ts,tsx}"],
     exclude: ["tests/e2e/**"],
     setupFiles: ["tests/setup.ts"],
     testTimeout: 20_000,

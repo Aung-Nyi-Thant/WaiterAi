@@ -1,17 +1,19 @@
 // The language model path: whatever the model says is checked before the diner sees it.
-// Questions here are open ones ("what do you recommend?") that the rules do not handle.
+// Questions here are open ones that the rules do not handle. They are not requests for a suggestion: a rejected reply to one of those is
+// replaced by dishes from the database, not by the refusal (see ai-helpful.test.ts).
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { aiCtx, mockModel } from "./helpers";
-import { answer } from "@/modules/ai/ai";
+import { answer, CHAT_MAX_TOKENS, CHAT_TIMEOUT_MS } from "@/modules/ai/ai";
 
 afterEach(() => { vi.unstubAllGlobals(); });
-const OPEN = "What would you recommend on a hot day?";
+const OPEN = "Tell me about this place";
 const ask = async (reply: string | Error, msg = OPEN, ctxOver: Record<string, unknown> = {}) => {
   const calls = mockModel(reply);
   const r = await answer(msg, "en", await aiCtx(ctxOver));
   return { r, calls };
 };
-const REFUSAL = "I don't have that information. Please ask the staff.";
+// what the diner sees when the model's reply is thrown away: the staff sentence (the app adds the Call staff button), never the model's words
+const REFUSAL = "That's best answered by our staff. Tap the button below and I'll call them for you.";
 
 describe("AI-9 / ST-3 open questions go to the model, with the restaurant's data (menu, hours, FAQs, owner rules) as the only source", () => {
   it("passes a good reply through and marks it answered", async () => {
@@ -38,8 +40,17 @@ describe("AI-9 / ST-3 open questions go to the model, with the restaurant's data
     const { calls } = await ask("ok", OPEN, { history });
     const msgs = calls[0].body.messages;
     expect(msgs.map((m: any) => m.content).slice(1)).toEqual(["turn 3", "turn 4", OPEN]);
-    expect(calls[0].body.options).toMatchObject({ temperature: 0.2, num_predict: 220 });
+    expect(calls[0].body.options).toMatchObject({ temperature: 0.2, num_predict: 130 });
     expect(calls[0].body.stream).toBe(false);
+  });
+  it("gives Thai and Burmese a smaller token budget than English, so a long reply still finishes inside the 15 s limit", async () => {
+    const budget = async (lang: "en" | "th" | "my", msg: string) => { const calls = mockModel("ok"); await answer(msg, lang, await aiCtx()); return calls[0].body.options.num_predict; };
+    expect(await budget("en", OPEN)).toBe(130);
+    expect(await budget("th", "ร้านนี้มีอะไรแนะนำสำหรับเด็กไหม")).toBe(115);
+    expect(await budget("my", "ဒီနေ့ ပူလွန်းတယ် ဘာသောက်သင့်လဲ")).toBe(100);
+    // the budget in time: ~1 s to read the prompt + tokens at the measured ~12 tokens a second, for a reply that uses all of it
+    for (const t of Object.values(CHAT_MAX_TOKENS)) expect(1 + t / 12).toBeLessThan(12);
+    expect(CHAT_TIMEOUT_MS).toBe(15_000);
   });
   it("tells the model the owner's voice and rules", async () => {
     const c = await aiCtx();
@@ -94,8 +105,8 @@ describe("AI-3 / AI-10 / NFR-S3 a wrong or unsafe model reply is replaced", () =
   it("keeps amounts that are real menu prices (any language), and numbers the diner wrote themselves", async () => {
     expect((await ask("Try the Thai Iced Tea for 50 THB or the tofu for ฿90.")).r.reply).toBe("Try the Thai Iced Tea for 50 THB or the tofu for ฿90.");
     expect((await ask("ราคา 120 บาท ครับ")).r.reply).toBe("ราคา 120 บาท ครับ");
-    expect((await ask("Here is what fits under 150 baht: the Thai Iced Tea.", "I only have 150 baht, what can I eat?")).r.reply).toContain("under 150 baht");
-    expect((await ask("Here is what fits under 150 baht: the Thai Iced Tea.", "what can I eat?")).r.reply).toBe(REFUSAL);   // 150 is neither a menu price nor the diner's number
+    expect((await ask("Here is what fits under 150 baht: the Thai Iced Tea.", "I only have 150 baht, is that enough for lunch?")).r.reply).toContain("under 150 baht");
+    expect((await ask("Here is what fits under 150 baht: the Thai Iced Tea.", "is that enough?")).r.reply).toBe(REFUSAL);   // 150 is neither a menu price nor the diner's number
   });
   it.each([
     ["a price before the dish that belongs to a different dish", "For ฿50 you can get the Shrimp Pad Thai."],
@@ -117,9 +128,9 @@ describe("AI-3 / AI-10 / NFR-S3 a wrong or unsafe model reply is replaced", () =
     expect(r.reply).toBe(reply);
   });
   it("lets the diner's own budget be repeated next to a dish, but never as the dish's price", async () => {
-    const ok = await ask("With 150 baht you can have the Chicken Fried Rice (80 THB).", "I only have 150 baht, what can I eat?");
+    const ok = await ask("With 150 baht you can have the Chicken Fried Rice (80 THB).", "I only have 150 baht, is that enough for lunch?");
     expect(ok.r.reply).toContain("With 150 baht");
-    expect((await ask("The Chicken Fried Rice is 150 baht.", "I only have 150 baht, what can I eat?")).r.reply).toBe(REFUSAL);          // the diner's budget is never the dish's price
+    expect((await ask("The Chicken Fried Rice is 150 baht.", "I only have 150 baht, is that enough for lunch?")).r.reply).toBe(REFUSAL);          // the diner's budget is never the dish's price
   });
   it("accepts a correct price", async () => {
     const { r } = await ask("The Shrimp Pad Thai is ฿120 and very popular.");
@@ -132,9 +143,9 @@ describe("AI-3 / AI-10 / NFR-S3 a wrong or unsafe model reply is replaced", () =
   it("the replacement refusal is in the diner's language and voice", async () => {
     mockModel("This is safe to eat");
     const c = await aiCtx();
-    expect((await answer("อะไรอร่อยบ้างวันนี้ ช่วยเลือกให้หน่อย", "th", c)).reply).toBe("ขออภัย ไม่มีข้อมูลนี้ครับ กรุณาสอบถามพนักงานครับ");
+    expect((await answer("ร้านนี้เป็นยังไงบ้าง", "th", c)).reply).toBe("เรื่องนี้พนักงานตอบได้ดีที่สุดครับ กดปุ่มด้านล่างเพื่อเรียกพนักงานได้เลยครับ");
     mockModel("This is safe to eat");
-    expect((await answer("ဘာကောင်းလဲ ရွေးပေးပါ", "my", c)).reply).toContain("ဝန်ထမ်းကို မေးမြန်းပေးပါ");
+    expect((await answer("ဒီဆိုင်အကြောင်း ပြောပြပါ", "my", c)).reply).toContain("ဝန်ထမ်းက အကောင်းဆုံး ဖြေပေးနိုင်ပါတယ်");
   });
 });
 
@@ -280,5 +291,51 @@ describe("a model reply that refers to the staff counts as 'unanswered' for the 
     const { r } = await ask("I'm not sure, please ask the staff about that.");
     expect(r.answered).toBe(false);
     expect(r.reply).toContain("ask the staff");
+  });
+});
+
+describe("R6 a model reply must not contradict the database about availability (found by the extended live eval, limit L11)", () => {
+  // demo data: Coconut Ice Cream is sold out, everything else is on sale
+  it.each([
+    "I recommend the Thai Iced Tea for 50 THB, but unfortunately it is sold out today.",
+    "Thai Iced Tea is currently unavailable.",
+    "Sorry, the Shrimp Pad Thai is out of stock right now. Please ask the staff.",
+  ])("replaces a claim that a dish on sale is sold out: %s", async (lie) => {
+    const { r } = await ask(`${lie}\nACTION: none`);
+    expect(r.reply).toBe(REFUSAL);
+    expect(r.answered).toBe(false);
+  });
+  it("replaces a recommendation of a dish that is sold out", async () => {
+    const { r } = await ask("On a hot day I recommend the Coconut Ice Cream for 60 THB.\nACTION: none");
+    expect(r.reply).toBe(REFUSAL);
+  });
+  it("keeps a true statement that a sold-out dish is sold out", async () => {
+    const { r } = await ask("The Coconut Ice Cream is sold out today, sorry.\nACTION: none");
+    expect(r.reply).toContain("Coconut Ice Cream is sold out");
+  });
+  it("keeps 'X is sold out, try Y' (names both, ambiguous on purpose)", async () => {
+    const { r } = await ask("Coconut Ice Cream is sold out, but you could try the Thai Iced Tea for 50 THB.\nACTION: none");
+    expect(r.reply).toContain("Thai Iced Tea");
+  });
+  it("keeps an ordinary recommendation of dishes on sale", async () => {
+    const { r } = await ask("I recommend the Thai Iced Tea for 50 THB. It is refreshing.\nACTION: none");
+    expect(r.reply).toContain("Thai Iced Tea");
+  });
+});
+
+describe("AI-10 the model may not call a dish popular (the data holds no popularity)", () => {
+  it("cuts the claim and keeps the rest, in English, Thai and Burmese", async () => {
+    const { withoutPopularityClaims: cut } = await import("@/modules/ai/ai");
+    expect(cut("You might also enjoy the Tuna Sushi (96 THB) or the popular Gyoza (96 THB).")).toBe("You might also enjoy the Tuna Sushi (96 THB) or Gyoza (96 THB).");
+    expect(cut("Our most popular dishes are Salmon Sushi and Tuna Sushi.")).toBe("dishes are Salmon Sushi and Tuna Sushi.");
+    expect(cut("The Salmon Sushi is a best seller.")).toBe("The Salmon Sushi is a dish.");
+    expect(cut("ผมขอแนะนำเป็นเมนูยอดนิยมอย่าง Salmon Sashimi (203 บาท) ครับ")).toBe("ผมขอแนะนำเป็นเมนูอย่าง Salmon Sashimi (203 บาท) ครับ");
+    expect(cut("လူကြိုက်များတဲ့ Salmon Sushi ကို အကြံပြုပါတယ်")).toBe("Salmon Sushi ကို အကြံပြုပါတယ်");
+  });
+  it("leaves an honest 'I don't have popularity information' alone", async () => {
+    const { withoutPopularityClaims: cut } = await import("@/modules/ai/ai");
+    const honest = "I can't say which dishes are the most popular, because there is no order history.";
+    expect(cut(honest)).toBe(honest);
+    expect(cut("I don't have information on which dish is popular.")).toBe("I don't have information on which dish is popular.");
   });
 });

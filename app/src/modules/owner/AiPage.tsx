@@ -16,7 +16,7 @@ export default function AiPage() {
   }
   return (
     <>
-      <div><h1 style={{ fontSize: 40 }}>AI waiter</h1><p className="soft-l" style={{ margin: "6px 0 0" }}>Choose how your assistant sounds, then try it on the right.</p></div>
+      <div><h1 style={{ fontSize: 28 }}>AI waiter</h1><p className="soft-l" style={{ margin: "6px 0 0" }}>Choose how your assistant sounds, then try it on the right.</p></div>
       <div className="grid2" style={{ alignItems: "start" }}>
         <div className="sa-plate r-xl" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 14 }}>
           <div className="grid2" style={{ gap: 12 }}>

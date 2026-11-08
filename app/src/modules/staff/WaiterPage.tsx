@@ -2,9 +2,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Icon from "@/modules/platform/Icon";
+import { useFresh } from "@/modules/platform/Presence";
 import SwipeCard from "@/modules/staff/SwipeCard";
 import { beep } from "@/modules/staff/beep";
-import { api, usePoll, minutesAgo } from "@/modules/platform/client";
+import { api, usePoll } from "@/modules/platform/client";
 import { ALLERGEN_LABEL } from "@/modules/platform/constants";
 
 const KIND: Record<string, string> = { bill: "Bill, please", help: "Needs help at the table", other: "Needs the staff" };
@@ -16,6 +17,7 @@ export default function Waiter() {
   const [d, setD] = useState<Floor | null>(null);
   const [tab, setTab] = useState<"feed" | "bills" | "tables">("feed");
   const [dishesOpen, setDishesOpen] = useState(false);
+  const [allergyConfirmed, setAllergyConfirmed] = useState<Set<number>>(new Set());
   const [err, setErr] = useState("");
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   // A chef's login lands them on /staff/chef, but nothing stops a stale tab or a typed
@@ -34,7 +36,10 @@ export default function Waiter() {
     if (seen.current && ids.some((id) => !seen.current!.has(id))) beep();
     seen.current = new Set(ids);
   }, [d]);
-  const act = async (path: string, body?: any) => { try { await api(path, { body: body ?? {} }); } catch (e: any) { setErr(e.message); } load(); };
+  // a new call, pick or ready order rises in and glows once
+  const fresh = useFresh(d ? [...d.calls.map((c) => `call-${c.id}`), ...d.picks.map((o) => `pick-${o.id}`), ...d.active.filter((o) => o.status === "ready").map((o) => `ready-${o.id}`)] : []);
+  // A refused action refreshes the floor first and shows its message after it: the refresh clears the old error, and used to clear this one too.
+  const act = async (path: string, body?: any) => { let msg = ""; try { await api(path, { body: body ?? {} }); } catch (e: any) { msg = e.message; } await load(); if (msg) setErr(msg); };
   const logout = async () => { await api("/api/auth/logout", { body: {} }); router.push("/staff"); };
   if (!d) return <div className="sa-app" data-theme="night" style={{ padding: 40 }}>{err || "Loading…"}</div>;
 
@@ -52,9 +57,10 @@ export default function Waiter() {
   const dishesAt = (n: string) => d.active.filter((o) => o.table === n).reduce((s, o) => s + o.items.reduce((t: number, i: any) => t + i.qty, 0), 0);
   // Call slips hang in longest-wait-first order, and turn urgent (cherry band + flag) after 5 minutes.
   const waited = (at: string) => Math.round((Date.now() - new Date(at).getTime()) / 60000);
+  const ageLabel = (at: string) => { const mins = Math.max(0, waited(at)); return mins < 1 ? "Just now" : mins < 60 ? `${mins} min ago` : `${Math.floor(mins / 60)} h ${mins % 60} min ago`; };
   const calls = [...d.calls].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-    // waiting-time colour for a pick: green under 5 min, yellow from 5 min, red from 10 min
-  const waitColor = (at: string) => { const m = (Date.now() - new Date(at).getTime()) / 60000; return m >= 10 ? "#ff6b6b" : m >= 5 ? "#ffd98a" : "#3ddc97"; };
+    // waiting-time shade for a pick: light grey under 5 min, mid grey from 5 min, black from 10 min
+  const waitColor = (at: string) => { const m = (Date.now() - new Date(at).getTime()) / 60000; return m >= 10 ? "var(--ink)" : m >= 5 ? "var(--ink-muted)" : "var(--line-strong)"; };
 
   return (
     <div className="sa-app" data-theme="night">
@@ -85,25 +91,26 @@ export default function Waiter() {
               const resolve = () => (b ? act(`/api/staff/bills/${encodeURIComponent(c.table)}`) : act(`/api/staff/calls/${c.id}`));
               return (
               <SwipeCard key={`call-${c.id}`} onSwipeRight={resolve} rightLabel={b ? "Mark paid" : "Done"}>
-                <div className={`sa-call${long ? " sa-call--urgent" : ""}`}>
+                <div className={`sa-call${long ? " sa-call--urgent" : ""}${fresh.has(`call-${c.id}`) ? " sa-fresh" : ""}`}>
                   <div className="sa-call__table"><small>Table</small><b>{c.table || "?"}</b></div>
-                  <div><p className="sa-call__why">{(KIND[c.kind] || KIND.other).toUpperCase()}{b && <> · ฿{b.total}</>}</p><p className={`sa-call__wait${long ? " sa-call__wait--long" : ""}`}>{mins < 1 ? "Just called" : `Waiting ${mins} min`}</p></div>
+                  <div><p className="sa-call__why">{(KIND[c.kind] || KIND.other).toUpperCase()}{b && <> · ฿{b.total}</>}</p><p className={`sa-call__wait${long ? " sa-call__wait--long" : ""}`}>{mins < 1 ? "Just called" : mins < 60 ? `Waiting ${mins} min` : `Waiting ${Math.floor(mins / 60)} h ${mins % 60} min`}</p></div>
                   <button type="button" className="sa-btn sa-btn--ok sa-btn--sm" onClick={resolve}><Icon name="check" />{b ? "Mark paid" : "Done"}</button>
                 </div>
               </SwipeCard>); })}
           </div>
         )}
         {tab === "feed" && d.picks.map((o) => (
-          <SwipeCard key={`pick-${o.id}`} onSwipeRight={() => act(`/api/staff/orders/${o.id}`, { action: "take" })} onSwipeLeft={() => act(`/api/staff/orders/${o.id}`, { action: "later" })} rightLabel="Take order" leftLabel="Dismiss">
-            <article className="sa-ticket" style={{ borderLeft: `4px solid ${waitColor(o.createdAt)}` }}>
-              <div className="sa-ticket__head"><div className="sa-ticket__table">T{o.table || "?"}</div><div className="sa-ticket__meta">{{ en: "English", th: "Thai", my: "Burmese" }[o.lang as string]} · {minutesAgo(o.createdAt)}<br /><span className="sa-status sa-status--new">Picks</span></div></div>
+          <SwipeCard key={`pick-${o.id}`} onSwipeRight={() => o.allergy && !allergyConfirmed.has(o.id) ? setErr("Confirm the diner's allergy before taking this order.") : act(`/api/staff/orders/${o.id}`, { action: "take", allergyConfirmed: !!o.allergy })} onSwipeLeft={() => act(`/api/staff/orders/${o.id}`, { action: "later" })} rightLabel="Take order" leftLabel="Dismiss">
+            <article className={`sa-ticket${fresh.has(`pick-${o.id}`) ? " sa-fresh" : ""}`} style={{ "--wait": waitColor(o.createdAt) } as React.CSSProperties}>
+              <div className="sa-ticket__head"><div className="sa-ticket__table">T{o.table || "?"}</div><div className="sa-ticket__meta">{{ en: "English", th: "Thai", my: "Burmese" }[o.lang as string]} · {ageLabel(o.createdAt)}<br /><span className="sa-status sa-status--new">{waited(o.createdAt) >= 60 ? "Old picks" : "Picks"}</span></div></div>
               <ul className="sa-ticket__lines">{o.items.map((i: any, k: number) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: read-only list of order lines (the same dish can appear twice), never reordered
-                <li key={k}><b>{i.qty}×</b><span>{i.name} <LineFlag flag={i.flag} /></span><span className="sa-ticket__price">฿{i.price * i.qty}</span></li>
+                <li key={k}><b>{i.qty}×</b><span>{i.name} <LineFlag flag={i.flag} status={i.allergenStatus} /></span><span className="sa-ticket__price">฿{i.price * i.qty}</span></li>
               ))}</ul>
               {o.allergy && <AllergyBanner allergen={o.allergy} note="Confirm with the kitchen before ordering." />}
+              {o.allergy && <label className="sa-allergy-check"><input type="checkbox" checked={allergyConfirmed.has(o.id)} onChange={(e) => setAllergyConfirmed((old) => { const next = new Set(old); if (e.target.checked) next.add(o.id); else next.delete(o.id); return next; })} /> I discussed the allergy with the diner and kitchen, including recipe and cross-contact.</label>}
               <div className="sa-ticket__actions">
-                <button type="button" className="sa-btn sa-btn--staff" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "take" })}>Take order</button>
+                <button type="button" className="sa-btn sa-btn--staff" disabled={!!o.allergy && !allergyConfirmed.has(o.id)} onClick={() => act(`/api/staff/orders/${o.id}`, { action: "take", allergyConfirmed: !!o.allergy })}>Take order</button>
                 <button type="button" className="sa-btn sa-btn--quiet" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "later" })}>Dismiss</button>
               </div>
             </article>
@@ -111,11 +118,11 @@ export default function Waiter() {
         ))}
         {tab === "feed" && ready.map((o) => (
           <SwipeCard key={`ready-${o.id}`} onSwipeRight={() => act(`/api/staff/orders/${o.id}`, { action: "served" })} rightLabel="Served">
-            <article className="sa-ticket sa-ticket--ready">
+            <article className={`sa-ticket sa-ticket--ready${fresh.has(`ready-${o.id}`) ? " sa-fresh" : ""}`}>
               <div className="sa-ticket__head"><div className="sa-ticket__table">T{o.table || "?"}</div><div className="sa-ticket__meta">#{o.id}<br /><span className="sa-status sa-status--ready">Ready</span></div></div>
               <ul className="sa-ticket__lines">{o.items.map((i: any, k: number) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: read-only list of order lines (the same dish can appear twice), never reordered
-                <li key={k}><b>{i.qty}×</b><span>{i.name} <LineFlag flag={i.flag} /></span></li>
+                <li key={k}><b>{i.qty}×</b><span>{i.name} <LineFlag flag={i.flag} status={i.allergenStatus} /></span></li>
               ))}</ul>
               <button type="button" className="sa-btn sa-btn--ok sa-btn--block" onClick={() => act(`/api/staff/orders/${o.id}`, { action: "served" })}><Icon name="check" />Served</button>
             </article>
@@ -168,10 +175,10 @@ export default function Waiter() {
 const Empty = ({ text }: { text: string }) => <div className="sa-plate sa-empty">{text}</div>;
 
 // A dish line that clashes with the diner's allergy profile: the allergens the dish lists, or "unknown" when the dish has no allergen data.
-export function LineFlag({ flag }: { flag?: string }) {
-  if (!flag) return null;
-  const text = flag === "unknown" ? "Allergen data missing" : flag.split(",").map((a) => ALLERGEN_LABEL[a] || a).join(", ");
-  return <span className="sa-tag sa-tag--alert" title="Clashes with the diner's allergy profile">⚠ {text}</span>;
+export function LineFlag({ flag, status }: { flag?: string; status?: string }) {
+  if (!flag && (!status || status === "verified")) return null;
+  const text = flag === "unknown" || status === "unknown" ? "Allergen data missing" : flag === "estimated" ? "Allergen list estimated" : flag ? `${flag.split(",").map((a) => ALLERGEN_LABEL[a] || a).join(", ")}${status === "estimated" ? " · estimated list" : ""}` : "Allergen list estimated";
+  return <span className="sa-tag sa-tag--alert" title={flag && flag !== "estimated" ? "Clashes with the diner's allergy profile" : "Confirm the recipe and supplier labels with the kitchen"}><Icon name="alert" size={13} />{text}</span>;
 }
 
 // The design system's allergy banner: caution-sign yellow, the allergen in big type. Never dismissible.
@@ -184,17 +191,28 @@ export function AllergyBanner({ allergen, note }: { allergen: string; note: stri
   );
 }
 
-// Sold-out switches: on (cherry) means the dish is sold out today, as the label says.
+// Keep sold-out dishes visible first; search makes a large menu manageable during service.
 export function SoldOutList({ dishes, onToggle }: { dishes: { id: number; name: string; available: number | boolean }[]; onToggle: (d: { id: number; available: number | boolean }) => void }) {
+  const [query, setQuery] = useState("");
+  const [showAll, setShowAll] = useState(false);
+  const needle = query.trim().toLocaleLowerCase();
+  const matching = dishes.filter((dish) => dish.name.toLocaleLowerCase().includes(needle));
+  const ordered = [...matching].sort((a, b) => Number(Boolean(a.available)) - Number(Boolean(b.available)) || a.name.localeCompare(b.name));
+  const visible = needle || showAll ? ordered : ordered.filter((dish) => !dish.available).concat(ordered.filter((dish) => dish.available).slice(0, 12));
+  const soldOut = dishes.filter((dish) => !dish.available).length;
   return (
     <div className="sold-list">
-      {dishes.map((x) => (
+      <label className="sold-list__search"><span>Find a dish</span><input type="search" className="in-l" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by dish name" /></label>
+      <p className="sold-list__count">{soldOut} sold out · {dishes.length - soldOut} available</p>
+      {visible.length === 0 && <p className="muted">No dishes match that search.</p>}
+      {visible.map((x) => (
         <label key={x.id} className="sa-switch">
           <input type="checkbox" checked={!x.available} onChange={() => onToggle(x)} aria-label={`${x.name}: sold out today`} />
           <span className="sa-switch__track" />
           <span style={{ flex: 1 }}>{x.name}</span>
         </label>
       ))}
+      {!needle && !showAll && ordered.length > visible.length && <button type="button" className="sa-btn sa-btn--quiet sold-list__more" onClick={() => setShowAll(true)}>Show all {dishes.length} dishes</button>}
     </div>
   );
 }

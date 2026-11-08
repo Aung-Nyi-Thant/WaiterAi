@@ -1,5 +1,5 @@
 import { restaurantBySlug } from "@/modules/platform/menu";
-import { get } from "@/modules/platform/db";
+import { all, get } from "@/modules/platform/db";
 import { tableBills } from "@/modules/staff/orders";
 import { json, bad } from "@/modules/platform/http";
 
@@ -17,8 +17,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
   const code = q.get("r") || "";
   const empty = { table, lines: [], total: 0, pending: [], asked: false };
   if (!/^[a-f0-9]{48}$/.test(code)) return json(empty);
-  const mine = get("SELECT 1 AS ok FROM orders WHERE restaurant_id = ? AND table_no = ? AND receipt = ? AND paid_at IS NULL AND status != 'cancelled'", r.id, table, code);
-  if (!mine) return json(empty);
+  // The code is handed out to anyone who sends picks for a table, so it only opens the table's bill once staff have accepted one of its orders
+  // (a person who invents picks for someone else's table is never accepted). Until then the phone sees its own picks and nothing else.
+  const accepted = get("SELECT 1 AS ok FROM orders WHERE restaurant_id = ? AND table_no = ? AND receipt = ? AND paid_at IS NULL AND status NOT IN ('picked','cancelled')", r.id, table, code);
+  if (!accepted) {
+    const own = all("SELECT i.name, SUM(i.qty) AS qty, i.price FROM orders o JOIN order_items i ON i.order_id = o.id WHERE o.restaurant_id = ? AND o.table_no = ? AND o.receipt = ? AND o.paid_at IS NULL AND o.status = 'picked' GROUP BY i.name, i.price ORDER BY MIN(i.id)", r.id, table, code);
+    return json({ ...empty, pending: own });
+  }
   const { lines, total, pending, asked } = tableBills(r.id, table)[0] || empty;
   return json({ table, lines, total, pending, asked });
 }

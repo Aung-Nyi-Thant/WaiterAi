@@ -2,19 +2,22 @@
 
 Menu-aware AI waiter for restaurants (Thai, Burmese, English). Diners scan a QR code, browse the menu and chat with the AI; owners manage the menu; waiters and chefs see live calls and orders.
 
-The AI never decides anything safety-critical: allergens, prices, opening hours, sold-out dishes, orders and the bill are answered from the database with fixed sentences. The language model only handles open questions, and its reply is checked before it is shown (details and tests: [`docs/AI_SAFETY.md`](docs/AI_SAFETY.md)).
+The AI never decides anything safety-critical: allergens, prices, opening hours, sold-out dishes, orders and the bill are answered from the database with fixed sentences. The language model only handles open questions, and its reply is checked before it is shown (details and tests: [`docs/AI_SAFETY.md`](docs/AI_SAFETY.md)). Allergy suggestions use **only restaurant-verified** allergen lists: an estimated or missing list is never recommended to a diner with an allergy profile, and "not listed" is never worded as "safe".
+
+**Status (2 Nov 2026):** demo-ready, not yet pilot-ready. None of the 145 demo dishes (Golden Lotus 13, HaChi Kyu 132) is restaurant-verified, and there has been no observed pilot, native-speaker review of every sentence, or real restore drill. Operating, backup/restore (`npm run db:backup`, `db:restore`), 30-day chat deletion (`db:prune-chat`) and the pilot checklist: [`docs/PILOT_RUNBOOK.md`](docs/PILOT_RUNBOOK.md).
 
 ## Live prototype: try it in your browser
 
 **▶ [Open the prototype](https://aung-nyi-thant.github.io/WaiterAi/)** · https://aung-nyi-thant.github.io/WaiterAi/
 
-A clickable prototype of Shop AI. No install, no server and no account needed: open the link and click.
+A clickable prototype of Shop AI. No install, no server and no account needed: open the link and click. (It is a separate, simplified implementation: its menu is the HaChi Kyu sushi menu, and it keeps its state in your browser.)
 
-- **What it is.** The three journeys of the product with mock data and the real app's own Thai, Burmese and English labels and sample menu (13 dishes): **1 · Diner** (phone: menu, filters, allergy profile, AI chat, My picks, Send to staff, Call staff, table bill), **2 · Staff** (phone: PIN sign-in, waiter floor screen, chef board) and **3 · Owner** (laptop: menu and 14 allergens, import a menu from a photo, hours and FAQ, AI settings, QR codes, staff, insights). The tabs share one memory, so a dish added on the diner screen and sent to staff shows up on the waiter screen, then on the chef's board, and ends on the diner's bill.
-- **How to try it.** Each tab has a "Try this" panel with the steps. Staff PINs for the demo: `1111` (waiter), `2222` (chef). Owner sign-in: `owner@example.com` / `demo1234`. These are prototype-only hints, not real credentials.
-- **Every screen says which requirement it shows.** The green **Covers:** bar names the SRS IDs (for example `DM-11`, `AI-18`), and the **Requirements map** tab lists FR-1 … FR-10 with the screens and an unhappy path to try for each (AI offline, a wrong PIN, five wrong PINs locking sign-in, an empty search, a sold-out dish, invalid input, flagged import rows). All 56 Must requirements of the SRS are covered, and a test (`app/tests/prototype.test.ts`) fails if that stops being true.
-- **What is mock.** Nothing is saved (reloading resets it), and the AI is a scripted stand-in that follows the same rules for the sample questions: allergen answers come from the data and never say a dish is "safe". The real application in `app/` answers from the database and uses a local language model only for open questions, checking every model reply (`docs/AI_SAFETY.md`).
+- **What it is.** The three journeys of the product with mock data and the real app's own Thai, Burmese and English labels, on the HaChi Kyu sushi menu (about 130 dishes): **1 · Diner** (phone: menu, filters, allergy profile, AI chat, My picks, Send to staff, Call staff, table bill), **2 · Staff** (phone: PIN sign-in, waiter floor screen, chef board) and **3 · Owner** (laptop: menu and 14 allergens, import a menu from a photo, hours and FAQ, AI settings, QR codes, staff, insights). The tabs share one memory, so a dish added on the diner screen and sent to staff shows up on the waiter screen, then on the chef's board, and ends on the diner's bill.
+- **How to try it.** Each tab has a "Try this" panel with the steps. Staff PINs for the demo: `1111` (waiter), `2222` (chef). Owner sign-in: `owner@hachi-kyu.example` / `1234`. These are prototype-only hints, not real credentials, and differ from the real app's logins below.
+- **Every screen says which requirement it shows.** A **Covers** pill (top-left) names the requirement of the screen you are on, with its happy and unhappy steps, and the **Thread** button opens the Golden Thread table: FR-1 … FR-10 → happy path → unhappy path → diagram → acceptance tests. A test (`app/tests/prototype-thread.test.ts`) fails if a row, a diagram or a test file is missing, and `app/tests/prototype.test.ts` fails if a Must requirement is not mentioned.
+- **What is mock.** Data is saved only in your own browser (the Reset control clears it), and the AI is a scripted stand-in that follows the same rules for the sample questions: allergen answers come from the data and never say a dish is "safe". The real application in `app/` answers from the database and uses a local language model only for open questions, checking every model reply (`docs/AI_SAFETY.md`).
 - **Offline copy.** Open `prototype/index.html` in a browser (double-click). Details and the file list: [`prototype/README.md`](prototype/README.md). GitHub Pages republishes the page whenever `prototype/` changes on `main`.
+- **Design prototype.** The local prototype opens on a new landing page with **Service**, **Table** and **Workspace** layouts to compare. **Explore the demo** opens the redesigned diner menu; the toolbar connects the staff and owner journeys. See [`prototype/README.md`](prototype/README.md#landing-page-comparison) for controls and direct links. These changes remain separate from the production app until integrated and published.
 
 *(GitHub may redirect this address to another domain over plain `http`, so a browser can show "Not secure". The page is static and holds no personal data.)*
 
@@ -24,7 +27,10 @@ A clickable prototype of Shop AI. No install, no server and no account needed: o
 | `app/src/modules/` | The code, split into 5 modules: `diner`, `ai`, `owner`, `staff`, `platform`. Each has its own README |
 | `eval/` | Test questions, sample menu and the model comparison scripts |
 | `docs/` | SRS, feature plan, project explanation, team work plan, measured results (`NFR_RESULTS.md`), and the product worksheet answers (`PRODUCT_IDEA_WORKSHEET.md`) |
-| `design/` | UI design generators (Art Deco and Glass mock-ups) |
+| `slides/` | Demo slides: [`demo-slides.pdf`](slides/demo-slides.pdf) (source `demo-slides.html`) and `shop-ai-logic.html` |
+| `docs/design/` | Design diagrams: architecture, data model, use cases, order states, AI decision flow |
+| `docs/FINAL_REPORT.md` | Final Report with the Golden Thread table (§6); the AI-use statement is [`docs/ai-use-statement.md`](docs/ai-use-statement.md) |
+| `design/` | UI design work: the older Art Deco and Glass mock-ups, and `ui-ux-redesign/` (the monochrome glass redesign with its Figma handoff) |
 
 ## Run it on Windows (no programming needed)
 
@@ -86,11 +92,12 @@ The first start creates the sample restaurant `golden-lotus` with **public devel
 
 ```
 cd app
-npm test              # 540 unit/integration tests + the offline AI eval gate (no model needed)
+npm test              # full offline unit/integration suite + AI eval gate (no model needed)
 npm run lint          # Biome
 npm run typecheck
 npm run build && npm run test:e2e     # end-to-end: starts the real server on a fresh seeded database
 npm run eval:live     # the 30 AI questions against a real model (server + Ollama running)
+npm run eval:smooth   # how fast answers come: rules vs model, a burst of questions, rules while the model is busy
 ```
 GitHub Actions (`.github/workflows/ci.yml`) runs install, lint, type-check, tests, build, the end-to-end tests and a Docker build on every push and pull request, and the same build and tests again on a **Windows** machine together with the Windows scripts. Requirement → code → test mapping: [`docs/TRACEABILITY.md`](docs/TRACEABILITY.md).
 
@@ -102,6 +109,8 @@ GitHub Actions (`.github/workflows/ci.yml`) runs install, lint, type-check, test
 | Thai | 100% (9/9) | 100% (10/10) |
 | Burmese | 100% (9/9) | 100% (10/10) |
 | **All** | **100% (27/27)** | **100% (30/30)** |
+
+**Re-run on 2026-10-28:** 29/30 (English 10/10, Thai 10/10, Burmese 9/10; thresholds met), and 30/30 on the harder `--extended` set. The one miss is a Burmese "not on the menu" question where the model needed the full 15 s, so the safe fallback message was shown. Details: [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md).
 
 Read this with care: only 3 of the 30 questions reach the language model; the other 27 are the deterministic rules, and scoring is keyword-based. The minimum scores that make CI (and `npm run eval:live`) fail are in `eval/thresholds.json`. Full report and the known limits: [`docs/AI_SAFETY.md`](docs/AI_SAFETY.md).
 
@@ -121,10 +130,23 @@ Shop AI answers it with a QR menu and a menu-aware AI waiter (Thai, Burmese, Eng
 | `prototype/` | The clickable prototype (no server; also published by GitHub Pages, see above) |
 | `windows/` | Double-click setup, start, stop, check and offline-pack scripts for Windows laptops, with their own guide |
 | `eval/` | The 30 test questions, sample menu, pass thresholds, model comparison scripts and results |
-| `docs/deliverables/` | The course PDFs: the M1 charter, the M2 SRS as submitted and the corrected v1.1. Their FR numbers map to the IDs in `docs/TRACEABILITY.md` |
-| `docs/` | [SRS](docs/SRS_Shop_AI.md), [traceability](docs/TRACEABILITY.md), [AI safety](docs/AI_SAFETY.md), [AI usage log](docs/AI_USAGE_LOG.md), [performance](docs/PERFORMANCE.md), feature plan, project explanation, team work plan |
-| `design/` | UI design generators (Art Deco and Glass mock-ups) |
+| `docs/M1-team-charter.pdf`, `docs/M2-srs.pdf` | The course PDFs: the M1 charter and the corrected M2 SRS (the as-submitted SRS is in git history, see `docs/PDF_CORRECTIONS.md`). Their FR numbers map to the IDs in `docs/TRACEABILITY.md` |
+| `docs/` | [SRS](docs/SRS_Shop_AI.md), [traceability](docs/TRACEABILITY.md), [AI safety](docs/AI_SAFETY.md), [AI usage log](docs/AI_USAGE_LOG.md), [performance](docs/PERFORMANCE.md), [pilot runbook](docs/PILOT_RUNBOOK.md), [allergen data research](docs/ALLERGEN_DATA_RESEARCH.md), [AI-use statement](docs/ai-use-statement.md), feature plan, project explanation, team work plan |
+| `design/` | UI design work: the older Art Deco and Glass mock-ups, and `ui-ux-redesign/` (the monochrome glass redesign with its Figma handoff) |
+| `reports/`, `research_notes/` | Repository analysis, UI/UX audit, dish-data research, and the 9/10 roadmap with its progress record |
 | `Dockerfile`, `docker-compose.yml`, `.env.example` | One-command start (see above) |
 
 ## Team work
+Group 18, **MFU 888**.
+
+| Student ID | Name | GitHub |
+|---|---|---|
+| 6931503001 | Aung Nyi Nyi Thant | [@Aung-Nyi-Thant](https://github.com/Aung-Nyi-Thant) |
+| 6931503031 | Chawakron Singkaew | [@chawakron50-lab](https://github.com/chawakron50-lab) |
+| 6931503042 | Tharathon Plengsri | [@Tharathon47](https://github.com/Tharathon47) |
+| 6931503073 | Sasiwimon Chatkaew | [@noeysasi](https://github.com/noeysasi) |
+| 6931503103 | Natthanon Wongsai | [@wujieiei](https://github.com/wujieiei) |
+
 See `docs/TEAM_WORK_PLAN.md` (who owns what) and `CONTRIBUTING.md` (how to commit).
+
+**About commits authored `t <t@t>`.** 40 commits on `main` (12 Oct to 2 Nov 2026) show the author `t <t@t>`. They are Aung Nyi Nyi Thant's (@Aung-Nyi-Thant) work, made in Claude Code on the web, which used a placeholder git identity that GitHub cannot link to an account. Evidence: 38 of the 40 carry a `Co-Authored-By: Claude` or `Claude-Session` trailer, and all 40 reached `main` through pull requests opened and merged by @Aung-Nyi-Thant. `.mailmap` maps them to Aung, so `git shortlog -sn` counts them correctly; later commits use the right identity.

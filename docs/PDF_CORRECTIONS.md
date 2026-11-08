@@ -4,7 +4,7 @@
 
 ## Status (5 October 2026)
 
-`docs/deliverables/` holds the three PDFs: the M1 charter as submitted, the M2 SRS as submitted (`M2_SRS_Team18_submitted.pdf`), and **`M2_SRS_Team18_v1.1.pdf`**, the SRS with the corrections below applied. The v1.1 file was made by editing the submitted PDF in place (same pages, tables and typeface; two pages added); the charter was not touched because it was already submitted.
+`docs/` holds the two course PDFs: the M1 charter as submitted (`M1-team-charter.pdf`), and **`M2-srs.pdf`**, the SRS with the corrections below applied (one file per document; the M2 SRS exactly as submitted is in the git history, `git show 393aa8e:docs/deliverables/M2_SRS_Team18_submitted.pdf > srs-submitted.pdf`). The corrected file (marked v1.1 inside) was made by editing the submitted PDF in place (same pages, tables and typeface; two pages added); the charter was not touched because it was already submitted.
 
 | Item (section A) | In v1.1? |
 |---|---|
@@ -28,7 +28,7 @@
 | 3 | FR-3 acceptance criterion | `when "Show to waiter" is tapped` | `when "Send to staff" is tapped` |
 | 4 | §5.1 UC-3 | `taps "Show to waiter"; the waiter sees the order with the allergy note.` | `taps "Send to staff"; the floor staff see the order with the allergy note.` |
 | 5 | §7 traceability, FR-3 row, "Feature built" | "My picks, Show to waiter, call-staff button" | "My picks, Send to staff, call-staff button" |
-| 6 | §5.2 use-case diagram | "[Insert the diagram image here…]" | Insert `docs/diagrams/06-use-cases-srs.png` (matches UC-1 … UC-10 and the UC-6 «include» UC-5 line of the PlantUML code; regenerate with `python3 docs/diagrams/gen_use_cases.py`). Then tick "Use-case diagram inserted" in §9. |
+| 6 | §5.2 use-case diagram | "[Insert the diagram image here…]" | Insert `docs/design/06-use-cases-srs.png` (matches UC-1 … UC-10 and the UC-6 «include» UC-5 line of the PlantUML code; regenerate with `python3 docs/design/gen_use_cases.py`). Then tick "Use-case diagram inserted" in §9. |
 | 7 | §4 NFR-1, "How we will check" | "…timing of 100 sample questions (target)." | Measured and met (100 of 100 within 15 s on an idle laptop). See section C for the numbers and suggested wording. |
 | 8 | §4 NFR-2 | "(target, still to measure)" | Server side measured: page about 50 ms, menu about 15 ms with 30 simultaneous diners; staff screens poll every 3 s (`docs/PERFORMANCE.md`). Keep "still to measure" for the phone's browser over Wi-Fi. |
 | 9 | §4 NFR-4 | "(still to do)" | Tested: with the AI unreachable the chat shows the fallback message and the menu, picks and calls keep working (`app/tests/e2e/diner-flow.e2e.test.ts` › "falls back safely when the language model is unreachable", which also asserts the answer arrives within 5 s). |
