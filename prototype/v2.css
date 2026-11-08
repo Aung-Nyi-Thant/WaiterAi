@@ -172,25 +172,25 @@ body { background: var(--canvas); }
 
 /* ===== Laptop: dish detail as a two-column dialog; order placed as status + receipt (desktop research, 9 Nov) ===== */
 @media (min-width: 1024px) {
-  .view-customer #app > .ov > .sh {
+  .view-customer #app > .ov > .sh.dish {
     width: min(880px, calc(100% - 48px)); height: min(600px, calc(100% - 48px)); max-height: none;
     display: grid; grid-template-columns: 400px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); padding: 0; overflow: hidden;
   }
-  .view-customer #app > .ov > .sh::before { display: none; }                       /* no phone drag handle */
-  .view-customer #app > .ov > .sh .big { position: relative; height: auto; min-height: 0; max-height: none; aspect-ratio: auto; border-radius: 0; margin: 0; background: var(--tint); }
-  .view-customer #app > .ov > .sh .big img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  .view-customer #app > .ov > .sh .pad .tag { display: inline-flex; width: auto; margin: 0 6px 6px 0; }
-  .view-customer #app > .ov > .sh .pad { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; padding: 28px 28px 0; }
-  .view-customer #app > .ov > .sh .pad h2 { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--secondary); margin: 18px 0 8px; }
-  .view-customer #app > .ov > .sh .pad .row:first-child h2 { font-size: 24px; letter-spacing: -.01em; text-transform: none; color: var(--ink); margin: 0; }
-  .view-customer #app > .ov > .sh .foot {
+  .view-customer #app > .ov > .sh.dish::before { display: none; }                       /* no phone drag handle */
+  .view-customer #app > .ov > .sh.dish .big { position: relative; height: auto; min-height: 0; max-height: none; aspect-ratio: auto; border-radius: 0; margin: 0; background: var(--tint); }
+  .view-customer #app > .ov > .sh.dish .big img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .view-customer #app > .ov > .sh.dish .pad .tag { display: inline-flex; width: auto; margin: 0 6px 6px 0; }
+  .view-customer #app > .ov > .sh.dish .pad { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; padding: 28px 28px 0; }
+  .view-customer #app > .ov > .sh.dish .pad h2 { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--secondary); margin: 18px 0 8px; }
+  .view-customer #app > .ov > .sh.dish .pad .row:first-child h2 { font-size: 24px; letter-spacing: -.01em; text-transform: none; color: var(--ink); margin: 0; }
+  .view-customer #app > .ov > .sh.dish .foot {
     position: sticky; bottom: 0; margin: auto -28px 0; padding: 14px 28px 18px; background: var(--surface); border-top: 1px solid var(--line);
     display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px;
   }
-  .view-customer #app > .ov > .sh .foot .row { margin: 0 !important; gap: 12px; }
-  .view-customer #app > .ov > .sh .foot .row .pr { display: none; }               /* the total is on the Add button */
-  .view-customer #app > .ov > .sh .foot .btn { margin: 0; min-height: 48px; border-radius: 24px; }
-  .view-customer #app > .ov > .sh .foot .btn.alt { background: transparent; color: var(--secondary); padding: 0 12px; }
+  .view-customer #app > .ov > .sh.dish .foot .row { margin: 0 !important; gap: 12px; }
+  .view-customer #app > .ov > .sh.dish .foot .row .pr { display: none; }               /* the total is on the Add button */
+  .view-customer #app > .ov > .sh.dish .foot .btn { margin: 0; min-height: 48px; border-radius: 24px; }
+  .view-customer #app > .ov > .sh.dish .foot .btn.alt { background: transparent; color: var(--secondary); padding: 0 12px; }
 
   /* pages without the docked cart use the full width, centred */
   .view-customer #app > main:not(:has(~ .dock)) { grid-column: 1 / -1; }
@@ -204,3 +204,27 @@ body { background: var(--canvas); }
 }
 .done-receipt .tot.b { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 6px; }
 @media (min-width: 1024px) { #app main:has(.done) .ok h2 { font-size: 30px; letter-spacing: -.02em; margin: 0; } #app main:has(.done) .ci { padding: 20px 22px; border-radius: 20px; } }
+
+/* ===== Review Order (desktop review research, 9 Nov): thumbnails, quantity / takeaway chips, big total, Cancel + persimmon Confirm ===== */
+.rv-head { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.rv-head h2 { margin: 0; font-size: 20px; letter-spacing: -.02em; }
+.rv-ctx { align-self: flex-start; background: var(--tint); color: var(--secondary); font-size: 12.5px; font-weight: 500; padding: 4px 10px; border-radius: 999px; }
+.rv-list { display: flex; flex-direction: column; max-height: 300px; overflow-y: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 2px 12px; }
+.rv-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.rv-row:last-child { border-bottom: 0; }
+.rv-ph { flex: none; width: 44px; height: 44px; border-radius: 10px; overflow: hidden; background: var(--tint); display: grid; place-items: center; color: var(--secondary); }
+.rv-ph img { width: 100%; height: 100%; object-fit: cover; }
+.rv-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.rv-t b { font-size: 15px; font-weight: 600; line-height: 1.3; }
+.rv-t span { display: flex; gap: 6px; }
+.rv-t em { font-style: normal; font-size: 12px; font-weight: 600; color: var(--secondary); background: var(--tint); padding: 1px 7px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; }
+.rv-t em.tk { background: var(--warnbg); color: var(--warn); }
+.rv-p { font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums; }
+.rv-tot { margin: 14px 2px 0; border: 0; align-items: baseline; }
+.rv-tot span:first-child { color: var(--secondary); font-size: 15px; font-weight: 600; }
+.rv-tot span:last-child { font-size: 24px; font-weight: 800; letter-spacing: -.02em; }
+.rv-act { display: grid; grid-template-columns: 1fr 1.5fr; gap: 12px; margin-top: 18px; }
+.rv-act .btn { margin: 0; min-height: 48px; border-radius: 24px; }
+.rv-act .btn:not(.alt) { background: var(--accent); color: #fff; box-shadow: 0 4px 14px rgb(194 65 12 / 25%); }
+.rv-act .btn.alt { background: var(--tint); color: var(--ink); }
+@media (min-width: 1024px) { .view-customer #app > .ov > .sh:has(.rv-list) { width: 480px; padding: 24px; } }
