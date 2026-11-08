@@ -50,7 +50,7 @@ const AIService = {
     if (f) return { t: f.a.replace(/</g, '&lt;') };
     if (/hours?|open|close|เปิด|ปิด/i.test(message) && d.hours) return { t: d.hours.map(h => h.d + ' ' + (h.closed ? 'Closed' : h.o + '–' + h.c)).join(' · ') };
     const open = AIRules.open(ctx); if (open) return open;   // "model" stand-in: offline / unsafe-claim guard
-    Store.update(x => x.unanswered.push({ q: message, t: Date.now() }));
+    Store.update(x => x.unanswered.push({ q: message.replace(/\S+@\S+\.\S+/g, '[email]').replace(/\+?\d[\d\s-]{7,}\d/g, '[phone]'), t: Date.now() }));   // IN-1: no personal data
     return { t: (aiS().fallback || t('aiTodo')).replace(/</g, '&lt;') };
   }
 };

@@ -36,11 +36,9 @@ The PDF corrections themselves (the table above these rows) are for the team to 
 - A short README note on why the topic changed from the original brief to Shop AI (the charter and SRS PDFs define Shop AI).
 - Applying `docs/PDF_CORRECTIONS.md` to the M1 and M2 PDFs.
 
-## The M4 drafts (`docs/FINAL_REPORT.md`, `docs/ai-use-statement.md`, `slides/demo-slides.html`)
+## The M3 deliverables (`docs/FINAL_REPORT.md`, `docs/ai-use-statement.md`, `slides/demo-slides.html`)
 
-Each marks what only the team can answer with **[team to complete]**:
+Filled on 8 Nov 2026 from `git` and the pull-request record only (no guesses): members and accounts, where each member's work is, and "no other member logged AI use". Each member should still check their own line:
 
-- Final report cover and section 8: which GitHub account is which member; for each member, where their work is in the repository (commits, pull requests, documents, diagrams, design, testing, the Burmese review, the PDFs).
-- Final report section 7 and the AI-use statement: confirm that only one member used an AI tool (so the other members have no AI-log rows), and what that member changed or rejected in the AI's output.
-- Demo slides 9 (team) and 10: who built what, and what was changed in the AI's output.
-- Individual contribution is measured from GitHub, and today `main` shows one account. This is the item to settle first.
+- Final Report §8 and slide 10: your part and the folders named for you.
+- AI-use statement and Final Report §7: if you used an AI tool, add a row to `docs/AI_USAGE_LOG.md`, then change the sentence "No other member logged AI use".

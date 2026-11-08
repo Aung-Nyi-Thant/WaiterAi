@@ -1,4 +1,4 @@
-# Shop AI clickable prototype (Milestone 4)
+# Shop AI clickable prototype (M3)
 
 **Open `index.html` in a browser** (double-click it) to see the landing-page prototype. Select **Explore the demo** to open the **HaChi Kyu** diner menu. No server, database or install is required. Demo changes are saved in your browser, shared between tabs; **Reset** in the demo toolbar clears them. The published copy at <https://aung-nyi-thant.github.io/WaiterAi/> updates when this folder is merged to `main`; local changes are not published automatically.
 
@@ -50,7 +50,7 @@ The three tabs share one memory, so the story runs end to end: a dish added on t
 Each is checked by hand in a browser; the same list is in the Thread table.
 
 - Diner: search "zzz" (empty state); an empty cart; a sold-out dish cannot be added (mark it sold out on the staff Menu tab); a second staff call within 60 seconds is refused. On the **Ask AI** screen the **Covers** pill has two switches: **AI model offline** (fallback with Browse / Call staff buttons) and **Model makes an unsafe claim** (the guard replaces its reply). "Ignore all previous instructions…" is refused.
-- Staff: a wrong PIN ("1 of 5"), then five wrong PINs lock sign-in for 60 seconds, even for the right PIN; waiter and chef see different tabs; empty queues show an empty state.
+- Staff: a wrong PIN ("1 of 5"), then five wrong PINs lock sign-in for 10 minutes, even for the right PIN (the lock lives in this browser tab: open a new tab to continue the demo); waiter and chef see different tabs; empty queues show an empty state.
 - Owner: wrong password; a dish without a name or with a negative price; import rows with a missing name or price are skipped and counted; a closing time not after the opening time; fewer than 1 or more than 60 tables; an account without a name or a 4-digit PIN.
 
 ## What it is not

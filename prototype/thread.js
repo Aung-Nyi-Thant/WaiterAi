@@ -4,46 +4,46 @@
  *     On the Ask AI screen it also holds the switches that simulate "AI offline" and "model makes an unsafe claim".
  * The same rows are in docs/FINAL_REPORT.md §6; app/tests/prototype.test.ts checks that every test file and diagram named here exists. */
 window.THREAD = [
-  { fr: 'FR-1', what: 'Multilingual menu browsing', ids: 'DM-1 … DM-7, DM-11', view: 'customer',
+  { fr: 'FR-1', problem: "Diners and new staff cannot read or remember a Thai-only menu (May, front of house).", what: 'Multilingual menu browsing', ids: 'DM-1 … DM-7, DM-11', view: 'customer',
     happy: 'Open the menu from the table QR address, switch TH / EN / MY, search "salmon", filter a category, open a dish.',
     unhappy: 'Search "zzz": "No dishes found" empty state. A sold-out dish shows "Sold out" and cannot be added.',
-    design: ['05-use-cases.png', 'UC-1 Browse the menu'], test: ['ui/diner.test.tsx', 'diner-filters.test.ts', 'menu.test.ts'] },
-  { fr: 'FR-2', what: 'Safe AI waiter chat', ids: 'AI-1 … AI-13, AI-16 … AI-20', view: 'customer', go: 'ai',
+    design: ['06-use-cases-srs.png', 'UC-1 Browse the menu'], test: ['ui/diner.test.tsx', 'diner-filters.test.ts', 'menu.test.ts'] },
+  { fr: 'FR-2', problem: "The same questions all evening; allergen answers depend on staff memory (P'Nut, owner).", what: 'Safe AI waiter chat', ids: 'AI-1 … AI-13, AI-16 … AI-20', view: 'customer', go: 'ai',
     happy: 'Ask AI: "What is the price of Salmon Sushi?" (data answer with a dish card), "I am allergic to peanuts" (allergen answer from data, ends with "confirm with the staff").',
     unhappy: 'Switch on "AI offline": open question gets a fallback with Browse / Call staff. Switch on "Model makes an unsafe claim": its reply is replaced. "Ignore all previous instructions…" is refused.',
-    design: ['04-ai-flow.png', 'SRS §4.4 chat decision flow'], test: ['ai-rules.test.ts', 'ai-guard.test.ts', 'chat-api.test.ts'] },
-  { fr: 'FR-3', what: 'Picks, orders and staff calls', ids: 'PC-1 … PC-7', view: 'customer', go: 'cart',
+    design: ['04-ai-flow.png', 'UC-2 Ask the AI waiter: SRS §4.4 decision flow'], test: ['ai-rules.test.ts', 'ai-guard.test.ts', 'chat-api.test.ts'] },
+  { fr: 'FR-3', problem: "Several tables call at once and orders get missed (May).", what: 'Picks, orders and staff calls', ids: 'PC-1 … PC-7', view: 'customer', go: 'cart',
     happy: 'Add two dishes, open Cart, send to staff, then More → Call Staff. The order appears on the staff screen.',
     unhappy: 'Empty cart shows "Cart is empty". A sold-out dish is refused. A second staff call within 60 s is refused ("wait").',
-    design: ['03-order-flow.png', 'SRS §4.3 order state model, UC-3, UC-4'], test: ['orders.test.ts', 'allergy-profile.test.ts', 'e2e/diner-flow.e2e.test.ts'] },
-  { fr: 'FR-4', what: 'Waiter and kitchen live screens', ids: 'SF-3 … SF-6, PC-4', view: 'staff',
+    design: ['07-sequence-fr3-order.png', 'UC-3 Send picks: sequence diner → server → staff'], test: ['orders.test.ts', 'allergy-profile.test.ts', 'e2e/diner-flow.e2e.test.ts'] },
+  { fr: 'FR-4', problem: "Special requests are forgotten in the kitchen; a remade bowl costs 5–7 min and 20–30 baht (Chef Kung).", what: 'Waiter and kitchen live screens', ids: 'SF-3 … SF-6, PC-4', view: 'staff',
     happy: 'Staff: sign in as waiter (PIN 1111), take the order, then sign in as chef (2222): cook, mark ready; waiter serves.',
     unhappy: 'Chef and waiter see different tabs (a waiter cannot cook). An empty queue shows an empty state.',
-    design: ['03-order-flow.png', 'UC-8, UC-9, UC-10'], test: ['ui/staff.test.tsx', 'orders.test.ts', 'diner-flow.test.ts'] },
-  { fr: 'FR-5', what: 'Owner account and menu / allergen management', ids: 'OA-1 … OA-3, MM-1 … MM-7', view: 'owner',
+    design: ['03-order-flow.png', 'UC-4 Take and cook: order states picked → new → cooking → ready → served'], test: ['ui/staff.test.tsx', 'orders.test.ts', 'diner-flow.test.ts'] },
+  { fr: 'FR-5', problem: "Allergen facts live in staff memory; a non-spicy dish arrives spicy (P'Nut).", what: 'Owner account and menu / allergen management', ids: 'OA-1 … OA-3, MM-1 … MM-7', view: 'owner',
     happy: 'Owner: sign in (demo login on the page), Menu Items → add or edit a dish and tick its allergens.',
     unhappy: 'Wrong password is refused. A dish without a name or with a negative price is rejected ("Name and price are required").',
-    design: ['02-database.png', 'UC-5 Manage menu (menu_items, owners)'], test: ['auth.test.ts', 'menu.test.ts', 'ui/owner-menu.test.tsx'] },
-  { fr: 'FR-6', what: 'Menu import from a photo', ids: 'MI-1 … MI-4', view: 'owner', go: 'imp',
-    happy: 'Owner → Import Menu: paste the CSV template, import: the dishes are added.',
+    design: ['02-database.png', 'UC-5 Manage menu and allergens: menu_items, users'], test: ['auth.test.ts', 'menu.test.ts', 'ui/owner-menu.test.tsx'] },
+  { fr: 'FR-6', problem: "Typing a whole menu into a system takes the owner too long (M1 scope).", what: 'Menu import from a photo', ids: 'MI-1 … MI-4', view: 'owner', go: 'imp',
+    happy: 'Owner → Import Menu: paste the CSV template, import: the dishes are added. (The app reads a menu photo with the vision model; the no-server prototype stands in with CSV.)',
     unhappy: 'Rows with a missing name or price are skipped and counted ("skipped N invalid rows").',
-    design: ['01-architecture.png', 'UC-6 Import a menu (vision model reads, owner reviews)'], test: ['import.test.ts', 'ui/import.test.tsx', 'ui/import-errors.test.tsx'] },
-  { fr: 'FR-7', what: 'Restaurant settings (hours, FAQ, AI voice)', ids: 'ST-1, ST-3, ST-4', view: 'owner', go: 'hf',
+    design: ['01-architecture.png', 'UC-6 Import a menu photo: vision model reads, owner reviews'], test: ['import.test.ts', 'ui/import.test.tsx', 'ui/import-errors.test.tsx'] },
+  { fr: 'FR-7', problem: "Hours and house rules are asked again and again (P'Nut).", what: 'Restaurant settings (hours, FAQ, AI voice)', ids: 'ST-1, ST-3, ST-4', view: 'owner', go: 'hf',
     happy: 'Owner → Hours & FAQ: change a closing time, add a FAQ, save. Ask the AI "what are your opening hours?"',
     unhappy: 'A closing time that is not after the opening time is rejected ("Closing time must be after opening time").',
-    design: ['02-database.png', 'settings, FAQs'], test: ['menu.test.ts', 'ai-rules.test.ts', 'ui/owner-shell.test.tsx'] },
-  { fr: 'FR-8', what: 'QR codes per table', ids: 'QR-1, QR-2', view: 'owner', go: 'qr',
+    design: ['02-database.png', 'UC-7 Set hours, FAQ and AI voice: settings, faqs'], test: ['menu.test.ts', 'ai-rules.test.ts', 'ui/owner-shell.test.tsx'] },
+  { fr: 'FR-8', problem: "Diners must reach the menu at their table without an app or an account (M1 scope).", what: 'QR codes per table', ids: 'QR-1, QR-2', view: 'owner', go: 'qr',
     happy: 'Owner → QR Codes: choose the number of tables and generate.',
     unhappy: 'Going below 1 or above 60 tables is refused ("Tables must be between 1 and 60").',
-    design: ['05-use-cases.png', 'UC-7 Print QR codes'], test: ['menu.test.ts', 'ui/owner-pages.test.tsx'] },
-  { fr: 'FR-9', what: 'Staff accounts (PIN)', ids: 'SF-1, SF-2', view: 'staff',
+    design: ['06-use-cases-srs.png', 'UC-8 Print QR codes'], test: ['menu.test.ts', 'ui/owner-pages.test.tsx'] },
+  { fr: 'FR-9', problem: "Shared staff devices need a quick sign-in that only staff can use (M1 scope).", what: 'Staff accounts (PIN)', ids: 'SF-1, SF-2', view: 'staff',
     happy: 'Staff: choose Waiter, enter 1111: you are in. Owner → Staff creates or changes a PIN.',
     unhappy: 'A wrong PIN is refused ("Wrong PIN (1 of 5)"). Five wrong PINs lock sign-in for 10 minutes. An account needs a name and a 4-digit PIN.',
-    design: ['02-database.png', 'staff table, SRS SF-2 lockout'], test: ['auth.test.ts', 'security-round2.test.ts', 'ratelimit.test.ts'] },
-  { fr: 'FR-10', what: 'Insights', ids: 'IN-1 … IN-4', view: 'owner', go: 'ins',
+    design: ['02-database.png', 'UC-9 Manage staff: staff table, SF-2 lockout'], test: ['auth.test.ts', 'security-round2.test.ts', 'ratelimit.test.ts'] },
+  { fr: 'FR-10', problem: "The owner cannot see what diners ask for and do not find (M1 scope).", what: 'Insights', ids: 'IN-1 … IN-4', view: 'owner', go: 'ins',
     happy: 'Ask the AI a question it has no rule for, then Owner → Insights: it is listed under "Questions the AI could not answer".',
     unhappy: 'With no questions yet, the list shows an empty state. Questions are stored without any personal data.',
-    design: ['05-use-cases.png', 'UC-11 Read insights'], test: ['owner-insights.test.ts', 'chat-api.test.ts'] },
+    design: ['06-use-cases-srs.png', 'UC-10 Read insights'], test: ['owner-insights.test.ts', 'chat-api.test.ts'] },
 ];
 
 (() => {
@@ -61,11 +61,11 @@ window.THREAD = [
 
   if (view === 'thread') {
     document.title = 'Golden Thread · Shop AI prototype';
-    const rows = window.THREAD.map(f => `<tr><td><b>${f.fr}</b><br>${esc(f.what)}<br><small>${esc(f.ids)}</small></td><td>${esc(f.happy)}</td><td>${esc(f.unhappy)}</td>
+    const rows = window.THREAD.map(f => `<tr><td>${esc(f.problem)}</td><td><b>${f.fr}</b><br>${esc(f.what)}<br><small>${esc(f.ids)}</small></td><td>${esc(f.happy)}</td><td>${esc(f.unhappy)}</td>
 <td><a href="assets/diagrams/${f.design[0]}" target="_blank" rel="noopener">${esc(f.design[0])}</a><br><small>${esc(f.design[1])}</small></td>
-<td>${f.test.map(t => `<code>app/tests/${esc(t)}</code>`).join('<br>')}</td><td><a href="${link(f)}">Open the screen</a></td></tr>`).join('');
+<td>${f.test.map(t => `<code>app/tests/${esc(t)}</code>`).join('<br>')}</td><td><a href="${link(f)}">Open the screen</a><br><small>?view=${f.view}${f.go ? '&amp;go=' + f.go : ''}</small></td></tr>`).join('');
     document.getElementById('app').innerHTML = `<div class="th"><h1>Golden Thread</h1><p>Problem → requirement → design → feature → test. Each row: the requirement (course FR → SRS IDs), what to click for the happy path and for an unhappy path, the diagram it comes from, and the automated tests that prove it. Every screen also has a <b>Covers</b> pill (top-left) naming the requirement it shows.</p>
-<table><thead><tr><th>Requirement</th><th>Happy path</th><th>Unhappy path</th><th>Design</th><th>Acceptance tests</th><th>Try</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+<table><thead><tr><th>Problem</th><th>Requirement</th><th>Happy path</th><th>Unhappy path</th><th>Design</th><th>Acceptance tests</th><th>Prototype page</th></tr></thead><tbody>${rows}</tbody></table></div>`;
     return;
   }
   if (view === 'landing') return;
