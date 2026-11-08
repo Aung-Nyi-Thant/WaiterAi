@@ -11,7 +11,7 @@ body { background: var(--canvas); }
 
 /* one accent owns every add / order / save action */
 #app .add, #app .add:hover { background: var(--accent); color: #fff; border-color: transparent; }
-#app .dock .btn:not(.alt), #app main .btn[data-a="modal"], .ow .btn[data-o$="save"] { background: var(--accent); color: #fff; }
+#app .dock .btn:not(.alt), #app main .btn[data-a="modal"], #app .btn[data-a="addD"], .ow .btn[data-o$="save"] { background: var(--accent); color: #fff; }
 .add:active, .ow .btn[data-o$="save"]:active { background: var(--accent-press); }
 .chip.on, .pt-bar a.on, .lang button.on { background: var(--ink); color: #fff; }
 
@@ -62,6 +62,10 @@ body { background: var(--canvas); }
   .view-customer .grid .cb { padding: 12px 14px 14px; }
   .view-customer .feat { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .menu-intro img { width: 72px; height: 72px; }
+  /* dish sheet on a laptop: a centred dialog, not a full-width sheet */
+  .view-customer #app > .ov { display: flex; align-items: center; justify-content: center; }
+  .view-customer #app > .ov > .sh { width: min(560px, calc(100% - 48px)); max-height: calc(100% - 48px); border-radius: 28px; overflow-y: auto; margin: 0; }
+  .view-customer #app > .ov > .sh .big { aspect-ratio: 16 / 10; height: auto; }
 
   /* staff on a laptop: wider board, columns side by side */
   .view-staff #app { width: min(1200px, calc(100% - 32px)); }
