@@ -168,7 +168,7 @@ function header() {
 
 // disc(feat) = search/select menu page order: search box → category chips → (home-only: banner + featured menu) → menu grid
 function disc(feat) {
-  return `<div class="menu-intro"><div><h1>${esc(REST)}</h1><p>${t('hs')}</p></div><img src="assets/dishes/salmon-nigiri.jpg" alt="" width="68" height="68"></div><div class="sb">${ic('search', 18)}<input id="q" value="${S.q.replace(/"/g, '&quot;')}" placeholder="${t('search')}" aria-label="search"></div>
+  return `<div class="menu-intro"><div><h1>${esc(REST)}</h1><p>${t('hs')}</p></div></div><div class="sb">${ic('search', 18)}<input id="q" value="${S.q.replace(/"/g, '&quot;')}" placeholder="${t('search')}" aria-label="search"></div>
 <div class="chips">${CATS.map(c => `<button class="chip ${S.cat == c[0] ? 'on' : ''}" data-a="cat" data-c="${c[0]}"><span>${ic(c[1], 18)}</span>${tr(c[2])}</button>`).join('')}</div>
 ${feat ? `<h2>${t('menu')}</h2><div class="feat">${MENU.filter(hasPhoto).slice(0, 4).map(card).join('')}</div><h2>${t('all')}</h2>` : ''}
 <div class="grid" id="list">${listH()}</div><p style="text-align:center;color:var(--sub);font-size:11px;margin-top:14px">${t('demo')}</p>`
