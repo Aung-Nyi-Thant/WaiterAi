@@ -40,3 +40,8 @@ docs/ORAL_EXAM_PREP.md
 /CONTEXT.md
 *.pdf
 docs/*.pdf
+# the course deliverables are committed as PDF
+!docs/M1-team-charter.pdf
+!docs/M2-srs.pdf
+!docs/FINAL_REPORT.pdf
+!slides/*.pdf

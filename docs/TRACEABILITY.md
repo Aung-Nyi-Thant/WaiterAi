@@ -12,7 +12,7 @@ Test files: `ai-rules` (rule-based answers), `ai-guard` (model output checks), `
 
 ## How the course's FR-1 … FR-10 map to these IDs
 
-The M2 SRS (`Team18_M2_SRS.pdf.pdf`) uses the ten functional requirements of the M1 charter; `docs/SRS_Shop_AI.md` splits them into finer IDs. Use this table to move between them.
+The M2 SRS (`docs/M2-srs.pdf`) uses the ten functional requirements of the M1 charter; `docs/SRS_Shop_AI.md` splits them into finer IDs. Use this table to move between them.
 
 | Course FR | Meaning | IDs in this file |
 |---|---|---|

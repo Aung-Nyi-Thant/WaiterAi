@@ -36,7 +36,7 @@ The PDF corrections themselves (the table above these rows) are for the team to 
 - A short README note on why the topic changed from the original brief to Shop AI (the charter and SRS PDFs define Shop AI).
 - Applying `docs/PDF_CORRECTIONS.md` to the M1 and M2 PDFs.
 
-## The M4 drafts (`docs/FINAL_REPORT.md`, `docs/AI_USE_STATEMENT.md`, `docs/DEMO_SLIDES.html`)
+## The M4 drafts (`docs/FINAL_REPORT.md`, `docs/ai-use-statement.md`, `slides/demo-slides.html`)
 
 Each marks what only the team can answer with **[team to complete]**:
 
