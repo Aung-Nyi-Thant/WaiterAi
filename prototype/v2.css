@@ -109,3 +109,122 @@ body { background: var(--canvas); }
 .grid .dish-name, .feat .dish-name { padding: 0; text-align: left; justify-content: flex-start; }
 @media (min-width: 1200px) { .view-customer .grid, .view-customer .feat { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .view-customer #app > .dock .btn.alt[data-a="nav"] { display: none; }   /* "Back to menu": the menu is beside the dock */
+
+/* ===== Liquid Glass motion (research: Apple spring presets -> CSS linear(); same-document View Transitions) ===== */
+:root {
+  --dur-fast: 180ms; --dur-ui: 280ms; --dur-morph: 360ms; --dur-bounce: 420ms;
+  --spring-smooth: linear(0, 0.037 4%, 0.122 8%, 0.228 12%, 0.337 16%, 0.442 20%, 0.62 28%, 0.751 36%, 0.859 46%, 0.931 58%, 0.971 72%, 0.988 86%, 1);   /* .smooth: no overshoot */
+  --spring-snappy: linear(0, 0.065 5%, 0.209 10%, 0.38 15%, 0.544 20%, 0.756 28%, 0.896 36%, 0.98 45%, 1.013 54%, 1.02 63%, 1.014 76%, 1.006 88%, 1);  /* .snappy: 2% settle */
+  --spring-bouncy: linear(0, 0.075 5%, 0.244 10%, 0.485 16%, 0.705 22%, 0.896 29%, 1.008 36%, 1.059 43%, 1.068 49%, 1.053 58%, 1.026 68%, 1.004 80%, 0.996 92%, 1);
+}
+@view-transition { navigation: auto; }                 /* role switcher (Home / Diner / Staff / Owner) between page loads */
+::view-transition { pointer-events: none; }            /* never block taps during a transition */
+::view-transition-group(*) { animation-duration: var(--dur-ui); animation-timing-function: var(--spring-smooth); }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: var(--dur-fast); }
+
+/* chrome stays put; only the content changes */
+#app > header { view-transition-name: app-header; }
+#app > nav { view-transition-name: app-nav; }
+#app > .dock { view-transition-name: app-dock; }
+.pt-bar { view-transition-name: pt-bar; }
+.pt-bar a.on { view-transition-name: pt-pill; }
+.ow > aside { view-transition-name: owner-aside; }
+
+/* dish card photo grows into the dish dialog and back (names set in app.js heroOpen / heroClose) */
+::view-transition-group(dish-hero) { animation-duration: var(--dur-morph); animation-timing-function: var(--spring-smooth); }
+::view-transition-old(dish-hero), ::view-transition-new(dish-hero) { height: 100%; width: 100%; object-fit: cover; overflow: clip; }
+
+/* sliding selection: the selected button itself (with its label) moves to its new place, so the label is never covered */
+.lang button.on { view-transition-name: lang-pill; }
+.chips .chip.on { view-transition-name: chip-pill; }
+#app > nav button.on { view-transition-name: nav-pill; }
+.ow aside button.on { view-transition-name: side-pill; }
+::view-transition-group(lang-pill), ::view-transition-group(chip-pill), ::view-transition-group(nav-pill), ::view-transition-group(side-pill), ::view-transition-group(pt-pill) {
+  animation-duration: var(--dur-ui); animation-timing-function: var(--spring-snappy);
+}
+::view-transition-old(lang-pill), ::view-transition-old(chip-pill), ::view-transition-old(nav-pill), ::view-transition-old(side-pill), ::view-transition-old(pt-pill),
+::view-transition-new(lang-pill), ::view-transition-new(chip-pill), ::view-transition-new(nav-pill), ::view-transition-new(side-pill), ::view-transition-new(pt-pill) { height: 100%; }   /* label cross-fades while the pill slides */
+
+/* staff tickets glide between columns; owner editor slides in from the right */
+.ow .ov.c .sh { view-transition-name: owner-editor; }
+::view-transition-new(owner-editor):only-child { animation: dockIn var(--dur-ui) var(--spring-smooth); }
+::view-transition-old(owner-editor):only-child { animation: dockOut var(--dur-fast) ease-out; }
+@keyframes dockIn { from { opacity: 0; transform: translateX(28px); } }
+@keyframes dockOut { to { opacity: 0; transform: translateX(28px); } }
+
+/* phone: tab bar tucks away while scrolling down (iOS 26/27 tab bar minimise) */
+@media (max-width: 1023px) {
+  #app > nav, .cartbar { transition: transform var(--dur-ui) var(--spring-smooth), opacity var(--dur-fast) ease-out; }
+  #app[data-nav-min="1"] > nav { transform: translateY(calc(100% + 24px)) scale(.94); opacity: 0; pointer-events: none; }
+  #app[data-nav-min="1"] > .cartbar { transform: translateY(80px); }
+}
+
+/* prices and counts keep their width while they change */
+.pr, .tot span, .bd, .chip .n, .cartbar { font-variant-numeric: tabular-nums; }
+.bump .bd { animation: bump var(--dur-bounce) var(--spring-bouncy); }
+#app .add { -webkit-backdrop-filter: none; backdrop-filter: none; }   /* opaque buttons need no blur (saves GPU on phones) */
+
+/* reduced motion: the JS skips View Transitions; keep only instant state changes */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+  #app > nav, .cartbar { transition: none; }
+}
+
+/* ===== Laptop: dish detail as a two-column dialog; order placed as status + receipt (desktop research, 9 Nov) ===== */
+@media (min-width: 1024px) {
+  .view-customer #app > .ov > .sh.dish {
+    width: min(880px, calc(100% - 48px)); height: min(600px, calc(100% - 48px)); max-height: none;
+    display: grid; grid-template-columns: 400px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); padding: 0; overflow: hidden;
+  }
+  .view-customer #app > .ov > .sh.dish::before { display: none; }                       /* no phone drag handle */
+  .view-customer #app > .ov > .sh.dish .big { position: relative; height: auto; min-height: 0; max-height: none; aspect-ratio: auto; border-radius: 0; margin: 0; background: var(--tint); }
+  .view-customer #app > .ov > .sh.dish .big img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .view-customer #app > .ov > .sh.dish .pad .tag { display: inline-flex; width: auto; margin: 0 6px 6px 0; }
+  .view-customer #app > .ov > .sh.dish .pad { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; padding: 28px 28px 0; }
+  .view-customer #app > .ov > .sh.dish .pad h2 { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--secondary); margin: 18px 0 8px; }
+  .view-customer #app > .ov > .sh.dish .pad .row:first-child h2 { font-size: 24px; letter-spacing: -.01em; text-transform: none; color: var(--ink); margin: 0; }
+  .view-customer #app > .ov > .sh.dish .foot {
+    position: sticky; bottom: 0; margin: auto -28px 0; padding: 14px 28px 18px; background: var(--surface); border-top: 1px solid var(--line);
+    display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px;
+  }
+  .view-customer #app > .ov > .sh.dish .foot .row { margin: 0 !important; gap: 12px; }
+  .view-customer #app > .ov > .sh.dish .foot .row .pr { display: none; }               /* the total is on the Add button */
+  .view-customer #app > .ov > .sh.dish .foot .btn { margin: 0; min-height: 48px; border-radius: 24px; }
+  .view-customer #app > .ov > .sh.dish .foot .btn.alt { background: transparent; color: var(--secondary); padding: 0 12px; }
+
+  /* pages without the docked cart use the full width, centred */
+  .view-customer #app > main:not(:has(~ .dock)) { grid-column: 1 / -1; }
+  .view-customer #app > main:not(:has(~ .dock)) > * { max-width: 760px; margin-left: auto; margin-right: auto; }
+  .view-customer #app > main:has(.done) > * { max-width: 1040px; }
+  .done { display: grid; grid-template-columns: minmax(0, 1fr) 380px; grid-template-areas: "status receipt" "go receipt"; gap: 16px 24px; align-items: start; }
+  .done-status { grid-area: status; } .done-receipt { grid-area: receipt; } .done-go { grid-area: go; }
+  .done-go .btn { width: auto; min-width: 220px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+  #app main:has(.done) .ok { text-align: left; display: flex; align-items: center; gap: 14px; margin: 8px auto 20px; }
+  #app main:has(.done) .ok i { margin: 0; }
+}
+.done-receipt .tot.b { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 6px; }
+@media (min-width: 1024px) { #app main:has(.done) .ok h2 { font-size: 30px; letter-spacing: -.02em; margin: 0; } #app main:has(.done) .ci { padding: 20px 22px; border-radius: 20px; } }
+
+/* ===== Review Order (desktop review research, 9 Nov): thumbnails, quantity / takeaway chips, big total, Cancel + persimmon Confirm ===== */
+.rv-head { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.rv-head h2 { margin: 0; font-size: 20px; letter-spacing: -.02em; }
+.rv-ctx { align-self: flex-start; background: var(--tint); color: var(--secondary); font-size: 12.5px; font-weight: 500; padding: 4px 10px; border-radius: 999px; }
+.rv-list { display: flex; flex-direction: column; max-height: 300px; overflow-y: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 2px 12px; }
+.rv-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.rv-row:last-child { border-bottom: 0; }
+.rv-ph { flex: none; width: 44px; height: 44px; border-radius: 10px; overflow: hidden; background: var(--tint); display: grid; place-items: center; color: var(--secondary); }
+.rv-ph img { width: 100%; height: 100%; object-fit: cover; }
+.rv-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.rv-t b { font-size: 15px; font-weight: 600; line-height: 1.3; }
+.rv-t span { display: flex; gap: 6px; }
+.rv-t em { font-style: normal; font-size: 12px; font-weight: 600; color: var(--secondary); background: var(--tint); padding: 1px 7px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; }
+.rv-t em.tk { background: var(--warnbg); color: var(--warn); }
+.rv-p { font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums; }
+.rv-tot { margin: 14px 2px 0; border: 0; align-items: baseline; }
+.rv-tot span:first-child { color: var(--secondary); font-size: 15px; font-weight: 600; }
+.rv-tot span:last-child { font-size: 24px; font-weight: 800; letter-spacing: -.02em; }
+.rv-act { display: grid; grid-template-columns: 1fr 1.5fr; gap: 12px; margin-top: 18px; }
+.rv-act .btn { margin: 0; min-height: 48px; border-radius: 24px; }
+.rv-act .btn:not(.alt) { background: var(--accent); color: #fff; box-shadow: 0 4px 14px rgb(194 65 12 / 25%); }
+.rv-act .btn.alt { background: var(--tint); color: var(--ink); }
+@media (min-width: 1024px) { .view-customer #app > .ov > .sh:has(.rv-list) { width: 480px; padding: 24px; } }

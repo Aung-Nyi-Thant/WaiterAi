@@ -101,7 +101,8 @@
     ssave: () => { const s = grabS(); if (s.some(x => !x.name || !/^\d{4}$/.test(x.pass))) return say('Every account needs a name and a 4-digit PIN', 'alert'); U.sd = null; up(d => { d.staff = s.map((x, i) => ({ ...x, id: 's' + i })) }); say('Accounts saved') },
     clrq: () => up(d => { d.unanswered = [] }), clrw: () => up(d => { d.wrong = [] })
   };
-  root.addEventListener('click', ev => { const el = ev.target.closest('[data-o]'); if (el && H[el.dataset.o]) H[el.dataset.o](el.dataset) });
+  const VT_O = new Set(['pg', 'madd', 'medit', 'mcancel']);   // owner: page switch and the docked editor slide (fx.vt)
+  root.addEventListener('click', ev => { const el = ev.target.closest('[data-o]'); if (el && H[el.dataset.o]) { const k = el.dataset.o, d = el.dataset; VT_O.has(k) ? fx.vt(() => H[k](d)) : H[k](d) } });
   root.addEventListener('change', e => {
     if (e.target.id == 'mc') { U.cat = e.target.value; R() }
     if (e.target.id == 'fi' && e.target.files[0]) { const r = new FileReader(); r.onload = () => { document.getElementById('ta').value = r.result.replace(/^\ufeff/, '') }; r.readAsText(e.target.files[0]) }
