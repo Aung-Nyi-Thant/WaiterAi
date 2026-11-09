@@ -12,12 +12,12 @@ The AI never decides anything safety-critical: allergens, prices, opening hours,
 
 A clickable prototype of Shop AI. No install, no server and no account needed: open the link and click. (It is a separate, simplified implementation: its menu is the HaChi Kyu sushi menu, and it keeps its state in your browser.)
 
-- **What it is.** The three journeys of the product with mock data and the real app's own Thai, Burmese and English labels, on the HaChi Kyu sushi menu (about 130 dishes): **1 · Diner** (phone: menu, filters, allergy profile, AI chat, My picks, Send to staff, Call staff, table bill), **2 · Staff** (phone: PIN sign-in, waiter floor screen, chef board) and **3 · Owner** (laptop: menu and 14 allergens, import a menu from a photo, hours and FAQ, AI settings, QR codes, staff, insights). The tabs share one memory, so a dish added on the diner screen and sent to staff shows up on the waiter screen, then on the chef's board, and ends on the diner's bill.
+- **What it is.** The three journeys of the product with mock data and the real app's own Thai, Burmese and English labels, on the HaChi Kyu sushi menu (104 dishes, each with a photo): **1 · Diner** (phone: menu, filters, allergy profile, AI chat, My picks, Send to staff, Call staff, table bill), **2 · Staff** (phone: PIN sign-in, waiter floor screen, chef board) and **3 · Owner** (laptop: menu and 14 allergens, import a menu from a photo, hours and FAQ, AI settings, QR codes, staff, insights). The tabs share one memory, so a dish added on the diner screen and sent to staff shows up on the waiter screen, then on the chef's board, and ends on the diner's bill.
 - **How to try it.** Each tab has a "Try this" panel with the steps. Staff PINs for the demo: `1111` (waiter), `2222` (chef). Owner sign-in: `owner@hachi-kyu.example` / `1234`. These are prototype-only hints, not real credentials, and differ from the real app's logins below.
 - **Every screen says which requirement it shows.** A **Covers** pill (top-left) names the requirement of the screen you are on, with its happy and unhappy steps, and the **Thread** button opens the Golden Thread table: FR-1 … FR-10 → happy path → unhappy path → diagram → acceptance tests. A test (`app/tests/prototype-thread.test.ts`) fails if a row, a diagram or a test file is missing, and `app/tests/prototype.test.ts` fails if a Must requirement is not mentioned.
-- **What is mock.** Data is saved only in your own browser (the Reset control clears it), and the AI is a scripted stand-in that follows the same rules for the sample questions: allergen answers come from the data and never say a dish is "safe". The real application in `app/` answers from the database and uses a local language model only for open questions, checking every model reply (`docs/AI_SAFETY.md`).
+- **What is mock.** Data is saved only in your own browser (the Reset control clears it), and the AI is a scripted stand-in that follows the same rules for the sample questions: allergen answers come from the data and never say a dish is "safe". The real application in `app/` answers from the database and uses a local language model only for open questions, checking every model reply (`docs/AI_SAFETY.md`). An optional live AI mode connects when served by the Shop AI server (`npm run prototype:live` in `app/`, or `?ai=live`), showing a status chip on the AI page; the graded prototype stays offline by default.
 - **Offline copy.** Open `prototype/index.html` in a browser (double-click). Details and the file list: [`prototype/README.md`](prototype/README.md). GitHub Pages republishes the page whenever `prototype/` changes on `main`.
-- **Design prototype.** The local prototype opens on a new landing page with **Service**, **Table** and **Workspace** layouts to compare. **Explore the demo** opens the redesigned diner menu; the toolbar connects the staff and owner journeys. See [`prototype/README.md`](prototype/README.md#landing-page-comparison) for controls and direct links. These changes remain separate from the production app until integrated and published.
+- **Design prototype.** The published prototype opens on the landing page with **Service**, **Table** and **Workspace** layouts to compare. **Explore the demo** opens the redesigned diner menu; the toolbar connects the staff and owner journeys. See [`prototype/README.md`](prototype/README.md#landing-page-comparison) for controls and direct links.
 
 *(GitHub may redirect this address to another domain over plain `http`, so a browser can show "Not secure". The page is static and holds no personal data.)*
 
@@ -93,12 +93,17 @@ The first start creates the sample restaurant `golden-lotus` with **public devel
 ```
 cd app
 npm test              # full offline unit/integration suite + AI eval gate (no model needed)
+npm run test:logic    # deterministic rules, guardrails, prompts and evals
+npm run test:ai       # focused deterministic AI suites (no model needed)
+npm run test:ai:live  # test server against a real local Ollama model
 npm run lint          # Biome
 npm run typecheck
 npm run build && npm run test:e2e     # end-to-end: starts the real server on a fresh seeded database
 npm run eval:live     # the 30 AI questions against a real model (server + Ollama running)
 npm run eval:smooth   # how fast answers come: rules vs model, a burst of questions, rules while the model is busy
 ```
+
+Testing guide: [`docs/TESTING.md`](docs/TESTING.md).
 GitHub Actions (`.github/workflows/ci.yml`) runs install, lint, type-check, tests, build, the end-to-end tests and a Docker build on every push and pull request, and the same build and tests again on a **Windows** machine together with the Windows scripts. Requirement → code → test mapping: [`docs/TRACEABILITY.md`](docs/TRACEABILITY.md).
 
 ## How well does the AI answer? (`eval/questions.json`, 30 questions)
