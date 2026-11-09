@@ -11,10 +11,10 @@ const openDemos: JSDOM[] = [];
 const statusReply = (modelReady = true, model = "gemma4:12b") => Response.json({ server: true, model, modelReady });
 
 function open(fetch: typeof window.fetch, query = "", allergies: string[] = [], options: {
-  statusFetch?: typeof window.fetch; live?: boolean; go?: string; lang?: string;
+  statusFetch?: typeof window.fetch; live?: boolean; go?: string; lang?: string; url?: string;
 } = {}) {
   const dom = new JSDOM(html, {
-    url: `http://prototype.local/index.html?view=customer&go=${options.go || 'ai'}&lang=${options.lang || 'en'}${options.live === false ? '' : '&ai=live'}${query}`,
+    url: options.url || `http://prototype.local/index.html?view=customer&go=${options.go || 'ai'}&lang=${options.lang || 'en'}${options.live === false ? '' : '&ai=live'}${query}`,
     runScripts: "outside-only",
     pretendToBeVisual: true,
   });
@@ -53,10 +53,93 @@ const dishes = [
 ];
 
 describe("opt-in live prototype AI", () => {
-  it("labels the offline demo and makes no requests on opening, polling or scripted chat", async () => {
+  it.each(['localhost', '127.0.0.1'])("activates live AI without reloading when the AI nav is clicked on %s:3100", async host => {
+    vi.useFakeTimers();
+    const fetch = vi.fn<typeof window.fetch>().mockResolvedValue(reply());
+    const statusFetch = vi.fn<typeof window.fetch>().mockImplementation(async () => statusReply());
+    const url = `http://${host}:3100/prototype/index.html?view=customer&lang=en&table=B-7#menu`;
+    const win = open(fetch, '', [], { statusFetch, url }), doc = win.document;
+    win.history.replaceState({ prototype: true }, '', url);
+    const replaceState = vi.spyOn(win.history, 'replaceState');
+    (doc.querySelector('nav [data-v="menu"]') as HTMLElement).click();
+    expect(win.location.href).toBe(url);
+    expect(statusFetch).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+
+    (doc.querySelector('nav [data-v="ai"]') as HTMLElement).click();
+    expect(replaceState).toHaveBeenCalledTimes(1);
+    expect(win.history.state).toEqual({ prototype: true });
+    expect(win.location.href).toBe(url.replace('#menu', '&ai=live#menu'));
+    expect(win.document).toBe(doc);
+    expect(doc.querySelector('.ai-status')?.textContent).toBe('Live AI · model loading/slow');
+    await vi.advanceTimersByTimeAsync(0);
+    expect(statusFetch).toHaveBeenCalledTimes(1);
+    expect(doc.querySelector('.ai-status')?.textContent).toBe('Live AI · gemma4:12b ready');
+    expect(doc.querySelector('.ai-status')?.getAttribute('data-state')).toBe('ready');
+
+    send(doc, 'Help me choose');
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch.mock.calls[0]).toEqual(['/api/public/hachi-kyu/chat', expect.objectContaining({ method: 'POST' })]);
+    expect(JSON.parse(fetch.mock.calls[0][1]!.body as string)).toMatchObject({ message: 'Help me choose', lang: 'en', table: 'B-7' });
+    expect(doc.querySelector('.chat')?.textContent).toContain('Live answer');
+    (doc.querySelector('nav [data-v="menu"]') as HTMLElement).click();
+    (doc.querySelector('nav [data-v="ai"]') as HTMLElement).click();
+    expect(replaceState).toHaveBeenCalledTimes(1);
+  });
+
+  it("starts status checks when activating an already open offline AI screen", async () => {
+    vi.useFakeTimers();
+    const statusFetch = vi.fn<typeof window.fetch>().mockImplementation(async () => statusReply());
+    const doc = open(vi.fn(), '', [], { statusFetch, url: 'http://localhost:3100/prototype/index.html?view=customer&lang=en&go=ai' }).document;
+    expect(doc.querySelector('.ai-status')?.getAttribute('data-state')).toBe('demo');
+    expect(statusFetch).not.toHaveBeenCalled();
+    (doc.querySelector('nav [data-v="ai"]') as HTMLElement).click();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(doc.querySelector('.ai-status')?.getAttribute('data-state')).toBe('ready');
+    expect(statusFetch).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(30000);
+    expect(statusFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("can retry a status check after live AI is activated by local navigation", async () => {
+    vi.useFakeTimers();
+    const statusFetch = vi.fn<typeof window.fetch>().mockRejectedValueOnce(new TypeError('Offline'))
+      .mockImplementation(async () => statusReply());
+    const doc = open(vi.fn(), '', [], { statusFetch, url: 'http://127.0.0.1:3100/prototype/index.html?view=customer&lang=en' }).document;
+    (doc.querySelector('nav [data-v="ai"]') as HTMLElement).click();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(doc.querySelector('.ai-status')?.getAttribute('data-state')).toBe('unreachable');
+    (doc.querySelector('[data-ai-retry]') as HTMLElement).click();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(statusFetch).toHaveBeenCalledTimes(2);
+    expect(doc.querySelector('.ai-status')?.getAttribute('data-state')).toBe('ready');
+  });
+
+  it.each(['https://example.github.io/shop-ai', 'https://menu.example.com'])("preserves explicit ai=live on %s", async base => {
+    vi.useFakeTimers();
+    const fetch = vi.fn<typeof window.fetch>().mockResolvedValue(reply());
+    const statusFetch = vi.fn<typeof window.fetch>().mockImplementation(async () => statusReply());
+    const url = `${base}/index.html?view=customer&lang=en&ai=live`;
+    const win = open(fetch, '', [], { statusFetch, url }), doc = win.document;
+    (doc.querySelector('nav [data-v="ai"]') as HTMLElement).click();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(win.location.href).toBe(url);
+    expect(statusFetch).toHaveBeenCalledTimes(1);
+    expect(doc.querySelector('.ai-status')?.getAttribute('data-state')).toBe('ready');
+    send(doc, 'Help me choose');
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetch.mock.calls[0][0]).toBe('/api/public/hachi-kyu/chat');
+    expect(doc.querySelector('.chat')?.textContent).toContain('Live answer');
+  });
+
+  it.each(['http://prototype.local', 'https://example.github.io/shop-ai', 'https://menu.example.com', 'https://localhost.example.com'])("keeps %s offline on navigation, polling and scripted chat without ai=live", async base => {
     vi.useFakeTimers();
     const fetch = vi.fn(), statusFetch = vi.fn();
-    const doc = open(fetch, '', [], { live: false, statusFetch }).document;
+    const url = `${base}/index.html?view=customer&lang=en`;
+    const win = open(fetch, '', [], { statusFetch, url }), doc = win.document;
+    (doc.querySelector('nav [data-v="ai"]') as HTMLElement).click();
+    expect(win.location.href).toBe(url);
     const chip = doc.querySelector('.ai-status');
     expect(chip?.getAttribute('role')).toBe('status');
     expect(chip?.textContent).toBe('Built-in demo AI (offline, scripted rules)');

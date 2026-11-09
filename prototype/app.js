@@ -38,14 +38,15 @@ const aiS = () => Store.get().ai || {};   // owner's AI settings (name, greeting
 const aiCtx = () => ({ lang: S.lang, restaurant: REST, table: TABLE, allergies: S.al, otherAllergy: S.other, cart: S.cart, menu: MENU, ai: aiS(), faqs: Store.get().faqs, hours: Store.get().hours });
 // ?ai=live: questions go to the real Shop AI server (its database, safety rules and local model, e.g. gemma4:12b) instead of the
 // scripted rules below. Works when the prototype is served by that server (http://localhost:3000/prototype/index.html?ai=live),
-// so the request stays on the same origin. Without the flag the prototype needs no server at all (course requirement).
-const LIVE_AI = new URLSearchParams(location.search).get('ai') == 'live';
+// so the request stays on the same origin. The AI nav enables the flag on localhost/127.0.0.1; other hosts stay offline unless opted in.
+let LIVE_AI = new URLSearchParams(location.search).get('ai') == 'live';
 const aiStatus = { state: 'loading', model: 'gemma4:12b', busy: false, timer: null, failed: LIVE_AI && sessionStorage.getItem('shopai_ai_failed') == '1' };
 function aiStatusContent() {
   const state = !LIVE_AI ? 'demo' : aiStatus.failed ? 'failed' : aiStatus.state;
   return `<span>${esc(t('aiStatus_' + state).replace('{model}', aiStatus.model))}</span>${state == 'unreachable' ? ` <button type="button" data-ai-retry="">${t('retry')}</button>` : ''}`;
 }
 function aiStatusUpdate() {
+  if (typeof document == 'undefined' || !document) return;
   const chip = document.querySelector('.ai-status');
   if (!chip) return;
   chip.dataset.state = aiStatus.failed ? 'failed' : aiStatus.state;
@@ -72,14 +73,14 @@ async function aiStatusCheck() {
   finally { clearTimeout(tm); aiStatus.busy = false; aiStatusUpdate(); }
 }
 function aiStatusChip() {
-  if (LIVE_AI && !document.querySelector('.ai-status')) {
+  if (LIVE_AI && !document.querySelector('.ai-status:not([data-state="demo"])')) {
     aiStatusCheck();
     clearInterval(aiStatus.timer);
-    aiStatus.timer = setInterval(() => { if (document.querySelector('.ai-status')) aiStatusCheck(); }, 30000);
+    aiStatus.timer = setInterval(() => { if (typeof document == 'undefined' || !document) return; if (document.querySelector('.ai-status')) aiStatusCheck(); }, 30000);
   }
   return `<div class="ai-status" role="status" aria-live="polite" aria-atomic="true" data-state="${!LIVE_AI ? 'demo' : aiStatus.failed ? 'failed' : aiStatus.state}">${aiStatusContent()}</div>`;
 }
-if (LIVE_AI) document.addEventListener('click', ev => { if (ev.target.closest('[data-ai-retry]')) aiStatusCheck(); });
+document.addEventListener('click', ev => { if (LIVE_AI && ev.target.closest('[data-ai-retry]')) aiStatusCheck(); });
 const AIService = {
   async send(message, ctx) {
     if (LIVE_AI) {
@@ -271,6 +272,8 @@ function moreV() {
   return `<button class="li" data-a="modal" data-m="al"><span>${ic('shield', 22)}</span>${t('alg')}${S.al.length || S.other ? ` <span class="tag">${S.al.length + (S.other ? 1 : 0)}</span>` : ''}</button><button class="li" data-a="modal" data-m="staff"><span>${ic('bell', 22)}</span>${t('staff')}</button><button class="li" data-a="modal" data-m="bill"><span>${ic('receipt', 22)}</span>${t('bill')}</button>
 <h2>${t('orders')}</h2>${S.orders.length ? S.orders.map(o => `<div class="ci"><div style="flex:1"><b>#${o.no}</b> · ${o.items.length} ${'items'}<br><small>${stOf(o)}</small></div><b>฿${o.total}</b></div>`).join('') : `<p style="color:var(--sub)">${t('noOrd')}</p>`}`
 }
+const billOrders = () => Store.get().orders.filter(o => o.table == TABLE && o.status != 'paid');
+const billTotal = orders => orders.reduce((total, o) => total + o.total, 0);
 
 // confirmV() = post-order success screen: order number · shop/table · status · estimated time · items and total
 function confirmV() { const o = S.orders[S.orders.length - 1]; return `<div class="ok"><i>${ic('checkCircle', 56)}</i><h2>${t('done')}</h2></div><div class="done"><div class="ci done-status" style="display:block"><div class="tot"><span>${t('ono')}</span><b>#${o.no}</b></div><div class="tot"><span>${REST}</span><b>${t('table')} ${TABLE}</b></div><div class="tot"><span>${t('st')}</span><b>${stOf(o)}</b></div><div class="tot"><span></span><small>${t('eta')}</small></div></div><div class="ci done-receipt" style="display:block">${o.items.map(l => `<div class="tot"><span>${tr(byId(l.id).n)} ×${l.qty}${l.ot == 'take' ? ' ' + ic('bag', 14) : ''}</span><span>฿${price(l)}</span></div>`).join('')}<div class="tot b"><span>${t('total')}</span><span>฿${o.total}</span></div></div><div class="done-go"><button class="btn" data-a="nav" data-v="menu">${t('back')}</button></div></div>` }
@@ -302,7 +305,7 @@ function modal() {
   const M = S.modal; if (!M) return ''; if (M == 'detail') return detail();
   let b = ''; if (M == 'al') b = `<h2 class="hd" style="margin-top:0">${ic('shield', 20)}${t('alg')}</h2><div class="opt">${Object.keys(AL).map(k => `<button class="${S.al.includes(k) ? 'on' : ''}" data-a="algT" data-k="${k}">${tr(AL[k])}</button>`).join('')}</div><input class="in" id="oth" value="${S.other}" placeholder="${t('other')}"><p style="font-size:12px;color:var(--sub);margin-top:8px">${t('algNote')}</p><button class="btn" data-a="algS">${t('algS')}</button>`;
   if (M == 'staff') b = `<h2 class="hd" style="margin-top:0">${ic('bell', 20)}${t('staff')}</h2><p>${t('staffQ')}</p><p style="color:var(--sub);font-size:13px">${REST} · ${t('table')} ${TABLE}</p><button class="btn" data-a="staffGo">${t('confirm')}</button><button class="btn alt" data-a="closeM">${t('cancel')}</button>`;
-  if (M == 'bill') { const tt = S.orders.reduce((a, o) => a + o.total, 0); b = `<h2 class="hd" style="margin-top:0">${ic('receipt', 20)}${t('bill')}</h2>${S.orders.length ? S.orders.map(o => `<div class="tot"><span>#${o.no}</span><span>฿${o.total}</span></div>`).join('') + `<div class="tot b"><span>${t('total')}</span><span>฿${tt}</span></div><p>${t('billQ')}</p><button class="btn" data-a="billGo">${t('confirm')}</button>` : `<p>${t('noOrd')}</p>`}<button class="btn alt" data-a="closeM">${t('cancel')}</button>` }
+  if (M == 'bill') { const orders = billOrders(); b = `<h2 class="hd" style="margin-top:0">${ic('receipt', 20)}${t('bill')}</h2>${orders.length ? orders.map(o => `<div class="tot"><span>#${o.no}</span><span>฿${o.total}</span></div>`).join('') + `<div class="tot b"><span>${t('total')}</span><span>฿${billTotal(orders)}</span></div><p>${t('billQ')}</p><button class="btn" data-a="billGo">${t('confirm')}</button>` : `<p>${t('noOrd')}</p>`}<button class="btn alt" data-a="closeM">${t('cancel')}</button>` }
   if (M == 'review') b = `<div class="rv-head"><h2>${t('review')}</h2><span class="rv-ctx">${REST} · ${t('table')} ${TABLE}</span></div><div class="rv-list">${S.cart.map(l => { const m = byId(l.id); return `<div class="rv-row"><i class="rv-ph">${hasPhoto(m) ? `<img src="${menuPhoto(m.img)}" alt="">` : ic('utensils', 18)}</i><div class="rv-t"><b>${tr(m.n)}</b><span><em>×${l.qty}</em>${l.ot == 'take' ? `<em class="tk">${ic('bag', 12)}${t('take')}</em>` : ''}</span></div><span class="rv-p">฿${price(l)}</span></div>` }).join('')}</div><div class="tot b rv-tot"><span>${t('total')}</span><span>฿${sum()}</span></div><div class="rv-act"><button class="btn alt" data-a="closeM">${t('cancel')}</button><button class="btn" data-a="placeGo" ${S.busy ? 'disabled' : ''}>${S.busy ? '<span class="spin" aria-hidden="true"></span>' : t('confirm')}</button></div>`;
   return `<div class="ov c${fresh.ov ? ' in' : ''}" data-a="closeM"><div class="sh">${b}</div></div>`
 }
@@ -346,7 +349,17 @@ const toast = (x, k = 'checkCircle') => { S.toast = ic(k, 18) + '<span>' + x + '
  * ===================================================================== */
 
 const A = {
-  lang: e => { S.lang = e.l; render() }, nav: e => { S.view = e.v; S.modal = null; render() }, cat: e => { S.cat = e.c; render() },
+  lang: e => { S.lang = e.l; render() },
+  nav: e => {
+    if (e.v == 'ai' && !LIVE_AI && ['http:', 'https:'].includes(location.protocol) && ['localhost', '127.0.0.1'].includes(location.hostname)) {
+      const url = new URL(location.href); url.searchParams.set('ai', 'live');
+      history.replaceState(history.state, '', url);
+      LIVE_AI = true;
+      aiStatus.failed = sessionStorage.getItem('shopai_ai_failed') == '1';
+    }
+    S.view = e.v; S.modal = null; render();
+  },
+  cat: e => { S.cat = e.c; render() },
   open: e => { S.D = { ...defL(e.id) }; S.modal = 'detail'; render() }, closeM: () => { const o = document.querySelector('.ov'); if (!o || o.classList.contains('out')) { S.modal = null; return render() } o.classList.add('out'); setTimeout(() => { S.modal = null; render() }, 170) }, modal: e => { S.modal = e.m; render() },
   quick: e => { if (byId(e.id).s) return toast(t('soldT'), 'ban'); addLine(defL(e.id)); toast(tr(byId(e.id).n)) },
   aiadd: e => { if (byId(e.id).s) return toast(t('soldT'), 'ban'); addLine(defL(e.id)); S.chat.push({ r: 'a', t: t('added'), qa: [['nav', 'cart', t('goC')]] }); render() },
@@ -355,7 +368,7 @@ const A = {
   cq: e => { const l = S.cart[e.i]; l.qty += +e.d; if (l.qty < 1) S.cart.splice(e.i, 1); render() }, rm: e => { S.cart.splice(e.i, 1); render() },
   algT: e => { const i = S.al.indexOf(e.k); i < 0 ? S.al.push(e.k) : S.al.splice(i, 1); S.other = $('#oth').value; render() }, algS: () => { S.other = $('#oth').value; S.modal = null; toast(t('saved')) },
   staffGo: () => { if (Date.now() - S.staffAt < 60000) { S.modal = null; return toast(t('wait')) } S.staffAt = Date.now(); Store.update(d => { if (!d.calls.some(c => c.table == TABLE && !c.done)) d.calls.push({ id: Date.now().toString(36), table: TABLE, t: Date.now(), done: 0 }) }); S.modal = null; toast(t('staffOk')) },
-  billGo: () => { Store.update(d => { if (!d.bills.some(b => b.table == TABLE && !b.done)) d.bills.push({ id: Date.now().toString(36), table: TABLE, total: S.orders.reduce((a, o) => a + o.total, 0), t: Date.now(), done: 0 }) }); S.modal = null; toast(t('billOk')) },
+  billGo: () => { Store.update(d => { if (!d.bills.some(b => b.table == TABLE && !b.done)) d.bills.push({ id: Date.now().toString(36), table: TABLE, total: billTotal(billOrders()), t: Date.now(), done: 0 }) }); S.modal = null; toast(t('billOk')) },
   placeGo: () => { if (S.busy || !S.cart.length) return; S.busy = true; render(); setTimeout(() => { const o = { no: 'HK' + TABLE + '-' + (1000 + Math.floor(Math.random() * 9000)), items: S.cart, total: sum() }; S.orders.push(o); Store.update(d => d.orders.push({ id: o.no, no: o.no, table: TABLE, items: o.items.map(l => ({ ...l })), total: o.total, status: 'picked', t: Date.now(), al: [...S.al.map(k => AL[k][1]), ...(S.other ? [S.other] : [])] })); S.cart = []; S.busy = false; S.modal = null; S.view = 'confirm'; render() }, 1200) },
   wrong: e => { const c = S.chat[e.i]; if (!c || !c.q) return; Store.update(d => d.wrong.push({ q: c.q, a: String(c.t).replace(/<[^>]*>/g, ''), t: Date.now() })); c.q = 0; toast(t('saved')) }, ask: e => ask(e.t), send: () => { const i = $('#ci'); const v = i.value; i.value = ''; ask(v) }
 };

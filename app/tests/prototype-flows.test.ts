@@ -3,6 +3,7 @@ import path from "node:path";
 import vm from "node:vm";
 import { JSDOM } from "jsdom";
 import { afterEach, describe, expect, it } from "vitest";
+import QRCode from "qrcode";
 
 const folder = path.resolve(__dirname, "../../prototype");
 const html = fs.readFileSync(path.join(folder, "index.html"), "utf8");
@@ -85,6 +86,150 @@ function loginOwner(doc: Document, email = "owner@hachi-kyu.example", pass = "12
   (doc.getElementById("em") as HTMLInputElement).value = email;
   (doc.getElementById("pw") as HTMLInputElement).value = pass;
   click(doc, '[data-o="login"]');
+}
+
+function svgToMatrix(svg: string): { size: number; matrix: number[][] } {
+  const vb = svg.match(/viewBox="0 0 (\d+) (\d+)"/);
+  if (!vb) throw new Error("No viewBox in SVG");
+  const size = parseInt(vb[1], 10);
+  const matrix = Array.from({ length: size }, () => Array(size).fill(0));
+  const paths = [...svg.matchAll(/d="([^"]+)"/g)];
+  if (paths.length < 2) throw new Error("Expected background and module paths");
+  const d = paths[1][1];
+  let curX = 0;
+  let curY = 0;
+  const regex = /([Mmh])\s*([^Mmh]+)/g;
+  for (const match of d.matchAll(regex)) {
+    const cmd = match[1];
+    const args = match[2].trim().split(/\s+/).map(Number);
+    if (cmd === "M") {
+      curX = Math.round(args[0]);
+      curY = Math.round(args[1] - 0.5);
+    } else if (cmd === "m") {
+      curX += Math.round(args[0]);
+    } else if (cmd === "h") {
+      const len = Math.round(args[0]);
+      for (let i = 0; i < len; i++) {
+        matrix[curY][curX + i] = 1;
+      }
+      curX += len;
+    }
+  }
+  return { size, matrix };
+}
+
+function decodeSvgQr(svg: string): string {
+  const { size, matrix } = svgToMatrix(svg);
+  const margin = 4;
+  const moduleSize = size - margin * 2;
+  const _version = (moduleSize - 21) / 4 + 1;
+
+  let bits = 0;
+  for (let i = 0; i < 15; i++) {
+    const r = i < 6 ? i : i < 8 ? i + 1 : moduleSize - 15 + i;
+    const mod = matrix[r + margin][8 + margin];
+    bits |= (mod << i);
+  }
+  const unmaskedFormat = bits ^ 0x5412;
+  const maskPattern = (unmaskedFormat >> 10) & 7;
+
+  const maskFn = (i: number, j: number) => {
+    switch (maskPattern) {
+      case 0: return (i + j) % 2 === 0;
+      case 1: return i % 2 === 0;
+      case 2: return j % 3 === 0;
+      case 3: return (i + j) % 3 === 0;
+      case 4: return (Math.floor(i / 2) + Math.floor(j / 3)) % 2 === 0;
+      case 5: return (i * j) % 2 + (i * j) % 3 === 0;
+      case 6: return ((i * j) % 2 + (i * j) % 3) % 2 === 0;
+      case 7: return ((i * j) % 3 + (i + j) % 2) % 2 === 0;
+      default: return false;
+    }
+  };
+
+  const reserved = Array.from({ length: moduleSize }, () => Array(moduleSize).fill(false));
+  for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) reserved[r][c] = true;
+  for (let r = 0; r < 9; r++) for (let c = moduleSize - 8; c < moduleSize; c++) reserved[r][c] = true;
+  for (let r = moduleSize - 8; r < moduleSize; r++) for (let c = 0; c < 9; c++) reserved[r][c] = true;
+  for (let i = 8; i < moduleSize - 8; i++) { reserved[i][6] = true; reserved[6][i] = true; }
+  const align = [6, 30];
+  for (const ar of align) {
+    for (const ac of align) {
+      if ((ar === 6 && ac === 6) || (ar === 6 && ac === moduleSize - 7) || (ar === moduleSize - 7 && ac === 6)) continue;
+      for (let r = -2; r <= 2; r++) for (let c = -2; c <= 2; c++) reserved[ar + r][ac + c] = true;
+    }
+  }
+  for (let i = 0; i < 9; i++) { reserved[i][8] = true; reserved[8][i] = true; }
+  for (let i = 0; i < 8; i++) { reserved[moduleSize - 1 - i][8] = true; reserved[8][moduleSize - 1 - i] = true; }
+  reserved[moduleSize - 8][8] = true;
+
+  const rawBits: number[] = [];
+  let row = moduleSize - 1;
+  let inc = -1;
+  for (let col = moduleSize - 1; col > 0; col -= 2) {
+    if (col === 6) col--;
+    while (true) {
+      for (let c = 0; c < 2; c++) {
+        if (!reserved[row][col - c]) {
+          let bit = matrix[row + margin][col - c + margin];
+          if (maskFn(row, col - c)) bit ^= 1;
+          rawBits.push(bit);
+        }
+      }
+      row += inc;
+      if (row < 0 || moduleSize <= row) {
+        row -= inc;
+        inc = -inc;
+        break;
+      }
+    }
+  }
+
+  const rawBytes: number[] = [];
+  for (let i = 0; i < rawBits.length; i += 8) {
+    let b = 0;
+    for (let j = 0; j < 8; j++) b = (b << 1) | (rawBits[i + j] || 0);
+    rawBytes.push(b);
+  }
+
+  const totalCodewords = 134;
+  const ecTotalCodewords = 48;
+  const dataTotalCodewords = totalCodewords - ecTotalCodewords;
+  const ecTotalBlocks = 2;
+  const blocksInGroup2 = totalCodewords % ecTotalBlocks;
+  const blocksInGroup1 = ecTotalBlocks - blocksInGroup2;
+  const dataCodewordsInGroup1 = Math.floor(dataTotalCodewords / ecTotalBlocks);
+  const dataCodewordsInGroup2 = dataCodewordsInGroup1 + 1;
+
+  const dcData: number[][] = Array.from({ length: ecTotalBlocks }, () => []);
+  const maxDataSize = dataCodewordsInGroup2;
+  let index = 0;
+  for (let i = 0; i < maxDataSize; i++) {
+    for (let r = 0; r < ecTotalBlocks; r++) {
+      const dataSize = r < blocksInGroup1 ? dataCodewordsInGroup1 : dataCodewordsInGroup2;
+      if (i < dataSize) {
+        dcData[r].push(rawBytes[index++]);
+      }
+    }
+  }
+
+  const unpadded = dcData.flat();
+  let bitPos = 0;
+  function readBits(n: number) {
+    let v = 0;
+    for (let i = 0; i < n; i++) {
+      const b = unpadded[Math.floor(bitPos / 8)];
+      const bit = (b >> (7 - (bitPos % 8))) & 1;
+      v = (v << 1) | bit;
+      bitPos++;
+    }
+    return v;
+  }
+  const _mode = readBits(4);
+  const len = readBits(8);
+  let decoded = "";
+  for (let i = 0; i < len; i++) decoded += String.fromCharCode(readBits(8));
+  return decoded;
 }
 
 describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
@@ -261,6 +406,30 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
     expect(JSON.parse(win.localStorage.getItem("shopai_db3")!).orders[0].status).toBe("served");
   });
 
+  it("Check bill includes only unpaid orders after an earlier bill was paid", () => {
+    const oldOrder = { id: "HK5-1001", no: "HK5-1001", table: "5", items: [], total: 120, status: "paid" };
+    const newOrder = { id: "HK5-1002", no: "HK5-1002", table: "5", items: [], total: 85, status: "served" };
+    const win = open("?view=customer&go=more&lang=en", {
+      db: JSON.stringify({ orders: [oldOrder, newOrder, { ...newOrder, id: "HK6-1003", no: "HK6-1003", table: "6", total: 40 }] }),
+      session: { shopai3: JSON.stringify({ orders: [oldOrder, newOrder] }) },
+    });
+    const doc = win.document;
+
+    expect(doc.querySelector("main")?.textContent).toContain("#HK5-1001");
+    click(doc, '[data-a="modal"][data-m="bill"]');
+    const bill = doc.querySelector(".ov")!;
+    expect(bill.textContent).not.toContain("HK5-1001");
+    expect(bill.textContent).not.toContain("HK6-1003");
+    expect(bill.textContent).toContain("#HK5-1002");
+    expect(bill.querySelector(".tot.b")?.textContent).toContain("฿85");
+
+    click(doc, '[data-a="billGo"]');
+    const db = JSON.parse(win.localStorage.getItem("shopai_db3")!);
+    expect(db.bills).toHaveLength(1);
+    expect(db.bills[0].total).toBe(85);
+    expect(db.orders[0].status).toBe("paid");
+  });
+
   it("FR-5 (?view=owner): logs in with demo credentials, rejects a dish with no name, and adds a valid dish", () => {
     const win = open("?view=owner");
     const doc = win.document;
@@ -382,7 +551,63 @@ describe("clickable prototype flows (FR-1..FR-10 and photos)", () => {
 
     // Happy path: generate QR codes
     click(doc, '[data-o="gen"]');
-    expect(doc.querySelectorAll(".qrs .qc")).toHaveLength(60);
+    const allCards = doc.querySelectorAll(".qrs .qc");
+    expect(allCards).toHaveLength(60);
+    expect(decodeSvgQr(allCards[0].querySelector("svg")!.outerHTML)).toBe(
+      "http://prototype.local/index.html?view=customer&restaurant=HaChi%20Kyu&table=1"
+    );
+    expect(decodeSvgQr(allCards[59].querySelector("svg")!.outerHTML)).toBe(
+      "http://prototype.local/index.html?view=customer&restaurant=HaChi%20Kyu&table=60"
+    );
+  });
+
+  it("FR-8 (?view=owner): table QR codes encode scannable table URLs with valid quiet zone, crisp edges and contrast", () => {
+    const win = open("?view=owner");
+    const doc = win.document;
+    loginOwner(doc);
+
+    click(doc, 'aside [data-o="pg"][data-v="qr"]');
+    click(doc, '[data-o="gen"]');
+
+    const cards = doc.querySelectorAll(".qrs .qc");
+    expect(cards.length).toBeGreaterThan(0);
+
+    for (const idx of [0, 1, cards.length - 1]) {
+      const card = cards[idx];
+      const tableNum = idx + 1;
+      const expectedUrl = `http://prototype.local/index.html?view=customer&restaurant=HaChi%20Kyu&table=${tableNum}`;
+      expect(card.querySelector("small")?.textContent).toBe(expectedUrl);
+
+      const svg = card.querySelector("svg");
+      expect(svg, `table ${tableNum} SVG exists`).not.toBeNull();
+      expect(svg?.getAttribute("shape-rendering")).toBe("crispEdges");
+
+      // Contrast: white background fill and black dark modules stroke
+      const paths = svg?.querySelectorAll("path");
+      expect(paths?.length).toBe(2);
+      expect(paths?.[0].getAttribute("fill")?.toLowerCase()).toBe("#ffffff");
+      expect(paths?.[1].getAttribute("stroke")?.toLowerCase()).toBe("#000000");
+
+      const svgHtml = svg!.outerHTML;
+      // Matrix matches QRCode.create exactly
+      const expected = QRCode.create(expectedUrl);
+      const { size, matrix } = svgToMatrix(svgHtml);
+      expect(size).toBe(expected.modules.size + 8); // 37 modules + 2 * 4 quiet zone
+      for (let r = 0; r < expected.modules.size; r++) {
+        for (let c = 0; c < expected.modules.size; c++) {
+          expect(matrix[r + 4][c + 4]).toBe(expected.modules.get(r, c) ? 1 : 0);
+        }
+      }
+
+      // Quiet zone: 4 modules of white space on all borders
+      for (let i = 0; i < 4; i++) {
+        expect(matrix[i].every(v => v === 0)).toBe(true);
+        expect(matrix[size - 1 - i].every(v => v === 0)).toBe(true);
+      }
+
+      // Direct decoding of unmasked bitstream
+      expect(decodeSvgQr(svgHtml)).toBe(expectedUrl);
+    }
   });
 
   it("FR-9 (?view=staff & ?view=owner): locks sign-in for 10 minutes after 5 wrong PINs, and rejects blank staff row on save", () => {
