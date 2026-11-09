@@ -46,6 +46,7 @@ function aiStatusContent() {
   return `<span>${esc(t('aiStatus_' + state).replace('{model}', aiStatus.model))}</span>${state == 'unreachable' ? ` <button type="button" data-ai-retry="">${t('retry')}</button>` : ''}`;
 }
 function aiStatusUpdate() {
+  if (typeof document == 'undefined' || !document) return;
   const chip = document.querySelector('.ai-status');
   if (!chip) return;
   chip.dataset.state = aiStatus.failed ? 'failed' : aiStatus.state;
@@ -75,7 +76,7 @@ function aiStatusChip() {
   if (LIVE_AI && !document.querySelector('.ai-status:not([data-state="demo"])')) {
     aiStatusCheck();
     clearInterval(aiStatus.timer);
-    aiStatus.timer = setInterval(() => { if (document.querySelector('.ai-status')) aiStatusCheck(); }, 30000);
+    aiStatus.timer = setInterval(() => { if (typeof document == 'undefined' || !document) return; if (document.querySelector('.ai-status')) aiStatusCheck(); }, 30000);
   }
   return `<div class="ai-status" role="status" aria-live="polite" aria-atomic="true" data-state="${!LIVE_AI ? 'demo' : aiStatus.failed ? 'failed' : aiStatus.state}">${aiStatusContent()}</div>`;
 }
