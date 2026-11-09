@@ -3,6 +3,7 @@
 **/.next
 **/.npm-cache
 app/data
+app/public/prototype
 **/*.log
 **/.env
 **/.env.local

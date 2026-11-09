@@ -237,3 +237,32 @@ body { background: var(--canvas); }
 :is(.inb, .sb) input:focus-visible {
   outline: none;
 }
+.aih .live { color: var(--ok); font-weight: 700; }   /* ?ai=live: answers come from the real server and model */
+
+
+@media (min-width: 1024px) {
+  .view-customer #app > main:not(:has(~ .dock)) > .btn {
+    display: flex;
+    width: 100%;
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* AI connection status: quiet glass pill, with words for every colour state. */
+.aih > div { min-width: 0; }
+.aih .ai-status {
+  display: flex; align-items: center; gap: 8px; width: fit-content; max-width: 100%;
+  margin-top: 7px; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line);
+  background: rgb(255 255 255 / 72%); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  color: var(--secondary); font-size: 12px; font-weight: 600; line-height: 1.5; overflow-wrap: anywhere;
+}
+.ai-status[data-state="ready"] { color: var(--ok); background: rgb(237 249 241 / 86%); }
+.ai-status[data-state="loading"] { color: var(--warn); background: rgb(255 242 214 / 86%); }
+.ai-status:is([data-state="unreachable"], [data-state="failed"]) { color: var(--late); background: rgb(255 239 237 / 86%); }
+.aih .ai-status button {
+  flex: none; border: 0; border-radius: 999px; padding: 4px 2px; background: transparent;
+  color: inherit; font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+.ai-status button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }

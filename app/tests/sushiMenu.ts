@@ -1,4 +1,4 @@
-// Puts the 132-dish sushi menu on Golden Lotus in the test database (the way `npm run db:seed:hachi:into -- --replace` does), so a test can
+// Puts the 104-dish sushi menu on Golden Lotus in the test database (the way `npm run db:seed:hachi:into -- --replace` does), so a test can
 // ask the AI about the menu the owner really has now. Call it once, in beforeAll.
 import { spawnSync } from "node:child_process";
 import path from "node:path";

@@ -1151,6 +1151,7 @@ function wrongPrice(text: string, items: Item[]): boolean {
     const names = new Set<string>();
     for (const n of Object.values(it.name)) { names.add(n); for (const x of n.split("(")) { const part = x.trim().replace(/\)$/, ""); if (part) names.add(part); } }
     for (const n of names) {
+      if (!n) continue;
       let from = 0;
       for (;;) {
         const i = s.indexOf(n, from);

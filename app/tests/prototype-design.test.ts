@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import vm from "node:vm";
 import { JSDOM } from "jsdom";
 import { afterEach, describe, expect, it } from "vitest";
@@ -7,8 +8,8 @@ import { afterEach, describe, expect, it } from "vitest";
 const folder = path.resolve(__dirname, "../../prototype");
 const html = fs.readFileSync(path.join(folder, "index.html"), "utf8");
 const openDemos: JSDOM[] = [];
-function open(query = "") {
-  const dom = new JSDOM(html, { url: `http://prototype.local/index.html${query}`, runScripts: "outside-only", pretendToBeVisual: true });
+function open(query = "", base = "http://prototype.local/index.html") {
+  const dom = new JSDOM(html, { url: `${base}${query}`, runScripts: "outside-only", pretendToBeVisual: true });
   openDemos.push(dom);
   dom.window.requestAnimationFrame = callback => { callback(0); return 1; };
   Object.assign(dom.window, { IntersectionObserver: class { observe() {} unobserve() {} disconnect() {} } });
@@ -21,7 +22,33 @@ function open(query = "") {
 }
 afterEach(() => { openDemos.splice(0).forEach(dom => dom.window.close()); });
 
+function clickPreviewAdd(doc: Document, englishName: string) {
+  const dish = [...doc.querySelectorAll(".lp-dish")].find(d => d.querySelector("b")?.textContent?.trim() === englishName);
+  const btn = dish?.querySelector("button[data-preview-add]") as HTMLElement | null;
+  expect(btn, `preview add button for "${englishName}"`).not.toBeNull();
+  btn!.click();
+}
+
 describe("the redesigned standalone prototype", () => {
+  it.each([1, 2, 3])("resolves every image to a real local JPEG in layout %i, including role previews", variant => {
+    const win = open(`?v=${variant}`, "http://hangouwithme.me/WaiterAi/");
+    const base = new URL("./", win.location.href);
+    for (const role of ["diner", "waiter", "chef", "owner"]) {
+      (win.document.querySelector(`[data-preview-role="${role}"]`) as HTMLElement).click();
+      const images = [...win.document.querySelectorAll("img")];
+      expect(images).toHaveLength(5 + (variant === 1 ? 4 : 0) + (["diner", "owner"].includes(role) ? 4 : 0));
+      for (const image of images) {
+        const src = image.getAttribute("src")!;
+        const url = new URL(src, win.location.href);
+        expect(url.origin).toBe(base.origin);
+        expect(url.pathname.startsWith(base.pathname)).toBe(true);
+        const file = path.resolve(folder, decodeURIComponent(url.pathname.slice(base.pathname.length)));
+        expect(fs.existsSync(file), url.href).toBe(true);
+        expect(fileURLToPath(new URL(src, pathToFileURL(path.join(folder, "index.html"))))).toBe(file);
+        expect([...fs.readFileSync(file).subarray(0, 3)], url.href).toEqual([0xff, 0xd8, 0xff]);
+      }
+    }
+  });
   it("opens the landing page by default and keeps existing table links on the diner menu", () => {
     expect(open().document.querySelector("h1")?.textContent).toContain("Every table.");
     expect(open("?table=7").document.querySelector(".tt")?.textContent).toContain("7");
@@ -40,15 +67,15 @@ describe("the redesigned standalone prototype", () => {
   it("calculates preview picks from real prices, switches language, and clears without changing orders", () => {
     const win = open();
     const doc = win.document;
-    const ordersBefore = win.localStorage.getItem("shopai_db2");
-    (doc.querySelector('[data-preview-add="12"]') as HTMLElement).click();
-    (doc.querySelector('[data-preview-add="103"]') as HTMLElement).click();
-    expect([...doc.querySelectorAll(".lp-menu-total output")].map(el => el.textContent)).toEqual(["฿138", "฿138"]);
+    const ordersBefore = win.localStorage.getItem("shopai_db3");
+    clickPreviewAdd(doc, "Salmon Belly Sushi");
+    clickPreviewAdd(doc, "Sprite");
+    expect([...doc.querySelectorAll(".lp-menu-total output")].map(el => el.textContent)).toEqual(["฿147", "฿147"]);
     (doc.querySelector('[data-preview-lang="th"]') as HTMLElement).click();
-    expect(doc.querySelector(".lp-dish b")?.textContent).toBe("ซูชิแซลม่อน");
+    expect(doc.querySelector(".lp-dish b")?.textContent).toBe("ซูชิท้องปลาแซลม่อน");
     (doc.querySelector("[data-preview-clear]") as HTMLElement).click();
     expect(doc.querySelector(".lp-menu-total output")?.textContent).toBe("฿0");
-    expect(win.localStorage.getItem("shopai_db2")).toBe(ordersBefore);
+    expect(win.localStorage.getItem("shopai_db3")).toBe(ordersBefore);
   });
   it("shows every role with a real demo destination and keeps keyboard focus on the selected role", () => {
     const win = open();

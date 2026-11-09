@@ -8,9 +8,12 @@
     "start": "next start -H 0.0.0.0 -p 3000",
     "db:seed": "node --experimental-strip-types --no-warnings scripts/seed.mts",
     "test": "vitest run",
-    "test:unit": "vitest run tests/unit tests/diner-filters.test.ts tests/i18n.test.ts tests/ingredients.test.ts",
-    "test:integration": "vitest run tests/integration tests/ui tests/diner-flow.test.ts",
+    "test:unit": "vitest run tests/unit tests/provider.test.ts tests/diner-filters.test.ts tests/i18n.test.ts tests/ingredients.test.ts tests/ingredients-i18n.test.ts tests/thai-keywords.test.ts",
+    "test:integration": "vitest run tests/integration tests/ui tests/diner-flow.test.ts tests/chat-api.test.ts tests/ai-status.test.ts tests/chat-data.test.ts tests/security-round2.test.ts tests/auth.test.ts tests/orders.test.ts tests/menu.test.ts tests/platform.test.ts tests/import.test.ts tests/owner-bulk.test.ts tests/staff-calls.test.ts",
+    "test:logic": "vitest run tests/logic tests/ai-rules.test.ts tests/ai-guard.test.ts tests/ai-prompt.test.ts tests/ai-natural.test.ts tests/ai-open.test.ts tests/ai-helpful.test.ts tests/allergy-profile.test.ts tests/allergen-status.test.ts tests/allergen-oracle.test.ts tests/facts-oracle.test.ts tests/recommendations.test.ts tests/adversarial.test.ts tests/eval.test.ts tests/eval-natural.test.ts tests/eval-open.test.ts tests/eval-situations.test.ts tests/eval-sushi.test.ts tests/eval-latency.test.ts tests/prototype-ai-rules.test.ts",
+    "test:ai": "vitest run tests/unit/ai-provider-boundary.test.ts tests/integration/ai-chat-pipeline.test.ts tests/logic tests/provider.test.ts tests/warmup.test.ts tests/warmup-big-menu.test.ts tests/ai-rules.test.ts tests/ai-guard.test.ts tests/ai-prompt.test.ts tests/ai-natural.test.ts tests/ai-open.test.ts tests/ai-helpful.test.ts tests/ai-status.test.ts tests/chat-api.test.ts tests/chat-data.test.ts tests/allergy-profile.test.ts tests/allergen-status.test.ts tests/allergen-oracle.test.ts tests/facts-oracle.test.ts tests/recommendations.test.ts tests/adversarial.test.ts tests/eval.test.ts tests/eval-natural.test.ts tests/eval-open.test.ts tests/eval-situations.test.ts tests/eval-sushi.test.ts tests/eval-latency.test.ts tests/sushi-menu-ai.test.ts tests/prototype-ai-rules.test.ts tests/prototype-live.test.ts",
     "test:system": "npm run build && npm run test:e2e",
+    "test:ai:live": "npm run build && vitest run --config vitest.ai-live.config.mts",
     "test:watch": "vitest",
     "test:e2e": "vitest run --config vitest.e2e.config.mts",
     "typecheck": "tsc --noEmit",
@@ -24,6 +27,7 @@
     "db:restore": "node --experimental-strip-types --no-warnings scripts/backup-data.mts restore",
     "db:seed:hachi": "node --experimental-strip-types --no-warnings scripts/seed-hachi-kyu.mts",
     "db:seed:hachi:into": "node --experimental-strip-types --no-warnings scripts/seed-hachi-kyu.mts --into golden-lotus",
+    "prototype:live": "ln -sfn ../../prototype public/prototype && echo \"Prototype with the real AI: http://localhost:3000/prototype/index.html?view=customer&ai=live\"",
     "db:seed:hachi:build": "node --experimental-strip-types --no-warnings scripts/make-hachi-kyu-seed.mts"
   },
   "devDependencies": {

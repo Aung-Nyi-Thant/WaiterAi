@@ -1,4 +1,4 @@
-// eval/sushi_menu_questions.json: what a diner asks about the 132-dish sushi menu (combos and sets, categories, contents, allergens, bare recommendations,
+// eval/sushi_menu_questions.json: what a diner asks about the 104-dish sushi menu (combos and sets, categories, contents, allergens, bare recommendations,
 // in English, Thai and Burmese). Questions marked "rules": true are answered from the database, so they are enforced here with the model switched
 // off; the others need a real model and are scored by `EVAL_QUESTIONS=sushi_menu_questions.json npm run eval:live`.
 import fs from "node:fs";

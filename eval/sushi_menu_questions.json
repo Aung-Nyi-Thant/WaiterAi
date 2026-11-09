@@ -9,10 +9,10 @@
     "Coke Combo"
    ],
    [
-    "Omori Set"
+    "Yakisoba with Coke"
    ],
    [
-    "Buta Set"
+    "Fatty Beef Don with Coke"
    ]
   ],
   "forbid": [],
@@ -25,10 +25,10 @@
   "question": "Do you have a set menu?",
   "expect": [
    [
-    "Tontoro Happy Set"
+    "Yakisoba with Coke"
    ],
    [
-    "Omori Set"
+    "Fatty Beef Don with Coke"
    ]
   ],
   "forbid": [],
@@ -51,7 +51,7 @@
   "id": "sm-en4",
   "lang": "en",
   "category": "combo_contents",
-  "question": "What is in the Omori Set?",
+  "question": "What is in the Japanese Pizza?",
   "expect": [
    [
     "don't have"
@@ -70,7 +70,7 @@
   "id": "sm-en5",
   "lang": "en",
   "category": "combo_contents",
-  "question": "What comes with the Tontoro Happy Set?",
+  "question": "What comes with the Clear Soup?",
   "expect": [
    [
     "don't have"
@@ -89,10 +89,10 @@
   "id": "sm-en6",
   "lang": "en",
   "category": "combo_price",
-  "question": "How much is the Tontoro Happy Set?",
+  "question": "How much is the Yakisoba with Coke?",
   "expect": [
    [
-    "299"
+    "99"
    ]
   ],
   "forbid": [],
@@ -131,13 +131,13 @@
   "id": "sm-en9",
   "lang": "en",
   "category": "combo_contents",
-  "question": "What is in the Garlic Fried Rice with Coke?",
+  "question": "What is in the Fatty Beef Don with Coke?",
   "expect": [
    [
     "Japanese rice"
    ],
    [
-    "Garlic"
+    "Beef"
    ],
    [
     "Cola"
@@ -150,7 +150,7 @@
   "id": "sm-en10",
   "lang": "en",
   "category": "combo_order",
-  "question": "I want garlic fried rice with coke",
+  "question": "I want fatty beef don with coke",
   "expect": [
    [
     "Added to your picks"
@@ -166,13 +166,13 @@
   "id": "sm-en11",
   "lang": "en",
   "category": "combo_order",
-  "question": "Add the Buta Set",
+  "question": "Add the Yakisoba with Coke",
   "expect": [
    [
     "Added to your picks"
    ],
    [
-    "Buta Set"
+    "Yakisoba with Coke"
    ]
   ],
   "forbid": [],
@@ -182,7 +182,7 @@
   "id": "sm-en12",
   "lang": "en",
   "category": "combo_allergen",
-  "question": "Is the Omori Set allergen free?",
+  "question": "Is the Wagyu Sushi allergen free?",
   "expect": [
    [
     "not provided"
@@ -234,7 +234,7 @@
   "question": "What sushi do you have?",
   "expect": [
    [
-    "Sushi (25)"
+    "Sushi (23)"
    ],
    [
     "Salmon Sushi"
@@ -311,7 +311,7 @@
   "question": "What skewers do you have?",
   "expect": [
    [
-    "Grilled Skewers (15)"
+    "Grilled Skewers (11)"
    ],
    [
     "Skewer"
@@ -327,7 +327,7 @@
   "question": "Any rice bowls?",
   "expect": [
    [
-    "Rice & Don (20)"
+    "Rice & Don (17)"
    ]
   ],
   "forbid": [],
@@ -340,7 +340,7 @@
   "question": "What appetizers do you have?",
   "expect": [
    [
-    "Appetizers (44)"
+    "Appetizers (29)"
    ],
    [
     "more"
@@ -399,7 +399,7 @@
   "id": "sm-en25",
   "lang": "en",
   "category": "ingredients",
-  "question": "What is in the Garlic Fried Rice?",
+  "question": "What is in the Japanese Rice?",
   "expect": [
    [
     "Japanese rice"
@@ -583,7 +583,7 @@
   "id": "sm-en34",
   "lang": "en",
   "category": "open_set",
-  "question": "Does the Omori Set include a free dessert?",
+  "question": "Does the Yakisoba with Coke include a free dessert?",
   "expect": [
    [
     "staff",
@@ -600,7 +600,7 @@
   "id": "sm-en35",
   "lang": "en",
   "category": "open_set",
-  "question": "Is there a discount on the Buta Set?",
+  "question": "Is there a discount on the Yakisoba with Coke?",
   "expect": [
    [
     "staff",
@@ -749,10 +749,10 @@
   "question": "Which sushi has no fish?",
   "expect": [
    [
-   "can't suggest a restaurant-checked dish for fish"
+    "can't suggest a restaurant-checked dish for fish"
    ],
    [
-   "Please confirm with the staff"
+    "Please confirm with the staff"
    ]
   ],
   "forbid": [
@@ -788,10 +788,10 @@
   "question": "มีเซ็ตอะไรบ้าง",
   "expect": [
    [
-    "Omori Set"
+    "ยากิโซบะพร้อมโค้ก"
    ],
    [
-    "Buta Set"
+    "ข้าวหน้าเนื้อติดมันพร้อมโค้ก"
    ]
   ],
   "forbid": [],
@@ -801,7 +801,7 @@
   "id": "sm-th2",
   "lang": "th",
   "category": "combo_contents",
-  "question": "Omori Set มีอะไรบ้าง",
+  "question": "ซาซิมิรวม มีอะไรบ้าง",
   "expect": [
    [
     "ไม่มี",
@@ -820,10 +820,10 @@
   "id": "sm-th3",
   "lang": "th",
   "category": "combo_price",
-  "question": "Buta Set ราคาเท่าไหร่",
+  "question": "ยากิโซบะพร้อมโค้ก ราคาเท่าไหร่",
   "expect": [
    [
-    "499"
+    "99"
    ]
   ],
   "forbid": [],
@@ -839,7 +839,7 @@
     "ซูชิ"
    ],
    [
-    "25"
+    "23"
    ]
   ],
   "forbid": [],
@@ -934,10 +934,10 @@
   "question": "ဆက်မီနူး ရှိလား",
   "expect": [
    [
-    "Omori Set"
+    "Yakisoba with Coke"
    ],
    [
-    "Buta Set"
+    "Fatty Beef Don with Coke"
    ]
   ],
   "forbid": [],
@@ -947,10 +947,10 @@
   "id": "sm-my2",
   "lang": "my",
   "category": "combo_price",
-  "question": "Omori Set ဘယ်လောက်လဲ",
+  "question": "Yakisoba with Coke ဘယ်လောက်လဲ",
   "expect": [
    [
-    "၁၂၀၀"
+    "၉၉"
    ]
   ],
   "forbid": [],
@@ -976,7 +976,7 @@
   "question": "ဆူရှီ ဘာတွေရှိလဲ",
   "expect": [
    [
-    "၂၅"
+    "၂၃"
    ]
   ],
   "forbid": [],

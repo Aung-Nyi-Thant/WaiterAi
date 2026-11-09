@@ -8,6 +8,7 @@ const root = path.resolve(__dirname, "../..");
 const read = (p: string) => fs.readFileSync(path.join(root, p), "utf8");
 
 const win: any = {};
+new Function("window", read("prototype/photos.js"))(win);
 const { MENU, AL } = new Function("window", `${read("prototype/data.js")}\nreturn { MENU, AL };`)(win) as { MENU: any[]; AL: Record<string, string[]> };
 const store: Record<string, string> = {};
 const sessionStorage = { getItem: (k: string) => store[k] ?? null, setItem: (k: string, v: string) => { store[k] = v; } };
@@ -57,6 +58,141 @@ describe("prototype AI rules (FR-2)", () => {
   });
   it("answers in Thai too", () => {
     expect(rules.answer("ราคา ซูชิแซลม่อน", { lang: "th" }).t).toContain("฿96");
+  });
+
+  it("handles negated spicy requests by listing non-spicy dishes with cards (Bug 1)", () => {
+    const queries = [
+      "My child can't eat too spicy food, what should he eat?",
+      "not spicy",
+      "no spicy",
+      "mild",
+      "for kids",
+      "can't eat spicy"
+    ];
+    for (const q of queries) {
+      const res = ask(q);
+      expect(res).not.toBeNull();
+      expect(res.t).toMatch(/not spicy/i);
+      expect(res.items.length).toBeGreaterThan(0);
+      for (const id of res.items) {
+        const dish = MENU.find(m => m.id === id);
+        expect(dish.sp).toBe(false);
+      }
+    }
+
+    // Thai and Burmese non-spicy
+    const thRes = rules.answer("ไม่เผ็ด มีเมนูอะไรบ้าง", { lang: "th" });
+    expect(thRes.t).toContain("เมนูเหล่านี้ไม่เผ็ด");
+    expect(thRes.items.length).toBeGreaterThan(0);
+    for (const id of thRes.items) {
+      const dish = MENU.find(m => m.id === id);
+      expect(dish.sp).toBe(false);
+    }
+
+    const myRes = rules.answer("မစပ်တာ ဘာရှိလဲ", { lang: "my" });
+    expect(myRes.t).toContain("မစပ်ပါ");
+    expect(myRes.items.length).toBeGreaterThan(0);
+
+    // Positive spicy keeps working
+    const spicyRes = ask("recommend something spicy");
+    expect(spicyRes.t).toMatch(/spice level/i);
+    expect(spicyRes.items.length).toBeGreaterThan(0);
+    for (const id of spicyRes.items) {
+      const dish = MENU.find(m => m.id === id);
+      expect(dish.sp).toBe(true);
+    }
+
+    const spicyTh = rules.answer("แนะนำอะไรเผ็ดๆ", { lang: "th" });
+    expect(spicyTh.t).toContain("เมนูที่เลือกระดับความเผ็ดได้");
+  });
+
+  it("answers recommendation queries with recommended dishes and cards (Bug 2)", () => {
+    const recQueries = [
+      "What do you recommend today?",
+      "what should I eat today",
+      "popular dishes",
+      "recommend",
+      "what's good"
+    ];
+    for (const q of recQueries) {
+      const res = ask(q);
+      expect(res).not.toBeNull();
+      expect(res.t).toContain("The restaurant marks these as recommended");
+      expect(res.items).toEqual([98, 99, 100]); // Fatty Beef Don with Onsen Egg, Jo Tontoro Don with Onsen Egg, Yakisoba with Onsen Egg
+    }
+
+    // Thai
+    const thRes1 = rules.answer("วันนี้กินอะไรดี", { lang: "th" });
+    expect(thRes1.t).toContain("ร้านแนะนำเมนูเหล่านี้");
+    expect(thRes1.items).toEqual([98, 99, 100]);
+
+    const thRes2 = rules.answer("มีอะไรแนะนำบ้าง", { lang: "th" });
+    expect(thRes2.t).toContain("ร้านแนะนำเมนูเหล่านี้");
+    expect(thRes2.items).toEqual([98, 99, 100]);
+
+    // Burmese
+    const myRes = rules.answer("ဒီနေ့ ဘာစားရမလဲ", { lang: "my" });
+    expect(myRes.t).toContain("ဆိုင်က အကြံပြုသော ဟင်းလျာများ");
+    expect(myRes.items).toEqual([98, 99, 100]);
+  });
+
+  it("answers common diner questions: greetings, vegetarian, ingredients, cheap dishes (Bug 3)", () => {
+    // Greetings
+    expect(ask("Good morning").t).toMatch(/Hello! Ask me about dishes/);
+    expect(rules.answer("sawasdee", { lang: "th" }).t).toContain("สวัสดีค่ะ");
+    expect(rules.answer("မင်္ဂလာပါ", { lang: "my" }).t).toContain("မင်္ဂလာပါ။");
+
+    // Vegetarian / Vegan
+    const vegRes = ask("vegetarian dishes");
+    expect(vegRes.t).toMatch(/suitability unconfirmed/i);
+    expect(vegRes.t).toMatch(/confirm with the staff/i);
+    expect(vegRes.items.length).toBeGreaterThan(0);
+    const vegUnder100 = ask("Vegan dishes under 100 baht");
+    expect(vegUnder100.items.length).toBeGreaterThan(0);
+    for (const id of vegUnder100.items) {
+      const dish = MENU.find(m => m.id === id);
+      expect(dish.p).toBeLessThanOrEqual(100);
+    }
+    const vegTh = rules.answer("มีเมนูมังสวิรัติไหม", { lang: "th" });
+    expect(vegTh.t).toContain("ยังไม่ยืนยัน");
+
+    // Ingredient queries (chicken / salmon)
+    const chickenRes = ask("something with chicken");
+    expect(chickenRes.t).toMatch(/Dishes with chicken/i);
+    expect(chickenRes.items.length).toBeGreaterThan(0);
+    for (const id of chickenRes.items) {
+      const dish = MENU.find(m => m.id === id);
+      expect(dish.n[1].toLowerCase().includes("chicken") || dish.ing.includes("chicken")).toBe(true);
+    }
+
+    const salmonRes = ask("something with salmon");
+    expect(salmonRes.t).toMatch(/Dishes with salmon/i);
+    expect(salmonRes.items.length).toBeGreaterThan(0);
+    for (const id of salmonRes.items) {
+      const dish = MENU.find(m => m.id === id);
+      expect(dish.n[1].toLowerCase().includes("salmon") || dish.ing.includes("salmon")).toBe(true);
+    }
+
+    const chickenTh = rules.answer("มีเมนูไก่อะไรบ้าง", { lang: "th" });
+    expect(chickenTh.t).toContain("เมนูที่มีไก่");
+    const salmonTh = rules.answer("อยากกินแซลม่อน", { lang: "th" });
+    expect(salmonTh.t).toContain("เมนูที่มีแซลม่อน");
+
+    // Cheap dishes / Budget
+    const cheapRes = ask("cheap dishes");
+    expect(cheapRes.t).toMatch(/Affordable dishes/i);
+    expect(cheapRes.items.length).toBeGreaterThan(0);
+    for (const id of cheapRes.items) {
+      const dish = MENU.find(m => m.id === id);
+      expect(dish.p).toBeLessThanOrEqual(50);
+    }
+    const cheapUnder100 = ask("dishes under 100 baht");
+    for (const id of cheapUnder100.items) {
+      const dish = MENU.find(m => m.id === id);
+      expect(dish.p).toBeLessThanOrEqual(100);
+    }
+    const cheapTh = rules.answer("เมนูราคาถูก", { lang: "th" });
+    expect(cheapTh.t).toContain("เมนูราคาย่อมเยา");
   });
 });
 

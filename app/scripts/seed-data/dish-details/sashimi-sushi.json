@@ -207,17 +207,6 @@
    "th": "ซูชิหนึ่งคำ กุ้งหวานตัวใหญ่ดิบ (อามาเอบิ) วางบนข้าวซูชิ"
   }
  },
- "Special Sushi": {
-  "name_my": "Special ဆူရှီ",
-  "parts": [
-   "sushirice",
-   "unknownpart"
-  ],
-  "desc": {
-   "en": "A special sushi from the house. What it is made of is not listed here: please ask the staff.",
-   "th": "ซูชิพิเศษของทางร้าน ยังไม่มีรายการส่วนประกอบในระบบ กรุณาสอบถามพนักงาน"
-  }
- },
  "Scallop Sashimi": {
   "name_my": "Scallop ဆာရှီမီ",
   "parts": [
@@ -402,22 +391,6 @@
   "desc": {
    "en": "A sushi roll with a deep-fried soft-shell crab, coated in tempura batter. Sauces on the roll are the kitchen's own.",
    "th": "ซูชิโรลปูนิ่มทอดชุบแป้งเทมปุระ ซอสที่ราดเป็นสูตรของทางร้าน"
-  }
- },
- "California Roll": {
-  "name_my": "California ရိုးလ်",
-  "parts": [
-   "sushirice",
-   "nori",
-   "crabstick",
-   "cucumber",
-   "mayo",
-   "sesame",
-   "tobiko"
-  ],
-  "desc": {
-   "en": "The classic inside-out roll: crab stick, cucumber and mayonnaise, rolled in sushi rice with sesame seeds and flying-fish roe. Avocado is common; ask the staff.",
-   "th": "แคลิฟอร์เนียโรลแบบคลาสสิก ปูอัด แตงกวา และมายองเนส ม้วนด้วยข้าวซูชิ โรยงาและไข่ปลาบิน โดยทั่วไปมีอะโวคาโดด้วย สอบถามพนักงานได้"
   }
  },
  "Sweet Egg (Tamago) Sushi": {

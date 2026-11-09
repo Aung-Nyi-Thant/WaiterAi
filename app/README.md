@@ -41,7 +41,9 @@ Start `npm run dev` with Ollama running. Use a phone (or a narrow browser window
 
 For a real deployment run `npm run db:seed` with `NODE_ENV=production`: it loads the sample menu from `eval/menu.json` with a **random** owner password and PINs (printed once), or your own `SEED_OWNER_EMAIL`, `SEED_OWNER_PASSWORD`, `SEED_WAITER_PIN`, `SEED_CHEF_PIN`. It refuses the public demo logins and does nothing if the database already has users. Real restaurants register at `/register`.
 
-**More sample dishes.** The prototype's sushi menu (132 dishes with photos, Thai and Burmese ingredient names) can be loaded two ways, both safe to run twice: `npm run db:seed:hachi` adds it as a second restaurant (`/r/hachi-kyu`, own owner and PINs), and `npm run db:seed:hachi:into` adds the same dishes to Golden Lotus's own menu (145 dishes). Set `SEED_HACHI_PHOTOS=1` to include the photo links (they point at the menu's source site). Their allergen lists are estimates or missing; the AI labels this uncertainty. A big menu makes the AI's first question after a menu change slower (the model re-reads the menu once, about a minute for 145 dishes), so restart the server after loading it and it is warmed up in the background.
+**More sample dishes.** The prototype's sushi menu (104 dishes with photos, Thai and Burmese ingredient names) can be loaded two ways, both safe to run twice: `npm run db:seed:hachi` adds it as a second restaurant (`/r/hachi-kyu`, own owner and PINs), and `npm run db:seed:hachi:into` adds the same dishes to Golden Lotus's own menu (117 dishes). Set `SEED_HACHI_PHOTOS=1` to include the photo links (they point at the menu's source site). Their allergen lists are estimates or missing; the AI labels this uncertainty. A big menu makes the AI's first question after a menu change slower (the model re-reads the prompt once; warm-up duration depends on menu size and hardware, historically measured at about a minute on a 145-dish prompt), so restart the server after loading it and it is warmed up in the background.
+
+**Prototype live mode.** Running `npm run prototype:live` creates a symlink in `public/prototype` so the prototype can be served by the Next.js app (default port 3000) at `/prototype/index.html?view=customer&go=ai&ai=live`. This live mode connects directly to the running Shop AI server and Ollama backend. When `ai=live` is omitted, the standalone, offline, no-server graded prototype remains the default. Note that the prototype's AI status pill reports whether the model is loaded and reachable, but does not guarantee reply speed under load or hardware contention.
 
 ## Settings (environment variables, all optional; see `.env.example`)
 | Variable | Meaning | Default |
@@ -64,16 +66,22 @@ For a real deployment run `npm run db:seed` with `NODE_ENV=production`: it loads
 Every `RATE_LIMIT_*` value can be `0` to switch that limit off. Counters live in memory in one server process (several server instances count separately) and restart with the server. A locked account stays locked until the window ends, even for the right password, so someone who knows an owner's email can lock that owner out for a minute at a time; behind a proxy set `RATE_LIMIT_TRUST_PROXY=1` so one address is limited as well.
 
 ## Tests
+```bash
+npm run test:unit        # pure diner, ingredient and provider boundary helpers
+npm run test:integration # rendered screens, route handlers, DB mutations and chat pipeline
+npm run test:logic       # deterministic rules, guardrails, prompts, oracles and evals
+npm run test:ai          # focused deterministic AI suites (no live Ollama)
+npm run test:system      # production build, seeded server and real HTTP flows (Ollama stub)
+npm run test:ai:live     # production build, isolated test server against real local Ollama
+npm test                 # full offline suite across all deterministic tests
+npm run lint             # Biome linting
+npm run typecheck        # TypeScript typecheck
+npm run eval:live        # 30 AI questions against running server; fails below eval/thresholds.json
 ```
-npm run test:unit      # pure diner, ingredient and language rules
-npm run test:integration # rendered screens, route handlers and temporary database
-npm run test:system    # production build, seeded server and real HTTP flows
-npm test               # full offline suite, including AI safety and evaluation tests
-npm run lint          # Biome
-npm run typecheck
-npm run eval:live     # the 30 AI questions against a running server and a real model; fails below eval/thresholds.json
-```
-The level-specific commands are focused suites; `npm test` runs all unit, integration and component tests. `test:system` uses a fresh temporary database and an unreachable AI model, so it checks safe fallback without Ollama. The system tests exercise the built app over HTTP, including an owner marking a dish sold out and the diner menu and order API reflecting that change.
+The level-specific commands are focused suites; `npm test` runs all deterministic unit, logic, integration, and component tests. `test:system` uses a fresh temporary database and a native HTTP Ollama stub to exercise real HTTP flows and verify safe fallback. `test:ai:live` creates an isolated test server to verify end-to-end inference against a real local Ollama instance (never run automatically in CI or default `npm test`).
+
+For complete documentation of test layers, actual vs. mocked boundaries, invariant assertions, runtime Ollama overrides, and data isolation, see the [Testing Guide](../docs/TESTING.md).
+
 The older Python scripts still work against a running dev server (and Ollama, for the live parts): `python3 scripts/e2e.py` (API checks; run it once per fresh database), `python3 scripts/chat_smoke.py` (the 30 eval questions) and `python3 scripts/nfr_check.py nfr1|nfr2|nfr4|nfr7` (speed, fallback and load checks, see `docs/NFR_RESULTS.md`).
 
 ## How the AI stays safe

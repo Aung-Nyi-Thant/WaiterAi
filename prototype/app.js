@@ -36,8 +36,72 @@
  * ============================================================================ */
 const aiS = () => Store.get().ai || {};   // owner's AI settings (name, greeting, tone, instructions, fallback)
 const aiCtx = () => ({ lang: S.lang, restaurant: REST, table: TABLE, allergies: S.al, otherAllergy: S.other, cart: S.cart, menu: MENU, ai: aiS(), faqs: Store.get().faqs, hours: Store.get().hours });
+// ?ai=live: questions go to the real Shop AI server (its database, safety rules and local model, e.g. gemma4:12b) instead of the
+// scripted rules below. Works when the prototype is served by that server (http://localhost:3000/prototype/index.html?ai=live),
+// so the request stays on the same origin. Without the flag the prototype needs no server at all (course requirement).
+const LIVE_AI = new URLSearchParams(location.search).get('ai') == 'live';
+const aiStatus = { state: 'loading', model: 'gemma4:12b', busy: false, timer: null, failed: LIVE_AI && sessionStorage.getItem('shopai_ai_failed') == '1' };
+function aiStatusContent() {
+  const state = !LIVE_AI ? 'demo' : aiStatus.failed ? 'failed' : aiStatus.state;
+  return `<span>${esc(t('aiStatus_' + state).replace('{model}', aiStatus.model))}</span>${state == 'unreachable' ? ` <button type="button" data-ai-retry="">${t('retry')}</button>` : ''}`;
+}
+function aiStatusUpdate() {
+  const chip = document.querySelector('.ai-status');
+  if (!chip) return;
+  chip.dataset.state = aiStatus.failed ? 'failed' : aiStatus.state;
+  const content = aiStatusContent();
+  if (chip.innerHTML != content) chip.innerHTML = content;
+}
+function aiStatusFail() {
+  aiStatus.failed = true;
+  sessionStorage.setItem('shopai_ai_failed', '1');
+  aiStatusUpdate();
+}
+async function aiStatusCheck() {
+  if (!LIVE_AI || aiStatus.busy) return;
+  aiStatus.busy = true;
+  const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 4000);
+  try {
+    const res = await fetch('/api/public/hachi-kyu/ai-status', { cache: 'no-store', signal: ctl.signal });
+    if (!res.ok) throw new Error('Status unavailable');
+    const d = await res.json();
+    if (d.server !== true || typeof d.model != 'string' || typeof d.modelReady != 'boolean') throw new Error('Invalid status');
+    aiStatus.model = d.model;
+    aiStatus.state = d.modelReady ? 'ready' : 'loading';
+  } catch { aiStatus.state = 'unreachable'; }
+  finally { clearTimeout(tm); aiStatus.busy = false; aiStatusUpdate(); }
+}
+function aiStatusChip() {
+  if (LIVE_AI && !document.querySelector('.ai-status')) {
+    aiStatusCheck();
+    clearInterval(aiStatus.timer);
+    aiStatus.timer = setInterval(() => { if (document.querySelector('.ai-status')) aiStatusCheck(); }, 30000);
+  }
+  return `<div class="ai-status" role="status" aria-live="polite" aria-atomic="true" data-state="${!LIVE_AI ? 'demo' : aiStatus.failed ? 'failed' : aiStatus.state}">${aiStatusContent()}</div>`;
+}
+if (LIVE_AI) document.addEventListener('click', ev => { if (ev.target.closest('[data-ai-retry]')) aiStatusCheck(); });
 const AIService = {
   async send(message, ctx) {
+    if (LIVE_AI) {
+      const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 60000);   // the local model can be slow; never wait forever
+      try {
+        const profile = S.al.map(k => ({ nut: 'tree_nut', shell: 'shellfish' }[k] || k));   // prototype allergy keys -> the server's allergen names
+        let res; try { res = await fetch('/api/public/hachi-kyu/chat', { method: 'POST', signal: ctl.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message, lang: S.lang, table: TABLE, sessionId: S.aiSid, profile }) }) }
+        catch (e) { throw new Error(e.name == 'AbortError' ? 'The AI took too long to answer.' : 'Cannot reach the Shop AI server.') }
+        const d = await res.json().catch(() => { throw new Error('The Shop AI server sent an unexpected answer.') });
+        if (!res.ok) throw new Error(d?.error || 'AI request failed');
+        if (!d || typeof d.reply != 'string' || typeof d.sessionId != 'string' || (d.dishes && !Array.isArray(d.dishes))) throw new Error('The Shop AI server sent an unexpected answer.');
+        if (/The AI waiter is unavailable right now|ผู้ช่วย AI ใช้งานไม่ได้ในขณะนี้|AI စားပွဲထိုး ခဏမရနိုင်ပါဘူး|AbortError/i.test(d.reply)) aiStatusFail();
+        S.aiSid = d.sessionId;
+        // the server's dishes carry database ids; show the same dishes from the prototype's menu (both menus are identical, matched by English name)
+        const local = new Map((d.dishes || []).map(x => [x.id, MENU.find(m => m.n[1] == (x.name && x.name.en))]).filter(x => x[1]));
+        const a = d.action || {}, out = { t: esc(d.reply).replace(/\n/g, '<br>'), items: [...local.values()].map(m => m.id).slice(0, 6) };
+        if (a.type == 'add_to_picks') (a.ids || []).forEach(id => { const m = local.get(id); if (m && !m.s) addLine({ ...defL(m.id), qty: (a.qty && a.qty[id]) || 1 }) });
+        if (a.type == 'add_to_picks' || a.type == 'show_menu') out.qa = [a.type == 'show_menu' ? ['nav', 'menu', t('menu')] : ['nav', 'cart', t('goC')]];
+        if (a.type == 'call_staff') A.staffGo();   // the server already logged the call; mirror it on the prototype's staff screen
+        return out;
+      } catch (e) { aiStatusFail(); throw e; } finally { clearTimeout(tm); }
+    }
     // TODO: call your AI backend here, e.g.
     // const res=await apiCall('/api/ai/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,ctx})});
     // if(!res.ok)throw new Error('AI request failed');
@@ -55,9 +119,9 @@ const AIService = {
   }
 };
 async function ask(x) {
-  x = x.trim(); if (!x) return;
+  x = x.trim(); if (!x || S.chat.some(c => c.typing)) return;
   S.chat.push({ r: 'u', t: x.replace(/</g, '&lt;') }, { r: 'a', typing: 1 }); render();
-  let r; try { r = await AIService.send(x, aiCtx()) } catch (e) { r = { t: t('err'), retry: x } }
+  let r; try { r = await AIService.send(x, aiCtx()) } catch (e) { r = { t: LIVE_AI && e.message ? esc(e.message) : t('err'), retry: x } }
   S.chat.pop(); S.chat.push({ r: 'a', q: x, ...r }); render()
 }
 
@@ -72,7 +136,7 @@ async function ask(x) {
 const $ = s => document.querySelector(s), I = { th: 0, en: 1, my: 2 }, P = new URLSearchParams(location.search);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 // Shop name and table number (default values: HaChi Kyu / Table 5)
-const REST = P.get('restaurant') || 'HaChi Kyu', TABLE = P.get('table') || '5';
+const REST = esc(P.get('restaurant') || 'HaChi Kyu'), TABLE = /^[\w-]{1,10}$/.test(P.get('table') || '') ? P.get('table') : '5';   // from the URL: escaped / whitelisted before any HTML
 
 // Entire app state (stored in memory + saved to sessionStorage via save())
 let S = {
@@ -92,10 +156,10 @@ let S = {
   D: null          // menu item currently open for details/customization
 };
 // Load previous session data (cart, language, allergies, orders) if available
-try { Object.assign(S, JSON.parse(sessionStorage.getItem('shopai2') || '{}')) } catch (e) { }
+try { Object.assign(S, JSON.parse(sessionStorage.getItem('shopai3') || '{}')) } catch (e) { }
 if (['th', 'en', 'my'].includes(P.get('lang'))) S.lang = P.get('lang');
 // Save state that must persist to sessionStorage (no login required; disappears when tab closes)
-const save = () => { try { sessionStorage.setItem('shopai2', JSON.stringify({ lang: S.lang, cart: S.cart, al: S.al, other: S.other, orders: S.orders, staffAt: S.staffAt })) } catch (e) { } };
+const save = () => { try { sessionStorage.setItem('shopai3', JSON.stringify({ lang: S.lang, cart: S.cart, al: S.al, other: S.other, orders: S.orders, staffAt: S.staffAt })) } catch (e) { } };
 // tr(translation array) = select the current language text (falls back to English if Myanmar translation is missing)
 // t('key') = get UI text from dictionary T in 02-i18n.js
 const tr = a => a[I[S.lang]] || a[1], t = k => strip(tr(T[k]));
@@ -183,8 +247,8 @@ ${feat ? `<h2>${t('menu')}</h2><div class="feat">${MENU.filter(hasPhoto).slice(0
 //   AI-side messages can be: text · menu cards with warning/add-to-cart buttons · quick action buttons · retry button on error
 //   Input box and suggested questions are in render() (RENDER section)
 function chatV() {
-  return `<div class="aih"><i>${ic('sparkle', 22)}</i><div><b>${aiS().name || t('aiN')}</b><br><small>${t('aiH')}</small></div></div><div class="chat">
-<div class="m a">${aiS().greet ? aiS().greet.replace(/</g, '&lt;') : t('hi')}</div>${S.chat.map((c, ix) => c.typing ? `<div class="m a dots${fresh.chat && ix == S.chat.length - 1 ? ' in' : ''}"><span></span><span></span><span></span></div>` : `<div class="m ${c.r}${fresh.chat && ix == S.chat.length - 1 ? ' in' : ''}">${c.t}${c.r == 'a' && c.q && !c.retry ? `<div class="qa"><button data-a="wrong" data-i="${ix}" aria-label="wrong answer">${ic('thumbDown', 16)}</button></div>` : ''}${(c.items || []).map(id => { const m = byId(id); return `<div class="mc"><div class="r2">${hasPhoto(m) ? `<img data-c="${m.c[0]}" src="${menuPhoto(m.img)}" alt="" style="width:44px;height:44px;object-fit:cover;border-radius:8px">` : ''}<div style="flex:1"><b>${tr(m.n)}</b><br>฿${m.p}${m.r ? ' · ' + ic('star', 12) + m.r : ''}</div></div>${warn(m)}<div class="r2"><button class="l" data-a="open" data-id="${id}">${t('det')}</button><button data-a="aiadd" data-id="${id}">${ic('plus', 14)}${t('add')}</button></div></div>` }).join('')}${(c.qa || []).length ? `<div class="qa">${c.qa.map(q => `<button data-a="${q[0]}" data-v="${q[1]}" data-m="${q[1]}">${q[2]}</button>`).join('')}</div>` : ''}${c.retry ? `<div class="qa"><button data-a="ask" data-t="${c.retry}">${t('retry')}</button></div>` : ''}</div>`).join('')}</div>`
+  return `<div class="aih"><i>${ic('sparkle', 22)}</i><div><b>${aiS().name || t('aiN')}</b><br><small>${t('aiH')}</small>${aiStatusChip()}</div></div><div class="chat">
+<div class="m a">${aiS().greet ? aiS().greet.replace(/</g, '&lt;') : t('hi')}</div>${S.chat.map((c, ix) => c.typing ? `<div class="m a dots${fresh.chat && ix == S.chat.length - 1 ? ' in' : ''}"><span></span><span></span><span></span></div>` : `<div class="m ${c.r}${fresh.chat && ix == S.chat.length - 1 ? ' in' : ''}">${c.t}${c.r == 'a' && c.q && !c.retry ? `<div class="qa"><button data-a="wrong" data-i="${ix}" aria-label="wrong answer">${ic('thumbDown', 16)}</button></div>` : ''}${(c.items || []).map(id => { const m = byId(id); return `<div class="mc"><div class="r2">${hasPhoto(m) ? `<img data-c="${m.c[0]}" src="${menuPhoto(m.img)}" alt="" style="width:44px;height:44px;object-fit:cover;border-radius:8px">` : ''}<div style="flex:1"><b>${tr(m.n)}</b><br>฿${m.p}${m.r ? ' · ' + ic('star', 12) + m.r : ''}</div></div>${warn(m)}<div class="r2"><button class="l" data-a="open" data-id="${id}">${t('det')}</button><button data-a="aiadd" data-id="${id}">${ic('plus', 14)}${t('add')}</button></div></div>` }).join('')}${(c.qa || []).length ? `<div class="qa">${c.qa.map(q => `<button data-a="${q[0]}" data-v="${q[1]}" data-m="${q[1]}">${q[2]}</button>`).join('')}</div>` : ''}${c.retry ? `<div class="qa"><button data-a="ask" data-t="${esc(c.retry)}">${t('retry')}</button></div>` : ''}</div>`).join('')}</div>`
 }
 
 /* =====================================================================
@@ -254,14 +318,16 @@ function nav() { const n = (v, i, l, c = '') => `<button class="${c} ${S.view ==
 
 // render() = compose screen: header + content based on S.view + (AI page: suggested questions + input) + nav + modal + toast
 // fresh = what appeared in this render (a sheet, a toast, a chat message). Only those play an entrance; everything else is rebuilt silently.
-let fresh = {}, _modal = null, _toast = '', _chatN = 0;
+let fresh = {}, _modal = null, _toast = '', _chatN = 0, _lastV = null;
 const WIDE = window.matchMedia ? matchMedia('(min-width: 1024px)') : { matches: false, addEventListener() { } };   // laptop layout: side rail + docked cart (design v2)
 WIDE.addEventListener('change', () => { if (window.APP_VIEW == 'customer') render() });
 function render() {
   fresh = { ov: !!S.modal && S.modal != _modal, toast: !!S.toast && S.toast != _toast, chat: S.chat.length != _chatN }; _modal = S.modal; _toast = S.toast; _chatN = S.chat.length;
   const _cs = document.querySelector(".chips"), _sx = _cs ? _cs.scrollLeft : 0; const v = S.view, bd = v == 'home' ? disc(1) : v == 'menu' ? disc(0) : v == 'ai' ? chatV() : v == 'cart' ? cartV() : v == 'more' ? moreV() : confirmV();
+  const _mn = $('#app > main'), _sy = _mn && v == _lastV ? _mn.scrollTop : 0; _lastV = v;   // keep the scroll position when the same page is redrawn (opening a dish, adding to cart)
   const ai = v == 'ai', _fx = fx.snap($('#app')); $('#app').innerHTML = header() + `<main class="${ai ? 'chat-page' : ''}">${bd}</main>` + (ai ? `<div class="chat-tools"><div class="sg" style="padding:6px 12px">${SG.map(r => r[I[S.lang]]).filter(Boolean).map(x => `<button data-a="ask" data-t="${x.replace(/"/g, '&quot;')}">${x}</button>`).join('')}</div><div class="inb"><input id="ci" placeholder="${t('ph')}"><button data-a="send" aria-label="send">${ic('send', 19)}</button></div></div>` : '') + (!WIDE.matches && cnt() && ['home', 'menu'].includes(v) ? `<button class="cartbar" data-a="nav" data-v="cart"><b>${cnt()}</b><span>${t('table')} ${TABLE}</span><span class="go">${t('cart')} · ฿${sum()} ›</span></button>` : '') + nav() + (WIDE.matches && ['home', 'menu', 'ai'].includes(v) ? `<aside class="dock">${cartV()}</aside>` : '') + modal() + (S.toast ? `<div class="toast${fresh.toast ? ' in' : ''}" role="status">${S.toast}</div>` : '');
   _fx({ page: S.view, order: ['home', 'menu', 'ai', 'cart', 'more', 'confirm'], count: cnt(), list: S.cat });
+  if (_sy && !ai) $('#app > main').scrollTop = _sy;
   document.documentElement.lang = S.lang; { const c = document.querySelector(".chips"); if (c) { c.style.scrollSnapType = "none"; c.scrollLeft = _sx; const on = c.querySelector(".chip.on"); if (on && (on.offsetLeft < c.scrollLeft || on.offsetLeft + on.offsetWidth > c.scrollLeft + c.clientWidth)) c.scrollTo({ left: on.offsetLeft - (c.clientWidth - on.offsetWidth) / 2, behavior: "smooth" }); requestAnimationFrame(() => { c.style.scrollSnapType = "" }) } } if (ai) { const m = $('main'); m.scrollTop = m.scrollHeight } save()
 }
 

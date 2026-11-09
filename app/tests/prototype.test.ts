@@ -2,7 +2,9 @@
 // use the real sample menu and the app's own labels, and open without a server (no scripts from the internet).
 import fs from "node:fs";
 import path from "node:path";
-import { describe, it, expect } from "vitest";
+import vm from "node:vm";
+import { JSDOM } from "jsdom";
+import { describe, it, expect, vi } from "vitest";
 import { DICT } from "@/modules/diner/i18n";
 import { ALLERGENS } from "@/modules/platform/constants";
 
@@ -86,13 +88,38 @@ describe("the M4 clickable prototype", () => {
     expect(drawn).toContain("<svg");
     expect(missing, "icon names used but not drawn in icons.js").toEqual([]);
   });
-  it("opens from a folder with no server: every script and style it loads is a local file (only the font stylesheet is remote)", () => {
+  it("opens from a folder with no server: every script and style it loads is a local file (only the font stylesheet is remote)", async () => {
     const html = read("prototype/index.html");
     const scripts = [...html.matchAll(/<script[^>]*src="([^"]+)"/g)].map((m) => m[1]);
     expect(scripts.length).toBeGreaterThan(0);
     for (const s of scripts) { expect(s, s).not.toMatch(/^(https?:)?\/\//); expect(fs.existsSync(path.join(root, "prototype", s)), s).toBe(true); }
     const sheets = [...html.matchAll(/<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map((m) => m[1]).filter((h) => !/^https:\/\/fonts\.googleapis\.com\//.test(h));
     for (const h of sheets) expect(fs.existsSync(path.join(root, "prototype", h)), h).toBe(true);
-    expect(proto).not.toMatch(/\bfetch\(|XMLHttpRequest|sendBeacon|new WebSocket\(/);       // no server calls; it saves only to the browser's own storage
+    const dom = new JSDOM(html, {
+      url: "http://prototype.local/index.html?view=customer&go=ai&lang=en",
+      runScripts: "outside-only",
+      pretendToBeVisual: true,
+    });
+    const fetch = vi.fn();
+    try {
+      dom.window.requestAnimationFrame = callback => { callback(0); return 1; };
+      Object.assign(dom.window, {
+        fetch,
+        IntersectionObserver: class { observe() {} unobserve() {} disconnect() {} },
+      });
+      const context = dom.getInternalVMContext();
+      for (const script of dom.window.document.querySelectorAll("script")) {
+        const source = script.src ? read(`prototype/${script.getAttribute("src")!}`) : script.textContent!;
+        new vm.Script(source).runInContext(context);
+      }
+      const doc = dom.window.document;
+      (doc.getElementById("ci") as HTMLInputElement).value = "What is the price of Salmon Sushi?";
+      (doc.querySelector('[data-a="send"]') as HTMLElement).click();
+      await vi.waitFor(() => expect(doc.querySelector(".chat")?.textContent).toContain("Salmon Sushi: ฿96"));
+      expect(doc.querySelector(".chat .dots")).toBeNull();
+      expect(fetch).not.toHaveBeenCalled();
+    } finally {
+      dom.window.close();
+    }
   });
 });

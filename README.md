@@ -4,7 +4,7 @@ Menu-aware AI waiter for restaurants (Thai, Burmese, English). Diners scan a QR 
 
 The AI never decides anything safety-critical: allergens, prices, opening hours, sold-out dishes, orders and the bill are answered from the database with fixed sentences. The language model only handles open questions, and its reply is checked before it is shown (details and tests: [`docs/AI_SAFETY.md`](docs/AI_SAFETY.md)). Allergy suggestions use **only restaurant-verified** allergen lists: an estimated or missing list is never recommended to a diner with an allergy profile, and "not listed" is never worded as "safe".
 
-**Status (2 Nov 2026):** demo-ready, not yet pilot-ready. None of the 145 demo dishes (Golden Lotus 13, HaChi Kyu 132) is restaurant-verified, and there has been no observed pilot, native-speaker review of every sentence, or real restore drill. Operating, backup/restore (`npm run db:backup`, `db:restore`), 30-day chat deletion (`db:prune-chat`) and the pilot checklist: [`docs/PILOT_RUNBOOK.md`](docs/PILOT_RUNBOOK.md).
+**Status (2 Nov 2026):** demo-ready, not yet pilot-ready. None of the 117 demo dishes (Golden Lotus 13, HaChi Kyu 104) is restaurant-verified, and there has been no observed pilot, native-speaker review of every sentence, or real restore drill. Operating, backup/restore (`npm run db:backup`, `db:restore`), 30-day chat deletion (`db:prune-chat`) and the pilot checklist: [`docs/PILOT_RUNBOOK.md`](docs/PILOT_RUNBOOK.md).
 
 ## Live prototype: try it in your browser
 

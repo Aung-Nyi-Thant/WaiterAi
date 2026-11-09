@@ -1,4 +1,4 @@
-// The AI against the sushi menu the owner really has (132 dishes: Sets & Combos, Sashimi, Sushi, Appetizers, Grilled Skewers, Rice & Don, Noodles,
+// The AI against the sushi menu the owner really has (104 dishes: Sets & Combos, Sashimi, Sushi, Appetizers, Grilled Skewers, Rice & Don, Noodles,
 // Soup, Drinks), with the language model switched off: everything here is answered from the data by the rules, so it is fast and exact.
 // Every dish is asked about by name in English, Thai and Burmese; then the combos and sets, the categories, and the dishes that list allergens.
 import { beforeAll, describe, expect, it } from "vitest";
@@ -22,8 +22,8 @@ beforeAll(async () => {
 }, 60_000);
 
 describe("the menu is the sushi menu", () => {
-  it("has 132 dishes in nine categories", () => {
-    expect(ctx.items).toHaveLength(132);
+  it("has 104 dishes in nine categories", () => {
+    expect(ctx.items).toHaveLength(104);
     expect(ctx.categories.map((c: any) => c.name.en)).toEqual(["Sets & Combos", "Sashimi", "Sushi", "Appetizers", "Grilled Skewers", "Rice & Don", "Noodles", "Soup", "Drinks"]);
   });
 });
@@ -62,7 +62,7 @@ describe("every dish, asked about by name", () => {
   }, 120_000);
 
   it("finds a dish typed without its bracketed tag ('Yakisoba with Coke' is the combo, not plain Yakisoba)", async () => {
-    for (const name of ["Yakisoba with Coke", "Garlic Fried Rice with Coke", "Fatty Beef Don with Coke"]) {
+    for (const name of ["Yakisoba with Coke", "Fatty Beef Don with Coke"]) {
       const r = await ask(`How much is ${name}?`);
       expect(shown(r), name).toEqual([`[Coke Combo] ${name}`]);
     }
@@ -71,20 +71,20 @@ describe("every dish, asked about by name", () => {
 });
 
 describe("combos and sets", () => {
-  it.each(["What combos do you have?", "Do you have a set menu?", "Any promotion?", "Show me the sets", "Which combo is the cheapest?"])("'%s' lists the six sets and combos", async (q) => {
+  it.each(["What combos do you have?", "Do you have a set menu?", "Any promotion?", "Show me the sets", "Which combo is the cheapest?"])("'%s' lists the two sets and combos", async (q) => {
     const r = await ask(q);
     expect(r.usedModel).toBe(false);
     if (/cheapest/.test(q)) return;                                // the cheapest rule has its own test below
-    expect(r.reply).toMatch(/^Sets & Combos \(6\)/);
-    for (const n of ["[Coke Combo] Yakisoba with Coke", "Tontoro Happy Set", "Buta Set", "Omori Set"]) expect(r.reply).toContain(n);
-    expect(shown(r)).toHaveLength(6);
+    expect(r.reply).toMatch(/^Sets & combos:/i);
+    for (const n of ["[Coke Combo] Yakisoba with Coke", "[Coke Combo] Fatty Beef Don with Coke"]) expect(r.reply).toContain(n);
+    expect(shown(r)).toHaveLength(2);
   });
-  it("says that it does not know what a big set comes with, and names those sets", async () => {
-    const r = await ask("What combos do you have?");
-    expect(r.reply).toMatch(/don't have a list of what comes with Tontoro Happy Set, Buta Set, Omori Set/);
-    expect(r.reply).not.toMatch(/don't have a list of what comes with[^.]*Coke Combo/);          // the Coke combos list their ingredients
+  it("says that it does not know what a dish with unlisted parts comes with, and names it", async () => {
+    const r = await ask("Show me sashimi");
+    expect(r.reply).toMatch(/don't have a list of what comes with Assorted Sashimi/);
+    expect(r.reply).not.toMatch(/don't have a list of what comes with[^.]*Salmon Sashimi/);          // the dishes with ingredients list them
   });
-  it.each(["What is in the Tontoro Happy Set?", "What comes with the Omori Set?", "What's included in the Buta Set?"])("'%s' does not make up contents", async (q) => {
+  it.each(["What is in the Japanese Pizza?", "What comes with the Assorted Sashimi?", "What's included in the Clear Soup?"])("'%s' does not make up contents", async (q) => {
     const r = await ask(q);
     expect(r.usedModel).toBe(false);
     expect(r.answered).toBe(false);
@@ -92,17 +92,17 @@ describe("combos and sets", () => {
     expect(r.reply).toMatch(/confirm with the staff/);
   });
   it("answers the price of a set, and its allergens as 'not provided'", async () => {
-    expect((await ask("How much is the Buta Set?")).reply).toContain("฿499");
-    expect((await ask("How much is the Omori Set?")).reply).toContain("฿1200");
-    expect((await ask("Is the Omori Set allergen free?")).reply).toMatch(/not provided/);
+    expect((await ask("How much is the Yakisoba with Coke?")).reply).toContain("฿99");
+    expect((await ask("How much is the Fatty Beef Don with Coke?")).reply).toContain("฿159");
+    expect((await ask("Is the Wagyu Sushi allergen free?")).reply).toMatch(/not provided/);
   });
   it("what is inside a Coke Combo comes from the data, with the cola", async () => {
-    const r = await ask("What is in the Garlic Fried Rice with Coke?");
-    expect(shown(r)).toEqual(["[Coke Combo] Garlic Fried Rice with Coke"]);
+    const r = await ask("What is in the Fatty Beef Don with Coke?");
+    expect(shown(r)).toEqual(["[Coke Combo] Fatty Beef Don with Coke"]);
     expect(r.reply).toMatch(/Cola/);
   });
-  it("'add yakisoba with coke' and 'I want garlic fried rice with coke' add the combo to the picks", async () => {
-    for (const [q, name] of [["Add yakisoba with coke", "[Coke Combo] Yakisoba with Coke"], ["I want garlic fried rice with coke", "[Coke Combo] Garlic Fried Rice with Coke"]]) {
+  it("'add yakisoba with coke' and 'I want fatty beef don with coke' add the combo to the picks", async () => {
+    for (const [q, name] of [["Add yakisoba with coke", "[Coke Combo] Yakisoba with Coke"], ["I want fatty beef don with coke", "[Coke Combo] Fatty Beef Don with Coke"]]) {
       const r = await ask(q);
       expect(r.action.type, q).toBe("add_to_picks");
       expect(shown(r), q).toEqual([name]);
@@ -111,19 +111,19 @@ describe("combos and sets", () => {
   it("lists the sets in Thai and Burmese", async () => {
     const th = await ask("มีเซ็ตอะไรบ้าง", "th");
     expect(th.usedModel).toBe(false);
-    expect(th.reply).toContain("6 รายการ");
-    expect(th.reply).toContain("Omori Set (1200 บาท)");
+    expect(th.reply).toContain("[อร่อยซ่ากับโค้ก] ยากิโซบะพร้อมโค้ก (99 บาท");
+    expect(th.reply).toContain("[อร่อยซ่ากับโค้ก] ข้าวหน้าเนื้อติดมันพร้อมโค้ก (159 บาท");
     const my = await ask("ဆက်မီနူး ရှိလား", "my");
     expect(my.usedModel).toBe(false);
-    expect(my.reply).toContain("Omori Set");
-    expect(my.reply).toContain("၆ မျိုး");
+    expect(my.reply).toContain("[Coke Combo] Yakisoba with Coke (၉၉ ဘတ်");
+    expect(my.reply).toContain("[Coke Combo] Fatty Beef Don with Coke (၁၅၉ ဘတ်");
   });
 });
 
 describe("categories", () => {
   it.each([
-    ["What sushi do you have?", "Sushi (25)"], ["Show me sashimi", "Sashimi (14)"], ["What skewers do you have?", "Grilled Skewers (15)"], ["Any appetizers?", "Appetizers (44)"],
-    ["Rice bowls?", "Rice & Don (20)"], ["What drinks do you have?", "Drinks (4)"],
+    ["What sushi do you have?", "Sushi (23)"], ["Show me sashimi", "Sashimi (14)"], ["What skewers do you have?", "Grilled Skewers (11)"], ["Any appetizers?", "Appetizers (29)"],
+    ["Rice bowls?", "Rice & Don (17)"], ["What drinks do you have?", "Drinks (4)"],
   ])("'%s' lists the category from the data (%s)", async (q, head) => {
     const r = await ask(q);
     expect(r.usedModel).toBe(false);
@@ -132,7 +132,7 @@ describe("categories", () => {
   });
   it("a long category shows the first twelve and says how many more", async () => {
     const r = await ask("Any appetizers?");
-    expect(r.reply).toContain("and 32 more");
+    expect(r.reply).toContain("and 17 more");
   });
   it("a short category (noodles, soup) names all its dishes, with price and spice level", async () => {
     const noodles = await ask("Any noodles?");
@@ -173,7 +173,7 @@ describe("everyday questions about the menu", () => {
     expect(r.reply).toContain(lang === "en" ? `฿${dish(name).price}` : lang === "th" ? `${dish(name).price} บาท` : `${digits(dish(name).price)} ဘတ်`);
   });
   it("a question that only starts like 'do you have' stays a different question ('is there a discount', 'does it have milk')", async () => {
-    expect((await ask("Is there a discount on the Buta Set?")).reply).not.toMatch(/^Yes, we have/);
+    expect((await ask("Is there a discount on the Yakisoba with Coke?")).reply).not.toMatch(/^Yes, we have/);
     expect((await ask("ต้มยำมีนมไหม", "th")).reply).not.toMatch(/^มี/);
   });
   it("'I want a coke' fits two dishes, so it asks which one instead of adding both; naming one adds it", async () => {
@@ -199,7 +199,7 @@ describe("everyday questions about the menu", () => {
     expect(shown(r).every((n: string) => /salad/i.test(n))).toBe(true);
   });
   it("'any starters?' finds the Appetizers", async () => {
-    expect((await ask("Any starters?")).reply).toMatch(/^Appetizers \(44\)/);
+    expect((await ask("Any starters?")).reply).toMatch(/^Appetizers \(29\)/);
   });
   it("an allergen question that names a category is answered for that category only", async () => {
     const r = await ask("Which sushi has no fish?");
@@ -252,11 +252,11 @@ describe("a dish whose name is the start of another dish's name", () => {
 });
 
 describe("what the guard lets through from the model on this menu", () => {
-  it("a price written with a thousands comma ('1,200 THB') is the price 1200, and the owner's category names ('Sets & Combos') are known words", async () => {
-    mockModel("For a big appetite I recommend the Omori Set (1,200 THB) or the Buta Set (499 THB). You can also look at our Sets & Combos.\nACTION: none");
+  it("a real dish and price is allowed, and the owner's category names ('Sets & Combos') are known words", async () => {
+    mockModel("For a big appetite I recommend the Fatty Beef Don with Onsen Egg (129 THB) or the Yakisoba with Onsen Egg (99 THB). You can also look at our Sets & Combos.\nACTION: none");
     const r = await ask("I'm hungry and have a big appetite. What should I order?");
     expect(r.usedModel).toBe(true);
-    expect(r.reply).toContain("Omori Set (1200 THB)");
+    expect(r.reply).toContain("Fatty Beef Don with Onsen Egg (129 THB)");
     expect(r.reply).not.toMatch(/don't have that information/);
   });
   it("a made-up dish is still replaced, and a price on the wrong dish is still caught", async () => {
@@ -264,7 +264,7 @@ describe("what the guard lets through from the model on this menu", () => {
     const made = await ask("I'm hungry and have a big appetite. What should I order?");
     expect(made.reply).not.toContain("Lobster");
     expect(made.reply).toMatch(/good places to start/);
-    mockModel("You should try the Omori Set (499 THB).\nACTION: none");
+    mockModel("You should try the Yakisoba with Onsen Egg (499 THB).\nACTION: none");
     const wrong = await ask("I'm hungry and have a big appetite. What should I order?");
     expect(wrong.reply).not.toContain("499 THB");
     expect(wrong.reply).toMatch(/good places to start/);

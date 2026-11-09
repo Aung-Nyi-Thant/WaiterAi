@@ -13,7 +13,10 @@
   const brand = () => `<a class="lp-brand" href="index.html" aria-label="Shop AI home">${ic('utensils', 23)}<span>Shop AI</span></a>`;
   const action = (label = 'Explore the demo') => `<a class="lp-button" href="${href('customer')}">${label}<span aria-hidden="true">↗</span></a>`;
   const nav = () => `<a class="lp-skip" href="#main-content">Skip to content</a><header class="lp-nav">${brand()}<div class="lp-nav-links"><a href="#experience">Experience</a><a href="#handoff">How it works</a><a href="#questions">Questions</a></div><a class="lp-nav-demo" href="${href('owner')}">Owner demo ${ic('arrowRight', 16)}</a></header>`;
-  const photo = (name, alt, cls = '') => `<img class="${cls}" src="assets/${name}.jpg" width="256" height="256" alt="${alt}" loading="lazy">`;
+  const photo = (name, alt, cls = '') => {
+    const file = { 'salmon-sushi': 'salmon-nigiri', 'tuna-sushi': 'tuna-nigiri' }[name] || name;
+    return `<img class="${cls}" src="assets/dishes/${file}.jpg" width="256" height="256" alt="${alt}" loading="lazy">`;
+  };
   const preview = () => {
     const count = [...picks.values()].reduce((a, n) => a + n, 0);
     const total = dishes.reduce((a, m) => a + m.p * (picks.get(m.id) || 0), 0);

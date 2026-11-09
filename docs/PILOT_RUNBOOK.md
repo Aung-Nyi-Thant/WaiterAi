@@ -19,7 +19,7 @@ The demo menu is research based. Its allergen lists are estimates. A real restau
 | Thai and Burmese | Native speakers review diner, staff and AI fixed sentences, including allergy and privacy wording | No wording implies a dish is guaranteed safe. Record corrections in the app and rerun tests. |
 | Diner and staff usability | Test the tasks below on a phone and the actual staff devices | No critical allergy or order handoff error; at least 90% task completion without help, measured per role and language. These are proposed pilot thresholds, not achieved results. |
 | Accessibility | Keyboard, screen reader, 200% text, reduced motion and contrast checks on the four roles | Focus stays visible, targets are usable, motion is optional, all information remains readable. Automated tests alone do not establish WCAG conformance. |
-| AI quality | Run live evaluation against the chosen local Ollama model on both 13 and 132 dish menus, then a new holdout set | No unsafe allergy claim or invented price/dish; meet `eval/thresholds.json` on each language. Review failures manually. |
+| AI quality | Run live evaluation against the chosen local Ollama model on both 13 and 104 dish menus, then a new holdout set | No unsafe allergy claim or invented price/dish; meet `eval/thresholds.json` on each language. Review failures manually. |
 | Privacy and recovery | Operator schedules cleanup and backup, then restores to a new `DATA_DIR` | No raw chat older than 30 days in the live database or retained backups; restored menu, uploads, login and order flow work. |
 
 ### Usability tasks

@@ -593,6 +593,11 @@ const T = {
     // ---- AI assistant (some text is prepared for dev to use when integrating the backend) ----
     aiN: ["ผู้ช่วย AI ของ HaChi Kyu", "HaChi Kyu AI Assistant", "HaChi Kyu AI အကူ"],
     aiH: ["ถามเรื่องเมนู ราคา ส่วนผสม หรือสารก่อภูมิแพ้ได้เลย", "Ask about dishes, prices, ingredients or allergens.", "မီနူး၊ စျေးနှုန်း၊ ပါဝင်ပစ္စည်း မေးနိုင်ပါသည်"],
+    aiStatus_demo: ["AI สาธิตในตัว (ออฟไลน์ ใช้กฎที่เขียนไว้)", "Built-in demo AI (offline, scripted rules)", "အသင့်ပါ သရုပ်ပြ AI (အင်တာနက်မလို၊ သတ်မှတ်စည်းမျဉ်းများဖြင့် ဖြေဆိုသည်)"],
+    aiStatus_ready: ["Live AI · {model} พร้อมใช้งาน", "Live AI · {model} ready", "Live AI · {model} အသင့်ဖြစ်ပြီ"],
+    aiStatus_loading: ["Live AI · โมเดลกำลังโหลด/ทำงานช้า", "Live AI · model loading/slow", "Live AI · မော်ဒယ်ဖွင့်နေသည်/နှေးနေသည်"],
+    aiStatus_unreachable: ["Live AI · เชื่อมต่อเซิร์ฟเวอร์ไม่ได้", "Live AI · server unreachable", "Live AI · ဆာဗာသို့ ချိတ်ဆက်မရပါ"],
+    aiStatus_failed: ["Live AI · ตอบไม่สำเร็จในเซสชันนี้", "Live AI · reply failed this session", "Live AI · ယခုအသုံးပြုချိန်တွင် အဖြေမရခဲ့ပါ"],
     ph: ["พิมพ์ข้อความ...", "Type a message...", "စာရိုက်ပါ..."],
     err: ["ขออภัย เกิดข้อผิดพลาด", "Sorry, something went wrong.", "အမှားအယွင်းရှိနေသည်"],
     retry: ["ลองใหม่", "Retry", "ထပ်ကြိုးစား"],
